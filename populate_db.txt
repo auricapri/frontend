@@ -1,0 +1,69 @@
+
+-- 1. TABELA DE STATUS DE PEDIDOS (CRÍTICO PARA CORRIGIR ERRO 23503)
+CREATE TABLE IF NOT EXISTS public.order_statuses (
+    code text PRIMARY KEY,
+    description text
+);
+
+INSERT INTO public.order_statuses (code, description) VALUES
+    ('pending', 'Pendente'),
+    ('confirmed', 'Confirmado'),
+    ('shipped', 'Enviado'),
+    ('delivered', 'Entregue'),
+    ('cancelled', 'Cancelado')
+ON CONFLICT (code) DO NOTHING;
+
+-- 2. CORREÇÃO NA TABELA ORDERS (Adicionar payment_method)
+ALTER TABLE public.orders 
+ADD COLUMN IF NOT EXISTS payment_method text;
+
+-- 3. TABELA DE ENDEREÇOS (Para Address Book)
+CREATE TABLE IF NOT EXISTS public.addresses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES public.profiles(id),
+    line1 TEXT NOT NULL, -- Logradouro, Número
+    line2 TEXT,          -- Complemento, Bairro
+    city TEXT NOT NULL,
+    state TEXT NOT NULL,
+    postal_code TEXT NOT NULL,
+    country TEXT DEFAULT 'BR',
+    is_default BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. VINCULAR ENDEREÇO PADRÃO AO PERFIL
+ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS default_address_id UUID REFERENCES public.addresses(id);
+
+-- 5. TABELA DE MÉTODOS DE PAGAMENTO (Tokenização Segura)
+-- NUNCA salvamos o número do cartão real. Apenas o Token do Gateway e os últimos 4 dígitos.
+CREATE TABLE IF NOT EXISTS public.user_payment_methods (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES public.profiles(id),
+    gateway_token TEXT NOT NULL, -- Token criptografado retornado pelo Gateway
+    last4 TEXT NOT NULL,         -- Apenas para exibição visual (ex: 4242)
+    brand TEXT NOT NULL,         -- Visa, Mastercard, etc.
+    exp_month INT,
+    exp_year INT,
+    is_default BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. POLÍTICAS DE SEGURANÇA (RLS)
+ALTER TABLE public.addresses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_payment_methods ENABLE ROW LEVEL SECURITY;
+
+DO $$ 
+BEGIN
+    -- Policy Addresses
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'addresses' AND policyname = 'Users manage own addresses') THEN
+        CREATE POLICY "Users manage own addresses" ON public.addresses
+            FOR ALL USING (auth.uid() = user_id);
+    END IF;
+
+    -- Policy Payment Methods
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_payment_methods' AND policyname = 'Users manage own cards') THEN
+        CREATE POLICY "Users manage own cards" ON public.user_payment_methods
+            FOR ALL USING (auth.uid() = user_id);
+    END IF;
+END $$;
