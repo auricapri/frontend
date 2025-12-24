@@ -506,6 +506,192 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div>oi</div>
+    <div className="relative h-dvh w-full bg-white overflow-hidden text-neutral-900 font-sans">
+      <Navbar 
+        cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)} 
+        onOpenCart={() => setIsCartOpen(true)}
+        wishlistCount={wishlistIds.length}
+        onOpenWishlist={() => setIsWishlistOpen(true)}
+        onOpenCoupons={() => setIsCouponsOpen(true)}
+        onOpenAuth={() => setIsAuthOpen(true)}
+        userMode={userMode}
+        onToggleMode={() => setUserMode(prev => prev === UserMode.RETAIL ? UserMode.WHOLESALE : UserMode.RETAIL)}
+        onNavigate={handleNavigate}
+        isScrolled={currentView === 'home' && isScrolled}
+        isProductView={currentView === 'product' || currentView === 'checkout' || currentView === 'collection'}
+        onBack={() => handleNavigate('home', 'collection')}
+        isLoggedIn={!!currentUser}
+        t={t}
+        currentLocale={locale}
+        onChangeLocale={setLocale}
+        storeName={storeConfig.brand_name}
+      />
+      
+      <main 
+        ref={mainRef} 
+        onScroll={handleScroll}
+        className={`h-full w-full overflow-y-auto no-scrollbar antialiased relative`}
+      >
+        {currentView === 'home' && (
+          <div className="min-h-full flex flex-col">
+            <Hero onNavigate={handleNavigate as any} t={t} banners={banners} locale={locale} isLoading={isLoading} />
+            <ProductGrid 
+              products={products} 
+              categories={categories}
+              collections={collections}
+              coupons={coupons} // Passing Active Coupons
+              userMode={userMode} 
+              onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product'); }}
+              onSelectCollection={(c) => { setActiveCollection(c); handleNavigate('collection'); }}
+              wishlistIds={wishlistIds}
+              onToggleWishlist={handleToggleWishlist}
+              t={t}
+              locale={locale}
+              isLoading={isLoading}
+            />
+            <Footer 
+              t={t} 
+              currentLocale={locale} 
+              onChangeLocale={setLocale} 
+              storeName={storeConfig.brand_name} 
+              onOpenLegal={setLegalView}
+            />
+            
+            <a 
+              href="https://wa.me/AURICAPRI" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="fixed bottom-10 right-6 p-5 bg-neutral-900 text-white rounded-full shadow-2xl z-40 border border-white/10 hover:scale-110 active:scale-95 transition-all flex items-center justify-center animate-in slide-in-from-bottom-10 duration-700"
+            >
+              <MessageCircle className="w-6 h-6" />
+            </a>
+          </div>
+        )}
+
+        {currentView === 'product' && activeProduct && (
+          <ProductDetail 
+            product={activeProduct} 
+            coupons={coupons} // Passing Active Coupons
+            userMode={userMode} 
+            onAddToCart={addToCart}
+            onBack={() => handleNavigate('home', 'collection')}
+            isWishlisted={wishlistIds.includes(activeProduct.id)}
+            onToggleWishlist={() => handleToggleWishlist(activeProduct.id)}
+            t={t}
+            locale={locale}
+            currentUser={currentUser}
+            onShowToast={showToast}
+          />
+        )}
+
+        {currentView === 'collection' && activeCollection && (
+          <CollectionDetail
+            collection={activeCollection}
+            products={products}
+            categories={categories}
+            userMode={userMode}
+            onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product'); }}
+            wishlistIds={wishlistIds}
+            onToggleWishlist={handleToggleWishlist}
+            onBack={() => handleNavigate('home', 'collection')}
+            locale={locale}
+          />
+        )}
+
+        {currentView === 'checkout' && (
+          <CheckoutView 
+            items={cartItems} 
+            currentUser={currentUser}
+            onBack={() => handleNavigate('home')} 
+            onComplete={handlePlaceOrder} 
+            locale={locale} 
+            t={t} 
+          />
+        )}
+      </main>
+
+      {/* Global Toast Notification */}
+      <Toast 
+        message={toast.message} 
+        isVisible={toast.visible} 
+        onClose={closeToast} 
+        type={toast.type}
+      />
+
+      {/* Global Loading Overlay for Order Processing */}
+      {isProcessingOrder && (
+          <div className="fixed inset-0 z-[2000] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center">
+              <Loader2 className="w-12 h-12 animate-spin text-black mb-4" />
+              <h3 className="text-xl font-black uppercase tracking-tighter">Processando Pedido</h3>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mt-2">Não feche esta janela...</p>
+          </div>
+      )}
+
+      {/* Order Result Animation Overlay */}
+      {orderResult && (
+          <OrderResultOverlay 
+              status={orderResult.status} 
+              orderId={orderResult.orderId}
+              errorMessage={orderResult.message}
+              onClose={handleCloseOrderResult}
+              t={t}
+              locale={locale}
+          />
+      )}
+
+      {legalView && (
+        <div className="fixed inset-0 z-[200] bg-white flex flex-col animate-in slide-in-from-bottom duration-700 overflow-hidden">
+           <header className="h-24 px-12 flex justify-between items-center border-b border-neutral-100">
+              <h2 className="text-xl font-black uppercase italic tracking-widest">
+                {legalView === 'terms' ? t('footer.terms') : t('footer.privacy')}
+              </h2>
+              <button onClick={() => setLegalView(null)} className="p-4 bg-neutral-50 rounded-full hover:rotate-90 transition-all">
+                <X className="w-6 h-6" />
+              </button>
+           </header>
+           <div className="flex-1 overflow-y-auto p-12 md:p-24 no-scrollbar bg-neutral-50/50">
+              <div className="max-w-4xl mx-auto bg-white p-12 md:p-20 rounded-[3rem] shadow-sm border border-neutral-100">
+                 <div className="prose prose-neutral max-w-none whitespace-pre-wrap font-medium text-neutral-600 leading-relaxed text-sm">
+                   {legalView === 'terms' ? storeConfig.terms_of_service[locale] : storeConfig.privacy_policy[locale]}
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
+
+      <CartDrawer 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        items={cartItems} 
+        userMode={userMode} 
+        onUpdateQuantity={handleUpdateQuantity} 
+        onRemoveItem={(id) => setCartItems(prev => prev.filter(i => i.variant_id !== id))} 
+        onCheckout={handleCheckoutIntent}
+        t={t} 
+        locale={locale} 
+      />
+      <AuthDrawer 
+        isOpen={isAuthOpen} 
+        onClose={() => { setIsAuthOpen(false); setPendingCheckout(false); }} 
+        user={currentUser} 
+        onLogin={setCurrentUser} 
+        onLogout={() => setCurrentUser(null)} 
+        onAdminAccess={enterAdmin} 
+        t={t} 
+        locale={locale} 
+      />
+      <WishlistDrawer 
+        isOpen={isWishlistOpen} 
+        onClose={() => setIsWishlistOpen(false)} 
+        items={products.filter(p => wishlistIds.includes(p.id))} 
+        userMode={userMode} 
+        onRemoveItem={(id) => setWishlistIds(prev => prev.filter(i => i !== id))} 
+        onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product'); }} 
+        onBuyAll={handleBuyAllWishlist}
+        t={t} 
+        locale={locale} 
+      />
+      <CouponsDrawer isOpen={isCouponsOpen} onClose={() => setIsCouponsOpen(false)} t={t} />
+    </div>
   );
 };
