@@ -56,6 +56,56 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     return String(obj);
   };
 
+  const scrollToFilters = () => {
+    // Specific container from App.tsx
+    const mainContainer = document.getElementById('main-scroll-container');
+    // Non-sticky anchor point above filters
+    const anchor = document.getElementById('grid-anchor');
+    
+    if (anchor && mainContainer) {
+        // Since anchor is just a div in flow, offsetTop gives its distance from the closest positioned ancestor (likely main or section)
+        // If main is positioned (relative), offsetTop is distance from top of main's content.
+        
+        // However, if main content is large, offsetTop can be large.
+        // We need to scroll main to this position minus navbar.
+        
+        // Get the top position relative to the document/viewport to be safe
+        const anchorRect = anchor.getBoundingClientRect();
+        const containerRect = mainContainer.getBoundingClientRect();
+        
+        // Current scroll position of the container
+        const currentScroll = mainContainer.scrollTop;
+        
+        // Calculate the absolute position of the anchor relative to the scroll view content start
+        // anchorRect.top is viewport relative. containerRect.top is viewport relative.
+        // The difference is how far down the anchor is from the top of the container's visible area.
+        // Add currentScroll to get the absolute scroll position needed.
+        
+        const relativeTop = anchorRect.top - containerRect.top;
+        
+        // Target: We want the anchor to be about 100px from top (below navbar)
+        const headerOffset = 100;
+        const targetScroll = currentScroll + relativeTop - headerOffset;
+
+        mainContainer.scrollTo({
+            top: targetScroll,
+            behavior: 'smooth'
+        });
+    }
+  };
+
+  const handleFilterClick = (categoryName: string) => {
+    setActiveCategory(categoryName);
+    setCurrentPage(1);
+    // Timeout ensures React render cycle completes and layout stabilizes before scrolling
+    setTimeout(scrollToFilters, 100);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    setTimeout(scrollToFilters, 100);
+  };
+
   const filteredProducts = useMemo(() => {
     const productsInLocale = products.filter(p => {
       const name = getLoc(p.name);
@@ -110,8 +160,11 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         </div>
       </div>
 
+      {/* Anchor for Scrolling (Non-sticky) */}
+      <div id="grid-anchor" className="w-full h-1" />
+
       {/* Filters Sticky Bar */}
-      <div className="sticky top-16 md:top-20 z-30 bg-white/95 backdrop-blur-md border-y border-neutral-100 py-6 px-6 md:px-12 mb-16">
+      <div id="product-filters" className="sticky top-16 md:top-20 z-30 bg-white/95 backdrop-blur-md border-y border-neutral-100 py-6 px-6 md:px-12 mb-16 transition-all">
          <div className="flex flex-col md:flex-row justify-between md:items-center gap-6">
            <div className="flex items-center space-x-8">
               <div className="flex items-center space-x-3 text-[10px] uppercase tracking-[0.3em] font-bold text-neutral-400">
@@ -121,7 +174,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
            </div>
            <div className="flex overflow-x-auto no-scrollbar space-x-2 pb-2 md:pb-0">
                <button 
-                 onClick={() => { setActiveCategory("All"); setCurrentPage(1); }} 
+                 onClick={() => handleFilterClick("All")} 
                  className={`px-8 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold border transition-all ${activeCategory === "All" ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-400 border-neutral-100 hover:border-neutral-900'}`}
                >
                  All Items
@@ -129,7 +182,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                {categories.map(cat => (
                  <button 
                    key={cat.id} 
-                   onClick={() => { setActiveCategory(getLoc(cat.name)); setCurrentPage(1); }} 
+                   onClick={() => handleFilterClick(getLoc(cat.name))} 
                    className={`px-8 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold border transition-all ${activeCategory === getLoc(cat.name) ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-400 border-neutral-100 hover:border-neutral-900'}`}
                  >
                    {getLoc(cat.name)}
@@ -196,7 +249,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         {!isLoading && totalPages > 1 && (
           <div className="flex justify-center items-center space-x-12 mt-40">
             <button 
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1} 
               className="p-4 border border-neutral-100 rounded-full hover:bg-neutral-900 hover:text-white disabled:opacity-20 transition-all shadow-sm"
             >
@@ -207,7 +260,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <span className="text-xl font-light">{currentPage} <span className="text-neutral-300 text-sm">/ {totalPages}</span></span>
             </div>
             <button 
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))} 
               disabled={currentPage === totalPages} 
               className="p-4 border border-neutral-100 rounded-full hover:bg-neutral-900 hover:text-white disabled:opacity-20 transition-all shadow-sm"
             >

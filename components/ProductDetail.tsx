@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Product, UserMode, CartItem, Review, UserProfile, Coupon } from '../types';
+import { Product, UserMode, CartItem, Review, UserProfile, Coupon, SizeGuide } from '../types';
 import { 
   Plus, 
   Minus, 
@@ -10,7 +10,15 @@ import {
   ChevronRight, 
   ChevronLeft,
   Star,
-  Tag
+  Tag,
+  Ruler,
+  Share2,
+  Copy,
+  Check,
+  Facebook,
+  Twitter,
+  Linkedin,
+  MessageCircle
 } from 'lucide-react';
 import { Locale } from '../i18n';
 import ProductReviews from './ProductReviews';
@@ -28,6 +36,7 @@ interface ProductDetailProps {
   locale: Locale;
   currentUser: UserProfile | null;
   onShowToast?: (message: string, type?: 'info' | 'error') => void;
+  sizeGuides?: SizeGuide[]; // New Prop
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({ 
@@ -40,7 +49,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   t, 
   locale,
   currentUser,
-  onShowToast
+  onShowToast,
+  sizeGuides = []
 }) => {
   const getLoc = (obj: any): string => {
     if (obj === null || obj === undefined) return "";
@@ -76,12 +86,26 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [zoomImgIndex, setZoomImgIndex] = useState(0);
   const [mobileActiveIdx, setMobileActiveIdx] = useState(0);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  
+  // Share State
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const mobileGalleryRef = useRef<HTMLDivElement>(null);
 
   const activeVariant = useMemo(() => {
     return variants.find(v => v.size === selectedSize && v.color_hex === selectedColorHex) || variants[0];
   }, [selectedSize, selectedColorHex, variants]);
+
+  // Resolve active size guide image
+  const activeSizeGuideImage = useMemo(() => {
+      if (activeVariant?.size_guide_id) {
+          const guide = sizeGuides.find(g => g.id === activeVariant.size_guide_id);
+          return guide ? guide.image_url : null;
+      }
+      return null;
+  }, [activeVariant, sizeGuides]);
 
   // Ensure quantity doesn't exceed stock when switching variants
   useEffect(() => {
@@ -162,6 +186,32 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       }
   };
 
+  const handleShare = (platform: 'whatsapp' | 'facebook' | 'twitter' | 'linkedin' | 'copy') => {
+      const url = window.location.href;
+      const text = `Confira ${getLoc(product.name)} na Auricapri.`;
+      
+      switch(platform) {
+          case 'whatsapp':
+              window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+              break;
+          case 'facebook':
+              window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+              break;
+          case 'twitter':
+              window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+              break;
+          case 'linkedin':
+              window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+              break;
+          case 'copy':
+              navigator.clipboard.writeText(url);
+              setLinkCopied(true);
+              setTimeout(() => setLinkCopied(false), 2000);
+              break;
+      }
+      setIsShareOpen(false);
+  };
+
   const [reviews, setReviews] = useState<Review[]>([]);
   useEffect(() => {
      setReviews([
@@ -177,6 +227,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
        }
      ]);
   }, [product.id]);
+
+  // Construct Composition String
+  const compositionText = activeVariant?.composition 
+    ? `${getLoc(activeVariant.composition)}\n\n${getLoc(activeVariant.care_instructions)}` 
+    : 'Sustainable luxury materials. Hand-finished in our atelier.';
 
   return (
     <div className="relative w-full bg-white">
@@ -283,7 +338,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                       <button 
                         key={c.hex} 
                         onClick={() => setSelectedColorHex(c.hex)}
-                        className={`w-12 h-12 rounded-full border-2 p-1 transition-all duration-500 ${selectedColorHex === c.hex ? 'border-black scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                        className={`w-12 h-12 rounded-full border-2 p-1 transition-all duration-500 ${selectedColorHex === c.hex ? 'border-black scale-110 shadow-lg' : 'border-transparent hover:scale-105'}`}
                       >
                         <div className="w-full h-full rounded-full shadow-inner border border-neutral-100" style={{ backgroundColor: c.hex }} />
                       </button>
@@ -294,7 +349,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
               {sizes.length > 0 && (
                 <div className="space-y-5">
-                  <label className="text-[9px] uppercase font-black tracking-[0.3em] text-neutral-400">Measurement</label>
+                  <div className="flex justify-between items-center">
+                    <label className="text-[9px] uppercase font-black tracking-[0.3em] text-neutral-400">Measurement</label>
+                    {activeSizeGuideImage && (
+                        <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center gap-2 text-[9px] uppercase font-black tracking-widest text-neutral-900 border-b border-black pb-0.5 hover:opacity-50 transition-opacity">
+                            <Ruler className="w-3 h-3" /> Size Guide
+                        </button>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-3">
                     {sizes.map(s => (
                       <button 
@@ -342,6 +404,49 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                       fill={isWishlisted ? "currentColor" : "none"}
                     />
                   </button>
+
+                  {/* SHARE BUTTON */}
+                  <div className="relative">
+                      <button 
+                        onClick={() => setIsShareOpen(!isShareOpen)}
+                        className={`h-full aspect-square border rounded-2xl flex items-center justify-center transition-all duration-500 ${isShareOpen ? 'bg-black text-white border-black shadow-lg' : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'}`}
+                      >
+                        <Share2 className="w-5 h-5" />
+                      </button>
+
+                      {/* Share Menu Popover */}
+                      {isShareOpen && (
+                          <div className="absolute bottom-[110%] right-0 min-w-[220px] bg-white rounded-[2rem] shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300 z-50">
+                              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">Compartilhar</span>
+                              
+                              <div className="flex flex-col gap-1">
+                                  <button onClick={() => handleShare('whatsapp')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                                      <div className="bg-green-500 text-white p-1.5 rounded-full group-hover:scale-110 transition-transform"><MessageCircle className="w-3 h-3" /></div>
+                                      <span className="text-[10px] font-bold uppercase tracking-widest">WhatsApp</span>
+                                  </button>
+                                  
+                                  <button onClick={() => handleShare('facebook')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                                      <div className="bg-blue-600 text-white p-1.5 rounded-full group-hover:scale-110 transition-transform"><Facebook className="w-3 h-3" /></div>
+                                      <span className="text-[10px] font-bold uppercase tracking-widest">Facebook</span>
+                                  </button>
+
+                                  <button onClick={() => handleShare('twitter')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                                      <div className="bg-black text-white p-1.5 rounded-full group-hover:scale-110 transition-transform"><Twitter className="w-3 h-3" /></div>
+                                      <span className="text-[10px] font-bold uppercase tracking-widest">X / Twitter</span>
+                                  </button>
+
+                                  <div className="h-[1px] bg-neutral-100 my-2" />
+
+                                  <button onClick={() => handleShare('copy')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                                      <div className="bg-neutral-100 text-black p-1.5 rounded-full group-hover:scale-110 transition-transform">
+                                          {linkCopied ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
+                                      </div>
+                                      <span className="text-[10px] font-bold uppercase tracking-widest">{linkCopied ? 'Copiado!' : 'Copiar Link'}</span>
+                                  </button>
+                              </div>
+                          </div>
+                      )}
+                  </div>
                </div>
             </div>
 
@@ -349,7 +454,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             <div className="border-t border-neutral-100 pt-8 space-y-2">
                {[
                  { id: 'desc', label: t('product.description'), content: getLoc(product.description) },
-                 { id: 'comp', label: t('product.composition'), content: 'Sustainable luxury materials. Hand-finished in our atelier.' }
+                 { id: 'comp', label: t('product.composition'), content: compositionText }
                ].map(section => (
                  <div key={section.id} className="border-b border-neutral-50 last:border-0">
                     <button 
@@ -360,7 +465,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                       {openSection === section.id ? <Minus className="w-3 h-3 text-neutral-400" /> : <Plus className="w-3 h-3 text-neutral-400" />}
                     </button>
                     <div className={`overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${openSection === section.id ? 'max-h-96 opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
-                       <p className="text-[11px] leading-relaxed text-neutral-500 font-medium max-w-sm">{section.content}</p>
+                       <p className="text-[11px] leading-relaxed text-neutral-500 font-medium max-w-sm whitespace-pre-line">{section.content}</p>
                     </div>
                  </div>
                ))}
@@ -384,6 +489,21 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           />
         </div>
       </div>
+
+      {/* SIZE GUIDE MODAL */}
+      {isSizeGuideOpen && activeSizeGuideImage && (
+          <div className="fixed inset-0 z-[2000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setIsSizeGuideOpen(false)}>
+              <div className="bg-white rounded-[2rem] overflow-hidden max-w-3xl w-full max-h-[90vh] relative shadow-2xl" onClick={e => e.stopPropagation()}>
+                  <button 
+                    onClick={() => setIsSizeGuideOpen(false)}
+                    className="absolute top-4 right-4 p-2 bg-black text-white rounded-full z-10 hover:rotate-90 transition-all"
+                  >
+                      <X className="w-5 h-5" />
+                  </button>
+                  <img src={activeSizeGuideImage} className="w-full h-full object-contain max-h-[90vh]" alt="Size Guide" />
+              </div>
+          </div>
+      )}
 
       {/* ZOOM MODAL */}
       {isZoomOpen && (

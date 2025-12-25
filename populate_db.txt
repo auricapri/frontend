@@ -1,69 +1,39 @@
 
--- 1. TABELA DE STATUS DE PEDIDOS (CRÍTICO PARA CORRIGIR ERRO 23503)
-CREATE TABLE IF NOT EXISTS public.order_statuses (
-    code text PRIMARY KEY,
-    description text
-);
+-- ==============================================================================
+-- SCRIPT DE MIGRAÇÃO: PROGRAMA DE FIDELIDADE (LOYALTY PROGRAM)
+-- Execute este script no SQL Editor do Supabase para atualizar suas tabelas.
+-- ==============================================================================
 
-INSERT INTO public.order_statuses (code, description) VALUES
-    ('pending', 'Pendente'),
-    ('confirmed', 'Confirmado'),
-    ('shipped', 'Enviado'),
-    ('delivered', 'Entregue'),
-    ('cancelled', 'Cancelado')
-ON CONFLICT (code) DO NOTHING;
+-- 1. Atualizar a tabela de configurações da loja (store_config)
+-- Adiciona a coluna que armazena as regras de Cashback, XP e Níveis.
+ALTER TABLE public.store_config 
+ADD COLUMN IF NOT EXISTS loyalty_program jsonb DEFAULT '{
+  "enabled": true, 
+  "cashback_percentage": 1, 
+  "xp_per_currency_unit": 10,
+  "levels": [
+    {"level": 1, "xp_required": 0, "reward_coupon_value": 0, "reward_description": "Iniciante"},
+    {"level": 2, "xp_required": 1000, "reward_coupon_value": 50, "reward_description": "Bronze"},
+    {"level": 3, "xp_required": 5000, "reward_coupon_value": 150, "reward_description": "Silver"},
+    {"level": 4, "xp_required": 15000, "reward_coupon_value": 500, "reward_description": "Gold VIP"}
+  ]
+}'::jsonb;
 
--- 2. CORREÇÃO NA TABELA ORDERS (Adicionar payment_method)
-ALTER TABLE public.orders 
-ADD COLUMN IF NOT EXISTS payment_method text;
-
--- 3. TABELA DE ENDEREÇOS (Para Address Book)
-CREATE TABLE IF NOT EXISTS public.addresses (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES public.profiles(id),
-    line1 TEXT NOT NULL, -- Logradouro, Número
-    line2 TEXT,          -- Complemento, Bairro
-    city TEXT NOT NULL,
-    state TEXT NOT NULL,
-    postal_code TEXT NOT NULL,
-    country TEXT DEFAULT 'BR',
-    is_default BOOLEAN DEFAULT false,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 4. VINCULAR ENDEREÇO PADRÃO AO PERFIL
+-- 2. Atualizar a tabela de perfis de usuário (profiles)
+-- Adiciona a coluna para rastrear o progresso individual (XP, Saldo Cashback).
 ALTER TABLE public.profiles 
-ADD COLUMN IF NOT EXISTS default_address_id UUID REFERENCES public.addresses(id);
+ADD COLUMN IF NOT EXISTS loyalty jsonb DEFAULT '{
+  "current_xp": 0,
+  "current_level": 1,
+  "cashback_balance": 0,
+  "pending_reward_coupon": null
+}'::jsonb;
 
--- 5. TABELA DE MÉTODOS DE PAGAMENTO (Tokenização Segura)
--- NUNCA salvamos o número do cartão real. Apenas o Token do Gateway e os últimos 4 dígitos.
-CREATE TABLE IF NOT EXISTS public.user_payment_methods (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES public.profiles(id),
-    gateway_token TEXT NOT NULL, -- Token criptografado retornado pelo Gateway
-    last4 TEXT NOT NULL,         -- Apenas para exibição visual (ex: 4242)
-    brand TEXT NOT NULL,         -- Visa, Mastercard, etc.
-    exp_month INT,
-    exp_year INT,
-    is_default BOOLEAN DEFAULT false,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- 3. Verificação de Segurança para Tabela de Cupons
+-- Garante que a coluna product_ids existe para cupons de produtos específicos.
+ALTER TABLE public.coupons 
+ADD COLUMN IF NOT EXISTS product_ids text[] DEFAULT '{}'::text[];
 
--- 6. POLÍTICAS DE SEGURANÇA (RLS)
-ALTER TABLE public.addresses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.user_payment_methods ENABLE ROW LEVEL SECURITY;
-
-DO $$ 
-BEGIN
-    -- Policy Addresses
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'addresses' AND policyname = 'Users manage own addresses') THEN
-        CREATE POLICY "Users manage own addresses" ON public.addresses
-            FOR ALL USING (auth.uid() = user_id);
-    END IF;
-
-    -- Policy Payment Methods
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_payment_methods' AND policyname = 'Users manage own cards') THEN
-        CREATE POLICY "Users manage own cards" ON public.user_payment_methods
-            FOR ALL USING (auth.uid() = user_id);
-    END IF;
-END $$;
+-- 4. Comentários para documentação (Opcional)
+COMMENT ON COLUMN public.store_config.loyalty_program IS 'Configurações globais do programa de fidelidade';
+COMMENT ON COLUMN public.profiles.loyalty IS 'Estado atual de fidelidade do usuário (XP e Nível)';

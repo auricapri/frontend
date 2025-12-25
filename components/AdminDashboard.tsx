@@ -1,26 +1,27 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  LayoutDashboard, Box, ShoppingCart, Users, Settings, LogOut, 
-  BarChart3, Tag, Layers, Image as ImageIcon, Ticket, Archive 
+  LayoutDashboard, Box, Users, Settings, LogOut, 
+  BarChart3, Tag, Layers, Image as ImageIcon, Ticket, Archive, BookOpen, Ruler 
 } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { Locale } from '../i18n';
 import { 
   Product, Category, Collection, Banner, Coupon, Asset, 
-  StoreConfig, UserProfile, Order, CartSession, GlobalFinancialSettings 
+  StoreConfig, UserProfile, Order, GlobalFinancialSettings, SizeGuide 
 } from '../types';
 
 import AdminHealth from './AdminHealth';
 import AdminInventory from './AdminInventory';
 import AdminOrders from './AdminOrders';
-import AdminCarts from './AdminCarts';
 import AdminTaxonomy from './AdminTaxonomy';
 import AdminMarketing from './AdminMarketing';
 import AdminAssets from './AdminAssets';
 import AdminCoupons from './AdminCoupons';
 import AdminUsers from './AdminUsers';
 import AdminSystem from './AdminSystem';
+import AdminAboutUs from './AdminAboutUs';
+import AdminGuides from './AdminGuides';
 import AdminEditorModal from './AdminEditorModal';
 import AdminCouponEditor from './AdminCouponEditor';
 
@@ -34,6 +35,7 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, onProductChange }) => {
   const [activeTab, setActiveTab] = useState('health');
   const [isLoading, setIsLoading] = useState(true);
+  const [editLocale, setEditLocale] = useState<Locale>(locale);
 
   // Data State
   const [products, setProducts] = useState<Product[]>([]);
@@ -44,9 +46,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   const [assets, setAssets] = useState<Asset[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
-  const [carts, setCarts] = useState<CartSession[]>([]);
+  const [sizeGuides, setSizeGuides] = useState<SizeGuide[]>([]);
   const [config, setConfig] = useState<StoreConfig>({
     brand_name: '',
+    about_us: { pt: '', en: '' },
+    about_us_image: '',
     terms_of_service: { pt: '', en: '' },
     privacy_policy: { pt: '', en: '' },
     financial_settings: {
@@ -68,7 +72,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
     setIsLoading(true);
     try {
       const [
-        prodRes, catRes, collRes, banRes, coupRes, assRes, ordRes, userRes, confRes
+        prodRes, catRes, collRes, banRes, coupRes, assRes, ordRes, userRes, confRes, guideRes
       ] = await Promise.all([
         supabase.from('products').select('*, variants:product_variants(*)').order('created_at', { ascending: false }),
         supabase.from('categories').select('*').order('name'),
@@ -78,7 +82,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
         supabase.from('assets').select('*').order('name'),
         supabase.from('orders').select('*').order('created_at', { ascending: false }),
         supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-        supabase.from('store_config').select('*').limit(1).maybeSingle()
+        supabase.from('store_config').select('*').limit(1).maybeSingle(),
+        supabase.from('size_guides').select('*').order('name')
       ]);
 
       if (prodRes.data) setProducts(prodRes.data);
@@ -87,6 +92,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       if (banRes.data) setBanners(banRes.data);
       if (coupRes.data) setCoupons(coupRes.data);
       if (assRes.data) setAssets(assRes.data);
+      if (guideRes.data) setSizeGuides(guideRes.data);
       if (ordRes.data) {
         // Correctly map database 'total_amount' to app 'total' property
         const mappedOrders = ordRes.data.map((o: any) => ({
@@ -98,20 +104,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       }
       if (userRes.data) setUsers(userRes.data as UserProfile[]);
       if (confRes.data) setConfig(confRes.data);
-
-      // Mock Carts for now as we don't have a backend stream for it in this context
-      setCarts([
-        {
-          id: 'c1', user_id: 'u1', user_name: 'Visitor 1', user_email: 'vis1@example.com',
-          items_count: 2, total_value: 450, status: 'active', last_updated: new Date().toISOString(),
-          items_preview: [{ name: 'Silk Dress', quantity: 1 } as any, { name: 'Belt', quantity: 1 } as any]
-        },
-        {
-           id: 'c2', user_id: 'u2', user_name: 'Visitor 2', user_email: 'vis2@example.com',
-           items_count: 1, total_value: 120, status: 'checkout_started', last_updated: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-           items_preview: [{ name: 'Linen Shirt', quantity: 1 } as any]
-        }
-      ]);
 
     } catch (e) {
       console.error("Admin Fetch Error", e);
@@ -213,10 +205,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                 { id: 'orders', icon: Box, label: 'Pedidos' },
                 { id: 'inventory', icon: Tag, label: 'Catálogo' },
                 { id: 'taxonomy', icon: Layers, label: 'Taxonomia' },
+                { id: 'guides', icon: Ruler, label: 'Guias' }, // New Tab
                 { id: 'marketing', icon: ImageIcon, label: 'Marketing' },
                 { id: 'coupons', icon: Ticket, label: 'Cupons' },
-                { id: 'carts', icon: ShoppingCart, label: 'Carrinhos' },
                 { id: 'assets', icon: Archive, label: 'Insumos' },
+                { id: 'about', icon: BookOpen, label: 'Sobre Nós' },
                 { id: 'users', icon: Users, label: 'Usuários' },
                 { id: 'system', icon: Settings, label: 'Sistema' },
               ].map(item => (
@@ -275,7 +268,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                    locale={locale} 
                  />
                )}
-               {activeTab === 'carts' && <AdminCarts carts={carts} locale={locale} />}
                {activeTab === 'taxonomy' && (
                   <AdminTaxonomy 
                     categories={categories} 
@@ -285,6 +277,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                     onAddCategory={() => setEditingItem({ type: 'category', data: { name: { pt: '' }, is_active: true } })}
                     onAddCollection={() => setEditingItem({ type: 'collection', data: { name: { pt: '' }, is_active: true } })}
                     locale={locale}
+                  />
+               )}
+               {activeTab === 'guides' && (
+                  <AdminGuides
+                    guides={sizeGuides}
+                    onAdd={(g) => { setSizeGuides(prev => [...prev, g]); }}
+                    onUpdate={(g) => { setSizeGuides(prev => prev.map(item => item.id === g.id ? g : item)); }}
+                    onDelete={(id) => { setSizeGuides(prev => prev.filter(item => item.id !== id)); }}
                   />
                )}
                {activeTab === 'marketing' && (
@@ -311,6 +311,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                     locale={locale}
                   />
                )}
+               {activeTab === 'about' && (
+                  <AdminAboutUs
+                    config={config}
+                    onChange={setConfig}
+                    onSave={handleSystemSave}
+                    locale={editLocale}
+                    onLocaleChange={setEditLocale}
+                  />
+               )}
                {activeTab === 'users' && <AdminUsers users={users} />}
                {activeTab === 'system' && (
                   <AdminSystem 
@@ -318,8 +327,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                     onChange={setConfig} 
                     onSave={handleSystemSave} 
                     isLoading={false} 
-                    editLocale={locale} 
-                    onLocaleChange={() => {}} 
+                    editLocale={editLocale} 
+                    onLocaleChange={setEditLocale} 
                   />
                )}
             </div>
@@ -329,16 +338,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       {/* Modals */}
       {editingItem && (
          <AdminEditorModal 
-           item={{ ...editingItem, editLocale: locale }} 
+           item={{ ...editingItem, editLocale: editLocale }} 
            categories={categories} 
            collections={collections} 
            products={products} 
            assets={assets} 
+           sizeGuides={sizeGuides} // Pass Size Guides to Editor
            globalConfig={config.financial_settings}
            onClose={() => setEditingItem(null)} 
            onSave={handleSaveItem} 
            onUpdateData={(newData) => setEditingItem({ ...editingItem, data: newData })}
-           onLocaleChange={() => {}} 
+           onLocaleChange={setEditLocale} 
            onCloneLocale={() => {}}
            t={t}
            locale={locale}

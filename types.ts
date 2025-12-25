@@ -7,14 +7,46 @@ export type LocalizedText = {
   [key: string]: string | undefined;
 };
 
+export interface LoyaltyLevel {
+  level: number;
+  xp_required: number;
+  reward_coupon_value: number; // Value in currency
+  reward_description: string;
+}
+
+export interface LoyaltySettings {
+  enabled: boolean;
+  cashback_percentage: number; // e.g. 5 for 5%
+  xp_per_currency_unit: number; // e.g. 1 XP per $1
+  levels: LoyaltyLevel[];
+}
+
+export interface UserLoyaltyData {
+  current_xp: number;
+  current_level: number;
+  cashback_balance: number;
+  last_seen_level?: number;
+  pending_reward_coupon?: {
+    code: string;
+    value: number;
+    expires_at: string;
+    level_reached: number;
+  } | null;
+}
+
 export interface StoreConfig {
   id?: string;
   brand_name: string;
+  about_us?: LocalizedText;
+  about_us_image?: string;
   terms_of_service: LocalizedText;
   privacy_policy: LocalizedText;
   contact_email?: string;
-  support_phone?: string;
+  support_phone?: string; 
+  tax_id?: string;        
+  address?: string;       
   financial_settings?: GlobalFinancialSettings;
+  loyalty_program?: LoyaltySettings; // New Loyalty Config
 }
 
 export interface GlobalFinancialSettings {
@@ -34,7 +66,13 @@ export interface Asset {
   stock_quantity: number; 
   min_stock_level?: number; 
   image_url?: string; 
-  weight_g?: number; // Added for logistics calc
+  weight_g?: number;
+}
+
+export interface SizeGuide {
+  id: string;
+  name: string;
+  image_url: string;
 }
 
 export interface VariantAssetLink {
@@ -65,6 +103,9 @@ export interface ProductVariant {
   weight_g?: number;   
   dimensions?: ProductDimensions; 
   correlated_assets?: VariantAssetLink[]; 
+  composition?: LocalizedText;
+  care_instructions?: LocalizedText;
+  size_guide_id?: string;
 }
 
 export interface PricingScenario {
@@ -185,7 +226,8 @@ export interface UserProfile {
   avatar_url?: string;
   role: 'admin' | 'customer' | 'editor' | 'affiliate';
   default_address?: SavedAddress;
-  saved_cards?: SavedCard[]; 
+  saved_cards?: SavedCard[];
+  loyalty?: UserLoyaltyData; // New Loyalty Data
 }
 
 export interface OrderItem {
@@ -210,9 +252,9 @@ export interface InternalLogisticsInfo {
 
 export interface LogisticsMetadata {
   total_weight_g: number;
-  box_dimensions: string; // e.g. "30x20x15"
+  box_dimensions: string; 
   doc_generated_at?: string;
-  doc_url?: string; // If present, document is generated
+  doc_url?: string; 
 }
 
 export interface Order {
@@ -228,7 +270,7 @@ export interface Order {
   tracking_code?: string;
   internal_logistics?: InternalLogisticsInfo;
   shipping_address_snapshot?: any;
-  logistics_metadata?: LogisticsMetadata; // New Field for Strict Expedition Flow
+  logistics_metadata?: LogisticsMetadata;
 }
 
 export interface CartSession {

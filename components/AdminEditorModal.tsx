@@ -3,14 +3,15 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, Save, Plus, Trash2, ImageIcon, Sliders, Upload, Loader2, 
   Eye, Layout, Layers, Check, Calculator, TrendingUp, Info, Scale, Ruler, DollarSign,
-  Monitor, Tag, Package, Link, ArrowDown, HelpCircle
+  Monitor, Tag, Package, Link, ArrowDown, HelpCircle, FileText
 } from 'lucide-react';
 import { Locale } from '../i18n';
-import { ProductVariant, Category, PricingScenario, Collection, Product, GlobalFinancialSettings, UserMode, Asset } from '../types';
+import { ProductVariant, Category, PricingScenario, Collection, Product, GlobalFinancialSettings, UserMode, Asset, SizeGuide } from '../types';
 import { supabase } from '../utils/supabase';
 import { formatCurrency } from '../utils/currency';
 import ProductDetail from './ProductDetail';
 import Hero from './Hero';
+import CollectionDetail from './CollectionDetail';
 
 interface AdminEditorModalProps {
   item: { type: string; data: any; editLocale: Locale };
@@ -18,6 +19,7 @@ interface AdminEditorModalProps {
   collections?: Collection[];
   products?: Product[];
   assets?: Asset[];
+  sizeGuides?: SizeGuide[]; // New Prop
   onClose: () => void;
   onSave: (e: React.FormEvent) => void;
   onUpdateData: (newData: any) => void;
@@ -43,7 +45,7 @@ interface SimulationResult {
 }
 
 const AdminEditorModal: React.FC<AdminEditorModalProps> = ({ 
-  item, categories, collections = [], products = [], assets = [], onClose, onSave, onUpdateData, onLocaleChange, onCloneLocale, onDelete, globalConfig, t, locale
+  item, categories, collections = [], products = [], assets = [], sizeGuides = [], onClose, onSave, onUpdateData, onLocaleChange, onCloneLocale, onDelete, globalConfig, t, locale
 }) => {
   const [uploading, setUploading] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
@@ -197,11 +199,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
   const handleSelectVariantImage = (variantIndex: number, imageUrl: string) => {
     const newData = { ...item.data };
     const variants = [...newData.variants];
-    
-    // Toggle logic: if clicking same image, unselect? No, just replace for now.
-    // We assume variant_images is array but we mostly use [0]
     variants[variantIndex] = { ...variants[variantIndex], variant_images: [imageUrl] };
-    
     onUpdateData({ ...newData, variants });
   };
 
@@ -220,9 +218,10 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
     if (!variants[idx]) return;
     const v = { ...variants[idx] };
     
-    let currentVal = v[field];
-    if (typeof currentVal === 'string' && currentVal.startsWith('{')) {
-        try { currentVal = JSON.parse(currentVal); } catch(e){}
+    let currentVal = v[field as keyof ProductVariant];
+    // JSON parsing check
+    if (typeof currentVal === 'string' && (currentVal as string).startsWith('{')) {
+        try { currentVal = JSON.parse(currentVal as string); } catch(e){}
     }
 
     if (!currentVal || typeof currentVal !== 'object') {
@@ -230,6 +229,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
         currentVal = { pt: existingStr, en: existingStr, es: '', fr: '' };
     }
 
+    // @ts-ignore
     v[field] = { ...currentVal, [item.editLocale]: value };
     variants[idx] = v;
     newData.variants = variants;
@@ -271,7 +271,9 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
       stock_quantity: 1,
       variant_images: [],
       is_active: true,
-      correlated_assets: []
+      correlated_assets: [],
+      composition: { pt: '', en: '' },
+      care_instructions: { pt: '', en: '' }
     });
     newData.variants = variants;
     onUpdateData(newData);
@@ -544,7 +546,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                     {v.variant_images?.[0] ? (
                                       <img src={v.variant_images[0]} className="w-full h-full object-cover" /> 
                                     ) : (
-                                      <div className="w-full h-full flex flex-col items-center justify-center text-neutral-200">
+                                      <div className="w-full h-full flex items-center justify-center text-neutral-200">
                                         <ImageIcon className="w-8 h-8 mb-2" />
                                         <span className="text-[8px] font-black uppercase">Sem Imagem</span>
                                       </div>
@@ -590,6 +592,55 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                     </div>
 
                                     <div className="space-y-3"><label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Estoque</label><input type="number" className="w-full p-5 bg-white border border-neutral-200 rounded-2xl font-mono text-xs font-bold" value={v.stock_quantity || 0} onChange={e => updateVariant(idx, 'stock_quantity', Number(e.target.value))} /></div>
+                                 </div>
+
+                                 {/* NEW SECTION: DADOS TÉCNICOS & GUIA */}
+                                 <div className="bg-white p-8 rounded-[2.5rem] border border-neutral-100 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-4"><FileText className="w-5 h-5 text-neutral-400" /><h5 className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Composição & Cuidados</h5></div>
+                                        <div className="space-y-3">
+                                            <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Composição ({item.editLocale})</label>
+                                            <input className="w-full p-4 bg-neutral-50 rounded-xl text-xs font-medium border border-transparent focus:border-black outline-none transition-all" placeholder="Ex: 100% Algodão" value={getLocVal(v.composition)} onChange={e => updateVariantLocalized(idx, 'composition', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Cuidados ({item.editLocale})</label>
+                                            <textarea className="w-full p-4 bg-neutral-50 rounded-xl text-xs font-medium border border-transparent focus:border-black outline-none transition-all resize-none" placeholder="Ex: Lavar à mão..." rows={2} value={getLocVal(v.care_instructions)} onChange={e => updateVariantLocalized(idx, 'care_instructions', e.target.value)} />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-4"><Ruler className="w-5 h-5 text-neutral-400" /><h5 className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Guia de Medidas</h5></div>
+                                        <div className="space-y-3">
+                                            <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Selecionar Guia Global</label>
+                                            <select 
+                                              className="w-full p-4 bg-neutral-50 rounded-xl text-xs font-bold outline-none border border-neutral-100"
+                                              value={v.size_guide_id || ''}
+                                              onChange={(e) => updateVariant(idx, 'size_guide_id', e.target.value || null)}
+                                            >
+                                              <option value="">-- Sem Guia --</option>
+                                              {sizeGuides.map(g => (
+                                                <option key={g.id} value={g.id}>{g.name}</option>
+                                              ))}
+                                            </select>
+                                        </div>
+                                        <div className="relative aspect-[3/2] bg-neutral-50 rounded-2xl border-2 border-dashed border-neutral-200 overflow-hidden flex flex-col items-center justify-center">
+                                            {v.size_guide_id ? (
+                                                (() => {
+                                                  const selectedGuide = sizeGuides.find(g => g.id === v.size_guide_id);
+                                                  return selectedGuide ? (
+                                                    <img src={selectedGuide.image_url} className="w-full h-full object-contain p-2" alt="Selected Guide" />
+                                                  ) : (
+                                                    <span className="text-[8px] text-red-400 font-bold uppercase">Guia não encontrado</span>
+                                                  )
+                                                })()
+                                            ) : (
+                                                <div className="text-center p-4 text-neutral-300">
+                                                    <Ruler className="w-6 h-6 mx-auto mb-2" />
+                                                    <span className="text-[8px] font-bold uppercase tracking-widest">Nenhum guia selecionado</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                  </div>
 
                                  <div className="bg-white p-8 rounded-[2.5rem] border border-neutral-100 shadow-sm">
@@ -895,8 +946,44 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
         ) : (
            <div className="flex-1 overflow-y-auto no-scrollbar relative bg-white">
               <div className="absolute top-4 right-4 z-50 bg-black/80 text-white px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest backdrop-blur-md flex items-center gap-2"><Monitor className="w-3 h-3" /> Live Preview Mode</div>
-              {item.type === 'product' && <div className="min-h-full"><ProductDetail product={item.data} userMode={UserMode.RETAIL} onAddToCart={() => alert("Preview Mode")} onBack={() => {}} isWishlisted={false} onToggleWishlist={() => {}} t={t} locale={locale} currentUser={null} /></div>}
+              
+              {item.type === 'product' && <div className="min-h-full"><ProductDetail product={item.data} userMode={UserMode.RETAIL} onAddToCart={() => alert("Preview Mode")} onBack={() => {}} isWishlisted={false} onToggleWishlist={() => {}} t={t} locale={locale} currentUser={null} sizeGuides={sizeGuides} /></div>}
               {item.type === 'banner' && <div className="h-full"><Hero banners={[item.data]} t={t} locale={locale} onNavigate={() => {}} /></div>}
+              
+              {item.type === 'collection' && (
+                 <div className="min-h-full">
+                    <CollectionDetail 
+                       collection={item.data}
+                       products={products}
+                       categories={categories}
+                       userMode={UserMode.RETAIL}
+                       onSelectProduct={() => {}}
+                       wishlistIds={[]}
+                       onToggleWishlist={() => {}}
+                       onBack={() => {}}
+                       locale={locale}
+                    />
+                 </div>
+              )}
+
+              {item.type === 'category' && (
+                 <div className="min-h-full">
+                    <CollectionDetail 
+                       collection={{
+                           ...item.data,
+                           description: { pt: 'Categoria', en: 'Category', es: 'Categoría', fr: 'Catégorie' } 
+                       } as any}
+                       products={products.map(p => p.category_id === item.data.id ? { ...p, collection_ids: [...(p.collection_ids || []), item.data.id] } : p)}
+                       categories={categories}
+                       userMode={UserMode.RETAIL}
+                       onSelectProduct={() => {}}
+                       wishlistIds={[]}
+                       onToggleWishlist={() => {}}
+                       onBack={() => {}}
+                       locale={locale}
+                    />
+                 </div>
+              )}
            </div>
         )}
 

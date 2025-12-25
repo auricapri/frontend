@@ -14,12 +14,14 @@ import {
   X,
   Truck,
   Star,
-  Download
+  Download,
+  Trophy
 } from 'lucide-react';
 import { UserProfile, Order, OrderItem } from '../types';
 import { Locale } from '../i18n';
 import { supabase } from '../utils/supabase';
 import OrderReceipt from './OrderReceipt';
+import { formatCurrency } from '../utils/currency';
 
 interface UserProfileViewProps {
   user: UserProfile;
@@ -34,7 +36,6 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
   const [fullName, setFullName] = useState(user.full_name);
   const [viewingReceiptOrder, setViewingReceiptOrder] = useState<Order | null>(null);
   
-  // Lógica de Prefixo Telefônico por Locale
   const getPhonePrefix = (loc: Locale) => {
     switch (loc) {
       case 'pt': return '+55 ';
@@ -45,7 +46,6 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
     }
   };
 
-  // Inicializa com o telefone do usuário ou o prefixo padrão do idioma atual
   const [phone, setPhone] = useState(user.phone || getPhonePrefix(locale));
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -63,12 +63,10 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
     if (activeTab === 'orders') fetchOrders();
   }, [activeTab]);
 
-  // Atualiza o prefixo se o usuário mudar de idioma e o campo estiver "quase" vazio (só com outro prefixo)
   useEffect(() => {
     if (!user.phone) {
         const currentVal = phone.trim();
         const prefixes = ['+55', '+1', '+34', '+33'];
-        // Se o campo só tem um prefixo ou está vazio, atualiza para o novo locale
         if (currentVal === '' || prefixes.includes(currentVal)) {
             setPhone(getPhonePrefix(locale));
         }
@@ -86,10 +84,9 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
 
         if (error) throw error;
 
-        // Mapear DB -> UI
         const mappedOrders = (data || []).map((o: any) => ({
             ...o,
-            total: o.total_amount, // DB usa total_amount, UI usa total
+            total: o.total_amount, 
             items: o.items || []
         }));
 
@@ -127,7 +124,6 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  // Se estiver vendo um recibo, renderiza-o em tela cheia (overlay)
   if (viewingReceiptOrder) {
       return (
           <div className="fixed inset-0 z-[200] bg-white overflow-y-auto">
@@ -140,6 +136,14 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
           </div>
       );
   }
+
+  // Loyalty Data
+  const xp = user.loyalty?.current_xp || 0;
+  const level = user.loyalty?.current_level || 1;
+  const cashback = user.loyalty?.cashback_balance || 0;
+  // Estimate next level: Assume linear 5000XP steps or simple logic for display
+  const nextLevelXp = level < 4 ? (level === 1 ? 1000 : level === 2 ? 5000 : 15000) : xp * 1.5;
+  const xpProgress = Math.min(100, (xp / nextLevelXp) * 100);
 
   return (
     <div className="flex flex-col h-full bg-white relative">
@@ -166,18 +170,37 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
 
       <div className="flex-1 overflow-y-auto p-8 no-scrollbar">
         {activeTab === 'profile' && (
-          <form onSubmit={handleUpdateProfile} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div className="bg-neutral-50 p-8 rounded-[3rem] border border-neutral-100 flex items-center gap-6 mb-4">
-                <div className="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center text-3xl font-light uppercase">
-                  {user.full_name[0]}
-                </div>
-                <div>
-                   <h3 className="text-xl font-black uppercase italic tracking-tighter">{user.full_name}</h3>
-                   <p className="text-xs text-neutral-400 font-medium">{user.email}</p>
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             
+             {/* LOYALTY CARD */}
+             <div className="bg-neutral-900 text-white p-8 rounded-[3rem] border border-neutral-800 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-10"><Trophy className="w-32 h-32 rotate-12" /></div>
+                
+                <div className="relative z-10">
+                    <div className="flex justify-between items-start mb-6">
+                        <div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 block mb-1">Status Fidelidade</span>
+                            <h3 className="text-2xl font-light tracking-tighter">Nível {level}</h3>
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+                            <span className="text-[10px] font-black uppercase tracking-widest">{formatCurrency(cashback, locale)} Cashback</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-white/60">
+                            <span>{xp} XP</span>
+                            <span>{nextLevelXp} XP</span>
+                        </div>
+                        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-yellow-500 transition-all duration-1000" style={{ width: `${xpProgress}%` }}></div>
+                        </div>
+                        <p className="text-[9px] text-white/40 text-center pt-2">Continue comprando para subir de nível e ganhar cupons exclusivos.</p>
+                    </div>
                 </div>
              </div>
 
-             <div className="space-y-6">
+             <form onSubmit={handleUpdateProfile} className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 px-4">{t('admin.customer')}</label>
                   <input 
@@ -198,16 +221,16 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                     <Phone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" />
                   </div>
                 </div>
-             </div>
 
-             <button 
-               type="submit" 
-               disabled={isUpdating}
-               className="w-full py-6 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-xl hover:bg-neutral-800 transition-all flex items-center justify-center gap-4 active:scale-95 disabled:opacity-50"
-             >
-                {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>{t('auth.save')}</span>}
-             </button>
-          </form>
+                <button 
+                  type="submit" 
+                  disabled={isUpdating}
+                  className="w-full py-6 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-xl hover:bg-neutral-800 transition-all flex items-center justify-center gap-4 active:scale-95 disabled:opacity-50"
+                >
+                    {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>{t('auth.save')}</span>}
+                </button>
+             </form>
+          </div>
         )}
 
         {activeTab === 'orders' && (
@@ -333,14 +356,6 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                       </div>
                       <div className="flex flex-col items-end gap-3">
                          <span className="text-sm font-black tracking-tighter">${(item.price * item.quantity).toFixed(2)}</span>
-                         <button 
-                           onClick={() => {
-                             alert(`Navegando para avaliar ${getLoc(item.name)}...`);
-                           }}
-                           className="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-black transition-all"
-                         >
-                           <Star className="w-3 h-3 fill-current" /> {t('auth.evaluate')}
-                         </button>
                       </div>
                    </div>
                  ))}
@@ -352,7 +367,6 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                     <span className="text-xl text-black font-light tracking-tighter">${selectedOrder.total?.toFixed(2)}</span>
                  </div>
                  
-                 {/* Download Receipt Button */}
                  <button 
                     onClick={() => setViewingReceiptOrder(selectedOrder)}
                     className="w-full py-5 border border-neutral-200 rounded-[2rem] flex items-center justify-center gap-3 hover:bg-neutral-50 transition-all text-[10px] font-black uppercase tracking-widest group"
