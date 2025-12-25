@@ -14,14 +14,16 @@ import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
 import OrderResultOverlay from './components/OrderResultOverlay';
 import OrderReceipt from './components/OrderReceipt';
+import AboutUs from './components/AboutUs';
+import LoyaltyBanner from './components/LoyaltyBanner'; // IMPORT
 import Toast from './components/Toast';
-import { Product, CartItem, UserMode, UserProfile, Category, Collection, Banner, StoreConfig, Coupon, Asset, InternalLogisticsInfo, Order, SavedAddress, SavedCard } from './types';
+import { Product, CartItem, UserMode, UserProfile, Category, Collection, Banner, StoreConfig, Coupon, Asset, InternalLogisticsInfo, Order, SavedAddress, SavedCard, SizeGuide } from './types';
 import { MessageCircle, X, Loader2 } from 'lucide-react';
 import { Locale, translations } from './i18n';
 import { supabase } from '../utils/supabase';
 
 export const App: React.FC = () => {
-  const [locale, setLocale] = useState<Locale>('en');
+  const [locale, setLocale] = useState<Locale>('pt');
   const [userMode, setUserMode] = useState<UserMode>(UserMode.RETAIL);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -29,11 +31,30 @@ export const App: React.FC = () => {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]); 
   const [assets, setAssets] = useState<Asset[]>([]); 
+  const [sizeGuides, setSizeGuides] = useState<SizeGuide[]>([]); 
   const [storeConfig, setStoreConfig] = useState<StoreConfig>({
     id: 'main',
     brand_name: 'Auricapri',
+    about_us: { en: '', pt: '' },
+    about_us_image: '',
     terms_of_service: { en: 'Loading...', pt: 'Carregando...' },
-    privacy_policy: { en: 'Loading...', pt: 'Carregando...' }
+    privacy_policy: { en: 'Loading...', pt: 'Carregando...' },
+    contact_email: '',
+    support_phone: '', 
+    tax_id: '',        
+    address: '',
+    // Default Loyalty Config
+    loyalty_program: {
+        enabled: true,
+        cashback_percentage: 1, // 1%
+        xp_per_currency_unit: 10, // 10 XP per $1
+        levels: [
+            { level: 1, xp_required: 0, reward_coupon_value: 0, reward_description: 'Iniciante' },
+            { level: 2, xp_required: 1000, reward_coupon_value: 50, reward_description: 'Bronze Member' },
+            { level: 3, xp_required: 5000, reward_coupon_value: 150, reward_description: 'Silver Member' },
+            { level: 4, xp_required: 15000, reward_coupon_value: 500, reward_description: 'Gold VIP' },
+        ]
+    }
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
@@ -57,15 +78,17 @@ export const App: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [legalView, setLegalView] = useState<'terms' | 'privacy' | null>(null);
   
+  // Loyalty Banner State
+  const [loyaltyBanner, setLoyaltyBanner] = useState<{ visible: boolean, level: number, reward: number, code: string, expires: string }>({ visible: false, level: 0, reward: 0, code: '', expires: '' });
+
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [pendingCheckout, setPendingCheckout] = useState(false);
 
-  const [currentView, setCurrentView] = useState<'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt' | 'about'>('home');
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
   const [activeCollection, setActiveCollection] = useState<Collection | null>(null);
-  // Store the last successful order for the Receipt view
   const [lastSuccessOrder, setLastSuccessOrder] = useState<Order | null>(null);
 
   const mainRef = useRef<HTMLElement>(null);
@@ -87,6 +110,20 @@ export const App: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Check for pending rewards on load/user change
+  useEffect(() => {
+      if (currentUser?.loyalty?.pending_reward_coupon) {
+          const reward = currentUser.loyalty.pending_reward_coupon;
+          setLoyaltyBanner({
+              visible: true,
+              level: reward.level_reached,
+              reward: reward.value,
+              code: reward.code,
+              expires: reward.expires_at
+          });
+      }
+  }, [currentUser]);
+
   useEffect(() => {
     if (currentUser && pendingCheckout) {
       setPendingCheckout(false);
@@ -99,13 +136,11 @@ export const App: React.FC = () => {
     if (profile) {
         let user: UserProfile = profile as UserProfile;
         
-        // 1. Get Address
         if ((profile as any).default_address_id) {
             const { data: addr } = await supabase.from('addresses').select('*').eq('id', (profile as any).default_address_id).single();
             if (addr) user.default_address = addr as SavedAddress;
         }
 
-        // 2. Get Cards
         const { data: cards } = await supabase.from('user_payment_methods').select('*').eq('user_id', userId);
         if (cards) user.saved_cards = cards as SavedCard[];
 
@@ -116,7 +151,7 @@ export const App: React.FC = () => {
   const fetchStoreData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [prodRes, catRes, collRes, banRes, setRes, relRes, coupRes, assRes] = await Promise.all([
+      const [prodRes, catRes, collRes, banRes, setRes, relRes, coupRes, assRes, guideRes] = await Promise.all([
         supabase.from('products').select('*, variants:product_variants(*)').eq('is_active', true),
         supabase.from('categories').select('*').eq('is_active', true),
         supabase.from('collections').select('*').eq('is_active', true),
@@ -124,7 +159,8 @@ export const App: React.FC = () => {
         supabase.from('store_config').select('*').limit(1).maybeSingle(),
         supabase.from('collection_products').select('*'),
         supabase.from('coupons').select('*').eq('is_active', true),
-        supabase.from('assets').select('*') // Fetch Assets for Validation
+        supabase.from('assets').select('*'),
+        supabase.from('size_guides').select('*')
       ]);
 
       const rawProducts = (prodRes.data || []) as Product[];
@@ -147,8 +183,14 @@ export const App: React.FC = () => {
       if (banRes.data) setBanners(banRes.data as Banner[]);
       if (coupRes.data) setCoupons(coupRes.data as Coupon[]);
       if (assRes.data) setAssets(assRes.data as Asset[]);
+      if (guideRes.data) setSizeGuides(guideRes.data as SizeGuide[]);
       if (setRes.data) {
-        setStoreConfig(setRes.data as StoreConfig);
+        // Merge fetched config with default loyalty structure if missing
+        const fetchedConfig = setRes.data as StoreConfig;
+        setStoreConfig(prev => ({
+            ...fetchedConfig,
+            loyalty_program: fetchedConfig.loyalty_program || prev.loyalty_program
+        }));
         document.title = setRes.data.brand_name;
       }
 
@@ -188,7 +230,7 @@ export const App: React.FC = () => {
     fetchStoreData();
   };
 
-  const handleNavigate = useCallback((view: 'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt', targetSection?: string) => {
+  const handleNavigate = useCallback((view: 'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt' | 'about', targetSection?: string) => {
     setCurrentView(view);
     
     if (mainRef.current) {
@@ -263,7 +305,7 @@ export const App: React.FC = () => {
     }
   };
 
-  // --- HANDLE PLACE ORDER (SUPABASE INSERT) ---
+  // --- HANDLE PLACE ORDER (SUPABASE INSERT + LOYALTY LOGIC) ---
   const handlePlaceOrder = async (
       addressData: AddressData, 
       logisticsInfo: InternalLogisticsInfo, 
@@ -279,11 +321,8 @@ export const App: React.FC = () => {
     const discountAmount = subtotal - finalAmount;
 
     try {
-      // 1. SAVE/UPDATE ADDRESS & DEFAULT 
-      // Rule: If user has no default address, this one becomes default (First Purchase Logic).
       if (currentUser) {
           const isFirstAddress = !currentUser.default_address;
-          
           const newAddrPayload = {
               user_id: currentUser.id,
               line1: addressData.logradouro + (addressData.numero ? `, ${addressData.numero}` : ''),
@@ -294,43 +333,36 @@ export const App: React.FC = () => {
               country: 'BR',
               is_default: isFirstAddress 
           };
-
           const { data: addrData } = await supabase.from('addresses').insert(newAddrPayload).select().single();
-          
-          // Link profile to default address if it's the first one
           if (addrData && isFirstAddress) {
               await supabase.from('profiles').update({ default_address_id: addrData.id }).eq('id', currentUser.id);
           }
       }
 
-      // 2. SAVE CARD TOKEN (Simulated)
-      // Only if requested AND it's a new card (no token passed)
       if (currentUser && paymentMethod === 'credit_card' && saveCard && !cardToken) {
-          // Simulate Tokenization from Gateway
           const mockToken = `tok_${Math.random().toString(36).substr(2, 9)}`;
           const mockLast4 = Math.floor(1000 + Math.random() * 9000).toString();
-          
           await supabase.from('user_payment_methods').insert({
               user_id: currentUser.id,
-              gateway_token: mockToken, // Encrypted/Safe Reference
+              gateway_token: mockToken, 
               last4: mockLast4,
-              brand: 'Visa', // Mock
+              brand: 'Visa', 
               exp_month: 12,
               exp_year: 2030,
               is_default: false 
           });
       }
 
-      // 3. Insert Order
+      // Insert Order
       const { data: orderData, error: orderError } = await supabase.from('orders').insert({
         user_id: currentUser?.id,
         items: cartItems, 
-        subtotal: subtotal,
+        subtotal: subtotal, 
         total_amount: finalAmount, 
         discount_amount: discountAmount,
         shipping_cost: 0,
         tax_amount: 0,
-        status: 'confirmed', // 'confirmed' MUST exist in order_statuses table
+        status: 'confirmed',
         payment_method: paymentMethod, 
         shipping_address_snapshot: addressData, 
         internal_logistics: logisticsInfo 
@@ -338,31 +370,90 @@ export const App: React.FC = () => {
 
       if (orderError) throw orderError;
 
-      // 4. Update Stock (Variants & Assets)
+      // Update Stock
       for (const item of cartItems) {
          const product = products.find(p => p.id === item.product_id);
          const variant = product?.variants?.find(v => v.id === item.variant_id);
-         
          if (variant) {
             await supabase.from('product_variants').update({ 
                stock_quantity: Math.max(0, variant.stock_quantity - item.quantity) 
             }).eq('id', variant.id);
-
             if (variant.correlated_assets) {
                 for (const link of variant.correlated_assets) {
                     const totalAssetNeeded = link.quantity_required * item.quantity;
                     const asset = assets.find(a => a.id === link.asset_id);
-                    if (asset) {
-                        await supabase.from('assets').update({
-                            stock_quantity: Math.max(0, asset.stock_quantity - totalAssetNeeded)
-                        }).eq('id', asset.id);
-                    }
+                    if (asset) await supabase.from('assets').update({ stock_quantity: Math.max(0, asset.stock_quantity - totalAssetNeeded) }).eq('id', asset.id);
                 }
             }
          }
       }
 
-      // 5. Prepare Success Data
+      // --- LOYALTY LOGIC START (Protected) ---
+      // Wrapped in try-catch to allow order completion even if loyalty schema is outdated
+      if (currentUser && storeConfig.loyalty_program?.enabled) {
+          try {
+              const config = storeConfig.loyalty_program;
+              const userLoyalty = currentUser.loyalty || { current_xp: 0, current_level: 1, cashback_balance: 0 };
+              
+              // 1. Calculate Earnings
+              const xpEarned = Math.floor(finalAmount * config.xp_per_currency_unit);
+              const cashbackEarned = finalAmount * (config.cashback_percentage / 100);
+              
+              let newXP = userLoyalty.current_xp + xpEarned;
+              let newCashback = userLoyalty.cashback_balance + cashbackEarned;
+              let newLevel = userLoyalty.current_level;
+              let rewardPending = userLoyalty.pending_reward_coupon;
+
+              // 2. Check Level Up
+              const sortedLevels = [...config.levels].sort((a, b) => b.level - a.level);
+              const reachedLevel = sortedLevels.find(l => newXP >= l.xp_required);
+              
+              if (reachedLevel && reachedLevel.level > newLevel) {
+                  newLevel = reachedLevel.level;
+                  
+                  // 3. Generate Exclusive Coupon
+                  if (reachedLevel.reward_coupon_value > 0) {
+                      const code = `LEVELUP-${newLevel}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+                      const expires = new Date();
+                      expires.setDate(expires.getDate() + 30); // 30 days expiry
+
+                      const { error: couponError } = await supabase.from('coupons').insert({
+                          code: code,
+                          discount_type: 'fixed',
+                          discount_value: reachedLevel.reward_coupon_value,
+                          is_active: true,
+                          expires_at: expires.toISOString(),
+                      });
+
+                      if (!couponError) {
+                          rewardPending = {
+                              code: code,
+                              value: reachedLevel.reward_coupon_value,
+                              expires_at: expires.toISOString(),
+                              level_reached: newLevel
+                      };
+                  }
+              }
+          }
+
+          // 4. Update Profile
+          const updatedLoyalty = {
+              current_xp: newXP,
+              current_level: newLevel,
+              cashback_balance: newCashback,
+              pending_reward_coupon: rewardPending
+          };
+
+          await supabase.from('profiles').update({ loyalty: updatedLoyalty }).eq('id', currentUser.id);
+          
+          } catch (loyaltyError) {
+              console.warn("Loyalty program update failed. Schema might be missing 'loyalty' column.", loyaltyError);
+              // Do not halt execution, order is already placed.
+          }
+      }
+      // --- LOYALTY LOGIC END ---
+
+      // Success Data
       const fullOrder: Order = { 
           ...orderData, 
           items: cartItems, 
@@ -373,10 +464,8 @@ export const App: React.FC = () => {
       }; 
       setLastSuccessOrder(fullOrder);
       
-      // 6. Trigger Success Animation (Overlay)
       setCartItems([]);
       fetchStoreData(); 
-      // Refresh User Profile to get new saved card/address
       if (currentUser) fetchProfile(currentUser.id);
       
       setOrderResult({ status: 'success', orderId: orderData.id, fullOrder: fullOrder });
@@ -404,19 +493,14 @@ export const App: React.FC = () => {
     const variant = product?.variants?.find(v => v.id === cartItem.variant_id);
     const maxStock = variant?.stock_quantity || 0;
     
-    // Check if input itself exceeds limit (Basic check)
     if (cartItem.quantity > maxStock) {
-        showToast("Estoque insuficiente para a quantidade selecionada.", "error");
+        showToast("Estoque insuficiente.", "error");
         return;
     }
-
-    // Check against existing quantity in cart (Cumulative check)
     const existingItem = cartItems.find(item => item.variant_id === cartItem.variant_id);
     const currentQtyInCart = existingItem ? existingItem.quantity : 0;
-    const proposedTotal = currentQtyInCart + cartItem.quantity;
-
-    if (proposedTotal > maxStock) {
-        showToast(`Limite atingido! Você tem ${currentQtyInCart} na sacola. Restam apenas ${Math.max(0, maxStock - currentQtyInCart)} disponíveis.`, "error");
+    if (currentQtyInCart + cartItem.quantity > maxStock) {
+        showToast(`Limite atingido!`, "error");
         return;
     }
 
@@ -437,18 +521,13 @@ export const App: React.FC = () => {
       setCartItems(prev => {
           return prev.map(item => {
               if (item.variant_id === id) {
-                  // Find current live stock limit
                   const product = products.find(p => p.id === item.product_id);
                   const variant = product?.variants?.find(v => v.id === item.variant_id);
                   const maxStock = variant?.stock_quantity || 0;
-                  
-                  // Check if incrementing goes beyond stock
                   if (delta > 0 && item.quantity + delta > maxStock) {
-                      showToast(`Estoque máximo atingido (${maxStock} un).`, "error");
-                      return item; // Do not update
+                      showToast(`Estoque máximo atingido.`, "error");
+                      return item; 
                   }
-                  
-                  // Allow decrement or valid increment
                   return { ...item, quantity: Math.max(1, item.quantity + delta) };
               }
               return item;
@@ -496,13 +575,37 @@ export const App: React.FC = () => {
     setIsScrolled(scrollTop > 20);
   };
 
+  const handleCloseLoyaltyBanner = async () => {
+      setLoyaltyBanner(prev => ({ ...prev, visible: false }));
+      // Dismiss pending reward flag in DB
+      if (currentUser) {
+          try {
+              const updatedLoyalty = {
+                  ...(currentUser.loyalty || {}),
+                  pending_reward_coupon: null // Clear pending status
+              };
+              // Optimistic update
+              setCurrentUser({ ...currentUser, loyalty: updatedLoyalty as any });
+              await supabase.from('profiles').update({ loyalty: updatedLoyalty }).eq('id', currentUser.id);
+          } catch(e) { console.error("Dismiss reward failed", e); }
+      }
+  };
+
+  const handleLoyaltyBannerClick = () => {
+      handleCloseLoyaltyBanner();
+      setIsCouponsOpen(true);
+  };
+
   if (currentView === 'admin') {
     return <AdminDashboard onLogout={exitAdmin} t={t} locale={locale} onProductChange={fetchStoreData} />;
   }
 
-  // RECEIPT VIEW (Isolated)
   if (currentView === 'receipt' && lastSuccessOrder) {
       return <OrderReceipt order={lastSuccessOrder} onBack={() => handleNavigate('home')} t={t} locale={locale} />;
+  }
+
+  if (currentView === 'about') {
+    return <AboutUs config={storeConfig} locale={locale} onBack={() => handleNavigate('home')} />;
   }
 
   return (
@@ -528,6 +631,7 @@ export const App: React.FC = () => {
       />
       
       <main 
+        id="main-scroll-container"
         ref={mainRef} 
         onScroll={handleScroll}
         className={`h-full w-full overflow-y-auto no-scrollbar antialiased relative`}
@@ -553,8 +657,9 @@ export const App: React.FC = () => {
               t={t} 
               currentLocale={locale} 
               onChangeLocale={setLocale} 
-              storeName={storeConfig.brand_name} 
+              storeConfig={storeConfig} 
               onOpenLegal={setLegalView}
+              onNavigate={handleNavigate}
             />
             
             <a 
@@ -571,7 +676,7 @@ export const App: React.FC = () => {
         {currentView === 'product' && activeProduct && (
           <ProductDetail 
             product={activeProduct} 
-            coupons={coupons} // Passing Active Coupons
+            coupons={coupons} 
             userMode={userMode} 
             onAddToCart={addToCart}
             onBack={() => handleNavigate('home', 'collection')}
@@ -581,6 +686,7 @@ export const App: React.FC = () => {
             locale={locale}
             currentUser={currentUser}
             onShowToast={showToast}
+            sizeGuides={sizeGuides}
           />
         )}
 
@@ -616,6 +722,18 @@ export const App: React.FC = () => {
         isVisible={toast.visible} 
         onClose={closeToast} 
         type={toast.type}
+      />
+
+      {/* Loyalty Banner */}
+      <LoyaltyBanner 
+        isVisible={loyaltyBanner.visible}
+        level={loyaltyBanner.level}
+        rewardValue={loyaltyBanner.reward}
+        couponCode={loyaltyBanner.code}
+        expiresAt={loyaltyBanner.expires}
+        onClose={handleCloseLoyaltyBanner}
+        onOpenCoupons={handleLoyaltyBannerClick}
+        locale={locale}
       />
 
       {/* Global Loading Overlay for Order Processing */}
@@ -691,7 +809,12 @@ export const App: React.FC = () => {
         t={t} 
         locale={locale} 
       />
-      <CouponsDrawer isOpen={isCouponsOpen} onClose={() => setIsCouponsOpen(false)} t={t} />
+      <CouponsDrawer 
+        isOpen={isCouponsOpen} 
+        onClose={() => setIsCouponsOpen(false)} 
+        t={t}
+        // Inject user coupons if needed, here we rely on CouponDrawer fetching or passed props
+      />
     </div>
   );
 };

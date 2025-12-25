@@ -566,6 +566,8 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                                               <div><span className="text-neutral-400 block">Peso Calc.</span><span className="font-bold">{logistics.totalWeight}g</span></div>
                                               <div><span className="text-neutral-400 block">Dimensões Est.</span><span className="font-bold">{logistics.dimensions} cm</span></div>
                                               <div><span className="text-neutral-400 block">Transportadora</span><span className="font-bold">{selectedOrder.internal_logistics?.selected_carrier}</span></div>
+                                              <div><span className="text-neutral-400 block">Prazo Cliente</span><span className="font-bold">{selectedOrder.internal_logistics?.display_days_was} dias</span></div>
+                                              <div><span className="text-neutral-400 block">Prazo Real</span><span className="font-bold text-blue-600">{selectedOrder.internal_logistics?.estimated_days} dias</span></div>
                                           </div>
                                           <button onClick={handleGenerateDoc} className="w-full py-4 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
                                               <Printer className="w-4 h-4" /> Gerar & Baixar PDF
@@ -619,7 +621,11 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                           <div className="bg-green-50 border border-green-100 p-8 rounded-[2.5rem] flex items-center justify-center flex-col text-green-800">
                               <Truck className="w-12 h-12 mb-4" />
                               <h3 className="text-xl font-black uppercase tracking-tighter">Pedido em Rota</h3>
-                              <p className="text-[10px] font-bold uppercase tracking-widest mt-2 bg-white px-4 py-2 rounded-lg shadow-sm">{selectedOrder.tracking_code}</p>
+                              <p className="text-[10px] font-bold uppercase tracking-widest mt-2 bg-white px-4 py-2 rounded-lg shadow-sm mb-4">{selectedOrder.tracking_code}</p>
+                              <div className="flex gap-6 text-[9px] font-black uppercase tracking-widest opacity-60">
+                                  <span>Prazo Cliente: {selectedOrder.internal_logistics?.display_days_was}d</span>
+                                  <span>Prazo Real: {selectedOrder.internal_logistics?.estimated_days}d</span>
+                              </div>
                           </div>
                       )}
 

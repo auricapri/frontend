@@ -103,6 +103,16 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, onBack,
     state: ''
   });
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    const mainContainer = document.getElementById('main-scroll-container');
+    if (mainContainer) {
+      mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [step]);
+
   const getLoc = (obj: any) => {
     if (!obj) return "";
     if (typeof obj === 'string') return obj;

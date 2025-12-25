@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ShoppingBag, Menu, X, Heart, ArrowLeft, Ticket, User, Globe } from 'lucide-react';
 import { UserMode } from '../types';
@@ -12,7 +13,7 @@ interface NavbarProps {
   onOpenAuth: () => void;
   userMode: UserMode;
   onToggleMode: () => void;
-  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout', target?: string) => void;
+  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about', target?: string) => void;
   isScrolled: boolean;
   isProductView?: boolean;
   onBack?: () => void;
@@ -47,7 +48,7 @@ const Navbar: React.FC<NavbarProps> = ({
   // Determine if header should be in "Solid/Scrolled" state
   const isSolid = isScrolled || isProductView;
 
-  const handleNav = (view: 'home' | 'product' | 'admin' | 'checkout', target?: string) => {
+  const handleNav = (view: 'home' | 'product' | 'admin' | 'checkout' | 'about', target?: string) => {
     onNavigate(view, target);
     setIsMenuOpen(false);
   };
@@ -170,35 +171,15 @@ const Navbar: React.FC<NavbarProps> = ({
                   {t('nav.collection')}
                 </button>
                 <button 
-                  className="block w-full text-left opacity-20 cursor-not-allowed"
+                  className="block w-full text-left hover:pl-6 transition-all duration-500 ease-out" 
+                  onClick={() => handleNav('about')}
                 >
-                  {t('nav.editorial')}
+                  Sobre Nós
                 </button>
             </div>
             
             <div className="pt-16 border-t border-neutral-100 flex flex-col gap-8">
-                {/* Language Selection Row */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.3em] text-neutral-400 px-4">
-                    <Globe className="w-3 h-3" />
-                    <span>Language / Idioma</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {languages.map(lang => (
-                      <button
-                        key={lang}
-                        onClick={() => onChangeLocale(lang)}
-                        className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border
-                          ${currentLocale === lang 
-                            ? 'bg-black text-white border-black shadow-lg scale-105' 
-                            : 'bg-white text-neutral-400 border-neutral-100 hover:border-black hover:text-black'}
-                        `}
-                      >
-                        {lang}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {/* Language Selection Row REMOVED - Restricted to PT only */}
 
                 {/* Secondary Actions Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
