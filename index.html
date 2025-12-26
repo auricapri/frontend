@@ -8,6 +8,37 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' crossorigin="anonymous" />
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js' crossorigin="anonymous"></script>
+    <script>
+      // Set Mapbox token when library loads
+      (function() {
+        function initMapbox() {
+          if (window.mapboxgl) {
+            window.mapboxgl.accessToken = 'pk.eyJ1IjoiYWdlbmRhYnJhc2lsIiwiYSI6ImNtaW5sdnIzcjBhaHIzZW9qcXgyc292a3UifQ.xnR7-Wp3TdMkuuk_g-BcHQ';
+            console.log('Mapbox GL JS initialized with token');
+            return true;
+          }
+          return false;
+        }
+        
+        // Try immediately
+        if (initMapbox()) return;
+        
+        // Poll until loaded
+        const interval = setInterval(function() {
+          if (initMapbox()) {
+            clearInterval(interval);
+          }
+        }, 100);
+        
+        // Timeout after 10 seconds
+        setTimeout(function() {
+          clearInterval(interval);
+          if (!window.mapboxgl) {
+            console.error('Mapbox GL JS failed to load after 10 seconds');
+          }
+        }, 10000);
+      })();
+    </script>
     <style>
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -193,6 +224,15 @@
     </script>
   </head>
   <body class="bg-white text-gray-900 antialiased overflow-hidden">
+    <script>
+      // Safety fallback: Only remove splash after 30 seconds if something goes very wrong
+      setTimeout(function() {
+        if (!document.body.classList.contains('loaded')) {
+          console.error('HTML: Emergency fallback (30s) - forcing splash removal');
+          document.body.classList.add('loaded');
+        }
+      }, 30000);
+    </script>
     <!-- Initial Splash Screen -->
     <div id="splash-screen">
       <div class="flex flex-col items-center">
@@ -206,5 +246,18 @@
     </div>
     
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      // Debug: Log when DOM is ready
+      console.log('HTML: DOM loaded, root element:', document.getElementById('root'));
+      
+      // Check if script loaded after 500ms
+      setTimeout(function() {
+        if (!document.getElementById('root')?.hasChildNodes()) {
+          console.error('HTML: Root element is empty after 500ms - app may not have loaded');
+          document.body.classList.add('loaded');
+        }
+      }, 500);
+    </script>
   </body>
 </html>
