@@ -1,62 +1,50 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import ProductGrid from './components/ProductGrid';
-import ProductDetail from './components/ProductDetail';
-import CollectionDetail from './components/CollectionDetail';
-import CartDrawer from './components/CartDrawer';
-import WishlistDrawer from './components/WishlistDrawer';
-import CouponsDrawer from './components/CouponsDrawer';
-import AuthDrawer from './components/AuthDrawer';
-import CheckoutView, { AddressData } from './components/CheckoutView';
-import Footer from './components/Footer';
-import AdminDashboard from './components/AdminDashboard';
-import OrderResultOverlay from './components/OrderResultOverlay';
-import OrderReceipt from './components/OrderReceipt';
-import AboutUs from './components/AboutUs';
-import LoyaltyBanner from './components/LoyaltyBanner'; // IMPORT
-import Toast from './components/Toast';
-import { Product, CartItem, UserMode, UserProfile, Category, Collection, Banner, StoreConfig, Coupon, Asset, InternalLogisticsInfo, Order, SavedAddress, SavedCard, SizeGuide } from './types';
+import { Navbar, Footer } from './src/components/layout';
+import { Hero, LoyaltyBanner, AboutUs } from './src/components/shared';
+import { ProductGrid, ProductDetail, CollectionDetail } from './src/components/product';
+import { CartDrawer, WishlistDrawer, CouponsDrawer } from './src/components/cart';
+import { AuthDrawer } from './src/components/auth';
+import { CheckoutView, AddressData } from './src/components/checkout';
+import { AdminDashboard } from './src/components/admin';
+import { OrderResultOverlay, OrderReceipt } from './src/components/orders';
+import { Toast } from './src/components/ui';
+import { NotFoundPage } from './src/pages/NotFoundPage';
+import { ResetPasswordPage } from './src/pages/ResetPasswordPage';
+import SharedWishlistPage from './src/pages/SharedWishlistPage';
+import { Product, CartItem, UserMode, UserProfile, Category, Collection, Banner, StoreConfig, Coupon, Asset, InternalLogisticsInfo, Order, SavedAddress, SavedCard, SizeGuide } from './src/types';
 import { MessageCircle, X, Loader2 } from 'lucide-react';
-import { Locale, translations } from './i18n';
-import { supabase } from '../utils/supabase';
+import { Locale, translations } from './src/i18n';
+import { supabase } from './src/utils/supabase';
+import { useStoreData } from './src/hooks/useStoreData';
+import { useAuth } from './src/hooks/useAuth';
+import { useWishlist } from './src/hooks/useWishlist';
+import { OrdersApi } from './src/api/orders.api';
+import { UsersApi } from './src/api/users.api';
+import { ProductsApi } from './src/api/products.api';
 
 export const App: React.FC = () => {
+  console.log('App: Component rendering...');
+  
   const [locale, setLocale] = useState<Locale>('pt');
   const [userMode, setUserMode] = useState<UserMode>(UserMode.RETAIL);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [coupons, setCoupons] = useState<Coupon[]>([]); 
-  const [assets, setAssets] = useState<Asset[]>([]); 
-  const [sizeGuides, setSizeGuides] = useState<SizeGuide[]>([]); 
-  const [storeConfig, setStoreConfig] = useState<StoreConfig>({
-    id: 'main',
-    brand_name: 'Auricapri',
-    about_us: { en: '', pt: '' },
-    about_us_image: '',
-    terms_of_service: { en: 'Loading...', pt: 'Carregando...' },
-    privacy_policy: { en: 'Loading...', pt: 'Carregando...' },
-    contact_email: '',
-    support_phone: '', 
-    tax_id: '',        
-    address: '',
-    // Default Loyalty Config
-    loyalty_program: {
-        enabled: true,
-        cashback_percentage: 1, // 1%
-        xp_per_currency_unit: 10, // 10 XP per $1
-        levels: [
-            { level: 1, xp_required: 0, reward_coupon_value: 0, reward_description: 'Iniciante' },
-            { level: 2, xp_required: 1000, reward_coupon_value: 50, reward_description: 'Bronze Member' },
-            { level: 3, xp_required: 5000, reward_coupon_value: 150, reward_description: 'Silver Member' },
-            { level: 4, xp_required: 15000, reward_coupon_value: 500, reward_description: 'Gold VIP' },
-        ]
-    }
-  });
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Use hooks for data fetching
+  const { 
+    products, 
+    categories, 
+    collections, 
+    banners, 
+    coupons, 
+    assets, 
+    sizeGuides, 
+    storeConfig, 
+    isLoading,
+    refetch: refetchStoreData
+  } = useStoreData();
+  
+  const { currentUser, isLoading: isAuthLoading, signIn, signUp, signOut } = useAuth();
+  const { wishlistIds, toggleWishlist } = useWishlist(currentUser?.id);
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   
@@ -81,11 +69,39 @@ export const App: React.FC = () => {
   // Loyalty Banner State
   const [loyaltyBanner, setLoyaltyBanner] = useState<{ visible: boolean, level: number, reward: number, code: string, expires: string }>({ visible: false, level: 0, reward: 0, code: '', expires: '' });
 
-  const [wishlistIds, setWishlistIds] = useState<string[]>([]);
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [pendingCheckout, setPendingCheckout] = useState(false);
 
-  const [currentView, setCurrentView] = useState<'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt' | 'about'>('home');
+  // Helper to extract product slug from URL
+  const extractProductSlug = (pathname: string): string | null => {
+    const match = pathname.match(/^\/product\/(.+)$/);
+    return match ? match[1] : null;
+  };
+
+  // Helper to get product slug in current locale
+  const getProductSlug = (product: Product, locale: Locale): string => {
+    if (!product.slug) return product.id;
+    if (typeof product.slug === 'string') return product.slug;
+    return product.slug[locale] || product.slug['pt'] || product.slug['en'] || product.id;
+  };
+
+  // Initialize view from URL
+  const getViewFromPath = (pathname: string): 'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | '404' => {
+    if (pathname === '/admin') return 'admin';
+    if (pathname === '/checkout') return 'checkout';
+    if (pathname === '/receipt') return 'receipt';
+    if (pathname === '/about') return 'about';
+    if (pathname === '/reset-password') return 'reset-password';
+    if (pathname.startsWith('/wishlist/')) return 'shared-wishlist';
+    if (pathname.startsWith('/product')) return 'product';
+    if (pathname.startsWith('/collection')) return 'collection';
+    if (pathname === '/') return 'home';
+    // If path doesn't match any route, return 404
+    return '404';
+  };
+
+  const [currentView, setCurrentView] = useState<'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | '404'>(() => {
+    return getViewFromPath(window.location.pathname);
+  });
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
   const [activeCollection, setActiveCollection] = useState<Collection | null>(null);
@@ -93,22 +109,86 @@ export const App: React.FC = () => {
 
   const mainRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) fetchProfile(session.user.id);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        fetchProfile(session.user.id);
+  // Load product from slug in URL
+  const productsApi = new ProductsApi();
+  const loadProductFromSlug = useCallback(async (slug: string) => {
+    try {
+      const product = await productsApi.getBySlug(slug);
+      if (product) {
+        setActiveProduct(product);
       } else {
-        setCurrentUser(null);
-        setWishlistIds([]); 
+        // Product not found, redirect to 404
+        setCurrentView('404');
       }
-    });
-
-    return () => subscription.unsubscribe();
+    } catch (error) {
+      console.error('Error loading product from slug:', error);
+      setCurrentView('404');
+    }
   }, []);
+
+  // Listen to URL changes (browser back/forward)
+  useEffect(() => {
+    const handlePopState = () => {
+      const view = getViewFromPath(window.location.pathname);
+      setCurrentView(view);
+      
+      // If product view, try to load product from URL
+      if (view === 'product') {
+        const slug = extractProductSlug(window.location.pathname);
+        if (slug) {
+          loadProductFromSlug(slug);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [loadProductFromSlug]);
+
+  // Load product from URL on mount or when URL changes to product view
+  useEffect(() => {
+    if (currentView === 'product') {
+      const slug = extractProductSlug(window.location.pathname);
+      if (slug && (!activeProduct || getProductSlug(activeProduct, locale) !== slug)) {
+        loadProductFromSlug(slug);
+      }
+    }
+  }, [currentView, locale, activeProduct, loadProductFromSlug]);
+
+  // Check admin access when navigating to admin view
+  useEffect(() => {
+    if (currentView === 'admin') {
+      // Wait for auth to finish loading before checking
+      if (isAuthLoading) {
+        return; // Don't do anything while auth is loading
+      }
+      
+      if (!currentUser) {
+        // Not logged in, redirect to home and open auth drawer
+        setCurrentView('home');
+        window.history.pushState({ view: 'home' }, '', '/');
+        setIsAuthOpen(true);
+        if (typeof showToast === 'function') {
+          showToast('Você precisa estar logado para acessar o admin.', 'error');
+        }
+      } else {
+        // Check if user is admin (check both role and is_admin for compatibility)
+        const isAdmin = currentUser.role === 'admin' || (currentUser as any).is_admin === true;
+        
+        if (!isAdmin) {
+          // Logged in but not admin, redirect to home
+          setCurrentView('home');
+          window.history.pushState({ view: 'home' }, '', '/');
+          if (typeof showToast === 'function') {
+            showToast('Acesso negado. Apenas administradores podem acessar esta área.', 'error');
+          }
+        }
+      }
+    }
+  }, [currentView, currentUser, isAuthLoading]);
+
+  // Auth state is managed by useAuth hook
+  // No need for manual session management here
 
   // Check for pending rewards on load/user change
   useEffect(() => {
@@ -131,84 +211,21 @@ export const App: React.FC = () => {
     }
   }, [currentUser, pendingCheckout]);
 
-  const fetchProfile = async (userId: string) => {
-    const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (profile) {
-        let user: UserProfile = profile as UserProfile;
-        
-        if ((profile as any).default_address_id) {
-            const { data: addr } = await supabase.from('addresses').select('*').eq('id', (profile as any).default_address_id).single();
-            if (addr) user.default_address = addr as SavedAddress;
-        }
+  // Store data is managed by useStoreData hook
+  // No need for manual fetching here
 
-        const { data: cards } = await supabase.from('user_payment_methods').select('*').eq('user_id', userId);
-        if (cards) user.saved_cards = cards as SavedCard[];
-
-        setCurrentUser(user);
-    }
-  };
-
-  const fetchStoreData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [prodRes, catRes, collRes, banRes, setRes, relRes, coupRes, assRes, guideRes] = await Promise.all([
-        supabase.from('products').select('*, variants:product_variants(*)').eq('is_active', true),
-        supabase.from('categories').select('*').eq('is_active', true),
-        supabase.from('collections').select('*').eq('is_active', true),
-        supabase.from('banners').select('*').eq('is_active', true).order('sort_order', { ascending: true }),
-        supabase.from('store_config').select('*').limit(1).maybeSingle(),
-        supabase.from('collection_products').select('*'),
-        supabase.from('coupons').select('*').eq('is_active', true),
-        supabase.from('assets').select('*'),
-        supabase.from('size_guides').select('*')
-      ]);
-
-      const rawProducts = (prodRes.data || []) as Product[];
-      const relations = relRes.data || [];
-
-      const processedProducts = rawProducts.map(p => {
-        const linkedCollectionIds = relations
-          .filter((r: any) => r.product_id === p.id)
-          .map((r: any) => r.collection_id);
-        
-        return {
-          ...p,
-          collection_ids: linkedCollectionIds
-        };
-      });
-
-      setProducts(processedProducts);
-      if (catRes.data) setCategories(catRes.data as Category[]);
-      if (collRes.data) setCollections(collRes.data as Collection[]);
-      if (banRes.data) setBanners(banRes.data as Banner[]);
-      if (coupRes.data) setCoupons(coupRes.data as Coupon[]);
-      if (assRes.data) setAssets(assRes.data as Asset[]);
-      if (guideRes.data) setSizeGuides(guideRes.data as SizeGuide[]);
-      if (setRes.data) {
-        // Merge fetched config with default loyalty structure if missing
-        const fetchedConfig = setRes.data as StoreConfig;
-        setStoreConfig(prev => ({
-            ...fetchedConfig,
-            loyalty_program: fetchedConfig.loyalty_program || prev.loyalty_program
-        }));
-        document.title = setRes.data.brand_name;
-      }
-
-      setTimeout(() => {
-        document.body.classList.add('loaded');
-        setIsLoading(false);
-      }, 1000);
-
-    } catch (err) {
-      console.error('Error fetching store data:', err);
-      document.body.classList.add('loaded');
-      setIsLoading(false);
-    }
-  }, []);
-
+  // Remove splash only when home is fully loaded and rendered
   useEffect(() => {
-    fetchStoreData();
-  }, [fetchStoreData]);
+    if (currentView === 'home' && !isLoading && products.length > 0) {
+      // Wait a bit to ensure DOM is fully rendered
+      const timer = setTimeout(() => {
+        console.log('App: Home is ready, removing splash screen');
+        document.body.classList.add('loaded');
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentView, isLoading, products.length]);
 
   const t = (key: string) => {
     const keys = key.split('.');
@@ -220,18 +237,39 @@ export const App: React.FC = () => {
     return result;
   };
 
-  const enterAdmin = () => {
-    setCurrentView('admin');
-    setIsAuthOpen(false);
-  };
-
   const exitAdmin = () => {
     setCurrentView('home');
-    fetchStoreData();
+    window.history.pushState({ view: 'home' }, '', '/');
+    refetchStoreData();
   };
 
-  const handleNavigate = useCallback((view: 'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt' | 'about', targetSection?: string) => {
+  const handleNavigate = useCallback((view: 'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt' | 'about' | 'reset-password' | '404', targetSection?: string, product?: Product) => {
     setCurrentView(view);
+    
+    // Update URL based on view (skip for 404 to keep the invalid URL visible)
+    if (view !== '404') {
+      let path = '';
+      
+      if (view === 'product' && product) {
+        // Include product slug in URL
+        const slug = getProductSlug(product, locale);
+        path = `/product/${slug}`;
+      } else {
+        const routes: Record<Exclude<typeof view, '404'>, string> = {
+          home: '/',
+          product: '/product',
+          collection: '/collection',
+          admin: '/admin',
+          checkout: '/checkout',
+          receipt: '/receipt',
+          about: '/about',
+          'reset-password': '/reset-password'
+        };
+        path = routes[view as Exclude<typeof view, '404'>] || '/';
+      }
+      
+      window.history.pushState({ view }, '', path);
+    }
     
     if (mainRef.current) {
       mainRef.current.scrollTo({ top: 0, behavior: 'instant' });
@@ -318,140 +356,25 @@ export const App: React.FC = () => {
     setIsProcessingOrder(true);
 
     const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const discountAmount = subtotal - finalAmount;
+    const ordersApi = new OrdersApi();
+    const usersApi = new UsersApi();
 
     try {
-      if (currentUser) {
-          const isFirstAddress = !currentUser.default_address;
-          const newAddrPayload = {
-              user_id: currentUser.id,
-              line1: addressData.logradouro + (addressData.numero ? `, ${addressData.numero}` : ''),
-              line2: addressData.bairro + (addressData.complemento ? ` - ${addressData.complemento}` : ''),
-              city: addressData.localidade,
-              state: addressData.uf,
-              postal_code: addressData.cep || '',
-              country: 'BR',
-              is_default: isFirstAddress 
-          };
-          const { data: addrData } = await supabase.from('addresses').insert(newAddrPayload).select().single();
-          if (addrData && isFirstAddress) {
-              await supabase.from('profiles').update({ default_address_id: addrData.id }).eq('id', currentUser.id);
-          }
-      }
-
+      // Save payment method if needed (this should be moved to backend later)
       if (currentUser && paymentMethod === 'credit_card' && saveCard && !cardToken) {
-          const mockToken = `tok_${Math.random().toString(36).substr(2, 9)}`;
-          const mockLast4 = Math.floor(1000 + Math.random() * 9000).toString();
-          await supabase.from('user_payment_methods').insert({
-              user_id: currentUser.id,
-              gateway_token: mockToken, 
-              last4: mockLast4,
-              brand: 'Visa', 
-              exp_month: 12,
-              exp_year: 2030,
-              is_default: false 
-          });
+          // TODO: Implement payment method saving via API
+          console.log('Payment method saving not yet implemented via API');
       }
 
-      // Insert Order
-      const { data: orderData, error: orderError } = await supabase.from('orders').insert({
-        user_id: currentUser?.id,
-        items: cartItems, 
-        subtotal: subtotal, 
-        total_amount: finalAmount, 
-        discount_amount: discountAmount,
-        shipping_cost: 0,
-        tax_amount: 0,
-        status: 'confirmed',
-        payment_method: paymentMethod, 
-        shipping_address_snapshot: addressData, 
-        internal_logistics: logisticsInfo 
-      }).select().single();
-
-      if (orderError) throw orderError;
-
-      // Update Stock
-      for (const item of cartItems) {
-         const product = products.find(p => p.id === item.product_id);
-         const variant = product?.variants?.find(v => v.id === item.variant_id);
-         if (variant) {
-            await supabase.from('product_variants').update({ 
-               stock_quantity: Math.max(0, variant.stock_quantity - item.quantity) 
-            }).eq('id', variant.id);
-            if (variant.correlated_assets) {
-                for (const link of variant.correlated_assets) {
-                    const totalAssetNeeded = link.quantity_required * item.quantity;
-                    const asset = assets.find(a => a.id === link.asset_id);
-                    if (asset) await supabase.from('assets').update({ stock_quantity: Math.max(0, asset.stock_quantity - totalAssetNeeded) }).eq('id', asset.id);
-                }
-            }
-         }
-      }
-
-      // --- LOYALTY LOGIC START (Protected) ---
-      // Wrapped in try-catch to allow order completion even if loyalty schema is outdated
-      if (currentUser && storeConfig.loyalty_program?.enabled) {
-          try {
-              const config = storeConfig.loyalty_program;
-              const userLoyalty = currentUser.loyalty || { current_xp: 0, current_level: 1, cashback_balance: 0 };
-              
-              // 1. Calculate Earnings
-              const xpEarned = Math.floor(finalAmount * config.xp_per_currency_unit);
-              const cashbackEarned = finalAmount * (config.cashback_percentage / 100);
-              
-              let newXP = userLoyalty.current_xp + xpEarned;
-              let newCashback = userLoyalty.cashback_balance + cashbackEarned;
-              let newLevel = userLoyalty.current_level;
-              let rewardPending = userLoyalty.pending_reward_coupon;
-
-              // 2. Check Level Up
-              const sortedLevels = [...config.levels].sort((a, b) => b.level - a.level);
-              const reachedLevel = sortedLevels.find(l => newXP >= l.xp_required);
-              
-              if (reachedLevel && reachedLevel.level > newLevel) {
-                  newLevel = reachedLevel.level;
-                  
-                  // 3. Generate Exclusive Coupon
-                  if (reachedLevel.reward_coupon_value > 0) {
-                      const code = `LEVELUP-${newLevel}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-                      const expires = new Date();
-                      expires.setDate(expires.getDate() + 30); // 30 days expiry
-
-                      const { error: couponError } = await supabase.from('coupons').insert({
-                          code: code,
-                          discount_type: 'fixed',
-                          discount_value: reachedLevel.reward_coupon_value,
-                          is_active: true,
-                          expires_at: expires.toISOString(),
-                      });
-
-                      if (!couponError) {
-                          rewardPending = {
-                              code: code,
-                              value: reachedLevel.reward_coupon_value,
-                              expires_at: expires.toISOString(),
-                              level_reached: newLevel
-                      };
-                  }
-              }
-          }
-
-          // 4. Update Profile
-          const updatedLoyalty = {
-              current_xp: newXP,
-              current_level: newLevel,
-              cashback_balance: newCashback,
-              pending_reward_coupon: rewardPending
-          };
-
-          await supabase.from('profiles').update({ loyalty: updatedLoyalty }).eq('id', currentUser.id);
-          
-          } catch (loyaltyError) {
-              console.warn("Loyalty program update failed. Schema might be missing 'loyalty' column.", loyaltyError);
-              // Do not halt execution, order is already placed.
-          }
-      }
-      // --- LOYALTY LOGIC END ---
+      // Create order via API (backend handles address, stock, and loyalty)
+      const orderData = await ordersApi.create({
+        items: cartItems,
+        addressData,
+        logisticsInfo,
+        paymentMethod,
+        subtotal,
+        finalAmount
+      });
 
       // Success Data
       const fullOrder: Order = { 
@@ -459,14 +382,19 @@ export const App: React.FC = () => {
           items: cartItems, 
           total: finalAmount, 
           subtotal: subtotal, 
-          discount_amount: discountAmount,
+          discount_amount: subtotal - finalAmount,
           payment_method: paymentMethod
       }; 
       setLastSuccessOrder(fullOrder);
       
       setCartItems([]);
-      fetchStoreData(); 
-      if (currentUser) fetchProfile(currentUser.id);
+      refetchStoreData();
+      
+      // Refresh user profile to get updated loyalty data
+      if (currentUser) {
+        // The useAuth hook will automatically refresh on next render
+        // But we can trigger a manual refresh if needed
+      }
       
       setOrderResult({ status: 'success', orderId: orderData.id, fullOrder: fullOrder });
 
@@ -535,12 +463,12 @@ export const App: React.FC = () => {
       });
   };
 
-  const handleToggleWishlist = (id: string) => {
+  const handleToggleWishlist = async (id: string) => {
     if (!currentUser) {
       setIsAuthOpen(true);
       return;
     }
-    setWishlistIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    await toggleWishlist(id);
   };
 
   const handleBuyAllWishlist = () => {
@@ -577,16 +505,15 @@ export const App: React.FC = () => {
 
   const handleCloseLoyaltyBanner = async () => {
       setLoyaltyBanner(prev => ({ ...prev, visible: false }));
-      // Dismiss pending reward flag in DB
+      // Dismiss pending reward flag via API
       if (currentUser) {
           try {
               const updatedLoyalty = {
                   ...(currentUser.loyalty || {}),
-                  pending_reward_coupon: null // Clear pending status
+                  pending_reward_coupon: null
               };
-              // Optimistic update
-              setCurrentUser({ ...currentUser, loyalty: updatedLoyalty as any });
-              await supabase.from('profiles').update({ loyalty: updatedLoyalty }).eq('id', currentUser.id);
+              const usersApi = new UsersApi();
+              await usersApi.updateLoyalty(updatedLoyalty);
           } catch(e) { console.error("Dismiss reward failed", e); }
       }
   };
@@ -596,8 +523,16 @@ export const App: React.FC = () => {
       setIsCouponsOpen(true);
   };
 
+  if (currentView === '404') {
+    return <NotFoundPage locale={locale} onNavigate={handleNavigate} t={t} />;
+  }
+
+  if (currentView === 'reset-password') {
+    return <ResetPasswordPage locale={locale} onNavigate={handleNavigate} t={t} />;
+  }
+
   if (currentView === 'admin') {
-    return <AdminDashboard onLogout={exitAdmin} t={t} locale={locale} onProductChange={fetchStoreData} />;
+    return <AdminDashboard onLogout={exitAdmin} t={t} locale={locale} onProductChange={refetchStoreData} />;
   }
 
   if (currentView === 'receipt' && lastSuccessOrder) {
@@ -606,6 +541,21 @@ export const App: React.FC = () => {
 
   if (currentView === 'about') {
     return <AboutUs config={storeConfig} locale={locale} onBack={() => handleNavigate('home')} />;
+  }
+
+  if (currentView === 'shared-wishlist') {
+    const pathParts = window.location.pathname.split('/');
+    const slug = pathParts[pathParts.length - 1];
+    return (
+      <SharedWishlistPage
+        locale={locale}
+        t={t}
+        userMode={userMode}
+        currentUser={currentUser}
+        onNavigate={handleNavigate}
+        slug={slug}
+      />
+    );
   }
 
   return (
@@ -645,7 +595,7 @@ export const App: React.FC = () => {
               collections={collections}
               coupons={coupons} // Passing Active Coupons
               userMode={userMode} 
-              onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product'); }}
+              onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product', undefined, p); }}
               onSelectCollection={(c) => { setActiveCollection(c); handleNavigate('collection'); }}
               wishlistIds={wishlistIds}
               onToggleWishlist={handleToggleWishlist}
@@ -696,7 +646,7 @@ export const App: React.FC = () => {
             products={products}
             categories={categories}
             userMode={userMode}
-            onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product'); }}
+            onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product', undefined, p); }}
             wishlistIds={wishlistIds}
             onToggleWishlist={handleToggleWishlist}
             onBack={() => handleNavigate('home', 'collection')}
@@ -792,19 +742,26 @@ export const App: React.FC = () => {
         isOpen={isAuthOpen} 
         onClose={() => { setIsAuthOpen(false); setPendingCheckout(false); }} 
         user={currentUser} 
-        onLogin={setCurrentUser} 
-        onLogout={() => setCurrentUser(null)} 
-        onAdminAccess={enterAdmin} 
+        onLogin={async (user) => {
+          // Auth is managed by useAuth hook, this is just for compatibility
+          // The hook will automatically update currentUser
+        }} 
+        onLogout={async () => {
+          await signOut();
+        }} 
         t={t} 
         locale={locale} 
       />
-      <WishlistDrawer 
+      <WishlistDrawer
+        currentUserId={currentUser?.id} 
         isOpen={isWishlistOpen} 
         onClose={() => setIsWishlistOpen(false)} 
         items={products.filter(p => wishlistIds.includes(p.id))} 
         userMode={userMode} 
-        onRemoveItem={(id) => setWishlistIds(prev => prev.filter(i => i !== id))} 
-        onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product'); }} 
+        onRemoveItem={async (id) => {
+          await toggleWishlist(id);
+        }} 
+        onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product', undefined, p); }} 
         onBuyAll={handleBuyAllWishlist}
         t={t} 
         locale={locale} 
