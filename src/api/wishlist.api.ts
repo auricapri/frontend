@@ -1,5 +1,7 @@
 import { apiClient } from './client';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
 export interface WishlistResponse {
   productIds: string[];
 }
@@ -23,8 +25,26 @@ export class WishlistApi {
     return response.shareSlug;
   }
 
+  /**
+   * Get shared wishlist by slug - PUBLIC route, no authentication required
+   * Uses direct fetch to avoid token issues
+   */
   async getSharedWishlist(slug: string): Promise<{ user_id: string; product_ids: string[] }> {
-    return apiClient.get<{ user_id: string; product_ids: string[] }>(`/wishlist/shared/${slug}`);
+    const response = await fetch(`${API_BASE_URL}/wishlist/shared/${slug}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({
+        error: { message: `HTTP ${response.status}: ${response.statusText}` },
+      }));
+      throw new Error(error.error?.message || 'Failed to fetch shared wishlist');
+    }
+
+    return response.json();
   }
 
   async buyAllFromSharedWishlist(
