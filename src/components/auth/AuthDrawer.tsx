@@ -59,8 +59,26 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
   const handleSocialLogin = async (provider: 'google' | 'apple') => {
     setSocialLoading(provider);
     try {
-      // Get redirect URL from environment variable or fallback to current origin
-      const redirectUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+      // Get redirect URL from environment variable
+      // In production, VITE_FRONTEND_URL must be set
+      // Fallback to window.location.origin only in development
+      const envRedirectUrl = import.meta.env.VITE_FRONTEND_URL;
+      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+      
+      // Prefer environment variable, but validate it's not localhost in production
+      let redirectUrl = envRedirectUrl || currentOrigin;
+      
+      // Safety check: if we're in production (not localhost) and env var is not set, warn
+      if (!envRedirectUrl && currentOrigin && !currentOrigin.includes('localhost')) {
+        console.warn('VITE_FRONTEND_URL not set in production. Using current origin:', currentOrigin);
+      }
+      
+      // Ensure we have a valid URL
+      if (!redirectUrl) {
+        throw new Error('Redirect URL não configurada. Configure VITE_FRONTEND_URL no arquivo .env');
+      }
+      
+      console.log('OAuth redirect URL:', redirectUrl); // Debug log
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
@@ -84,8 +102,14 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
 
     setIsLoading(true);
     try {
-      // Get redirect URL from environment variable or fallback to current origin
-      const redirectUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+      // Get redirect URL from environment variable
+      const envRedirectUrl = import.meta.env.VITE_FRONTEND_URL;
+      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+      const redirectUrl = envRedirectUrl || currentOrigin;
+      
+      if (!redirectUrl) {
+        throw new Error('Redirect URL não configurada. Configure VITE_FRONTEND_URL no arquivo .env');
+      }
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${redirectUrl}/reset-password`,
