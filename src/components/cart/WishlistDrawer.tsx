@@ -40,7 +40,66 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
 
   const [copiedLink, setCopiedLink] = useState(false);
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
   const wishlistApi = new WishlistApi();
+
+  // Get or generate share URL
+  const getShareUrl = async (): Promise<string | null> => {
+    if (!currentUserId) {
+      return null;
+    }
+
+    // If we already have a share URL, return it
+    if (shareUrl) {
+      return shareUrl;
+    }
+
+    try {
+      setIsGeneratingLink(true);
+      const shareSlug = await wishlistApi.getShareSlug();
+      const url = `${window.location.origin}/wishlist/${shareSlug}`;
+      setShareUrl(url);
+      return url;
+    } catch (error: any) {
+      console.error('Error generating share link:', error);
+      return null;
+    } finally {
+      setIsGeneratingLink(false);
+    }
+  };
+
+  // Copy to clipboard with fallback
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    try {
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      
+      // Fallback: use temporary input element
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return successful;
+      } catch (err) {
+        document.body.removeChild(textArea);
+        return false;
+      }
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+      return false;
+    }
+  };
 
   const handleShareLink = async () => {
     if (!currentUserId) {
@@ -48,31 +107,58 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
       return;
     }
 
-    try {
-      setIsGeneratingLink(true);
-      // Get or generate the share slug from the backend
-      const shareSlug = await wishlistApi.getShareSlug();
-      const shareUrl = `${window.location.origin}/wishlist/${shareSlug}`;
-      
-      await navigator.clipboard.writeText(shareUrl);
+    const url = await getShareUrl();
+    if (!url) {
+      alert('Erro ao gerar link de compartilhamento. Tente novamente.');
+      return;
+    }
+
+    const success = await copyToClipboard(url);
+    if (success) {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 3000);
-    } catch (error: any) {
-      console.error('Error generating share link:', error);
-      alert(`Erro ao gerar link: ${error.message || 'Erro desconhecido'}`);
-    } finally {
-      setIsGeneratingLink(false);
+    } else {
+      // If clipboard fails, show the URL in an alert so user can copy manually
+      alert(`Link de compartilhamento:\n\n${url}\n\nCopie este link manualmente.`);
     }
   };
 
-  const handleSocialShare = (platform: string) => {
-    const text = `Take a look at my curated luxury wishlist from Auricapri!`;
-    const shareUrl = window.location.href;
+  const handleSocialShare = async (platform: string) => {
+    if (!currentUserId) {
+      alert('Você precisa estar logado para compartilhar sua wishlist');
+      return;
+    }
+
+    const url = await getShareUrl();
+    if (!url) {
+      alert('Erro ao gerar link de compartilhamento. Tente novamente.');
+      return;
+    }
+
+    const text = `Dá uma olhada na minha wishlist de luxo da Auricapri!`;
     
+    // Try Web Share API first (works on mobile and modern browsers)
+    if (platform === 'whatsapp' && navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Minha Wishlist Auricapri',
+          text: text,
+          url: url
+        });
+        return;
+      } catch (error: any) {
+        // User cancelled or share failed, fall through to WhatsApp web
+        if (error.name !== 'AbortError') {
+          console.error('Web Share API failed:', error);
+        }
+      }
+    }
+    
+    // Fallback to platform-specific URLs
     if (platform === 'whatsapp') {
-      window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + shareUrl)}`);
+      window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + url)}`, '_blank');
     } else if (platform === 'twitter') {
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`);
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
     }
   };
 
@@ -185,10 +271,20 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                     </button>
                     <button 
                       onClick={() => handleSocialShare('whatsapp')}
-                      className="flex items-center justify-center gap-3 p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all"
+                      disabled={isGeneratingLink || !currentUserId}
+                      className="flex items-center justify-center gap-3 p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <MessageCircle className="w-4 h-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp</span>
+                      {isGeneratingLink ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">Gerando...</span>
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle className="w-4 h-4" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
