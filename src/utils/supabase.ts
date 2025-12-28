@@ -3,9 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 
 /**
  * Supabase client initialization.
- * Using static credentials for reliability in this specific container environment.
+ * Uses environment variables for configuration.
  */
-const supabaseUrl = 'https://zbrunudbdyuebtpxfnkd.supabase.co';
-const supabaseKey = 'sb_publishable_x5fb1BLl1KN851qTDOgjPg_59DeZfwU';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
