@@ -128,7 +128,9 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
     return obj[locale] || obj['pt'] || obj['en'] || Object.values(obj)[0] || "";
   };
 
-  const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  // Validate items before using reduce
+  const safeItems = Array.isArray(items) ? items : [];
+  const subtotal = safeItems.reduce((sum, item) => sum + ((item?.price || 0) * (item?.quantity || 0)), 0);
   // In atacado mode, add shipping cost to total
   const shippingCost = userMode === UserMode.ATACADO && selectedShippingOption 
     ? selectedShippingOption.display_price_was 
@@ -188,9 +190,13 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
               // Use logisticsService directly to avoid dependency issues
               if (userMode === UserMode.ATACADO) {
                 logisticsService.calculateShippingOptions(cepValue, newAddress).then(options => {
+                  if (!Array.isArray(options) || options.length === 0) {
+                    console.error('No shipping options returned');
+                    return;
+                  }
                   setShippingOptions(options);
                   const cheapest = options.reduce((prev, curr) => 
-                    curr.real_cost < prev.real_cost ? curr : prev
+                    (curr?.real_cost || 0) < (prev?.real_cost || 0) ? curr : prev
                   );
                   setSelectedShippingOption(cheapest);
                   setShippingDisplay({
@@ -575,11 +581,16 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
       if (userMode === UserMode.ATACADO) {
         // Get multiple options for atacado mode
         const options = await logisticsService.calculateShippingOptions(destCep, address || undefined);
+        if (!Array.isArray(options) || options.length === 0) {
+          console.error('No shipping options returned');
+          setCalculatingShipping(false);
+          return;
+        }
         setShippingOptions(options);
         
         // Select cheapest by default
         const cheapest = options.reduce((prev, curr) => 
-          curr.real_cost < prev.real_cost ? curr : prev
+          (curr?.real_cost || Infinity) < (prev?.real_cost || Infinity) ? curr : prev
         );
         setSelectedShippingOption(cheapest);
         
@@ -884,12 +895,14 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
              <div className="bg-neutral-50 rounded-[3rem] p-10 md:p-12 sticky top-32 border border-neutral-100 shadow-sm">
                 <div className="flex items-center gap-4 mb-10 border-b border-neutral-100 pb-6"><ShoppingBag className="w-5 h-5 text-neutral-400" /><h4 className="text-[10px] font-black uppercase tracking-[0.4em]">Sua Sacola</h4></div>
                 <div className="space-y-8 mb-12 max-h-[400px] overflow-y-auto pr-4 no-scrollbar">
-                   {items.map((item, idx) => (
+                   {Array.isArray(items) && items.length > 0 ? items.map((item, idx) => (
                      <div key={idx} className="flex gap-6 items-center animate-in slide-in-from-right duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
-                        <div className="w-20 h-24 bg-white rounded-2xl overflow-hidden flex-none border border-neutral-100 shadow-sm"><img src={item.image} className="w-full h-full object-cover" /></div>
-                        <div className="flex-1"><h5 className="text-[11px] font-black uppercase tracking-tight leading-tight mb-1">{getLoc(item.name)}</h5><p className="text-[9px] text-neutral-400 uppercase font-bold tracking-widest">{getLoc(item.color_name)} | {item.size}</p><p className="text-[10px] font-black mt-2">Qtd: {item.quantity}</p></div><span className="text-[12px] font-black tracking-tighter">{formatCurrency(item.price * item.quantity, locale)}</span>
+                        <div className="w-20 h-24 bg-white rounded-2xl overflow-hidden flex-none border border-neutral-100 shadow-sm"><img src={item?.image || ''} className="w-full h-full object-cover" alt={getLoc(item?.name)} /></div>
+                        <div className="flex-1"><h5 className="text-[11px] font-black uppercase tracking-tight leading-tight mb-1">{getLoc(item?.name)}</h5><p className="text-[9px] text-neutral-400 uppercase font-bold tracking-widest">{getLoc(item?.color_name)} | {item?.size || 'N/A'}</p><p className="text-[10px] font-black mt-2">Qtd: {item?.quantity || 0}</p></div><span className="text-[12px] font-black tracking-tighter">{formatCurrency((item?.price || 0) * (item?.quantity || 0), locale)}</span>
                      </div>
-                   ))}
+                   )) : (
+                     <div className="text-center py-8 text-neutral-400 text-sm">Nenhum item no carrinho</div>
+                   )}
                 </div>
                 <div className="space-y-4 pt-10 border-t border-neutral-200">
                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-neutral-400"><span>Subtotal</span><span>{formatCurrency(subtotal, locale)}</span></div>
