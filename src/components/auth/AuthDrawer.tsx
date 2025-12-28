@@ -59,10 +59,13 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
   const handleSocialLogin = async (provider: 'google' | 'apple') => {
     setSocialLoading(provider);
     try {
+      // Get redirect URL from environment variable or fallback to current origin
+      const redirectUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: window.location.origin
+          redirectTo: redirectUrl
         }
       });
       if (error) throw error;
@@ -81,8 +84,11 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
 
     setIsLoading(true);
     try {
+      // Get redirect URL from environment variable or fallback to current origin
+      const redirectUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${redirectUrl}/reset-password`,
       });
 
       if (error) throw error;
