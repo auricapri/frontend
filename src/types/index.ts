@@ -271,6 +271,8 @@ export interface Order {
   internal_logistics?: InternalLogisticsInfo;
   shipping_address_snapshot?: any;
   logistics_metadata?: LogisticsMetadata;
+  wishlist_slug?: string | null; // Slug of shared wishlist if purchased via wishlist
+  gift_from_user_id?: string | null; // User who bought the gift
 }
 
 export interface CartSession {
