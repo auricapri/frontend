@@ -48,8 +48,8 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
         const data = await wishlistApi.getSharedWishlist(slug);
         setWishlistData(data);
 
-        // Fetch products
-        const allProducts = await productsApi.getAll();
+        // Fetch products (use getAllActive for public access, not getAll which requires admin)
+        const allProducts = await productsApi.getAllActive();
         const wishlistProducts = allProducts.filter(p => data.product_ids.includes(p.id));
         setProducts(wishlistProducts);
 
