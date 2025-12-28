@@ -4,6 +4,8 @@ import { X, ShoppingBag, Trash2, ArrowRight, Share2, Link2, Instagram, MessageCi
 import { Product, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { WishlistApi } from '../../api/wishlist.api';
+import { calculatePrice } from '../../utils/product';
+import { formatCurrency } from '../../utils/currency';
 
 interface WishlistDrawerProps {
   isOpen: boolean;
@@ -115,7 +117,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
               <div className="space-y-8">
                 {items.map((item) => {
                   const mainVariant = item.variants?.[0];
-                  const price = userMode === UserMode.RETAIL ? mainVariant?.retail_price : mainVariant?.wholesale_price;
+                  const price = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
                   return (
                     <div key={item.id} className="bg-white p-6 rounded-[2rem] border border-neutral-100 flex space-x-6 group hover:shadow-xl transition-all duration-500">
                       <div className="w-24 h-32 bg-gray-50 flex-none overflow-hidden rounded-xl cursor-pointer" onClick={() => { onSelectProduct(item); onClose(); }}>
@@ -125,9 +127,11 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                         <div>
                           <div className="flex justify-between items-start">
                             <h3 className="text-[13px] font-black uppercase tracking-tight group-hover:underline cursor-pointer" onClick={() => { onSelectProduct(item); onClose(); }}>{getLoc(item.name)}</h3>
-                            <p className="text-sm font-light text-neutral-900">${price || '---'}</p>
+                            <p className="text-sm font-light text-neutral-900">{formatCurrency(price, locale)}</p>
                           </div>
-                          <p className="text-[9px] text-neutral-400 mt-2 uppercase tracking-widest font-bold">Category: {item.category_id.split('_')[1]}</p>
+                          {item.category_id && (
+                            <p className="text-[9px] text-neutral-400 mt-2 uppercase tracking-widest font-bold">Category: {item.category_id.split('_')[1] || item.category_id}</p>
+                          )}
                         </div>
 
                         <div className="flex justify-between items-center">

@@ -23,6 +23,7 @@ import {
 import { Locale } from '../../i18n';
 import ProductReviews from './ProductReviews';
 import { formatCurrency } from '../../utils/currency';
+import { calculatePrice } from '../../utils/product';
 
 interface ProductDetailProps {
   product: Product;
@@ -69,7 +70,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     return String(obj);
   };
 
-  const variants = product.variants || [];
+  // Filter variants for atacado mode (stock >= 10)
+  const variants = useMemo(() => {
+    const allVariants = product.variants || [];
+    if (userMode === UserMode.ATACADO) {
+      return allVariants.filter(v => v.stock_quantity >= 10);
+    }
+    return allVariants;
+  }, [product.variants, userMode]);
   
   // Colors: all unique colors from all variants
   const colors = useMemo(() => {
@@ -383,7 +391,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   };
 
   const rawPrice = activeVariant 
-    ? (userMode === UserMode.RETAIL ? activeVariant.retail_price : activeVariant.wholesale_price)
+    ? calculatePrice(activeVariant, userMode)
     : 0;
 
   // Calculate Discount

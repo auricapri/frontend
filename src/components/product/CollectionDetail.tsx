@@ -3,6 +3,8 @@ import React, { useMemo } from 'react';
 import { Collection, Product, UserMode, Category } from '../../types';
 import { Locale } from '../../i18n';
 import { Heart, ArrowLeft } from 'lucide-react';
+import { calculatePrice, filterProductsForMode } from '../../utils/product';
+import { formatCurrency } from '../../utils/currency';
 
 interface CollectionDetailProps {
   collection: Collection;
@@ -60,11 +62,13 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
 
   const collectionProducts = useMemo(() => {
     if (!collection?.id) return [];
-    return products.filter(p => {
+    // First filter by mode (atacado filters variants with stock < 10)
+    const modeFiltered = filterProductsForMode(products, userMode);
+    return modeFiltered.filter(p => {
       const ids = p.collection_ids || [];
       return ids.some(id => String(id) === String(collection.id));
     });
-  }, [products, collection.id]);
+  }, [products, collection.id, userMode]);
 
   return (
     <div className="w-full bg-white min-h-screen">
@@ -117,7 +121,7 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-24">
             {collectionProducts.map(p => {
               const mainVariant = p.variants?.[0];
-              const price = userMode === UserMode.RETAIL ? mainVariant?.retail_price : mainVariant?.wholesale_price;
+              const price = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
               const displayImg = p.default_image_url || p.base_images[0];
               const isWishlisted = wishlistIds.includes(p.id);
               
@@ -141,7 +145,7 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
                          </p>
                       )}
                     </div>
-                    <span className="text-[11px] font-black text-neutral-900 tracking-tighter">${price || '---'}</span>
+                    <span className="text-[11px] font-black text-neutral-900 tracking-tighter">{formatCurrency(price, locale)}</span>
                   </div>
                 </div>
               );

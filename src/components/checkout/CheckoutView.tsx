@@ -23,16 +23,17 @@ import {
   Map as MapIcon,
   Lock
 } from 'lucide-react';
-import { CartItem, InternalLogisticsInfo, UserProfile, SavedCard, StoreConfig } from '../../types';
+import { CartItem, InternalLogisticsInfo, UserProfile, SavedCard, StoreConfig, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { MAPBOX_TOKEN, getMapboxStyle } from '../../utils/mapbox';
 import { formatCurrency } from '../../utils/currency';
-import { LogisticsService } from '../../services/logistics.service';
+import { LogisticsService, ShippingOption } from '../../services/logistics.service';
 
 interface CheckoutViewProps {
   items: CartItem[];
   currentUser: UserProfile | null; // Pass user to check for saved data
   storeConfig?: StoreConfig; // Store config for PIX key
+  userMode: UserMode; // User mode for validation
   onBack: () => void;
   onComplete: (
       address: AddressData, 
@@ -59,7 +60,7 @@ export interface AddressData {
 
 type PaymentMethod = 'credit_card' | 'pix';
 
-const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, onBack, onComplete, locale, t }) => {
+const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, userMode, onBack, onComplete, locale, t }) => {
   const logisticsService = new LogisticsService();
   const [step, setStep] = useState(1);
   const [cep, setCep] = useState('');
@@ -70,6 +71,9 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   // Shipping States
   const [shippingDisplay, setShippingDisplay] = useState<{ price: number, days: number } | null>(null);
   const [bestInternalShipping, setBestInternalShipping] = useState<InternalLogisticsInfo | null>(null);
+  // Multiple shipping options for atacado mode
+  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+  const [selectedShippingOption, setSelectedShippingOption] = useState<ShippingOption | null>(null);
   
   const [mapError, setMapError] = useState(false);
   const [mapboxLoaded, setMapboxLoaded] = useState(false);
@@ -125,7 +129,11 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   };
 
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const total = subtotal; 
+  // In atacado mode, add shipping cost to total
+  const shippingCost = userMode === UserMode.ATACADO && selectedShippingOption 
+    ? selectedShippingOption.display_price_was 
+    : 0;
+  const total = subtotal + shippingCost; 
 
   useEffect(() => {
     if (total > 0) setCard1Amount(total / 2);
@@ -135,19 +143,82 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   useEffect(() => {
       if (currentUser?.default_address && !address) {
           const def = currentUser.default_address;
-          // Parse line1 into street/num (simple heuristic)
-          // Na prática, ideal seria ter campos separados no DB, mas aqui adaptamos
-          setAddress({
-              logradouro: def.line1, // Simplificação
-              bairro: def.line2 || '',
-              localidade: def.city,
-              uf: def.state,
-              cep: def.postal_code
-          });
-          setCep(def.postal_code);
-          calculateLogistics(def.postal_code);
+          
+          // Parse street_address format: "logradouro, numero - bairro - complemento"
+          // or it might be in line1/line2 format from SavedAddress type
+          let logradouro = '';
+          let bairro = '';
+          
+          if ((def as any).street_address) {
+            // Backend format: "logradouro, numero - bairro - complemento"
+            const streetAddr = (def as any).street_address;
+            const parts = streetAddr.split(' - ');
+            
+            if (parts.length > 0) {
+              // First part contains logradouro and possibly numero
+              const firstPart = parts[0];
+              logradouro = firstPart; // Keep full first part as logradouro
+            }
+            
+            if (parts.length > 1) {
+              // Second part is usually bairro
+              bairro = parts[1];
+            }
+          } else if (def.line1) {
+            // Frontend SavedAddress format
+            logradouro = def.line1;
+            bairro = def.line2 || '';
+          }
+          
+          const newAddress: AddressData = {
+              logradouro: logradouro,
+              bairro: bairro,
+              localidade: (def as any).city || def.city || '',
+              uf: (def as any).state_province || def.state || '',
+              cep: (def as any).postal_code || def.postal_code || ''
+          };
+          
+          setAddress(newAddress);
+          
+          const cepValue = (def as any).postal_code || def.postal_code || '';
+          if (cepValue) {
+            setCep(cepValue);
+            // Calculate logistics after address is set
+            setTimeout(() => {
+              // Use logisticsService directly to avoid dependency issues
+              if (userMode === UserMode.ATACADO) {
+                logisticsService.calculateShippingOptions(cepValue, newAddress).then(options => {
+                  setShippingOptions(options);
+                  const cheapest = options.reduce((prev, curr) => 
+                    curr.real_cost < prev.real_cost ? curr : prev
+                  );
+                  setSelectedShippingOption(cheapest);
+                  setShippingDisplay({
+                    price: cheapest.display_price_was,
+                    days: cheapest.display_days_was
+                  });
+                  setBestInternalShipping({
+                    provider: cheapest.provider,
+                    method: cheapest.method,
+                    real_cost: cheapest.real_cost,
+                    estimated_days: cheapest.estimated_days,
+                    display_price_was: cheapest.display_price_was,
+                    display_days_was: cheapest.display_days_was
+                  });
+                }).catch(err => console.error('Error calculating shipping:', err));
+              } else {
+                logisticsService.calculateShipping(cepValue, newAddress).then(logisticsInfo => {
+                  setShippingDisplay({
+                    price: logisticsInfo.display_price_was,
+                    days: logisticsInfo.display_days_was
+                  });
+                  setBestInternalShipping(logisticsInfo);
+                }).catch(err => console.error('Error calculating shipping:', err));
+              }
+            }, 100);
+          }
       }
-  }, [currentUser]);
+  }, [currentUser, address, userMode]);
 
   // Função para buscar coordenadas (Geocoding)
   const fetchCoordinates = async (query: string): Promise<[number, number] | null> => {
@@ -497,16 +568,45 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
     setCalculatingShipping(true);
     setShippingDisplay(null);
     setBestInternalShipping(null);
+    setShippingOptions([]);
+    setSelectedShippingOption(null);
 
     try {
-      const logisticsInfo = await logisticsService.calculateShipping(destCep, address || undefined);
-      
-      setShippingDisplay({
-        price: logisticsInfo.display_price_was,
-        days: logisticsInfo.display_days_was
-      });
+      if (userMode === UserMode.ATACADO) {
+        // Get multiple options for atacado mode
+        const options = await logisticsService.calculateShippingOptions(destCep, address || undefined);
+        setShippingOptions(options);
+        
+        // Select cheapest by default
+        const cheapest = options.reduce((prev, curr) => 
+          curr.real_cost < prev.real_cost ? curr : prev
+        );
+        setSelectedShippingOption(cheapest);
+        
+        setShippingDisplay({
+          price: cheapest.display_price_was,
+          days: cheapest.display_days_was
+        });
+        
+        setBestInternalShipping({
+          provider: cheapest.provider,
+          method: cheapest.method,
+          real_cost: cheapest.real_cost,
+          estimated_days: cheapest.estimated_days,
+          display_price_was: cheapest.display_price_was,
+          display_days_was: cheapest.display_days_was
+        });
+      } else {
+        // Single option for varejo mode (free shipping)
+        const logisticsInfo = await logisticsService.calculateShipping(destCep, address || undefined);
+        
+        setShippingDisplay({
+          price: logisticsInfo.display_price_was,
+          days: logisticsInfo.display_days_was
+        });
 
-      setBestInternalShipping(logisticsInfo);
+        setBestInternalShipping(logisticsInfo);
+      }
     } catch (err) {
       console.error('Error calculating logistics:', err);
       // Fallback to free shipping on error
@@ -572,8 +672,30 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   };
 
   const handleCompleteOrder = () => {
-      if(address && bestInternalShipping) {
+      // Validate minimum quantity for atacado mode
+      if (userMode === UserMode.ATACADO) {
+          const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+          if (totalQuantity < 10) {
+              alert(`Mínimo de 10 peças necessário no modo Atacado. Você tem ${totalQuantity} peça(s) no carrinho.`);
+              return;
+          }
+      }
+
+      // Use selected shipping option for atacado, or bestInternalShipping for varejo
+      const shippingToUse = userMode === UserMode.ATACADO && selectedShippingOption
+          ? {
+              provider: selectedShippingOption.provider,
+              method: selectedShippingOption.method,
+              real_cost: selectedShippingOption.real_cost,
+              estimated_days: selectedShippingOption.estimated_days,
+              display_price_was: selectedShippingOption.display_price_was,
+              display_days_was: selectedShippingOption.display_days_was
+            }
+          : bestInternalShipping;
+
+      if(address && shippingToUse) {
           const finalAddress = { ...address, numero: num, complemento: complement };
+          // In atacado mode, shipping is already included in total
           const finalAmount = paymentMethod === 'pix' ? total * 0.95 : total;
           
           // Pass Saved Card Token if selected
@@ -585,7 +707,7 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
 
           onComplete(
               finalAddress, 
-              bestInternalShipping, 
+              shippingToUse, 
               paymentMethod, 
               finalAmount, 
               saveCardForFuture, 
@@ -773,27 +895,82 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-neutral-400"><span>Subtotal</span><span>{formatCurrency(subtotal, locale)}</span></div>
                    
                    {/* FREIGHT DISPLAY LOGIC */}
-                   <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                      <span>Frete</span>
-                      <div className="flex items-center gap-2">
-                        {calculatingShipping ? (
-                            <span className="flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Calc...</span>
-                        ) : shippingDisplay ? (
-                            <>
-                                <span className="line-through text-neutral-500 decoration-red-500 decoration-2 font-medium">
-                                    {formatCurrency(shippingDisplay.price, locale)}
-                                </span>
-                                <span className="text-green-500 font-black">GRÁTIS</span>
-                            </>
-                        ) : (
-                            <span className="text-neutral-300">Aguardando CEP</span>
-                        )}
-                      </div>
-                   </div>
-                   {shippingDisplay && !calculatingShipping && (
-                       <div className="text-right text-[8px] font-bold text-neutral-400 uppercase tracking-widest">
-                           Prazo Estimado: {shippingDisplay.days} dias úteis
+                   {userMode === UserMode.ATACADO && shippingOptions.length > 0 ? (
+                     <div className="space-y-3">
+                       <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2">
+                         Opções de Frete
                        </div>
+                       {shippingOptions.map((option, idx) => {
+                         const isSelected = selectedShippingOption?.method === option.method;
+                         const isCheapest = option.real_cost === Math.min(...shippingOptions.map(o => o.real_cost));
+                         const isFastest = option.estimated_days === Math.min(...shippingOptions.map(o => o.estimated_days));
+                         
+                         return (
+                           <button
+                             key={idx}
+                             onClick={() => setSelectedShippingOption(option)}
+                             className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                               isSelected 
+                                 ? 'border-neutral-900 bg-neutral-50' 
+                                 : 'border-neutral-100 hover:border-neutral-300'
+                             }`}
+                           >
+                             <div className="flex justify-between items-start mb-2">
+                               <div>
+                                 <div className="text-[11px] font-black uppercase tracking-tight">
+                                   {option.method} - {option.provider}
+                                 </div>
+                                 <div className="flex gap-2 mt-1">
+                                   {isCheapest && (
+                                     <span className="text-[8px] font-bold uppercase tracking-widest text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                                       Mais Barato
+                                     </span>
+                                   )}
+                                   {isFastest && (
+                                     <span className="text-[8px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                                       Mais Rápido
+                                     </span>
+                                   )}
+                                 </div>
+                               </div>
+                               <div className="text-right">
+                                 <div className="text-[12px] font-black tracking-tighter">
+                                   {formatCurrency(option.display_price_was, locale)}
+                                 </div>
+                                 <div className="text-[8px] text-neutral-400 uppercase tracking-widest mt-0.5">
+                                   {option.estimated_days} dias
+                                 </div>
+                               </div>
+                             </div>
+                           </button>
+                         );
+                       })}
+                     </div>
+                   ) : (
+                     <>
+                       <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                          <span>Frete</span>
+                          <div className="flex items-center gap-2">
+                            {calculatingShipping ? (
+                                <span className="flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Calc...</span>
+                            ) : shippingDisplay ? (
+                                <>
+                                    <span className="line-through text-neutral-500 decoration-red-500 decoration-2 font-medium">
+                                        {formatCurrency(shippingDisplay.price, locale)}
+                                    </span>
+                                    <span className="text-green-500 font-black">GRÁTIS</span>
+                                </>
+                            ) : (
+                                <span className="text-neutral-300">Aguardando CEP</span>
+                            )}
+                          </div>
+                       </div>
+                       {shippingDisplay && !calculatingShipping && (
+                           <div className="text-right text-[8px] font-bold text-neutral-400 uppercase tracking-widest">
+                               Prazo Estimado: {shippingDisplay.days} dias úteis
+                           </div>
+                       )}
+                     </>
                    )}
 
                    {paymentMethod === 'pix' && (<div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-green-500"><span>Desconto PIX (5%)</span><span>-{formatCurrency(total * 0.05, locale)}</span></div>)}

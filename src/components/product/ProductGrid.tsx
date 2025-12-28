@@ -4,6 +4,7 @@ import { Product, UserMode, Category, Collection, Coupon } from '../../types';
 import { Heart, SlidersHorizontal, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
+import { calculatePrice, filterProductsForMode } from '../../utils/product';
 
 interface ProductGridProps {
   products: Product[];
@@ -107,7 +108,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   };
 
   const filteredProducts = useMemo(() => {
-    const productsInLocale = products.filter(p => {
+    // First filter by mode (atacado filters variants with stock < 10)
+    const modeFiltered = filterProductsForMode(products, userMode);
+    
+    const productsInLocale = modeFiltered.filter(p => {
       const name = getLoc(p.name);
       return name && name.trim() !== '';
     });
@@ -116,7 +120,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     
     const cat = categories.find(c => getLoc(c.name) === activeCategory);
     return productsInLocale.filter(p => p.category_id === cat?.id);
-  }, [activeCategory, products, categories, locale]);
+  }, [activeCategory, products, categories, locale, userMode]);
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const currentProducts = useMemo(() => filteredProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE), [currentPage, filteredProducts]);
@@ -202,8 +206,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-24">
             {!isLoading && currentProducts.map(p => {
                  const mainVariant = p.variants?.[0];
-                 const rawPrice = userMode === UserMode.RETAIL ? mainVariant?.retail_price : mainVariant?.wholesale_price;
-                 const { original, final, hasDiscount, code } = getDisplayPrice(p, rawPrice || 0);
+                 const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
+                 const { original, final, hasDiscount, code } = getDisplayPrice(p, rawPrice);
                  const displayImg = p.default_image_url || p.base_images[0];
                  const isWishlisted = wishlistIds.includes(p.id);
                  return (

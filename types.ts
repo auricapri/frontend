@@ -193,8 +193,8 @@ export interface Coupon {
 }
 
 export enum UserMode {
-  RETAIL = 'RETAIL',
-  WHOLESALE = 'WHOLESALE'
+  VAREJO = 'VAREJO',
+  ATACADO = 'ATACADO'
 }
 
 export interface SavedAddress {
