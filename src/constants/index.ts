@@ -5,8 +5,8 @@ export const WHATSAPP_LINK = 'https://wa.me/AURICAPRI';
 export const DEFAULT_LOCALE = 'pt' as const;
 
 export const USER_MODES = {
-  RETAIL: 'RETAIL',
-  WHOLESALE: 'WHOLESALE'
+  VAREJO: 'VAREJO',
+  ATACADO: 'ATACADO'
 } as const;
 
 export const PAYMENT_METHODS = {

@@ -1,7 +1,18 @@
-import { CartItem, Product, Asset } from '../types';
+import { CartItem, Product, Asset, UserMode } from '../types';
 
 export class CartService {
-  validateStock(items: CartItem[], products: Product[], assets: Asset[]): { valid: boolean; error?: string } {
+  validateStock(items: CartItem[], products: Product[], assets: Asset[], userMode?: UserMode): { valid: boolean; error?: string } {
+    // Validate minimum quantity for atacado mode
+    if (userMode === UserMode.ATACADO) {
+      const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+      if (totalQuantity < 10) {
+        return { 
+          valid: false, 
+          error: `Mínimo de 10 peças necessário no modo Atacado. Você tem ${totalQuantity} peça(s) no carrinho.` 
+        };
+      }
+    }
+
     const requiredAssets: Record<string, number> = {};
 
     for (const item of items) {

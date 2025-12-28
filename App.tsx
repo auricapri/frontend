@@ -22,12 +22,13 @@ import { useWishlist } from './src/hooks/useWishlist';
 import { OrdersApi } from './src/api/orders.api';
 import { UsersApi } from './src/api/users.api';
 import { ProductsApi } from './src/api/products.api';
+import { calculatePrice, filterProductsForMode } from './src/utils/product';
 
 export const App: React.FC = () => {
   console.log('App: Component rendering...');
   
   const [locale, setLocale] = useState<Locale>('pt');
-  const [userMode, setUserMode] = useState<UserMode>(UserMode.RETAIL);
+  const [userMode, setUserMode] = useState<UserMode>(UserMode.VAREJO);
   
   // Use hooks for data fetching
   const { 
@@ -294,6 +295,17 @@ export const App: React.FC = () => {
   }, []);
 
   const validateCartStock = (): { valid: boolean; error?: string } => {
+      // Validate minimum quantity for atacado mode
+      if (userMode === UserMode.ATACADO) {
+          const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+          if (totalQuantity < 10) {
+              return { 
+                  valid: false, 
+                  error: `Mínimo de 10 peças necessário no modo Atacado. Você tem ${totalQuantity} peça(s) no carrinho.` 
+              };
+          }
+      }
+
       const requiredAssets: Record<string, number> = {};
 
       for (const item of cartItems) {
@@ -488,7 +500,7 @@ export const App: React.FC = () => {
           size: variant.size || 'N/A',
           color_name: variant.color_name,
           color_hex: variant.color_hex || '#000',
-          price: userMode === UserMode.RETAIL ? variant.retail_price : variant.wholesale_price,
+          price: calculatePrice(variant, userMode),
           quantity: 1,
           sku: variant.sku
         });
@@ -568,7 +580,7 @@ export const App: React.FC = () => {
         onOpenCoupons={() => setIsCouponsOpen(true)}
         onOpenAuth={() => setIsAuthOpen(true)}
         userMode={userMode}
-        onToggleMode={() => setUserMode(prev => prev === UserMode.RETAIL ? UserMode.WHOLESALE : UserMode.RETAIL)}
+        onToggleMode={() => setUserMode(prev => prev === UserMode.VAREJO ? UserMode.ATACADO : UserMode.VAREJO)}
         onNavigate={handleNavigate}
         isScrolled={currentView === 'home' && isScrolled}
         isProductView={currentView === 'product' || currentView === 'checkout' || currentView === 'collection'}
@@ -658,6 +670,8 @@ export const App: React.FC = () => {
           <CheckoutView 
             items={cartItems} 
             currentUser={currentUser}
+            storeConfig={storeConfig}
+            userMode={userMode}
             onBack={() => handleNavigate('home')} 
             onComplete={handlePlaceOrder} 
             locale={locale} 
@@ -756,7 +770,7 @@ export const App: React.FC = () => {
         currentUserId={currentUser?.id} 
         isOpen={isWishlistOpen} 
         onClose={() => setIsWishlistOpen(false)} 
-        items={products.filter(p => wishlistIds.includes(p.id))} 
+        items={filterProductsForMode(products.filter(p => wishlistIds.includes(p.id)), userMode)} 
         userMode={userMode} 
         onRemoveItem={async (id) => {
           await toggleWishlist(id);
