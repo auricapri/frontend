@@ -42,29 +42,31 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
       </div>
       
       <div className="space-y-8 mb-12 max-h-[400px] overflow-y-auto pr-4 no-scrollbar">
-        {items.map((item, idx) => (
+        {Array.isArray(items) && items.length > 0 ? items.map((item, idx) => (
           <div
             key={idx}
             className="flex gap-6 items-center animate-in slide-in-from-right duration-500"
             style={{ animationDelay: `${idx * 100}ms` }}
           >
             <div className="w-20 h-24 bg-white rounded-2xl overflow-hidden flex-none border border-neutral-100 shadow-sm">
-              <img src={item.image} className="w-full h-full object-cover" alt={getLoc(item.name)} />
+              <img src={item?.image || ''} className="w-full h-full object-cover" alt={getLoc(item?.name)} />
             </div>
             <div className="flex-1">
               <h5 className="text-[11px] font-black uppercase tracking-tight leading-tight mb-1">
-                {getLoc(item.name)}
+                {getLoc(item?.name)}
               </h5>
               <p className="text-[9px] text-neutral-400 uppercase font-bold tracking-widest">
-                {getLoc(item.color_name)} | {item.size}
+                {getLoc(item?.color_name)} | {item?.size || 'N/A'}
               </p>
-              <p className="text-[10px] font-black mt-2">Qtd: {item.quantity}</p>
+              <p className="text-[10px] font-black mt-2">Qtd: {item?.quantity || 0}</p>
             </div>
             <span className="text-[12px] font-black tracking-tighter">
-              {formatCurrency(item.price * item.quantity, locale)}
+              {formatCurrency((item?.price || 0) * (item?.quantity || 0), locale)}
             </span>
           </div>
-        ))}
+        )) : (
+          <div className="text-center py-8 text-neutral-400 text-sm">Nenhum item no carrinho</div>
+        )}
       </div>
       
       <div className="space-y-4 pt-10 border-t border-neutral-200">
@@ -74,15 +76,17 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
         </div>
         
         {/* FREIGHT DISPLAY LOGIC */}
-        {userMode === UserMode.ATACADO && shippingOptions.length > 0 ? (
+        {userMode === UserMode.ATACADO && Array.isArray(shippingOptions) && shippingOptions.length > 0 ? (
           <div className="space-y-3">
             <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2">
               Opções de Frete
             </div>
             {shippingOptions.map((option, idx) => {
+              if (!option) return null;
               const isSelected = selectedShippingOption?.method === option.method;
-              const isCheapest = option.real_cost === Math.min(...shippingOptions.map(o => o.real_cost));
-              const isFastest = option.estimated_days === Math.min(...shippingOptions.map(o => o.estimated_days));
+              const safeOptions = Array.isArray(shippingOptions) ? shippingOptions.filter(o => o) : [];
+              const isCheapest = safeOptions.length > 0 && option.real_cost === Math.min(...safeOptions.map(o => o?.real_cost || Infinity));
+              const isFastest = safeOptions.length > 0 && option.estimated_days === Math.min(...safeOptions.map(o => o?.estimated_days || Infinity));
               
               return (
                 <button
