@@ -46,37 +46,57 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       try {
         setIsLoading(true);
         const data = await wishlistApi.getSharedWishlist(slug);
+        
+        if (!data || !data.product_ids || !Array.isArray(data.product_ids)) {
+          throw new Error('Dados da wishlist inválidos');
+        }
+        
         setWishlistData(data);
 
         // Fetch products (use getAllActive for public access, not getAll which requires admin)
         const allProducts = await productsApi.getAllActive();
-        const wishlistProducts = allProducts.filter(p => data.product_ids.includes(p.id));
+        if (!Array.isArray(allProducts)) {
+          console.warn('[SharedWishlistPage] getAllActive returned non-array:', allProducts);
+          setProducts([]);
+          setCartItems([]);
+          return;
+        }
+        
+        const wishlistProducts = allProducts.filter(p => p && p.id && data.product_ids.includes(p.id));
         setProducts(wishlistProducts);
 
         // Build cart items
-        const items: CartItem[] = wishlistProducts.flatMap(product => {
-          const variant = product.variants?.[0];
+        const items: CartItem[] = (Array.isArray(wishlistProducts) ? wishlistProducts : []).flatMap(product => {
+          if (!product || !product.variants || !Array.isArray(product.variants)) {
+            return [];
+          }
+          
+          const variant = product.variants[0];
           if (!variant || variant.stock_quantity === 0) return [];
 
           return [{
             variant_id: variant.id,
             product_id: product.id,
-            name: product.name,
-            image: (variant.variant_images && variant.variant_images.length > 0)
+            name: product.name || {},
+            image: (variant.variant_images && Array.isArray(variant.variant_images) && variant.variant_images.length > 0)
               ? variant.variant_images[0]
-              : (product.base_images && product.base_images.length > 0 ? product.base_images[0] : ''),
+              : (product.base_images && Array.isArray(product.base_images) && product.base_images.length > 0 ? product.base_images[0] : ''),
             size: variant.size || 'N/A',
-            color_name: variant.color_name,
+            color_name: variant.color_name || {},
             color_hex: variant.color_hex || '#000',
             price: calculatePrice(variant, userMode),
             quantity: 1,
-            sku: variant.sku
+            sku: variant.sku || ''
           }];
         });
 
-        setCartItems(items);
+        setCartItems(items || []);
       } catch (err: any) {
-        setError(err.message || 'Erro ao carregar wishlist');
+        console.error('[SharedWishlistPage] Error loading wishlist:', err);
+        setError(err?.message || 'Erro ao carregar wishlist');
+        setWishlistData(null);
+        setProducts([]);
+        setCartItems([]);
       } finally {
         setIsLoading(false);
       }
@@ -111,7 +131,11 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
     if (!slug || !currentUser) return;
 
     try {
-      const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+      if (!Array.isArray(cartItems) || cartItems.length === 0) {
+        throw new Error('Carrinho vazio');
+      }
+      
+      const subtotal = cartItems.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 0)), 0);
       
       await wishlistApi.buyAllFromSharedWishlist(slug, {
         addressData,
@@ -170,7 +194,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   if (showCheckout) {
     return (
       <CheckoutView
-        cartItems={cartItems}
+        cartItems={Array.isArray(cartItems) ? cartItems : []}
         onPlaceOrder={handlePlaceOrder}
         onBack={() => setShowCheckout(false)}
         t={t}
@@ -192,7 +216,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
           </p>
         </div>
 
-        {products.length === 0 ? (
+        {!Array.isArray(products) || products.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-neutral-400">Esta wishlist está vazia</p>
           </div>
@@ -200,12 +224,14 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
               {products.map(product => {
-                const variant = product.variants?.[0];
+                if (!product) return null;
+                
+                const variant = product.variants && Array.isArray(product.variants) ? product.variants[0] : undefined;
                 const price = variant ? calculatePrice(variant, userMode) : 0;
-                const image = variant?.variant_images?.[0] || product.base_images?.[0] || '';
+                const image = variant?.variant_images?.[0] || (product.base_images && Array.isArray(product.base_images) ? product.base_images[0] : '') || '';
 
                 return (
-                  <div key={product.id} className="flex flex-col">
+                  <div key={product.id || Math.random()} className="flex flex-col">
                     <div className="aspect-[3/4] bg-neutral-50 rounded-2xl overflow-hidden mb-4">
                       <img
                         src={image}
@@ -225,7 +251,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
             <div className="flex justify-center">
               <button
                 onClick={handleBuyAll}
-                disabled={!currentUser || cartItems.length === 0}
+                disabled={!currentUser || !Array.isArray(cartItems) || cartItems.length === 0}
                 className="px-12 py-4 bg-black text-white rounded-2xl text-sm font-black uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {currentUser ? 'Comprar Todos os Itens' : 'Faça login para comprar'}
