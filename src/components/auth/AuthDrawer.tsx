@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, User, LogOut, Apple, Loader2, ShoppingBag, Mail, ArrowLeft, Check } from 'lucide-react';
+import { X, User, LogOut, /* Apple, */ Loader2, ShoppingBag, Mail, ArrowLeft, Check } from 'lucide-react';
 import { UserProfile as UserType } from '../../types';
 import { Locale } from '../../i18n';
 import { supabase } from '../../utils/supabase';
@@ -19,7 +19,7 @@ interface AuthDrawerProps {
 const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin, onLogout, t, locale }) => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isLoading, setIsLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null);
+  const [socialLoading, setSocialLoading] = useState<'google' | null>(null); // 'apple' temporarily disabled
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [passwordResetSent, setPasswordResetSent] = useState(false);
   
@@ -56,7 +56,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
     }
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'apple') => {
+  const handleSocialLogin = async (provider: 'google' /* | 'apple' temporarily disabled */) => {
     setSocialLoading(provider);
     try {
       // Get redirect URL from environment variable
@@ -270,6 +270,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                      <span className="text-[10px] font-black uppercase tracking-widest">Google Login</span>
                    </button>
                    
+                   {/* Apple OAuth temporarily disabled
                    <button 
                      onClick={() => handleSocialLogin('apple')}
                      disabled={!!socialLoading}
@@ -278,6 +279,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                      {socialLoading === 'apple' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Apple className="w-4 h-4 fill-current" />}
                      <span className="text-[10px] font-black uppercase tracking-widest">Apple Login</span>
                    </button>
+                   */}
                 </div>
 
                 <div className="flex items-center gap-4 py-2">
