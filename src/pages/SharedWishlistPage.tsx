@@ -6,6 +6,7 @@ import { formatCurrency } from '../utils/currency';
 import { Locale } from '../i18n';
 import CheckoutView from '../components/checkout/CheckoutView';
 import { UserMode } from '../types';
+import { calculatePrice } from '../utils/product';
 
 interface SharedWishlistPageProps {
   locale: Locale;
@@ -67,7 +68,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
             size: variant.size || 'N/A',
             color_name: variant.color_name,
             color_hex: variant.color_hex || '#000',
-            price: userMode === UserMode.RETAIL ? variant.retail_price : variant.wholesale_price,
+            price: calculatePrice(variant, userMode),
             quantity: 1,
             sku: variant.sku
           }];
@@ -200,9 +201,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
               {products.map(product => {
                 const variant = product.variants?.[0];
-                const price = variant
-                  ? (userMode === UserMode.RETAIL ? variant.retail_price : variant.wholesale_price)
-                  : 0;
+                const price = variant ? calculatePrice(variant, userMode) : 0;
                 const image = variant?.variant_images?.[0] || product.base_images?.[0] || '';
 
                 return (

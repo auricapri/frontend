@@ -259,7 +259,19 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                    className="p-8 bg-neutral-50 rounded-[2.5rem] border border-neutral-100 group hover:border-black transition-all cursor-pointer flex justify-between items-center"
                  >
                     <div className="space-y-2">
-                       <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">ID: {order.id.slice(0, 8)}</span>
+                       <div className="flex items-center gap-2">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">ID: {order.id.slice(0, 8)}</span>
+                          {order.wishlist_slug && (
+                            <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full">
+                              Wishlist
+                            </span>
+                          )}
+                          {order.gift_from_user_id && (
+                            <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">
+                              Presente
+                            </span>
+                          )}
+                       </div>
                        <h4 className="text-sm font-black uppercase tracking-tight italic">{new Date(order.created_at).toLocaleDateString(locale)}</h4>
                        <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full ${order.status === 'delivered' ? 'bg-green-500' : 'bg-orange-400'}`} />
