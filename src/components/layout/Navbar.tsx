@@ -101,13 +101,9 @@ const Navbar: React.FC<NavbarProps> = ({
             <div className="flex-none text-center">
                  <div 
                    onClick={() => handleNav('home')} 
-                   className="cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 flex items-center justify-center"
+                   className="text-lg md:text-2xl font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95"
                  >
-                    <img 
-                      src="/logo.png" 
-                      alt={storeName}
-                      className="h-8 md:h-10 w-auto max-w-[200px] object-contain"
-                    />
+                    {storeName}
                 </div>
             </div>
 
