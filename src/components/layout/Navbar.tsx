@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ShoppingBag, Menu, X, Heart, ArrowLeft, Ticket, User, Globe } from 'lucide-react';
 import { UserMode } from '../../types';
@@ -102,9 +101,13 @@ const Navbar: React.FC<NavbarProps> = ({
             <div className="flex-none text-center">
                  <div 
                    onClick={() => handleNav('home')} 
-                   className="text-lg md:text-2xl font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95"
+                   className="cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 flex items-center justify-center"
                  >
-                    {storeName}
+                    <img 
+                      src="/logo.png" 
+                      alt={storeName}
+                      className="h-8 md:h-10 w-auto max-w-[200px] object-contain"
+                    />
                 </div>
             </div>
 
@@ -113,28 +116,31 @@ const Navbar: React.FC<NavbarProps> = ({
                 <div className="flex items-center space-x-1 sm:space-x-4 md:space-x-2">
                     <button 
                       onClick={onOpenAuth} 
-                      className="p-3 hover:opacity-50 transition-all relative active:scale-90"
+                      className="p-2 -mr-2 hover:opacity-50 transition-all active:scale-90"
+                      aria-label="Account"
                     >
                         <User className={`w-5 h-5 ${isLoggedIn ? 'fill-current' : ''}`} strokeWidth={1.2} />
                     </button>
                     
                     <button 
                       onClick={onOpenWishlist} 
-                      className="p-3 relative hover:opacity-50 transition-all active:scale-90"
+                      className="p-2 relative hover:opacity-50 transition-all active:scale-90"
+                      aria-label="Wishlist"
                     >
-                        <Heart className={`w-5 h-5 ${wishlistCount > 0 ? 'fill-current' : ''}`} strokeWidth={1.2} />
+                        <Heart className="w-5 h-5" strokeWidth={1.2} filled={wishlistCount > 0} />
                         {wishlistCount > 0 && (
-                          <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-red-500 shadow-sm animate-pulse" />
+                            <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                         )}
                     </button>
 
                     <button 
                       onClick={onOpenCart} 
-                      className="p-3 relative hover:opacity-50 transition-all active:scale-90"
+                      className="p-2 relative hover:opacity-50 transition-all active:scale-90"
+                      aria-label="Cart"
                     >
                         <ShoppingBag className="w-5 h-5" strokeWidth={1.2} />
                         {cartCount > 0 && (
-                            <span className={`absolute top-2 right-2 text-[8px] w-4 h-4 flex items-center justify-center rounded-full font-black transition-colors duration-500
+                            <span className={`absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full text-[8px] font-black flex items-center justify-center
                               ${isSolid ? 'bg-black text-white' : 'bg-white text-black'}
                             `}>
                                 {cartCount}
@@ -148,62 +154,78 @@ const Navbar: React.FC<NavbarProps> = ({
 
       {/* Fullscreen Overlay Menu */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-[100] bg-white text-black flex flex-col animate-in fade-in slide-in-from-top duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
-          <header className="h-20 px-8 flex justify-between items-center border-b border-neutral-100">
-             <div className="text-xl font-light tracking-[0.4em] uppercase">{storeName}</div>
-             <button onClick={() => setIsMenuOpen(false)} className="p-4 bg-neutral-50 rounded-full hover:rotate-90 transition-all duration-500">
-               <X className="w-6 h-6" />
-             </button>
-          </header>
-          
-          <div className="flex-1 p-10 md:p-16 flex flex-col justify-between overflow-y-auto no-scrollbar">
-            <div className="space-y-8 md:space-y-12 text-4xl md:text-6xl font-light uppercase tracking-tighter">
-                <button 
-                  className="block w-full text-left hover:pl-6 transition-all duration-500 ease-out" 
+        <div 
+          className="fixed inset-0 bg-white z-50 transition-all duration-700"
+          style={{ 
+            opacity: isMenuOpen ? 1 : 0,
+            transform: isMenuOpen ? 'translateY(0)' : 'translateY(-50px)',
+            transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)'
+          }}
+        >
+          <div className="h-full max-w-[1920px] mx-auto px-6 md:px-12 py-6 flex flex-col">
+            {/* Menu Header */}
+            <div className="h-20 flex items-center justify-between border-b border-neutral-100">
+              <h2 className="text-lg font-light tracking-[0.2em] uppercase">{storeName}</h2>
+              <button 
+                onClick={() => setIsMenuOpen(false)} 
+                className="p-4 bg-neutral-50 rounded-full hover:opacity-70 transition-all active:scale-90"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {/* Menu Content */}
+            <div className="flex-1 flex flex-col justify-between py-12">
+              <div className="space-y-8">
+                <button
                   onClick={() => handleNav('home', 'hero')}
+                  className="text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
                 >
                   {t('nav.newArrivals')}
                 </button>
-                <button 
-                  className="block w-full text-left hover:pl-6 transition-all duration-500 ease-out" 
+                <button
                   onClick={() => handleNav('home', 'collection')}
+                  className="text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
                 >
                   {t('nav.collection')}
                 </button>
-                <button 
-                  className="block w-full text-left hover:pl-6 transition-all duration-500 ease-out" 
+                <button
                   onClick={() => handleNav('about')}
+                  className="text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
                 >
                   Sobre Nós
                 </button>
-            </div>
-            
-            <div className="pt-16 border-t border-neutral-100 flex flex-col gap-8">
-                {/* Language Selection Row REMOVED - Restricted to PT only */}
-
-                {/* Secondary Actions Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <button 
-                      onClick={() => { setIsMenuOpen(false); onOpenCoupons(); }} 
-                      className="flex items-center justify-between p-8 bg-neutral-50 rounded-[2rem] hover:bg-neutral-100 transition-all active:scale-95 group"
-                    >
-                        <div className="flex items-center gap-4">
-                          <Ticket className="w-6 h-6" strokeWidth={1} />
-                          <span className="text-[10px] font-black uppercase tracking-[0.3em]">{t('nav.coupons')}</span>
-                        </div>
-                        <ArrowLeft className="w-4 h-4 rotate-180 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0" />
-                    </button>
-                    <button 
-                      onClick={onToggleMode} 
-                      className="flex items-center justify-between p-8 border-2 border-neutral-100 rounded-[2rem] hover:border-black transition-all active:scale-95 group"
-                    >
-                        <div className="flex flex-col items-start gap-1">
-                          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400">Ambiente</span>
-                          <span className="text-xs font-black uppercase tracking-widest">{userMode}</span>
-                        </div>
-                        <ArrowLeft className="w-4 h-4 rotate-180 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0" />
-                    </button>
+              </div>
+              
+              {/* Menu Footer */}
+              <div className="pt-10 border-t border-neutral-100">
+                <div className="flex flex-wrap gap-4">
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onOpenCoupons();
+                    }}
+                    className="flex-1 min-w-[120px] p-5 bg-neutral-50 rounded-3xl flex items-center justify-between hover:opacity-95 transition-all active:scale-95"
+                  >
+                    <div className="flex items-center gap-4">
+                      <Ticket className="w-6 h-6" strokeWidth={1} />
+                      <span className="text-[9px] font-black uppercase tracking-[0.3em]">{t('nav.coupons')}</span>
+                    </div>
+                    <ArrowLeft className="w-4 h-4 rotate-180" />
+                  </button>
+                  
+                  <button
+                    onClick={onToggleMode}
+                    className="flex-1 min-w-[120px] p-5 border-2 border-neutral-100 rounded-3xl flex items-center justify-between hover:opacity-95 transition-all active:scale-95"
+                  >
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-400">Ambiente</span>
+                      <span className="text-xs font-black uppercase tracking-wide">{userMode}</span>
+                    </div>
+                    <ArrowLeft className="w-4 h-4 rotate-180" />
+                  </button>
                 </div>
+              </div>
             </div>
           </div>
         </div>
