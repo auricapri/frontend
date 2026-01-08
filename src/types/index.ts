@@ -18,6 +18,7 @@ export interface LoyaltySettings {
   enabled: boolean;
   cashback_percentage: number; // e.g. 5 for 5%
   xp_per_currency_unit: number; // e.g. 1 XP per $1
+  review_cashback_amount?: number; // Fixed cashback amount per review
   levels: LoyaltyLevel[];
 }
 
@@ -49,6 +50,37 @@ export interface StoreConfig {
   loyalty_program?: LoyaltySettings; // New Loyalty Config
 }
 
+export type BrazilianTaxRegime = 'mei' | 'simples' | 'presumido' | 'real';
+
+export type PaymentGatewayProvider = 
+  | 'stripe' 
+  | 'pagarme' 
+  | 'mercadopago' 
+  | 'asaas' 
+  | 'cielo' 
+  | 'rede' 
+  | 'other';
+
+export interface PaymentGatewaySettings {
+  provider: PaymentGatewayProvider;
+  fee_percentage: number;
+  fee_fixed: number;
+  pix_fee_percentage: number;
+  pix_fee_fixed: number;
+  boleto_fee_fixed: number;
+  installment_fee_per_installment: number;
+  max_installments: number;
+}
+
+export interface CostStructureSettings {
+  devolution_rate: number;
+  reprocessing_cost: number;
+  loss_rate: number;
+  storage_rate: number;
+  weight_surcharge_threshold_g: number;
+  weight_surcharge_amount: number;
+}
+
 export interface GlobalFinancialSettings {
   fixed_monthly: number;       
   infra_tech: number;          
@@ -56,8 +88,44 @@ export interface GlobalFinancialSettings {
   das_mei: number;             
   marketing_fixed: number;     
   packaging_cost: number; 
-  avg_freight_cost: number;    
+  avg_freight_cost: number;
+  tax_regime: BrazilianTaxRegime;
+  origin_state: string;
+  origin_cep: string;
+  payment_gateway?: PaymentGatewaySettings;
+  cost_structure?: CostStructureSettings;
 }
+
+export const DEFAULT_FINANCIAL_SETTINGS: GlobalFinancialSettings = {
+  fixed_monthly: 500,
+  infra_tech: 200,
+  monthly_sales_vol: 100,
+  das_mei: 71.60,
+  marketing_fixed: 300,
+  packaging_cost: 5,
+  avg_freight_cost: 25,
+  tax_regime: 'mei',
+  origin_state: 'SP',
+  origin_cep: '01310100',
+  payment_gateway: {
+    provider: 'other',
+    fee_percentage: 0.0399,
+    fee_fixed: 0.50,
+    pix_fee_percentage: 0.0099,
+    pix_fee_fixed: 0,
+    boleto_fee_fixed: 3.49,
+    installment_fee_per_installment: 0.0199,
+    max_installments: 12
+  },
+  cost_structure: {
+    devolution_rate: 0.03,
+    reprocessing_cost: 10,
+    loss_rate: 0.05,
+    storage_rate: 0.02,
+    weight_surcharge_threshold_g: 1000,
+    weight_surcharge_amount: 5
+  }
+};
 
 export interface Asset {
   id: string;
@@ -113,7 +181,7 @@ export interface PricingScenario {
   name: string;
   channel: 'ecommerce' | 'marketplace' | 'wholesale';
   region_uf: string;
-  tax_rate_percent: number;   
+  tax_rate_percent?: number;
   ads_cac_target: number;     
   commission_percent: number; 
   target_margin_percent: number; 
@@ -128,6 +196,7 @@ export interface Product {
   slug: LocalizedText;
   is_active: boolean;
   is_highlight: boolean;
+  has_free_shipping?: boolean;
   pricing_scenarios?: PricingScenario[];
   pricing_variables?: any[];
   base_images: string[];
@@ -147,8 +216,10 @@ export interface CartItem {
   color_name: LocalizedText;
   color_hex: string;
   price: number;
+  original_price?: number;
   quantity: number;
   sku: string;
+  applied_coupon_code?: string;
 }
 
 export interface Category {
@@ -243,11 +314,23 @@ export interface OrderItem {
 }
 
 export interface InternalLogisticsInfo {
-  selected_carrier: string; 
+  selected_carrier: string;
+  method?: string;
   real_cost: number;        
   estimated_days: number;   
   display_price_was: number;
   display_days_was: number; 
+}
+
+export interface AddressData {
+  logradouro: string;
+  bairro: string;
+  localidade: string;
+  uf: string;
+  cep?: string;
+  numero?: string;
+  complemento?: string;
+  erro?: boolean;
 }
 
 export interface LogisticsMetadata {
@@ -295,5 +378,155 @@ export interface Review {
   rating: number;
   comment: string;
   is_verified_purchase: boolean;
+  created_at: string;
+}
+
+export interface ProductReview {
+  id: string;
+  order_id: string;
+  order_item_id: string;
+  product_id: string;
+  variant_id?: string;
+  user_id: string;
+  user_name?: string;
+  rating: number;
+  comment: string | null;
+  helpful_count: number;
+  cashback_awarded: boolean;
+  variant_size?: string;
+  variant_color?: string;
+  created_at: string;
+  updated_at: string;
+  media?: ProductReviewMedia[];
+  user_has_helped?: boolean;
+}
+
+export interface ProductReviewMedia {
+  id: string;
+  review_id: string;
+  media_url: string;
+  media_type: 'image' | 'video';
+  file_size: number;
+  file_name: string;
+  created_at: string;
+}
+
+export interface OrderItemForReview {
+  order_item_id: string;
+  product_id: string;
+  variant_id?: string;
+  product_name: any;
+  variant_size: string;
+  variant_color: any;
+  image: string;
+  quantity: number;
+  price: number;
+  has_review: boolean;
+  review?: ProductReview;
+}
+
+export interface BoardColumn {
+  id: string;
+  title: string;
+  color: string;
+  position: number;
+}
+
+export interface DreamBoard {
+  id: string;
+  name: string;
+  description?: string;
+  columns: BoardColumn[];
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+  is_active: boolean;
+}
+
+export interface DiagramComment {
+  id: string;
+  text: string;
+  timestamp: string;
+  userId?: string;
+  userName?: string;
+}
+
+export interface DiagramVariant {
+  variantId: string;
+  productId: string;
+  sku: string;
+  color?: string;
+  colorHex?: string;
+  size?: string;
+  retail_price: number;
+  wholesale_price: number;
+  cost_price?: number;
+  stock_quantity: number;
+  isModified?: boolean;
+}
+
+export interface ModifiedProduct {
+  productId: string;
+  productName: string;
+  changes: Record<string, any>;
+}
+
+export interface ModifiedVariant {
+  variantId: string;
+  productId: string;
+  changes: Record<string, any>;
+}
+
+export interface DiagramMetadata {
+  mainProductId?: string;
+  resultNodeId?: string;
+  description?: string;
+  flowType?: 'cost' | 'revenue' | 'mixed';
+  totalVariables?: Record<string, number>;
+  finalResult?: number;
+  modifiedProducts?: ModifiedProduct[];
+  modifiedVariants?: ModifiedVariant[];
+  templateType?: 'cost' | 'revenue' | 'collection' | 'custom';
+}
+
+export interface DiagramData {
+  nodes: any[];
+  edges: any[];
+  metadata?: DiagramMetadata;
+}
+
+export interface DreamCardMetadata {
+  diagram?: DiagramData;
+  associated_assets?: string[];
+  associated_collections?: string[];
+  strategy?: string;
+  draft_product_id?: string;
+  draft_collection_id?: string;
+  draft_category_id?: string;
+}
+
+export interface DreamCard {
+  id: string;
+  board_id: string;
+  column_id: string;
+  title: string;
+  description?: string;
+  image_url?: string;
+  category_id?: string;
+  position: number;
+  metadata: DreamCardMetadata;
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+  completed_at?: string;
+  comments_count?: number;
+}
+
+export interface DreamComment {
+  id: string;
+  card_id: string;
+  user_id: string;
+  user_name: string;
+  content: string;
   created_at: string;
 }

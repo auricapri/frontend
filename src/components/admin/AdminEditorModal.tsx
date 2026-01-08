@@ -3,15 +3,16 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, Save, Plus, Trash2, ImageIcon, Sliders, Upload, Loader2, 
   Eye, Layout, Layers, Check, Calculator, TrendingUp, Info, Scale, Ruler, DollarSign,
-  Monitor, Tag, Package, Link, ArrowDown, HelpCircle, FileText
+  Monitor, Tag, Package, Link, ArrowDown, HelpCircle, FileText, Landmark, Truck
 } from 'lucide-react';
 import { Locale } from '../../i18n';
-import { ProductVariant, Category, PricingScenario, Collection, Product, GlobalFinancialSettings, UserMode, Asset, SizeGuide } from '../../types';
+import { ProductVariant, Category, PricingScenario, Collection, Product, GlobalFinancialSettings, UserMode, Asset, SizeGuide, DEFAULT_FINANCIAL_SETTINGS } from '../../types';
 import { supabase } from '../../utils/supabase';
 import { formatCurrency } from '../../utils/currency';
 import { ProductDetail } from '../product';
 import { Hero } from '../shared';
 import { CollectionDetail } from '../product';
+import { pricingService } from '../../services/pricing.service';
 
 interface AdminEditorModalProps {
   item: { type: string; data: any; editLocale: Locale };
@@ -303,71 +304,63 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
     onUpdateData({ ...item.data, pricing_scenarios: scs });
   };
 
-  const calculateMatrix = () => {
-    if (!globalConfig || !activeScenario) {
-        alert("Erro: Configurações financeiras globais ou cenário não encontrados.");
+  const calculateMatrix = async () => {
+    if (!activeScenario) {
+        alert("Erro: Cenario de precificacao nao encontrado.");
         return;
     }
+
+    const config = globalConfig ?? DEFAULT_FINANCIAL_SETTINGS;
+    const pricingConfig = await pricingService.buildPricingConfig(config);
     
     const results: Record<string, SimulationResult> = {};
     const variants = item.data.variants || [];
     const newSelected = new Set<string>();
 
-    variants.forEach((v: ProductVariant) => {
-        const C_prod = Number(v.cost_price || 0);
-        
-        // Calculate Cost of Correlated Assets
-        let C_insumos = 0;
-        if (v.correlated_assets && v.correlated_assets.length > 0) {
-            v.correlated_assets.forEach((link: any) => {
-                const asset = assets.find(a => a.id === link.asset_id);
-                if (asset) C_insumos += asset.cost_price * link.quantity_required;
-            });
-        } else {
-            // Fallback default packaging if no asset linked
-            C_insumos = globalConfig.packaging_cost;
-        }
+    const hasFreeShipping = item.data.has_free_shipping === true;
+    const freeShippingCost = 35;
 
-        const Weight = Number(v.weight_g || 0);
-        const total_fixed = globalConfig.fixed_monthly + globalConfig.infra_tech + globalConfig.das_mei;
-        const C_rateio = total_fixed / (globalConfig.monthly_sales_vol || 1);
-        const C_frete_base = globalConfig.avg_freight_cost;
-        const C_ads = Number(activeScenario.ads_cac_target);
-        const T_var = Number(activeScenario.tax_rate_percent) / 100;
-        const Comissao = Number(activeScenario.commission_percent) / 100;
-        const M_meta = Number(activeScenario.target_margin_percent) / 100;
+    for (const v of variants as ProductVariant[]) {
+        const scenarioInput = {
+            channel: activeScenario.channel,
+            regionUf: activeScenario.region_uf,
+            targetMarginPercent: activeScenario.target_margin_percent,
+            commissionPercent: activeScenario.commission_percent,
+            adsCacTarget: activeScenario.ads_cac_target
+        };
 
-        const C_frete_ajustado = C_frete_base + (Weight > 1000 ? 5 : 0);
-        const R_dev = 0.03; 
-        const C_reproc = 10; 
-        const C_perda = C_prod * 0.05;
-        const C_estoque = C_prod * 0.02;
-        const C_dev_total = R_dev * (C_frete_ajustado * 2 + C_reproc + C_perda);
+        const priceBreakdown = await pricingService.calculateSuggestedPrice({
+            variant: v,
+            assets,
+            scenario: scenarioInput,
+            config: pricingConfig
+        });
 
-        const C_base = C_prod + C_insumos + C_rateio + C_dev_total + C_estoque + C_ads + C_frete_ajustado;
-        const divisor = 1 - M_meta - T_var - Comissao;
-        
-        const P_sugerido = divisor > 0 ? C_base / divisor : 0;
-        
-        // Calculate Breakdown amounts based on Suggested Price
-        const taxesAmount = P_sugerido * T_var;
-        const commAmount = P_sugerido * Comissao;
-        const marginAmount = P_sugerido * M_meta;
+        const gatewayFeePercent = pricingConfig.gateway.feePercentage;
+        const commissionAmount = priceBreakdown.finalPrice * (activeScenario.commission_percent / 100);
+        const taxesAmount = priceBreakdown.taxes.totalTaxAmount + commissionAmount;
+
+        const baseSuggestedPrice = priceBreakdown.finalPrice;
+        const finalSuggestedPrice = hasFreeShipping 
+            ? baseSuggestedPrice + freeShippingCost 
+            : baseSuggestedPrice;
+
+        const logisticsCost = priceBreakdown.baseCost.freightCost + priceBreakdown.baseCost.devolutionCost + priceBreakdown.baseCost.storageCost;
 
         results[v.id] = {
-            suggestedPrice: P_sugerido,
+            suggestedPrice: finalSuggestedPrice,
             breakdown: {
-                production: C_prod,
-                assets: C_insumos,
-                fixed: C_rateio,
-                logistics: C_frete_ajustado + C_dev_total + C_estoque,
-                marketing: C_ads,
-                taxes: taxesAmount + commAmount,
-                margin: marginAmount
+                production: priceBreakdown.baseCost.productionCost,
+                assets: priceBreakdown.baseCost.assetsCost,
+                fixed: priceBreakdown.baseCost.fixedCostAllocation,
+                logistics: hasFreeShipping ? logisticsCost + freeShippingCost : logisticsCost,
+                marketing: priceBreakdown.baseCost.marketingCost + scenarioInput.adsCacTarget,
+                taxes: taxesAmount + (finalSuggestedPrice * gatewayFeePercent),
+                margin: priceBreakdown.targetMarginAmount
             }
         };
         newSelected.add(v.id);
-    });
+    }
 
     setSimulationResults(results);
     setSelectedVariantsForUpdate(newSelected);
@@ -502,6 +495,18 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                     })}
                                 </div>
                             </div>
+                        </div>
+                        <div className="flex items-center gap-4 p-6 bg-neutral-50 border border-neutral-100 rounded-2xl">
+                          <input 
+                            type="checkbox" 
+                            className="w-5 h-5 accent-black cursor-pointer" 
+                            checked={item.data.has_free_shipping || false} 
+                            onChange={e => updateSimple('has_free_shipping', e.target.checked)} 
+                          />
+                          <div className="flex-1">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-900 cursor-pointer">Frete Grátis</label>
+                            <p className="text-[8px] text-neutral-400 mt-1">Ao ativar, R$35 será adicionado ao preço de varejo</p>
+                          </div>
                         </div>
                       </div>
                       
@@ -725,10 +730,6 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                       </select>
                                   </div>
                                   <div className="space-y-3">
-                                      <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Impostos (%)</label>
-                                      <div className="relative"><input type="number" className="w-full p-4 bg-white border border-neutral-200 rounded-xl text-xs font-bold outline-none focus:border-black transition-all" value={activeScenario.tax_rate_percent} onChange={e => updateScenario(activeScenario.id, 'tax_rate_percent', Number(e.target.value))} /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-300">%</span></div>
-                                  </div>
-                                  <div className="space-y-3">
                                       <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Margem Alvo (%)</label>
                                       <div className="relative"><input type="number" className="w-full p-4 bg-white border border-neutral-200 rounded-xl text-xs font-bold outline-none focus:border-black transition-all" value={activeScenario.target_margin_percent} onChange={e => updateScenario(activeScenario.id, 'target_margin_percent', Number(e.target.value))} /><span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-300">%</span></div>
                                   </div>
@@ -742,8 +743,20 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                   </div>
                               </div>
 
-                              {/* 3. ACTIONS */}
-                              <div className="flex justify-end gap-4">
+                              {/* 3. INFO BADGES & ACTIONS */}
+                              <div className="flex items-center justify-between gap-4">
+                                  <div className="flex items-center gap-3 flex-wrap">
+                                      <div className="px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2">
+                                          <Landmark className="w-3 h-3 text-emerald-600" />
+                                          <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700">MEI - DAS Fixo R$71,60/mes</span>
+                                      </div>
+                                      {item.data.has_free_shipping && (
+                                          <div className="px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-2">
+                                              <Truck className="w-3 h-3 text-blue-600" />
+                                              <span className="text-[9px] font-black uppercase tracking-widest text-blue-700">Frete Gratis (+R$35 no preco)</span>
+                                          </div>
+                                      )}
+                                  </div>
                                   <button onClick={calculateMatrix} className="px-8 py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl flex items-center gap-3">
                                       <Calculator className="w-4 h-4" /> Calcular Matriz
                                   </button>

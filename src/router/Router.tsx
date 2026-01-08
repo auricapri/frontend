@@ -7,6 +7,7 @@ import { CheckoutPage } from '../pages/CheckoutPage';
 import { AdminPage } from '../pages/AdminPage';
 import { AboutPage } from '../pages/AboutPage';
 import { ReceiptPage } from '../pages/ReceiptPage';
+import { OrderReviewPage } from '../pages/OrderReviewPage';
 
 interface RouterProps {
   currentView: View;
@@ -24,6 +25,8 @@ interface RouterProps {
   aboutProps?: any;
   // ReceiptPage props
   receiptProps?: any;
+  // OrderReviewPage props
+  orderReviewProps?: any;
 }
 
 export const Router: React.FC<RouterProps> = ({
@@ -34,7 +37,8 @@ export const Router: React.FC<RouterProps> = ({
   checkoutProps,
   adminProps,
   aboutProps,
-  receiptProps
+  receiptProps,
+  orderReviewProps
 }) => {
   switch (currentView) {
     case 'home':
@@ -51,6 +55,8 @@ export const Router: React.FC<RouterProps> = ({
       return aboutProps ? <AboutPage {...aboutProps} /> : null;
     case 'receipt':
       return receiptProps ? <ReceiptPage {...receiptProps} /> : null;
+    case 'order-review':
+      return orderReviewProps ? <OrderReviewPage {...orderReviewProps} /> : null;
     default:
       return null;
   }

@@ -6,8 +6,16 @@ export class OrdersApi {
     return apiClient.get<Order[]>('/orders');
   }
 
+  async getAllAdmin(): Promise<Order[]> {
+    return apiClient.get<Order[]>('/orders/admin/all');
+  }
+
   async getById(id: string): Promise<Order | null> {
     return apiClient.get<Order | null>(`/orders/${id}`);
+  }
+
+  async getByIdForReview(id: string): Promise<Order | null> {
+    return apiClient.get<Order | null>(`/orders/${id}/review`);
   }
 
   async getByUserId(userId: string): Promise<Order[]> {

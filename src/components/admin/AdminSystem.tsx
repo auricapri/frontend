@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Settings, Globe, Save, DollarSign, BarChart3, TrendingUp, Building2, MapPin, Mail, Phone, Trophy, AlertTriangle, Terminal } from 'lucide-react';
+import { Settings, Globe, Save, DollarSign, BarChart3, TrendingUp, Building2, MapPin, Mail, Phone, Trophy, AlertTriangle, Terminal, Star } from 'lucide-react';
 import { StoreConfig, GlobalFinancialSettings, LoyaltyLevel } from '../../types';
 import { Locale } from '../../i18n';
 
@@ -35,7 +35,7 @@ const AdminSystem: React.FC<AdminSystemProps> = ({ config, onChange, onSave, isL
   };
 
   const fin = config.financial_settings || defaultFinancials;
-  const loyalty = config.loyalty_program || { enabled: true, cashback_percentage: 1, xp_per_currency_unit: 10, levels: [] };
+  const loyalty = config.loyalty_program || { enabled: true, cashback_percentage: 1, xp_per_currency_unit: 10, review_cashback_amount: 0, levels: [] };
 
   const updateLoyalty = (field: string, value: any) => {
       onChange({
@@ -166,6 +166,22 @@ const AdminSystem: React.FC<AdminSystemProps> = ({ config, onChange, onSave, isL
                           <div className="space-y-2">
                               <label className="text-[8px] font-bold uppercase tracking-widest text-white/40">XP por $1</label>
                               <input type="number" className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold outline-none" value={loyalty.xp_per_currency_unit} onChange={e => updateLoyalty('xp_per_currency_unit', Number(e.target.value))} />
+                          </div>
+                      </div>
+                      <div className="mb-8">
+                          <div className="space-y-2">
+                              <label className="text-[8px] font-bold uppercase tracking-widest text-white/40 flex items-center gap-2">
+                                  <Star className="w-3 h-3" /> Cashback por Avaliação ($)
+                              </label>
+                              <input 
+                                  type="number" 
+                                  step="0.01"
+                                  className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold outline-none" 
+                                  value={loyalty.review_cashback_amount || 0} 
+                                  onChange={e => updateLoyalty('review_cashback_amount', Number(e.target.value))} 
+                                  placeholder="0.00"
+                              />
+                              <p className="text-[7px] text-white/30 mt-1">Valor fixo de cashback concedido por cada avaliação de pedido</p>
                           </div>
                       </div>
                       <div className="space-y-4">

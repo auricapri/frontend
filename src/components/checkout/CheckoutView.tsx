@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { 
   ArrowLeft, 
   ShieldCheck, 
@@ -21,13 +21,17 @@ import {
   Navigation,
   Check,
   Map as MapIcon,
-  Lock
+  Lock,
+  Tag,
+  Ticket,
+  Info
 } from 'lucide-react';
-import { CartItem, InternalLogisticsInfo, UserProfile, SavedCard, StoreConfig, UserMode } from '../../types';
+import { CartItem, InternalLogisticsInfo, UserProfile, SavedCard, StoreConfig, UserMode, Coupon } from '../../types';
 import { Locale } from '../../i18n';
 import { MAPBOX_TOKEN, getMapboxStyle } from '../../utils/mapbox';
 import { formatCurrency } from '../../utils/currency';
 import { LogisticsService, ShippingOption } from '../../services/logistics.service';
+import { CouponsRepository } from '../../api/repositories/coupons.repository';
 
 interface CheckoutViewProps {
   items: CartItem[];
@@ -87,10 +91,49 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   const [splitCards, setSplitCards] = useState(false);
   const [card1Amount, setCard1Amount] = useState<number>(0);
   const [pixCopied, setPixCopied] = useState(false);
+  const [useCashback, setUseCashback] = useState(false);
   
   // Saved Cards Logic
   const [selectedSavedCardId, setSelectedSavedCardId] = useState<string | null>(null);
+  const [selectedSavedCardId2, setSelectedSavedCardId2] = useState<string | null>(null);
   const [saveCardForFuture, setSaveCardForFuture] = useState(false); // Flag to save new card
+  
+  // Card Form Data
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvc, setCardCvc] = useState('');
+  
+  const [cardNumber2, setCardNumber2] = useState('');
+  const [cardName2, setCardName2] = useState('');
+  const [cardExpiry2, setCardExpiry2] = useState('');
+  const [cardCvc2, setCardCvc2] = useState('');
+  
+  // Format card number with spaces
+  const formatCardNumber = (value: string): string => {
+    const digits = value.replace(/\D/g, '');
+    const formatted = digits.match(/.{1,4}/g)?.join(' ') || digits;
+    return formatted.slice(0, 19); // Max 16 digits + 3 spaces
+  };
+  
+  // Format expiry date MM/YY
+  const formatExpiry = (value: string): string => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length <= 2) return digits;
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}`;
+  };
+  
+  // Format CVC (only numbers, max 4)
+  const formatCvc = (value: string): string => {
+    return value.replace(/\D/g, '').slice(0, 4);
+  };
+
+  // Coupon States
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [checkoutItems, setCheckoutItems] = useState<CartItem[]>(items);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -128,18 +171,145 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
     return obj[locale] || obj['pt'] || obj['en'] || Object.values(obj)[0] || "";
   };
 
-  // Validate items before using reduce
-  const safeItems = Array.isArray(items) ? items : [];
+  // Update checkoutItems when items change
+  useEffect(() => {
+    setCheckoutItems(items);
+  }, [items]);
+
+  // Items that already have a coupon applied (from product page)
+  const itemsWithCoupon = useMemo(() => 
+    checkoutItems.filter(item => item.applied_coupon_code), 
+    [checkoutItems]
+  );
+  
+  // Items eligible for manual coupon (no coupon applied yet)
+  const itemsWithoutCoupon = useMemo(() => 
+    checkoutItems.filter(item => !item.applied_coupon_code), 
+    [checkoutItems]
+  );
+
+  // Calculate subtotal from checkoutItems (with applied discounts)
+  const safeItems = Array.isArray(checkoutItems) ? checkoutItems : [];
   const subtotal = safeItems.reduce((sum, item) => sum + ((item?.price || 0) * (item?.quantity || 0)), 0);
+  
+  // Calculate original subtotal (before any discounts) for display
+  const originalSubtotal = safeItems.reduce((sum, item) => {
+    const originalPrice = item?.original_price || item?.price || 0;
+    return sum + (originalPrice * (item?.quantity || 0));
+  }, 0);
+  
+  // Total discount from pre-applied coupons
+  const preAppliedDiscount = originalSubtotal - subtotal;
+  
+  // Manual coupon discount (only applies to items without coupon)
+  const manualCouponDiscount = useMemo(() => {
+    if (!appliedCoupon || itemsWithoutCoupon.length === 0) return 0;
+    
+    const eligibleSubtotal = itemsWithoutCoupon.reduce(
+      (sum, item) => sum + ((item?.price || 0) * (item?.quantity || 0)), 
+      0
+    );
+    
+    if (appliedCoupon.discount_type === 'percentage') {
+      return eligibleSubtotal * (appliedCoupon.discount_value / 100);
+    }
+    return Math.min(appliedCoupon.discount_value, eligibleSubtotal);
+  }, [appliedCoupon, itemsWithoutCoupon]);
+  
   // In atacado mode, add shipping cost to total
   const shippingCost = userMode === UserMode.ATACADO && selectedShippingOption 
     ? selectedShippingOption.display_price_was 
     : 0;
-  const total = subtotal + shippingCost; 
+  
+  // Calculate cashback available
+  const availableCashback = currentUser?.loyalty?.cashback_balance || 0;
+  
+  // Calculate total before cashback and PIX discount
+  const totalBeforeDiscounts = subtotal - manualCouponDiscount + shippingCost;
+  
+  // Apply PIX discount first (if applicable)
+  const pixDiscount = paymentMethod === 'pix' ? totalBeforeDiscounts * 0.05 : 0;
+  const totalAfterPix = totalBeforeDiscounts - pixDiscount;
+  
+  // Apply cashback discount (limited to total after PIX, never negative)
+  const cashbackUsed = useCashback ? Math.min(availableCashback, Math.max(0, totalAfterPix)) : 0;
+  const finalTotal = Math.max(0, totalAfterPix - cashbackUsed);
 
   useEffect(() => {
-    if (total > 0) setCard1Amount(total / 2);
-  }, [total]);
+    if (splitCards && finalTotal > 0) {
+      setCard1Amount(finalTotal / 2);
+    } else {
+      setCard1Amount(finalTotal);
+    }
+  }, [splitCards, finalTotal]);
+
+  // Apply coupon handler
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    
+    setCouponLoading(true);
+    setCouponError(null);
+    
+    try {
+      const couponsRepo = new CouponsRepository();
+      const coupon = await couponsRepo.getByCode(couponCode.trim().toUpperCase());
+      
+      if (!coupon) {
+        setCouponError('Cupom inválido ou expirado');
+        setCouponLoading(false);
+        return;
+      }
+      
+      // Check if coupon is expired
+      if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+        setCouponError('Este cupom expirou');
+        setCouponLoading(false);
+        return;
+      }
+      
+      // Check minimum purchase (only for eligible items)
+      const eligibleSubtotal = itemsWithoutCoupon.reduce(
+        (sum, item) => sum + ((item?.price || 0) * (item?.quantity || 0)), 
+        0
+      );
+      
+      if (coupon.min_purchase_amount && eligibleSubtotal < coupon.min_purchase_amount) {
+        setCouponError(`Compra mínima de ${formatCurrency(coupon.min_purchase_amount, locale)} para itens elegíveis`);
+        setCouponLoading(false);
+        return;
+      }
+      
+      // Check if coupon is product-specific and applies to any eligible item
+      if (coupon.product_ids && coupon.product_ids.length > 0) {
+        const hasEligibleProduct = itemsWithoutCoupon.some(
+          item => coupon.product_ids?.includes(item.product_id)
+        );
+        if (!hasEligibleProduct) {
+          setCouponError('Este cupom não é válido para os produtos elegíveis');
+          setCouponLoading(false);
+          return;
+        }
+      }
+      
+      if (itemsWithoutCoupon.length === 0) {
+        setCouponError('Todos os itens já possuem cupom aplicado');
+        setCouponLoading(false);
+        return;
+      }
+      
+      setAppliedCoupon(coupon);
+      setCouponCode('');
+    } catch {
+      setCouponError('Erro ao validar cupom');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError(null);
+  };
 
   // AUTO-FILL DEFAULT ADDRESS
   useEffect(() => {
@@ -706,8 +876,6 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
 
       if(address && shippingToUse) {
           const finalAddress = { ...address, numero: num, complemento: complement };
-          // In atacado mode, shipping is already included in total
-          const finalAmount = paymentMethod === 'pix' ? total * 0.95 : total;
           
           // Pass Saved Card Token if selected
           let tokenToUse;
@@ -720,7 +888,7 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
               finalAddress, 
               shippingToUse, 
               paymentMethod, 
-              finalAmount, 
+              finalTotal, 
               saveCardForFuture, 
               tokenToUse
           );
@@ -808,57 +976,258 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
 
                 {paymentMethod === 'credit_card' && (
                     <div className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-500">
-                        {/* SAVED CARDS LIST */}
-                        {currentUser?.saved_cards && currentUser.saved_cards.length > 0 && (
-                            <div className="space-y-4">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-2">Cartões Salvos</h4>
-                                <div className="grid grid-cols-1 gap-4">
-                                    {currentUser.saved_cards.map(card => (
-                                        <div 
-                                            key={card.id} 
-                                            onClick={() => setSelectedSavedCardId(card.id === selectedSavedCardId ? null : card.id)}
-                                            className={`p-6 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ${selectedSavedCardId === card.id ? 'border-black bg-neutral-900 text-white' : 'border-neutral-100 bg-white hover:border-neutral-300'}`}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[8px] font-black uppercase tracking-widest text-neutral-500">{card.brand}</div>
-                                                <div>
-                                                    <p className="text-sm font-mono font-bold tracking-widest">•••• •••• •••• {card.last4}</p>
-                                                    <p className="text-[9px] opacity-60 font-bold uppercase tracking-widest">Exp: {card.exp_month}/{card.exp_year}</p>
-                                                </div>
-                                            </div>
-                                            {selectedSavedCardId === card.id && <CheckCircle2 className="w-5 h-5 text-green-400" />}
-                                        </div>
-                                    ))}
-                                </div>
-                                {selectedSavedCardId && (
-                                    <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 flex items-center gap-3 text-[10px] font-bold text-neutral-500">
-                                        <Lock className="w-3 h-3" /> Usando token seguro criptografado. Nenhum dado sensível trafega pela rede.
+                        {/* CASHBACK OPTION */}
+                        {currentUser && availableCashback > 0 && (
+                            <div className="flex items-center justify-between p-6 bg-gradient-to-r from-emerald-50 to-emerald-100/50 border border-emerald-200 rounded-2xl">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
+                                        <span className="text-white text-[10px] font-black">R$</span>
                                     </div>
-                                )}
+                                    <div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest block text-emerald-900">Cashback Disponível</span>
+                                        <span className="text-lg font-light tracking-tighter text-emerald-700">{formatCurrency(availableCashback, locale)}</span>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setUseCashback(!useCashback)}
+                                    className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
+                                        useCashback ? 'bg-emerald-600' : 'bg-neutral-300'
+                                    }`}
+                                >
+                                    <div
+                                        className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${
+                                            useCashback ? 'translate-x-6' : 'translate-x-0'
+                                        }`}
+                                    />
+                                </button>
                             </div>
                         )}
 
-                        {/* NEW CARD FORM (Only if no saved card selected) */}
-                        {!selectedSavedCardId && (
-                            <div className="space-y-8 bg-neutral-50/50 p-8 rounded-[2.5rem] border border-neutral-100">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2"><label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Número do Cartão</label><input className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none font-mono tracking-widest focus:border-black transition-all" placeholder="0000 0000 0000 0000" /></div>
-                                    <div className="space-y-2"><label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Nome no Cartão</label><input className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none font-black uppercase focus:border-black transition-all" placeholder="NOME COMO IMPRESSO" /></div>
-                                    <div className="grid grid-cols-2 gap-6 md:col-span-2">
-                                        <div className="space-y-2"><label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Validade</label><input className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none focus:border-black transition-all" placeholder="MM/YY" /></div>
-                                        <div className="space-y-2"><label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">CVC</label><input className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none focus:border-black transition-all" placeholder="123" /></div>
+                        {/* SPLIT CARDS SWITCH - Minimalista */}
+                        <div className="flex items-center justify-between p-4 border-b border-neutral-100">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-900">Dividir em dois cartões</span>
+                            <button
+                                onClick={() => {
+                                    setSplitCards(!splitCards);
+                                    if (!splitCards) {
+                                        setSelectedSavedCardId2(null);
+                                        setCardNumber2('');
+                                        setCardName2('');
+                                        setCardExpiry2('');
+                                        setCardCvc2('');
+                                    }
+                                }}
+                                className={`relative w-12 h-6 rounded-full transition-all duration-300 ${
+                                    splitCards ? 'bg-black' : 'bg-neutral-300'
+                                }`}
+                            >
+                                <div
+                                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-300 ${
+                                        splitCards ? 'translate-x-5' : 'translate-x-0'
+                                    }`}
+                                />
+                            </button>
+                        </div>
+
+                        {/* CARD 1 */}
+                        <div className="space-y-6">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-2">
+                                {splitCards ? 'Cartão 1' : 'Cartão de Pagamento'}
+                            </h4>
+                            
+                            {/* SAVED CARDS LIST */}
+                            {currentUser?.saved_cards && currentUser.saved_cards.length > 0 && (
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {currentUser.saved_cards
+                                            .filter(card => !splitCards || card.id !== selectedSavedCardId2)
+                                            .map(card => (
+                                            <div 
+                                                key={card.id} 
+                                                onClick={() => {
+                                                    setSelectedSavedCardId(card.id === selectedSavedCardId ? null : card.id);
+                                                    if (card.id !== selectedSavedCardId) {
+                                                        setCardNumber('');
+                                                        setCardName('');
+                                                        setCardExpiry('');
+                                                        setCardCvc('');
+                                                    }
+                                                }}
+                                                className={`p-6 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ${selectedSavedCardId === card.id ? 'border-black bg-neutral-900 text-white' : 'border-neutral-100 bg-white hover:border-neutral-300'}`}
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[8px] font-black uppercase tracking-widest text-neutral-500">{card.brand}</div>
+                                                    <div>
+                                                        <p className="text-sm font-mono font-bold tracking-widest">•••• •••• •••• {card.last4}</p>
+                                                        <p className="text-[9px] opacity-60 font-bold uppercase tracking-widest">Exp: {card.exp_month}/{card.exp_year}</p>
+                                                    </div>
+                                                </div>
+                                                {selectedSavedCardId === card.id && <CheckCircle2 className="w-5 h-5 text-green-400" />}
+                                            </div>
+                                        ))}
                                     </div>
-                                </div>
-                                
-                                {/* Save Card Checkbox */}
-                                {currentUser && (
-                                    <div className="flex items-center gap-4 p-4 border border-dashed border-neutral-200 rounded-2xl hover:border-black transition-all cursor-pointer" onClick={() => setSaveCardForFuture(!saveCardForFuture)}>
-                                        <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${saveCardForFuture ? 'bg-black border-black' : 'border-neutral-300'}`}>
-                                            {saveCardForFuture && <Check className="w-3 h-3 text-white" />}
+                                    {selectedSavedCardId && (
+                                        <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 flex items-center gap-3 text-[10px] font-bold text-neutral-500">
+                                            <Lock className="w-3 h-3" /> Usando token seguro criptografado. Nenhum dado sensível trafega pela rede.
                                         </div>
-                                        <div>
-                                            <span className="text-[10px] font-black uppercase tracking-widest block">Salvar Cartão</span>
-                                            <span className="text-[9px] text-neutral-400 block mt-0.5">Armazenamento seguro criptografado para compras futuras.</span>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* NEW CARD FORM (Only if no saved card selected) */}
+                            {!selectedSavedCardId && (
+                                <div className="space-y-8 bg-neutral-50/50 p-8 rounded-[2.5rem] border border-neutral-100">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Número do Cartão</label>
+                                            <input 
+                                                className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none font-mono tracking-widest focus:border-black transition-all" 
+                                                placeholder="0000 0000 0000 0000"
+                                                value={cardNumber}
+                                                onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                                                maxLength={19}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Nome no Cartão</label>
+                                            <input 
+                                                className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none font-black uppercase focus:border-black transition-all" 
+                                                placeholder="NOME COMO IMPRESSO"
+                                                value={cardName}
+                                                onChange={(e) => setCardName(e.target.value.toUpperCase())}
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-6 md:col-span-2">
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Validade</label>
+                                                <input 
+                                                    className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none focus:border-black transition-all" 
+                                                    placeholder="MM/YY"
+                                                    value={cardExpiry}
+                                                    onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                                                    maxLength={5}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">CVC</label>
+                                                <input 
+                                                    className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none focus:border-black transition-all" 
+                                                    placeholder="123"
+                                                    type="password"
+                                                    value={cardCvc}
+                                                    onChange={(e) => setCardCvc(formatCvc(e.target.value))}
+                                                    maxLength={4}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Save Card Checkbox */}
+                                    {currentUser && (
+                                        <div className="flex items-center gap-4 p-4 border border-dashed border-neutral-200 rounded-2xl hover:border-black transition-all cursor-pointer" onClick={() => setSaveCardForFuture(!saveCardForFuture)}>
+                                            <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${saveCardForFuture ? 'bg-black border-black' : 'border-neutral-300'}`}>
+                                                {saveCardForFuture && <Check className="w-3 h-3 text-white" />}
+                                            </div>
+                                            <div>
+                                                <span className="text-[10px] font-black uppercase tracking-widest block">Salvar Cartão</span>
+                                                <span className="text-[9px] text-neutral-400 block mt-0.5">Armazenamento seguro criptografado para compras futuras.</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* CARD 2 (Only if splitCards is enabled) */}
+                        {splitCards && (
+                            <div className="space-y-6 pt-6 border-t border-neutral-200">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-2">Cartão 2</h4>
+                                
+                                {/* SAVED CARDS LIST */}
+                                {currentUser?.saved_cards && currentUser.saved_cards.length > 0 && (
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-1 gap-4">
+                                            {currentUser.saved_cards
+                                                .filter(card => card.id !== selectedSavedCardId)
+                                                .map(card => (
+                                                <div 
+                                                    key={card.id} 
+                                                    onClick={() => {
+                                                        setSelectedSavedCardId2(card.id === selectedSavedCardId2 ? null : card.id);
+                                                        if (card.id !== selectedSavedCardId2) {
+                                                            setCardNumber2('');
+                                                            setCardName2('');
+                                                            setCardExpiry2('');
+                                                            setCardCvc2('');
+                                                        }
+                                                    }}
+                                                    className={`p-6 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ${selectedSavedCardId2 === card.id ? 'border-black bg-neutral-900 text-white' : 'border-neutral-100 bg-white hover:border-neutral-300'}`}
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[8px] font-black uppercase tracking-widest text-neutral-500">{card.brand}</div>
+                                                        <div>
+                                                            <p className="text-sm font-mono font-bold tracking-widest">•••• •••• •••• {card.last4}</p>
+                                                            <p className="text-[9px] opacity-60 font-bold uppercase tracking-widest">Exp: {card.exp_month}/{card.exp_year}</p>
+                                                        </div>
+                                                    </div>
+                                                    {selectedSavedCardId2 === card.id && <CheckCircle2 className="w-5 h-5 text-green-400" />}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {selectedSavedCardId2 && (
+                                            <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 flex items-center gap-3 text-[10px] font-bold text-neutral-500">
+                                                <Lock className="w-3 h-3" /> Usando token seguro criptografado. Nenhum dado sensível trafega pela rede.
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* NEW CARD FORM (Only if no saved card selected) */}
+                                {!selectedSavedCardId2 && (
+                                    <div className="space-y-8 bg-neutral-50/50 p-8 rounded-[2.5rem] border border-neutral-100">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Número do Cartão</label>
+                                                <input 
+                                                    className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none font-mono tracking-widest focus:border-black transition-all" 
+                                                    placeholder="0000 0000 0000 0000"
+                                                    value={cardNumber2}
+                                                    onChange={(e) => setCardNumber2(formatCardNumber(e.target.value))}
+                                                    maxLength={19}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Nome no Cartão</label>
+                                                <input 
+                                                    className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none font-black uppercase focus:border-black transition-all" 
+                                                    placeholder="NOME COMO IMPRESSO"
+                                                    value={cardName2}
+                                                    onChange={(e) => setCardName2(e.target.value.toUpperCase())}
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-6 md:col-span-2">
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Validade</label>
+                                                    <input 
+                                                        className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none focus:border-black transition-all" 
+                                                        placeholder="MM/YY"
+                                                        value={cardExpiry2}
+                                                        onChange={(e) => setCardExpiry2(formatExpiry(e.target.value))}
+                                                        maxLength={5}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">CVC</label>
+                                                    <input 
+                                                        className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none focus:border-black transition-all" 
+                                                        placeholder="123"
+                                                        type="password"
+                                                        value={cardCvc2}
+                                                        onChange={(e) => setCardCvc2(formatCvc(e.target.value))}
+                                                        maxLength={4}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -894,18 +1263,132 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
           <div className="lg:col-span-5">
              <div className="bg-neutral-50 rounded-[3rem] p-10 md:p-12 sticky top-32 border border-neutral-100 shadow-sm">
                 <div className="flex items-center gap-4 mb-10 border-b border-neutral-100 pb-6"><ShoppingBag className="w-5 h-5 text-neutral-400" /><h4 className="text-[10px] font-black uppercase tracking-[0.4em]">Sua Sacola</h4></div>
-                <div className="space-y-8 mb-12 max-h-[400px] overflow-y-auto pr-4 no-scrollbar">
-                   {Array.isArray(items) && items.length > 0 ? items.map((item, idx) => (
-                     <div key={idx} className="flex gap-6 items-center animate-in slide-in-from-right duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
-                        <div className="w-20 h-24 bg-white rounded-2xl overflow-hidden flex-none border border-neutral-100 shadow-sm"><img src={item?.image || ''} className="w-full h-full object-cover" alt={getLoc(item?.name)} /></div>
-                        <div className="flex-1"><h5 className="text-[11px] font-black uppercase tracking-tight leading-tight mb-1">{getLoc(item?.name)}</h5><p className="text-[9px] text-neutral-400 uppercase font-bold tracking-widest">{getLoc(item?.color_name)} | {item?.size || 'N/A'}</p><p className="text-[10px] font-black mt-2">Qtd: {item?.quantity || 0}</p></div><span className="text-[12px] font-black tracking-tighter">{formatCurrency((item?.price || 0) * (item?.quantity || 0), locale)}</span>
-                     </div>
-                   )) : (
+                <div className="space-y-6 mb-8 max-h-[300px] overflow-y-auto pr-4 no-scrollbar">
+                   {Array.isArray(checkoutItems) && checkoutItems.length > 0 ? checkoutItems.map((item, idx) => {
+                     const hasDiscount = item.original_price && item.original_price > item.price;
+                     const hasCoupon = !!item.applied_coupon_code;
+                     
+                     return (
+                       <div key={idx} className="flex gap-4 items-start animate-in slide-in-from-right duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
+                          <div className="w-16 h-20 bg-white rounded-xl overflow-hidden flex-none border border-neutral-100 shadow-sm"><img src={item?.image || ''} className="w-full h-full object-cover" alt={getLoc(item?.name)} /></div>
+                          <div className="flex-1 min-w-0">
+                            <h5 className="text-[10px] font-black uppercase tracking-tight leading-tight mb-1 truncate">{getLoc(item?.name)}</h5>
+                            <p className="text-[8px] text-neutral-400 uppercase font-bold tracking-widest">{getLoc(item?.color_name)} | {item?.size || 'N/A'}</p>
+                            <p className="text-[9px] font-black mt-1">Qtd: {item?.quantity || 0}</p>
+                            {hasCoupon && (
+                              <div className="flex items-center gap-1 mt-1.5">
+                                <Tag className="w-2.5 h-2.5 text-emerald-600" />
+                                <span className="text-[7px] font-black uppercase tracking-widest text-emerald-600">{item.applied_coupon_code}</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            {hasDiscount && (
+                              <span className="text-[9px] text-neutral-400 line-through block">{formatCurrency(item.original_price! * (item?.quantity || 0), locale)}</span>
+                            )}
+                            <span className={`text-[11px] font-black tracking-tighter ${hasCoupon ? 'text-emerald-600' : ''}`}>{formatCurrency((item?.price || 0) * (item?.quantity || 0), locale)}</span>
+                          </div>
+                       </div>
+                     );
+                   }) : (
                      <div className="text-center py-8 text-neutral-400 text-sm">Nenhum item no carrinho</div>
                    )}
                 </div>
-                <div className="space-y-4 pt-10 border-t border-neutral-200">
+
+                {/* COUPON SECTION */}
+                <div className="mb-8 pt-6 border-t border-neutral-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Ticket className="w-4 h-4 text-neutral-400" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-500">Cupom de Desconto</span>
+                  </div>
+                  
+                  {/* Info about items with pre-applied coupons */}
+                  {itemsWithCoupon.length > 0 && (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-4">
+                      <div className="flex items-start gap-2">
+                        <Info className="w-3 h-3 text-emerald-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-[9px] font-bold text-emerald-800 uppercase tracking-wide">
+                            {itemsWithCoupon.length} {itemsWithCoupon.length === 1 ? 'item já possui' : 'itens já possuem'} cupom aplicado
+                          </p>
+                          <p className="text-[8px] text-emerald-600 mt-0.5">
+                            Novos cupons serão aplicados apenas nos outros {itemsWithoutCoupon.length} {itemsWithoutCoupon.length === 1 ? 'item' : 'itens'}.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {appliedCoupon ? (
+                    <div className="bg-black text-white rounded-xl p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Tag className="w-4 h-4" />
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-widest block">{appliedCoupon.code}</span>
+                          <span className="text-[8px] text-white/60 block mt-0.5">
+                            {appliedCoupon.discount_type === 'percentage' 
+                              ? `${appliedCoupon.discount_value}% de desconto`
+                              : `${formatCurrency(appliedCoupon.discount_value, locale)} de desconto`
+                            }
+                          </span>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={handleRemoveCoupon}
+                        className="p-2 hover:bg-white/10 rounded-lg transition-all"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <input 
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                          placeholder="DIGITE O CUPOM"
+                          className="flex-1 p-4 bg-white border border-neutral-200 rounded-xl text-[10px] font-black uppercase tracking-widest outline-none focus:border-black transition-all placeholder:text-neutral-300"
+                          disabled={itemsWithoutCoupon.length === 0}
+                        />
+                        <button 
+                          onClick={handleApplyCoupon}
+                          disabled={couponLoading || !couponCode.trim() || itemsWithoutCoupon.length === 0}
+                          className="px-6 py-4 bg-black text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                        >
+                          {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Aplicar'}
+                        </button>
+                      </div>
+                      {couponError && (
+                        <div className="flex items-center gap-2 text-red-500">
+                          <AlertCircle className="w-3 h-3" />
+                          <span className="text-[9px] font-bold">{couponError}</span>
+                        </div>
+                      )}
+                      {itemsWithoutCoupon.length === 0 && (
+                        <p className="text-[8px] text-neutral-400 text-center">
+                          Todos os itens já possuem cupom aplicado
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-4 pt-6 border-t border-neutral-200">
+                   {preAppliedDiscount > 0 && (
+                     <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                       <span>Desconto (cupons do produto)</span>
+                       <span>-{formatCurrency(preAppliedDiscount, locale)}</span>
+                     </div>
+                   )}
                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-neutral-400"><span>Subtotal</span><span>{formatCurrency(subtotal, locale)}</span></div>
+                   {manualCouponDiscount > 0 && (
+                     <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                       <span>Desconto ({appliedCoupon?.code})</span>
+                       <span>-{formatCurrency(manualCouponDiscount, locale)}</span>
+                     </div>
+                   )}
                    
                    {/* FREIGHT DISPLAY LOGIC */}
                    {userMode === UserMode.ATACADO && shippingOptions.length > 0 ? (
@@ -986,11 +1469,22 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
                      </>
                    )}
 
-                   {paymentMethod === 'pix' && (<div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-green-500"><span>Desconto PIX (5%)</span><span>-{formatCurrency(total * 0.05, locale)}</span></div>)}
+                   {cashbackUsed > 0 && (
+                     <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                       <span>Cashback Aplicado</span>
+                       <span>-{formatCurrency(cashbackUsed, locale)}</span>
+                     </div>
+                   )}
+                   {paymentMethod === 'pix' && (
+                     <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-green-500">
+                       <span>Desconto PIX (5%)</span>
+                       <span>-{formatCurrency(pixDiscount, locale)}</span>
+                     </div>
+                   )}
                    
                    <div className="flex justify-between items-center pt-8 mt-6 border-t border-neutral-100">
                       <span className="text-xl font-black uppercase italic tracking-tighter">Total</span>
-                      <span className="text-4xl font-light tracking-tighter">{formatCurrency(paymentMethod === 'pix' ? total * 0.95 : total, locale)}</span>
+                      <span className="text-4xl font-light tracking-tighter">{formatCurrency(finalTotal, locale)}</span>
                    </div>
                 </div>
                 <div className="mt-12 p-8 bg-white rounded-3xl border border-neutral-100 flex items-center gap-5 shadow-sm"><ShieldCheck className="w-6 h-6 text-neutral-300" /><span className="text-[8px] font-black uppercase tracking-widest text-neutral-400 leading-loose">Transação protegida por criptografia militar de 256 bits via Auricapri Cloud Protocol.</span></div>

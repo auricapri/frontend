@@ -6,18 +6,37 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report",
+    "docs": "playwright test --config=playwright.docs.config.ts",
+    "docs:headed": "playwright test --config=playwright.docs.config.ts --headed",
+    "docs:full": "playwright test --config=playwright.docs.config.ts tests/full-documentation.spec.ts",
+    "docs:full:headed": "playwright test --config=playwright.docs.config.ts tests/full-documentation.spec.ts --headed",
+    "docs:complete": "playwright test --config=playwright.docs.config.ts tests/complete-navigation.spec.ts --headed",
+    "docs:complete:headless": "playwright test --config=playwright.docs.config.ts tests/complete-navigation.spec.ts",
+    "docs:user-flow": "playwright test --config=playwright.docs.config.ts tests/user-flow.spec.ts --headed",
+    "docs:all": "playwright test --config=playwright.docs.config.ts --headed"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@supabase/supabase-js": "2.39.0",
+    "lucide-react": "0.462.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "lucide-react": "0.462.0",
-    "@supabase/supabase-js": "2.39.0"
+    "reactflow": "^11.11.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "vite-plugin-compression": "^0.5.1"
   }
 }

@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Product, Category, Collection, Banner, Coupon, Asset, SizeGuide, StoreConfig } from '../types';
-import { StoreApi } from '../api/store.api';
-import { ProductsApi } from '../api/products.api';
-import { CollectionsApi } from '../api/collections.api';
-import { CouponsApi } from '../api/coupons.api';
-import { AssetsApi } from '../api/assets.api';
+import { CachedStoreApi } from '../api/cached.store.api';
+import { CachedProductsApi } from '../api/cached.products.api';
+import { CachedCollectionsApi } from '../api/cached.collections.api';
+import { CachedCouponsApi } from '../api/cached.coupons.api';
+import { CachedAssetsApi } from '../api/cached.assets.api';
 
 const defaultStoreConfig: StoreConfig = {
   id: 'main',
@@ -30,6 +30,12 @@ const defaultStoreConfig: StoreConfig = {
   }
 };
 
+const productsApi = new CachedProductsApi();
+const storeApi = new CachedStoreApi();
+const collectionsApi = new CachedCollectionsApi();
+const couponsApi = new CachedCouponsApi();
+const assetsApi = new CachedAssetsApi();
+
 export const useStoreData = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -40,16 +46,11 @@ export const useStoreData = () => {
   const [sizeGuides, setSizeGuides] = useState<SizeGuide[]>([]);
   const [storeConfig, setStoreConfig] = useState<StoreConfig>(defaultStoreConfig);
   const [isLoading, setIsLoading] = useState(true);
+  const isMounted = useRef(true);
 
   const fetchStoreData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const productsApi = new ProductsApi();
-      const storeApi = new StoreApi();
-      const collectionsApi = new CollectionsApi();
-      const couponsApi = new CouponsApi();
-      const assetsApi = new AssetsApi();
-
       const [productsData, categoriesData, collectionsData, bannersData, configData, relationsData, couponsData, assetsData, guidesData] = await Promise.all([
         productsApi.getAllActive(),
         storeApi.getAllCategories(),
@@ -62,7 +63,8 @@ export const useStoreData = () => {
         storeApi.getAllSizeGuides()
       ]);
 
-      // Process products with collection relations
+      if (!isMounted.current) return;
+
       const processedProducts = productsData.map(p => {
         const linkedCollectionIds = relationsData
           .filter(r => r.product_id === p.id)
@@ -95,12 +97,19 @@ export const useStoreData = () => {
 
     } catch (err) {
       console.error('Error fetching store data:', err);
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
+    isMounted.current = true;
     fetchStoreData();
+
+    return () => {
+      isMounted.current = false;
+    };
   }, [fetchStoreData]);
 
   return {
@@ -116,4 +125,3 @@ export const useStoreData = () => {
     refetch: fetchStoreData
   };
 };
-

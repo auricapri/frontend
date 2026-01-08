@@ -44,6 +44,14 @@
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       
+      /* Thin scrollbar for product detail */
+      .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+      .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+      .scrollbar-thin::-webkit-scrollbar-thumb { background: #E5E5E5; border-radius: 2px; }
+      .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #D4D4D4; }
+      .scrollbar-thumb-neutral-200::-webkit-scrollbar-thumb { background: #E5E5E5; }
+      .scrollbar-track-transparent::-webkit-scrollbar-track { background: transparent; }
+      
       /* Smooth scrolling for anchor links */
       html { 
         scroll-behavior: smooth;
@@ -227,8 +235,9 @@
   <body class="bg-white text-gray-900 antialiased overflow-hidden">
     <script>
       // Safety fallback: Only remove splash after 30 seconds if something goes very wrong
+      // Only apply if we're on home page (pathname is /)
       setTimeout(function() {
-        if (!document.body.classList.contains('loaded')) {
+        if (window.location.pathname === '/' && !document.body.classList.contains('loaded')) {
           console.error('HTML: Emergency fallback (30s) - forcing splash removal');
           document.body.classList.add('loaded');
         }
@@ -252,9 +261,9 @@
       // Debug: Log when DOM is ready
       console.log('HTML: DOM loaded, root element:', document.getElementById('root'));
       
-      // Check if script loaded after 500ms
+      // Check if script loaded after 500ms (only on home page)
       setTimeout(function() {
-        if (!document.getElementById('root')?.hasChildNodes()) {
+        if (window.location.pathname === '/' && !document.getElementById('root')?.hasChildNodes()) {
           console.error('HTML: Root element is empty after 500ms - app may not have loaded');
           document.body.classList.add('loaded');
         }
