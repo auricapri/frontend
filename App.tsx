@@ -14,6 +14,7 @@ import { NotFoundPage } from './src/pages/NotFoundPage';
 import { ResetPasswordPage } from './src/pages/ResetPasswordPage';
 import SharedWishlistPage from './src/pages/SharedWishlistPage';
 import { AdminLoginPage } from './src/pages/AdminLoginPage';
+import { TestBanner } from './src/components/common/TestBanner';
 import { Product, CartItem, UserMode, UserProfile, Category, Collection, Banner, StoreConfig, Coupon, Asset, InternalLogisticsInfo, Order, SavedAddress, SavedCard, SizeGuide } from './src/types';
 import { MessageCircle, X, Loader2 } from 'lucide-react';
 import { Locale, translations } from './src/i18n';
@@ -671,6 +672,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="relative h-dvh w-full bg-white overflow-hidden text-neutral-900 font-sans">
+      <TestBanner />
       <Navbar 
         cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)} 
         onOpenCart={() => setIsCartOpen(true)}
@@ -695,7 +697,7 @@ export const App: React.FC = () => {
         id="main-scroll-container"
         ref={mainRef} 
         onScroll={handleScroll}
-        className={`h-full w-full overflow-y-auto overflow-x-hidden no-scrollbar antialiased relative`}
+        className={`h-full w-full overflow-y-auto overflow-x-hidden no-scrollbar antialiased relative pt-12`}
       >
         {currentView === 'home' && (
           <div className="min-h-full flex flex-col">

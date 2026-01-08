@@ -57,7 +57,7 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       <nav 
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-700 select-none will-change-transform
+        className={`fixed top-12 left-0 w-full z-50 transition-all duration-700 select-none will-change-transform
           ${isSolid ? 'h-16 md:h-20' : 'h-20 md:h-24'}
         `}
         style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
