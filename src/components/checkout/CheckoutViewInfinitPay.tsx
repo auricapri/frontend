@@ -17,6 +17,7 @@ import { LogisticsService, ShippingOption } from '../../services/logistics.servi
 import { AddressData } from './CheckoutView';
 import { PaymentFormInfinitPay } from './PaymentFormInfinitPay';
 import { OrderSummary } from './OrderSummary';
+import { InfinitPayApi } from '../../api/infinitpay.api';
 
 interface CheckoutViewInfinitPayProps {
   items: CartItem[];
@@ -67,6 +68,15 @@ const CheckoutViewInfinitPay: React.FC<CheckoutViewInfinitPayProps> = ({
   
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [paymentReturnData, setPaymentReturnData] = useState<{
+    receipt_url?: string;
+    order_nsu?: string;
+    slug?: string;
+    capture_method?: string;
+    transaction_nsu?: string;
+    paid?: boolean;
+  } | null>(null);
+  const [checkingPaymentStatus, setCheckingPaymentStatus] = useState(false);
 
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shippingCost = userMode === UserMode.ATACADO && selectedShippingOption 
@@ -203,9 +213,46 @@ const CheckoutViewInfinitPay: React.FC<CheckoutViewInfinitPayProps> = ({
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get('payment_status');
     const orderId = urlParams.get('order_id');
+    const receiptUrl = urlParams.get('receipt_url');
+    const orderNsu = urlParams.get('order_nsu');
+    const slug = urlParams.get('slug');
+    const captureMethod = urlParams.get('capture_method');
+    const transactionNsu = urlParams.get('transaction_nsu');
+    const paid = urlParams.get('paid') === 'true';
 
     if (paymentStatus === 'return' && orderId) {
       setPendingOrderId(orderId);
+      
+      const returnData: any = {};
+      if (receiptUrl) returnData.receipt_url = receiptUrl;
+      if (orderNsu) returnData.order_nsu = orderNsu;
+      if (slug) returnData.slug = slug;
+      if (captureMethod) returnData.capture_method = captureMethod;
+      if (transactionNsu) returnData.transaction_nsu = transactionNsu;
+      if (paid) returnData.paid = paid;
+      
+      setPaymentReturnData(returnData);
+
+      if (orderNsu && slug && transactionNsu && !paid) {
+        setCheckingPaymentStatus(true);
+        const infinitPayApi = new InfinitPayApi();
+        
+        infinitPayApi.checkPaymentStatus({
+          order_nsu: orderNsu,
+          transaction_nsu: transactionNsu,
+          slug: slug,
+        }).then((status) => {
+          setPaymentReturnData(prev => ({
+            ...prev,
+            paid: status.paid,
+          }));
+          setCheckingPaymentStatus(false);
+        }).catch((error) => {
+          console.error('Error checking payment status:', error);
+          setCheckingPaymentStatus(false);
+        });
+      }
+      
       setStep(3);
     }
   }, []);
@@ -407,20 +454,58 @@ const CheckoutViewInfinitPay: React.FC<CheckoutViewInfinitPayProps> = ({
                   <div className="p-4 bg-neutral-50 rounded-2xl">
                     <ShieldCheck className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xl font-black uppercase italic tracking-tighter">Aguardando Confirmação</h3>
+                  <h3 className="text-xl font-black uppercase italic tracking-tighter">
+                    {paymentReturnData?.paid ? 'Pagamento Confirmado' : 'Aguardando Confirmação'}
+                  </h3>
                 </div>
                 
-                <div className="bg-neutral-50 rounded-[2.5rem] p-10 space-y-6 text-center">
-                  <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
-                  <div className="space-y-2">
-                    <p className="text-sm font-black uppercase tracking-widest">
-                      Pagamento Processado
-                    </p>
-                    <p className="text-xs text-neutral-400">
-                      Aguardando confirmação do pagamento. Você será redirecionado automaticamente.
-                    </p>
+                {checkingPaymentStatus ? (
+                  <div className="bg-neutral-50 rounded-[2.5rem] p-10 space-y-6 text-center">
+                    <Loader2 className="w-16 h-16 text-black mx-auto animate-spin" />
+                    <div className="space-y-2">
+                      <p className="text-sm font-black uppercase tracking-widest">
+                        Verificando Pagamento
+                      </p>
+                      <p className="text-xs text-neutral-400">
+                        Aguarde enquanto verificamos o status do seu pagamento...
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : paymentReturnData?.paid ? (
+                  <div className="bg-green-50 border-2 border-green-200 rounded-[2.5rem] p-10 space-y-6 text-center">
+                    <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
+                    <div className="space-y-2">
+                      <p className="text-sm font-black uppercase tracking-widest text-green-900">
+                        Pagamento Confirmado!
+                      </p>
+                      <p className="text-xs text-green-700">
+                        Seu pedido foi processado com sucesso.
+                      </p>
+                      {paymentReturnData.receipt_url && (
+                        <a
+                          href={paymentReturnData.receipt_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block mt-4 px-8 py-4 bg-green-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-green-700 transition-all"
+                        >
+                          Ver Comprovante
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-neutral-50 rounded-[2.5rem] p-10 space-y-6 text-center">
+                    <CheckCircle2 className="w-16 h-16 text-yellow-500 mx-auto" />
+                    <div className="space-y-2">
+                      <p className="text-sm font-black uppercase tracking-widest">
+                        Pagamento Processado
+                      </p>
+                      <p className="text-xs text-neutral-400">
+                        Aguardando confirmação do pagamento. Você receberá uma notificação em breve.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
