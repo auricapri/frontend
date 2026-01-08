@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Product, UserMode, CartItem, Review, UserProfile, Coupon, SizeGuide } from '../../types';
+import { Product, UserMode, CartItem, UserProfile, Coupon, SizeGuide, Category, ProductReview } from '../../types';
 import { 
   Plus, 
   Minus, 
@@ -9,6 +9,7 @@ import {
   X, 
   ChevronRight, 
   ChevronLeft,
+  ChevronDown,
   Star,
   Tag,
   Ruler,
@@ -18,12 +19,18 @@ import {
   Facebook,
   Twitter,
   Linkedin,
-  MessageCircle
+  MessageCircle,
+  ShieldCheck,
+  Truck,
+  RefreshCw
 } from 'lucide-react';
 import { Locale } from '../../i18n';
 import ProductReviews from './ProductReviews';
 import { formatCurrency } from '../../utils/currency';
-import { calculatePrice } from '../../utils/product';
+import { calculatePrice, filterProductsForMode } from '../../utils/product';
+import { OptimizedImage } from '../ui';
+import { usePrefetch } from '../../hooks/usePrefetch';
+import { ProductReviewsApi } from '../../api/product-reviews.api';
 
 interface ProductDetailProps {
   product: Product;
@@ -36,8 +43,14 @@ interface ProductDetailProps {
   t: (key: string) => any;
   locale: Locale;
   currentUser: UserProfile | null;
+  userOrders?: any[]; // Order[]
   onShowToast?: (message: string, type?: 'info' | 'error') => void;
-  sizeGuides?: SizeGuide[]; // New Prop
+  sizeGuides?: SizeGuide[];
+  products?: Product[];
+  categories?: Category[];
+  onSelectProduct?: (product: Product) => void;
+  wishlistIds?: string[];
+  onToggleWishlistProduct?: (productId: string) => void;
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({ 
@@ -50,8 +63,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   t, 
   locale,
   currentUser,
+  userOrders = [],
   onShowToast,
-  sizeGuides = []
+  sizeGuides = [],
+  products = [],
+  categories = [],
+  onSelectProduct,
+  wishlistIds = [],
+  onToggleWishlistProduct
 }) => {
   const getLoc = (obj: any): string => {
     if (obj === null || obj === undefined) return "";
@@ -145,6 +164,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
+  const actionsRef = useRef<HTMLDivElement>(null);
   const mobileGalleryRef = useRef<HTMLDivElement>(null);
 
   const activeVariant = useMemo(() => {
@@ -391,7 +411,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   };
 
   const rawPrice = activeVariant 
-    ? calculatePrice(activeVariant, userMode)
+    ? calculatePrice(activeVariant, userMode, product)
     : 0;
 
   // Calculate Discount
@@ -422,9 +442,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       size: activeVariant.size || 'N/A',
       color_name: activeVariant.color_name,
       color_hex: activeVariant.color_hex || '#000',
-      price: finalPrice, // Use discounted price if applicable
+      price: finalPrice,
+      original_price: activeCoupon ? rawPrice : undefined,
       quantity: quantity,
-      sku: activeVariant.sku
+      sku: activeVariant.sku,
+      applied_coupon_code: activeCoupon?.code
     });
   };
 
@@ -465,26 +487,70 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       setIsShareOpen(false);
   };
 
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<ProductReview[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const reviewsApi = new ProductReviewsApi();
+
   useEffect(() => {
-     setReviews([
-       {
-         id: 'r1',
-         product_id: product.id,
-         user_id: 'u1',
-         user_name: 'Alessandra M.',
-         rating: 5,
-         comment: 'The quality of the material is exceptional. Truly luxury experience.',
-         is_verified_purchase: true,
-         created_at: new Date(Date.now() - 86400000 * 2).toISOString()
-       }
-     ]);
+    const loadReviews = async () => {
+      setIsLoadingReviews(true);
+      try {
+        const productReviews: ProductReview[] = await reviewsApi.getByProductId(product.id);
+        setReviews(productReviews);
+      } catch (error) {
+        console.error('Error loading reviews:', error);
+        setReviews([]);
+      } finally {
+        setIsLoadingReviews(false);
+      }
+    };
+
+    loadReviews();
   }, [product.id]);
+
 
   // Construct Composition String
   const compositionText = activeVariant?.composition 
     ? `${getLoc(activeVariant.composition)}\n\n${getLoc(activeVariant.care_instructions)}` 
     : 'Sustainable luxury materials. Hand-finished in our atelier.';
+
+  const relatedProducts = useMemo(() => {
+    if (!products.length) return [];
+    
+    const modeFiltered = filterProductsForMode(products, userMode);
+    
+    const sameCategory = modeFiltered.filter(p => 
+      p.id !== product.id && 
+      p.category_id === product.category_id &&
+      p.is_active
+    );
+    
+    if (sameCategory.length >= 5) {
+      return sameCategory.slice(0, 5);
+    }
+    
+    const otherProducts = modeFiltered.filter(p => 
+      p.id !== product.id && 
+      p.category_id !== product.category_id &&
+      p.is_active
+    );
+    
+    const combined = [...sameCategory, ...otherProducts];
+    return combined.slice(0, 5);
+  }, [products, product.id, product.category_id, userMode]);
+
+  const getDisplayPrice = (p: Product, originalPrice: number) => {
+    const activeCoupon = coupons.find(c => c.product_ids?.includes(p.id));
+    if (!activeCoupon) return { original: originalPrice, final: originalPrice, hasDiscount: false };
+
+    let final = originalPrice;
+    if (activeCoupon.discount_type === 'percentage') {
+        final = originalPrice * (1 - activeCoupon.discount_value / 100);
+    } else {
+        final = Math.max(0, originalPrice - activeCoupon.discount_value);
+    }
+    return { original: originalPrice, final, hasDiscount: true, code: activeCoupon.code };
+  };
 
   return (
     <div className="relative w-full bg-white">
@@ -511,11 +577,15 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   className="relative aspect-[3/4] bg-white overflow-hidden cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all"
                   onClick={() => { setZoomImgIndex(idx); setIsZoomOpen(true); }}
                 >
-                  <img 
-                    src={imgData.url} 
-                    alt={`${getLoc(product.name)} view ${idx + 1}`} 
-                    className="w-full h-full object-contain transition-transform duration-[1.5s] ease-out group-hover:scale-110" 
-                    loading={idx < 3 ? "eager" : "lazy"}
+                  <OptimizedImage
+                    src={imgData.url}
+                    alt={`${getLoc(product.name)} view ${idx + 1}`}
+                    className="w-full h-full transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+                    size={idx < 2 ? 'large' : 'medium'}
+                    priority={idx < 2}
+                    objectFit="contain"
+                    useSrcSet
+                    srcSetSizes={['medium', 'large', 'xlarge']}
                   />
                   <div className="absolute bottom-10 right-10 p-5 bg-white/90 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">
                     <Maximize2 className="w-6 h-6" />
@@ -553,10 +623,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     className="flex-none w-full h-full snap-center relative overflow-hidden"
                     onClick={() => { setZoomImgIndex(idx); setIsZoomOpen(true); }}
                   >
-                    <img 
-                      src={imgData.url} 
-                      className="w-full h-full object-contain" 
-                      alt="" 
+                    <OptimizedImage
+                      src={imgData.url}
+                      alt=""
+                      className="w-full h-full"
+                      size="medium"
+                      priority={idx === 0}
+                      objectFit="contain"
                     />
                     {isActiveVariantImage && (
                       <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-full">
@@ -577,52 +650,51 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         </div>
 
         {/* INFO COLUMN - 40% Width */}
-        <div className="w-full md:w-[40%] p-8 md:p-16 lg:p-24 bg-white">
-          <div className="md:sticky md:top-32 transition-all duration-700">
-            <div className="mb-12">
-              <div className="flex items-center gap-2 mb-6 animate-in fade-in duration-700">
-                <div className="flex text-black">
-                   {[...Array(5)].map((_, i) => <Star key={i} className={`w-2.5 h-2.5 ${i < 4 ? 'fill-current' : 'text-neutral-100'}`} />)}
+        <div className="w-full md:w-[40%] p-8 md:p-12 lg:p-16 bg-white">
+          <div className="md:sticky md:top-24 transition-all duration-700">
+            {/* Top section: name, price, selections - NO SCROLL */}
+            <div className="mb-6 pt-2 md:pt-0">
+              {reviews.length > 0 && (
+                <div className="flex items-center gap-3 mb-4 animate-in fade-in duration-700">
+                  <div className="flex text-black">
+                     {[...Array(5)].map((_, i) => <Star key={i} className={`w-3 h-3 ${i < 4 ? 'fill-current' : 'text-neutral-100'}`} />)}
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">({reviews.length} avaliações)</span>
                 </div>
-                <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">({reviews.length} reviews)</span>
-              </div>
+              )}
               
-              <div className="flex items-center justify-between mb-6">
-                 <span className="text-[10px] font-black uppercase tracking-[0.5em] text-neutral-300 block">Collection Piece</span>
-                 {activeCoupon && (
-                    <div className="flex items-center gap-2 bg-black text-white px-3 py-1.5 rounded-full shadow-lg">
-                        <Tag className="w-3 h-3" />
-                        <span className="text-[8px] font-black uppercase tracking-widest">{activeCoupon.code} APPLIED</span>
-                    </div>
-                 )}
-              </div>
+              {product.has_free_shipping && (
+                <div className="flex items-center gap-1.5 mb-4 bg-emerald-500 text-white px-2.5 py-1 rounded-full w-fit">
+                  <Truck className="w-2.5 h-2.5" />
+                  <span className="text-[8px] font-black uppercase tracking-widest">Frete Grátis</span>
+                </div>
+              )}
               
-              <h1 className="text-4xl lg:text-6xl font-light tracking-tighter uppercase leading-[0.85] mb-10 text-neutral-900">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-light tracking-tighter uppercase leading-[0.95] mb-6 text-neutral-900 line-clamp-2">
                 {getLoc(product.name)}
               </h1>
               
-              <div className="flex flex-col">
-                <div className="flex items-baseline space-x-6">
+              <div className="flex flex-col mb-6">
+                <div className="flex items-baseline space-x-4">
                     {activeCoupon && (
-                        <span className="text-xl font-bold text-neutral-400 line-through decoration-red-400 decoration-2">{formatCurrency(rawPrice, locale)}</span>
+                        <span className="text-lg font-bold text-neutral-400 line-through decoration-red-400 decoration-2">{formatCurrency(rawPrice, locale)}</span>
                     )}
-                    <span className={`text-3xl font-light tracking-tighter ${activeCoupon ? 'text-red-500' : 'text-black'}`}>{formatCurrency(finalPrice, locale)}</span>
+                    <span className={`text-2xl font-light tracking-tighter ${activeCoupon ? 'text-red-500' : 'text-black'}`}>{formatCurrency(finalPrice, locale)}</span>
                 </div>
                 {activeVariant?.stock_quantity <= 10 && activeVariant?.stock_quantity > 0 && (
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-red-500 mt-2 animate-pulse">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-red-500 mt-2 animate-pulse">
                         Últimas {activeVariant.stock_quantity} unidades
                     </span>
                 )}
-                <span className="text-[9px] font-black uppercase tracking-widest text-neutral-300 mt-2">Complimentary Shipping</span>
               </div>
             </div>
 
-            {/* SELECTION AREAS */}
-            <div className="space-y-12 mb-16">
+            {/* SELECTION AREAS - NO SCROLL */}
+            <div className="space-y-6 mb-6">
               {colors.length > 0 && (
-                <div className="space-y-5">
-                  <label className="text-[9px] uppercase font-black tracking-[0.3em] text-neutral-400">Palette — {getLoc(activeVariant?.color_name)}</label>
-                  <div className="flex flex-wrap gap-4">
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase font-black tracking-[0.3em] text-neutral-400">Paleta — {getLoc(activeVariant?.color_name)}</label>
+                  <div className="flex flex-wrap gap-3">
                     {colors.map(c => (
                       <button 
                         key={c.hex} 
@@ -637,27 +709,26 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               )}
 
               {sizes.length > 0 && (
-                <div className="space-y-5">
+                <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <label className="text-[9px] uppercase font-black tracking-[0.3em] text-neutral-400">Measurement</label>
+                    <label className="text-[10px] uppercase font-black tracking-[0.3em] text-neutral-400">Medidas</label>
                     {activeSizeGuideImage && (
-                        <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center gap-2 text-[9px] uppercase font-black tracking-widest text-neutral-900 border-b border-black pb-0.5 hover:opacity-50 transition-opacity">
-                            <Ruler className="w-3 h-3" /> Size Guide
+                        <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-neutral-900 border-b border-black pb-0.5 hover:opacity-50 transition-opacity">
+                            <Ruler className="w-3 h-3" /> Guia de Tamanhos
                         </button>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2">
                     {sizes.map(s => {
                       const isSelected = selectedSize === s;
-                      const isAvailable = true; // All sizes in the filtered list are available for the selected color
                       
                       return (
                         <button 
                           key={s} 
                           onClick={() => setSelectedSize(s || '')}
-                          className={`min-w-[70px] px-6 py-4 text-[11px] font-black border transition-all duration-500 rounded-xl uppercase tracking-widest ${
+                          className={`min-w-[60px] px-5 py-3 text-[11px] font-black border transition-all duration-500 rounded-xl uppercase tracking-widest ${
                             isSelected 
-                              ? 'bg-black text-white border-black shadow-xl scale-105' 
+                              ? 'bg-black text-white border-black shadow-xl' 
                               : 'bg-white text-neutral-400 border-neutral-100 hover:border-black hover:text-black'
                           }`}
                         >
@@ -667,9 +738,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     })}
                   </div>
                   
-                  {/* Show message if selected size is not available for selected color */}
                   {selectedSize && !isSelectedSizeAvailable && (
-                    <p className="text-[9px] text-orange-600 font-bold uppercase tracking-widest mt-2">
+                    <p className="text-[10px] text-orange-600 font-bold uppercase tracking-widest mt-2">
                       Tamanho {selectedSize} não disponível para esta cor. Selecione outro tamanho.
                     </p>
                   )}
@@ -677,32 +747,33 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               )}
             </div>
 
-            {/* ACTIONS */}
-            <div className="flex flex-col gap-6 mb-16">
-               <div className="flex items-stretch gap-3 h-20">
+            {/* ACTIONS - Always visible */}
+            <div ref={actionsRef} className="pt-6 border-t border-neutral-100 bg-white">
+              <div className="flex flex-col gap-4">
+               <div className="flex items-stretch gap-3 h-16">
                   <div className="flex flex-none items-center bg-neutral-50 rounded-2xl border border-neutral-100 px-4 space-x-6">
-                     <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 hover:opacity-50 transition-opacity"><Minus className="w-3 h-3" /></button>
+                     <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 hover:opacity-50 transition-opacity"><Minus className="w-4 h-4" /></button>
                      <span className="text-sm font-black w-4 text-center">{quantity}</span>
                      <button 
                         onClick={incrementQuantity} 
                         className={`p-2 transition-opacity ${quantity >= (activeVariant?.stock_quantity || 0) ? 'opacity-20 cursor-not-allowed' : 'hover:opacity-50'}`}
                         disabled={quantity >= (activeVariant?.stock_quantity || 0)}
                      >
-                        <Plus className="w-3 h-3" />
+                        <Plus className="w-4 h-4" />
                      </button>
                   </div>
                   
                   <button 
                     onClick={handleAddToCart}
                     disabled={!activeVariant || activeVariant.stock_quantity === 0}
-                    className="flex-1 bg-black text-white rounded-2xl text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-neutral-800 transition-all active:scale-[0.98] disabled:opacity-20 flex items-center justify-center text-center px-4"
+                    className="flex-1 bg-black text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-neutral-800 transition-all active:scale-[0.98] disabled:opacity-20 flex items-center justify-center text-center px-4"
                   >
                     {activeVariant?.stock_quantity === 0 ? t('product.outOfStock') : t('product.addToCart')}
                   </button>
 
                   <button 
                     onClick={onToggleWishlist}
-                    className={`flex-none aspect-square border rounded-2xl flex items-center justify-center transition-all duration-500 ${isWishlisted ? 'bg-black text-white border-black shadow-lg scale-105' : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'}`}
+                    className={`flex-none aspect-square border rounded-2xl flex items-center justify-center transition-all duration-500 ${isWishlisted ? 'bg-black text-white border-black shadow-lg' : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'}`}
                   >
                     <Heart 
                       className="w-5 h-5 transition-transform active:scale-125" 
@@ -710,7 +781,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     />
                   </button>
 
-                  {/* SHARE BUTTON */}
                   <div className="relative">
                       <button 
                         onClick={() => setIsShareOpen(!isShareOpen)}
@@ -719,7 +789,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                         <Share2 className="w-5 h-5" />
                       </button>
 
-                      {/* Share Menu Popover */}
                       {isShareOpen && (
                           <div className="absolute bottom-[110%] right-0 min-w-[220px] bg-white rounded-[2rem] shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300 z-50">
                               <span className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">Compartilhar</span>
@@ -753,10 +822,28 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                       )}
                   </div>
                </div>
+               
+               {/* Trust Badges */}
+               <div className="flex flex-wrap items-center gap-4 pt-2">
+                 <div className="flex items-center gap-2 text-neutral-600">
+                   <RefreshCw className="w-4 h-4" />
+                   <span className="text-[9px] font-black uppercase tracking-widest">Troca fácil</span>
+                 </div>
+                 <div className="flex items-center gap-2 text-neutral-600">
+                   <ShieldCheck className="w-4 h-4" />
+                   <span className="text-[9px] font-black uppercase tracking-widest">Pagamento seguro</span>
+                 </div>
+                 <div className="flex items-center gap-2 text-neutral-600">
+                   <Truck className="w-4 h-4" />
+                   <span className="text-[9px] font-black uppercase tracking-widest">Envio para todo Brasil</span>
+                 </div>
+               </div>
+              </div>
             </div>
 
-            {/* ACCORDIONS */}
-            <div className="border-t border-neutral-100 pt-8 space-y-2">
+            {/* ACCORDIONS - Below fold content */}
+            <div className="pt-6 border-t border-neutral-100 mt-6">
+              <div className="space-y-2">
                {[
                  { id: 'desc', label: t('product.description'), content: getLoc(product.description) },
                  { id: 'comp', label: t('product.composition'), content: compositionText }
@@ -764,36 +851,189 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                  <div key={section.id} className="border-b border-neutral-50 last:border-0">
                     <button 
                       onClick={() => setOpenSection(openSection === section.id ? null : section.id)} 
-                      className="w-full flex justify-between items-center py-5 text-[10px] font-black uppercase tracking-[0.3em] hover:opacity-60 transition-opacity"
+                      className="w-full flex justify-between items-center py-5 text-[11px] font-black uppercase tracking-[0.3em] hover:opacity-60 transition-opacity"
                     >
                       {section.label}
-                      {openSection === section.id ? <Minus className="w-3 h-3 text-neutral-400" /> : <Plus className="w-3 h-3 text-neutral-400" />}
+                      {openSection === section.id ? <Minus className="w-4 h-4 text-neutral-400" /> : <Plus className="w-4 h-4 text-neutral-400" />}
                     </button>
                     <div className={`overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${openSection === section.id ? 'max-h-96 opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
-                       <p className="text-[11px] leading-relaxed text-neutral-500 font-medium max-w-sm whitespace-pre-line">{section.content}</p>
+                       <p className="text-[12px] leading-relaxed text-neutral-500 font-medium max-w-sm whitespace-pre-line">{section.content}</p>
                     </div>
                  </div>
                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* REVIEWS */}
-      <div id="reviews" className="w-full bg-white border-t border-neutral-100 pt-32 pb-40 px-8 md:px-24">
-        <div className="max-w-7xl mx-auto">
-          <ProductReviews 
-            productId={product.id} 
-            reviews={reviews} 
-            user={currentUser} 
-            t={t} 
-            onAddReview={async (r) => { 
-               const newReview: Review = { ...r, id: `rev_${Date.now()}`, created_at: new Date().toISOString() } as Review;
-               setReviews(prev => [newReview, ...prev]);
-            }}
-          />
+      {/* RELATED PRODUCTS */}
+      {relatedProducts.length > 0 && (
+        <div className="w-full bg-white border-t border-neutral-100 pt-32 pb-40">
+          <div className="w-full">
+            <div className="mb-16 px-8 md:px-24">
+              <h2 className="text-3xl font-light tracking-tight uppercase mb-2">{t('product.related')}</h2>
+              <p className="text-[10px] text-neutral-400 tracking-[0.2em] uppercase font-bold">{t('product.relatedSubtitle')}</p>
+            </div>
+            
+            <div className="hidden md:flex w-full">
+              {relatedProducts.map((p) => {
+                const mainVariant = p.variants?.[0];
+                const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
+                const { original, final, hasDiscount, code } = getDisplayPrice(p, rawPrice);
+                const displayImg = p.default_image_url || p.base_images[0];
+                const isWishlistedProduct = wishlistIds.includes(p.id);
+                
+                return (
+                  <div 
+                    key={p.id} 
+                    onClick={() => onSelectProduct?.(p)} 
+                    className="flex-1 cursor-pointer group relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700"
+                  >
+                    <div className="relative w-full h-[500px] overflow-hidden bg-neutral-50">
+                      <OptimizedImage
+                        src={displayImg}
+                        alt={getLoc(p.name)}
+                        className="w-full h-full transition-transform duration-1000 group-hover:scale-110"
+                        size="medium"
+                        objectFit="cover"
+                      />
+                      
+                      <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                        {hasDiscount && (
+                          <div className="bg-black text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
+                            <Tag className="w-3 h-3" />
+                            <span className="text-[8px] font-black uppercase tracking-widest">{code}</span>
+                          </div>
+                        )}
+                        {p.has_free_shipping && (
+                          <div className="bg-emerald-500 text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
+                            <Truck className="w-3 h-3" />
+                            <span className="text-[8px] font-black uppercase tracking-widest">Frete Gratis</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <button 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          onToggleWishlistProduct?.(p.id); 
+                        }} 
+                        className={`absolute top-4 right-4 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-sm transition-all transform hover:scale-110 active:scale-90 ${isWishlistedProduct ? 'text-red-500' : 'text-neutral-400 hover:text-neutral-900'}`}
+                      >
+                        <Heart className="w-4 h-4" fill={isWishlistedProduct ? "currentColor" : "none"} />
+                      </button>
+                      
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-6">
+                        <div className="flex flex-col">
+                          <h3 className="text-sm font-black uppercase tracking-widest text-white mb-2 leading-tight line-clamp-2">{getLoc(p.name)}</h3>
+                          <div className="flex flex-col items-start">
+                            {hasDiscount && (
+                              <span className="text-xs font-bold text-white/60 line-through decoration-white/40 mb-0.5">{formatCurrency(original, locale)}</span>
+                            )}
+                            <span className={`text-base font-black tracking-tighter ${hasDiscount ? 'text-red-400' : 'text-white'}`}>
+                              {formatCurrency(final, locale)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="md:hidden overflow-x-auto no-scrollbar">
+              <div className="flex" style={{ width: `${relatedProducts.length * 280}px` }}>
+                {relatedProducts.map((p) => {
+                  const mainVariant = p.variants?.[0];
+                  const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
+                  const { original, final, hasDiscount, code } = getDisplayPrice(p, rawPrice);
+                  const displayImg = p.default_image_url || p.base_images[0];
+                  const isWishlistedProduct = wishlistIds.includes(p.id);
+                  
+                  return (
+                    <div 
+                      key={p.id} 
+                      onClick={() => onSelectProduct?.(p)} 
+                      className="flex-none w-[280px] cursor-pointer group relative overflow-hidden"
+                    >
+                      <div className="relative w-full h-[350px] overflow-hidden bg-neutral-50">
+                        <OptimizedImage
+                          src={displayImg}
+                          alt={getLoc(p.name)}
+                          className="w-full h-full transition-transform duration-1000 group-hover:scale-110"
+                          size="medium"
+                          objectFit="cover"
+                        />
+                        
+                        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+                          {hasDiscount && (
+                            <div className="bg-black text-white px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                              <Tag className="w-2.5 h-2.5" />
+                              <span className="text-[7px] font-black uppercase tracking-widest">{code}</span>
+                            </div>
+                          )}
+                          {p.has_free_shipping && (
+                            <div className="bg-emerald-500 text-white px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                              <Truck className="w-2.5 h-2.5" />
+                              <span className="text-[7px] font-black uppercase tracking-widest">Frete Gratis</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            onToggleWishlistProduct?.(p.id); 
+                          }} 
+                          className={`absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm transition-all transform hover:scale-110 active:scale-90 ${isWishlistedProduct ? 'text-red-500' : 'text-neutral-400 hover:text-neutral-900'}`}
+                        >
+                          <Heart className="w-3.5 h-3.5" fill={isWishlistedProduct ? "currentColor" : "none"} />
+                        </button>
+                        
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-4">
+                          <div className="flex flex-col">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-white mb-1 leading-tight line-clamp-2">{getLoc(p.name)}</h3>
+                            <div className="flex flex-col items-start">
+                              {hasDiscount && (
+                                <span className="text-[9px] font-bold text-white/60 line-through decoration-white/40 mb-0.5">{formatCurrency(original, locale)}</span>
+                              )}
+                              <span className={`text-sm font-black tracking-tighter ${hasDiscount ? 'text-red-400' : 'text-white'}`}>
+                                {formatCurrency(final, locale)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* REVIEWS */}
+      {(reviews.length > 0 || isLoadingReviews) && (
+        <div id="reviews" className="w-full bg-white border-t border-neutral-100 pt-32 pb-40 px-8 md:px-24">
+          <div className="max-w-7xl mx-auto">
+            <ProductReviews 
+              productId={product.id} 
+              reviews={reviews} 
+              user={currentUser} 
+              userOrders={userOrders}
+              t={t} 
+              isLoading={isLoadingReviews}
+              onAddReview={async (r) => { 
+                 const newReview: ProductReview = { ...r, id: `rev_${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), helpful_count: 0, cashback_awarded: false } as ProductReview;
+                 setReviews(prev => [newReview, ...prev]);
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* SIZE GUIDE MODAL */}
       {isSizeGuideOpen && activeSizeGuideImage && (

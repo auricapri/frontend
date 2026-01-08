@@ -1,10 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Download, ShoppingBag, MapPin, Calendar, Clock, DollarSign, Share2, MessageCircle, Check, Loader2 } from 'lucide-react';
-import { Order, OrderItem } from '../../types';
+import { Order, OrderItem, OrderReview } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { OrdersApi } from '../../api/orders.api';
+import { OrderReviewsApi } from '../../api/order-reviews.api';
+import { OrderReviewForm } from './OrderReviewForm';
+import { OrderReviewsList } from './OrderReviewsList';
+import { useAuthContext } from '../../context/AuthContext';
 
 interface OrderReceiptProps {
   order: Order;
@@ -15,7 +19,13 @@ interface OrderReceiptProps {
 
 const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale }) => {
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
+  const [reviews, setReviews] = useState<OrderReview[]>([]);
+  const [userReview, setUserReview] = useState<OrderReview | null>(null);
+  const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const { currentUser } = useAuthContext();
   const ordersApi = new OrdersApi();
+  const reviewsApi = new OrderReviewsApi();
   
   const handlePrint = async () => {
     setIsDownloadingPDF(true);
@@ -54,6 +64,43 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale })
   const formattedTime = new Date(order.created_at).toLocaleTimeString(locale, {
     hour: '2-digit', minute: '2-digit'
   });
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      const orderStatus = order.status?.toLowerCase();
+      const isDelivered = orderStatus === 'delivered' || orderStatus === 'entregue';
+      if (!isDelivered) return;
+      
+      setIsLoadingReviews(true);
+      try {
+        const allReviews = await reviewsApi.getByOrderId(order.id);
+        setReviews(allReviews);
+        
+        if (currentUser) {
+          const userReview = allReviews.find(r => r.user_id === currentUser.id);
+          setUserReview(userReview || null);
+        }
+      } catch (error) {
+        console.error('Error loading reviews:', error);
+      } finally {
+        setIsLoadingReviews(false);
+      }
+    };
+
+    loadReviews();
+  }, [order.id, order.status, currentUser?.id]);
+
+  const handleReviewSuccess = async (review: OrderReview) => {
+    setUserReview(review);
+    setIsReviewFormOpen(false);
+    const allReviews = await reviewsApi.getByOrderId(order.id);
+    setReviews(allReviews);
+  };
+
+  const handleEditReview = (review: OrderReview) => {
+    setUserReview(review);
+    setIsReviewFormOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-white md:bg-neutral-100 flex flex-col items-center justify-start py-20 md:py-24 relative animate-in fade-in duration-700 overflow-y-auto">
@@ -238,6 +285,55 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale })
              <MessageCircle className="w-4 h-4 fill-current" /> WhatsApp
           </button>
       </div>
+
+      {/* ORDER REVIEWS SECTION */}
+      {(order.status?.toLowerCase() === 'delivered' || order.status?.toLowerCase() === 'entregue') && (
+        <div className="w-full max-w-md px-4 md:px-0 mt-8 no-print">
+          <div className="bg-white rounded-xl p-6 border border-neutral-200">
+            <h3 className="text-lg font-bold mb-4">Avaliações</h3>
+            
+            {currentUser && !userReview && !isReviewFormOpen && (
+              <button
+                onClick={() => setIsReviewFormOpen(true)}
+                className="w-full py-3 border-2 border-dashed border-neutral-300 rounded-lg hover:border-black transition-colors mb-6 text-sm"
+              >
+                Avaliar pedido
+              </button>
+            )}
+
+            {isReviewFormOpen && (
+              <div className="mb-6">
+                <OrderReviewForm
+                  orderId={order.id}
+                  existingReview={userReview}
+                  onSuccess={handleReviewSuccess}
+                  onCancel={() => setIsReviewFormOpen(false)}
+                />
+              </div>
+            )}
+
+            {isLoadingReviews ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
+              </div>
+            ) : reviews.length > 0 ? (
+              <OrderReviewsList
+                reviews={reviews}
+                currentUserId={currentUser?.id}
+                onReviewUpdate={async () => {
+                  const allReviews = await reviewsApi.getByOrderId(order.id);
+                  setReviews(allReviews);
+                }}
+                onEdit={handleEditReview}
+              />
+            ) : (
+              <p className="text-sm text-neutral-500 text-center py-8">
+                Nenhuma avaliação ainda
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );

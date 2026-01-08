@@ -5,13 +5,15 @@ import { Hero, LoyaltyBanner, AboutUs } from './src/components/shared';
 import { ProductGrid, ProductDetail, CollectionDetail } from './src/components/product';
 import { CartDrawer, WishlistDrawer, CouponsDrawer } from './src/components/cart';
 import { AuthDrawer } from './src/components/auth';
-import { CheckoutView, AddressData } from './src/components/checkout';
+import { CheckoutView, CheckoutViewInfinitPay, AddressData } from './src/components/checkout';
 import { AdminDashboard } from './src/components/admin';
 import { OrderResultOverlay, OrderReceipt } from './src/components/orders';
+import { OrderReviewPage } from './src/pages/OrderReviewPage';
 import { Toast } from './src/components/ui';
 import { NotFoundPage } from './src/pages/NotFoundPage';
 import { ResetPasswordPage } from './src/pages/ResetPasswordPage';
 import SharedWishlistPage from './src/pages/SharedWishlistPage';
+import { AdminLoginPage } from './src/pages/AdminLoginPage';
 import { Product, CartItem, UserMode, UserProfile, Category, Collection, Banner, StoreConfig, Coupon, Asset, InternalLogisticsInfo, Order, SavedAddress, SavedCard, SizeGuide } from './src/types';
 import { MessageCircle, X, Loader2 } from 'lucide-react';
 import { Locale, translations } from './src/i18n';
@@ -48,6 +50,7 @@ export const App: React.FC = () => {
   const { wishlistIds, toggleWishlist } = useWishlist(currentUser?.id);
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [userOrders, setUserOrders] = useState<Order[]>([]);
   
   // Toast State
   const [toast, setToast] = useState<{ message: string; visible: boolean; type?: 'info' | 'error' }>({ message: '', visible: false });
@@ -72,6 +75,27 @@ export const App: React.FC = () => {
 
   const [pendingCheckout, setPendingCheckout] = useState(false);
 
+  // Fetch user orders when user is logged in
+  useEffect(() => {
+    const fetchUserOrders = async () => {
+      if (!currentUser?.id) {
+        setUserOrders([]);
+        return;
+      }
+
+      try {
+        const ordersApi = new OrdersApi();
+        const orders = await ordersApi.getByUserId(currentUser.id);
+        setUserOrders(orders || []);
+      } catch (error) {
+        console.error('Error fetching user orders:', error);
+        setUserOrders([]);
+      }
+    };
+
+    fetchUserOrders();
+  }, [currentUser?.id]);
+
   // Helper to extract product slug from URL
   const extractProductSlug = (pathname: string): string | null => {
     const match = pathname.match(/^\/product\/(.+)$/);
@@ -86,12 +110,14 @@ export const App: React.FC = () => {
   };
 
   // Initialize view from URL
-  const getViewFromPath = (pathname: string): 'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | '404' => {
+  const getViewFromPath = (pathname: string): 'home' | 'product' | 'collection' | 'admin' | 'admin-login' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | 'order-review' | '404' => {
+    if (pathname === '/admin/login') return 'admin-login';
     if (pathname === '/admin') return 'admin';
     if (pathname === '/checkout') return 'checkout';
     if (pathname === '/receipt') return 'receipt';
     if (pathname === '/about') return 'about';
     if (pathname === '/reset-password') return 'reset-password';
+    if (pathname.startsWith('/order-review/')) return 'order-review';
     if (pathname.startsWith('/wishlist/')) return 'shared-wishlist';
     if (pathname.startsWith('/product')) return 'product';
     if (pathname.startsWith('/collection')) return 'collection';
@@ -100,8 +126,13 @@ export const App: React.FC = () => {
     return '404';
   };
 
-  const [currentView, setCurrentView] = useState<'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | '404'>(() => {
-    return getViewFromPath(window.location.pathname);
+  const [currentView, setCurrentView] = useState<'home' | 'product' | 'collection' | 'admin' | 'admin-login' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | 'order-review' | '404'>(() => {
+    const view = getViewFromPath(window.location.pathname);
+    // If not starting on home, hide splash immediately
+    if (view !== 'home') {
+      document.body.classList.add('loaded');
+    }
+    return view;
   });
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
@@ -165,26 +196,74 @@ export const App: React.FC = () => {
       }
       
       if (!currentUser) {
-        // Not logged in, redirect to home and open auth drawer
+        // Not logged in, redirect to admin login
+        setCurrentView('admin-login');
+        window.history.pushState({ view: 'admin-login' }, '', '/admin/login');
+        return;
+      }
+      
+      // Check if user is admin (check both role and is_admin for compatibility)
+      const isAdmin = currentUser.role === 'admin' || (currentUser as any).is_admin === true;
+      
+      if (!isAdmin) {
+        // Logged in but not admin, redirect to home
         setCurrentView('home');
         window.history.pushState({ view: 'home' }, '', '/');
-        setIsAuthOpen(true);
         if (typeof showToast === 'function') {
-          showToast('Você precisa estar logado para acessar o admin.', 'error');
+          showToast('Acesso negado. Apenas administradores podem acessar esta área.', 'error');
         }
-      } else {
-        // Check if user is admin (check both role and is_admin for compatibility)
-        const isAdmin = currentUser.role === 'admin' || (currentUser as any).is_admin === true;
-        
-        if (!isAdmin) {
-          // Logged in but not admin, redirect to home
-          setCurrentView('home');
-          window.history.pushState({ view: 'home' }, '', '/');
-          if (typeof showToast === 'function') {
-            showToast('Acesso negado. Apenas administradores podem acessar esta área.', 'error');
-          }
-        }
+        return;
       }
+
+      // Check MFA status for admin
+      const checkMfaStatus = async () => {
+        try {
+          const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+          
+          if (aalError) {
+            console.error('Error checking MFA status:', aalError);
+            return;
+          }
+
+          const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
+          
+          if (factorsError) {
+            console.error('Error listing MFA factors:', factorsError);
+            return;
+          }
+
+          const hasVerifiedFactors = factorsData.totp.some((f: any) => f.status === 'verified') ||
+                                     factorsData.phone.some((f: any) => f.status === 'verified');
+
+          if (!hasVerifiedFactors) {
+            // Admin doesn't have MFA, redirect to login to set it up
+            setCurrentView('admin-login');
+            window.history.pushState({ view: 'admin-login' }, '', '/admin/login');
+            if (typeof showToast === 'function') {
+              showToast('MFA obrigatório para administradores. Por favor, configure o MFA.', 'error');
+            }
+            return;
+          }
+
+          if (aalData?.currentLevel === 'aal1' && aalData?.nextLevel === 'aal2') {
+            // Admin needs to verify MFA
+            setCurrentView('admin-login');
+            window.history.pushState({ view: 'admin-login' }, '', '/admin/login');
+            return;
+          }
+
+          if (aalData?.currentLevel !== 'aal2') {
+            // Admin doesn't have valid MFA session
+            setCurrentView('admin-login');
+            window.history.pushState({ view: 'admin-login' }, '', '/admin/login');
+            return;
+          }
+        } catch (err) {
+          console.error('Error checking MFA:', err);
+        }
+      };
+
+      checkMfaStatus();
     }
   }, [currentView, currentUser, isAuthLoading]);
 
@@ -215,18 +294,25 @@ export const App: React.FC = () => {
   // Store data is managed by useStoreData hook
   // No need for manual fetching here
 
-  // Remove splash only when home is fully loaded and rendered
+  // Manage splash screen: only show on initial home load
+  const [splashShown, setSplashShown] = useState(false);
+  
   useEffect(() => {
-    if (currentView === 'home' && !isLoading && products.length > 0) {
+    // Only show splash on initial home load, not when navigating between pages
+    if (currentView === 'home' && !isLoading && products.length > 0 && !splashShown) {
       // Wait a bit to ensure DOM is fully rendered
       const timer = setTimeout(() => {
         console.log('App: Home is ready, removing splash screen');
         document.body.classList.add('loaded');
+        setSplashShown(true);
       }, 300);
       
       return () => clearTimeout(timer);
+    } else if (currentView !== 'home' && !splashShown) {
+      // If navigating away from home before splash was shown, mark as shown to prevent it
+      setSplashShown(true);
     }
-  }, [currentView, isLoading, products.length]);
+  }, [currentView, isLoading, products.length, splashShown]);
 
   const t = (key: string) => {
     const keys = key.split('.');
@@ -500,7 +586,7 @@ export const App: React.FC = () => {
           size: variant.size || 'N/A',
           color_name: variant.color_name,
           color_hex: variant.color_hex || '#000',
-          price: calculatePrice(variant, userMode),
+          price: calculatePrice(variant, userMode, product),
           quantity: 1,
           sku: variant.sku
         });
@@ -541,6 +627,19 @@ export const App: React.FC = () => {
 
   if (currentView === 'reset-password') {
     return <ResetPasswordPage locale={locale} onNavigate={handleNavigate} t={t} />;
+  }
+
+  if (currentView === 'admin-login') {
+    return (
+      <AdminLoginPage
+        onLoginSuccess={() => {
+          setCurrentView('admin');
+          window.history.pushState({ view: 'admin' }, '', '/admin');
+        }}
+        t={t}
+        locale={locale}
+      />
+    );
   }
 
   if (currentView === 'admin') {
@@ -647,8 +746,14 @@ export const App: React.FC = () => {
             t={t}
             locale={locale}
             currentUser={currentUser}
+            userOrders={userOrders}
             onShowToast={showToast}
             sizeGuides={sizeGuides}
+            products={products}
+            categories={categories}
+            onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product', undefined, p); }}
+            wishlistIds={wishlistIds}
+            onToggleWishlistProduct={handleToggleWishlist}
           />
         )}
 
@@ -666,18 +771,42 @@ export const App: React.FC = () => {
           />
         )}
 
-        {currentView === 'checkout' && (
-          <CheckoutView 
-            items={cartItems} 
-            currentUser={currentUser}
-            storeConfig={storeConfig}
-            userMode={userMode}
-            onBack={() => handleNavigate('home')} 
-            onComplete={handlePlaceOrder} 
-            locale={locale} 
-            t={t} 
-          />
-        )}
+        {currentView === 'checkout' && (() => {
+          const useInfinitPay = import.meta.env.VITE_USE_INFINITPAY_CHECKOUT === 'true';
+          const CheckoutComponent = useInfinitPay ? CheckoutViewInfinitPay : CheckoutView;
+          
+          return (
+            <CheckoutComponent 
+              items={cartItems} 
+              currentUser={currentUser}
+              storeConfig={storeConfig}
+              userMode={userMode}
+              onBack={() => handleNavigate('home')} 
+              onComplete={handlePlaceOrder} 
+              locale={locale} 
+              t={t} 
+            />
+          );
+        })()}
+
+        {currentView === 'order-review' && (() => {
+          const orderIdMatch = window.location.pathname.match(/^\/order-review\/(.+)$/);
+          const orderId = orderIdMatch ? orderIdMatch[1] : null;
+          
+          if (!orderId) {
+            return <NotFoundPage onBack={() => handleNavigate('home')} t={t} locale={locale} />;
+          }
+
+          return (
+            <OrderReviewPage
+              orderId={orderId}
+              onBack={() => handleNavigate('home')}
+              t={t}
+              locale={locale}
+              storeConfig={storeConfig}
+            />
+          );
+        })()}
       </main>
 
       {/* Global Toast Notification */}
@@ -765,6 +894,7 @@ export const App: React.FC = () => {
         }} 
         t={t} 
         locale={locale} 
+        storeConfig={storeConfig}
       />
       <WishlistDrawer
         currentUserId={currentUser?.id} 

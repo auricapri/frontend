@@ -16,7 +16,8 @@ import {
   Star,
   Download,
   Trophy,
-  LogOut
+  LogOut,
+  DollarSign
 } from 'lucide-react';
 import { UserProfile, Order, OrderItem } from '../../types';
 import { Locale } from '../../i18n';
@@ -30,9 +31,10 @@ interface UserProfileViewProps {
   locale: Locale;
   onUpdate: (user: UserProfile) => void;
   onLogout?: () => void;
+  storeConfig?: any;
 }
 
-const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUpdate, onLogout }) => {
+const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUpdate, onLogout, storeConfig }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'affiliate'>('profile');
   const [isUpdating, setIsUpdating] = useState(false);
   const [fullName, setFullName] = useState(user.full_name);
@@ -54,6 +56,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [orderReviews, setOrderReviews] = useState<Record<string, boolean>>({});
 
   const getLoc = (obj: any) => {
     if (!obj) return "";
@@ -79,9 +82,28 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
     setLoadingOrders(true);
     try {
         const { OrdersApi } = await import('../../api/orders.api');
+        const { ProductReviewsApi } = await import('../../api/product-reviews.api');
         const ordersApi = new OrdersApi();
+        const reviewsApi = new ProductReviewsApi();
         const orders = await ordersApi.getByUserId(user.id);
         setOrders(orders);
+
+        const deliveredOrders = orders.filter(o => {
+          const status = o.status?.toLowerCase();
+          return status === 'delivered' || status === 'entregue';
+        });
+
+        const reviewsMap: Record<string, boolean> = {};
+        for (const order of deliveredOrders) {
+          try {
+            const items = await reviewsApi.getOrderItemsForReview(order.id, user.id);
+            const hasAllReviews = items.length > 0 && items.every(item => item.has_review);
+            reviewsMap[order.id] = hasAllReviews;
+          } catch {
+            reviewsMap[order.id] = false;
+          }
+        }
+        setOrderReviews(reviewsMap);
     } catch (err: any) {
         console.error('Erro ao buscar pedidos:', err);
     } finally {
@@ -252,13 +274,21 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                   <p className="text-sm text-neutral-400 font-medium">{t('auth.noOrders')}</p>
                </div>
              ) : (
-               orders.map(order => (
+               orders.map(order => {
+                 const orderStatus = order.status?.toLowerCase();
+                 const isDelivered = orderStatus === 'delivered' || orderStatus === 'entregue';
+                 const hasReview = orderReviews[order.id] || false;
+                 
+                 return (
                  <div 
                    key={order.id} 
-                   onClick={() => setSelectedOrder(order)}
-                   className="p-8 bg-neutral-50 rounded-[2.5rem] border border-neutral-100 group hover:border-black transition-all cursor-pointer flex justify-between items-center"
+                   className="p-8 bg-neutral-50 rounded-[2.5rem] border border-neutral-100 group hover:border-black transition-all"
                  >
-                    <div className="space-y-2">
+                    <div 
+                      onClick={() => setSelectedOrder(order)}
+                      className="flex justify-between items-center cursor-pointer"
+                 >
+                       <div className="space-y-2 flex-1">
                        <div className="flex items-center gap-2">
                           <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">ID: {order.id.slice(0, 8)}</span>
                           {order.wishlist_slug && (
@@ -274,7 +304,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                        </div>
                        <h4 className="text-sm font-black uppercase tracking-tight italic">{new Date(order.created_at).toLocaleDateString(locale)}</h4>
                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${order.status === 'delivered' ? 'bg-green-500' : 'bg-orange-400'}`} />
+                             <div className={`w-2 h-2 rounded-full ${isDelivered ? 'bg-green-500' : 'bg-orange-400'}`} />
                           <span className="text-[10px] font-black uppercase tracking-widest text-neutral-600">{order.status}</span>
                        </div>
                     </div>
@@ -283,7 +313,41 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                        <ChevronRight className="w-5 h-5 text-neutral-300 group-hover:translate-x-1 transition-transform" />
                     </div>
                  </div>
-               ))
+                    {isDelivered && (
+                       <div className="mt-4 pt-4 border-t border-neutral-200">
+                          {hasReview ? (
+                             <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.location.href = `/order-review/${order.id}`;
+                                }}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-600 rounded-lg hover:bg-neutral-200 transition-colors text-sm font-medium"
+                             >
+                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                Editar Avaliação
+                             </button>
+                          ) : (
+                             <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.location.href = `/order-review/${order.id}`;
+                                }}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-neutral-800 transition-colors text-sm font-medium relative"
+                             >
+                                <Star className="w-4 h-4" />
+                                <span>Avaliar Pedido</span>
+                                {storeConfig?.loyalty_program?.review_cashback_amount && storeConfig.loyalty_program.review_cashback_amount > 0 && (
+                                  <span className="ml-auto flex items-center gap-1 text-xs bg-white/20 px-2 py-0.5 rounded">
+                                    <DollarSign className="w-3 h-3" />
+                                    +{formatCurrency(storeConfig.loyalty_program.review_cashback_amount, locale)}
+                                  </span>
+                                )}
+                             </button>
+                          )}
+                       </div>
+                    )}
+                 </div>
+               )})
              )}
           </div>
         )}

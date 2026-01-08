@@ -35,5 +35,9 @@ export class ProductsApi {
   async delete(id: string): Promise<void> {
     return apiClient.delete<void>(`/products/${id}`);
   }
+
+  async deleteBatch(ids: string[]): Promise<{ success: string[]; failed: Array<{ id: string; error: string }> }> {
+    return apiClient.delete<{ success: string[]; failed: Array<{ id: string; error: string }> }>('/products/batch', { ids });
+  }
 }
 

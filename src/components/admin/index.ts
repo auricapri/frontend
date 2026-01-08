@@ -4,6 +4,7 @@ export { default as AdminAssets } from './AdminAssets';
 export { default as AdminCarts } from './AdminCarts';
 export { default as AdminCouponEditor } from './AdminCouponEditor';
 export { default as AdminCoupons } from './AdminCoupons';
+export { default as AdminDreamBoard } from './AdminDreamBoard';
 export { default as AdminEditorModal } from './AdminEditorModal';
 export { default as AdminGuides } from './AdminGuides';
 export { default as AdminHealth } from './AdminHealth';

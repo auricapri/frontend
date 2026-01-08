@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ShieldCheck, CreditCard, Lock, MapPin, Mail, Phone, FileText } from 'lucide-react';
+import { ShieldCheck, CreditCard, Lock, MapPin, Mail, Phone, FileText, RefreshCw, Truck } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { StoreConfig } from '../../types';
 
@@ -129,6 +129,22 @@ const Footer: React.FC<FooterProps> = ({
           <p className="text-[9px] text-neutral-600 leading-relaxed max-w-[150px]">
             Payments processed securely by Auricapri Cloud Protocol.
           </p>
+          
+          {/* Trust Badges */}
+          <div className="flex flex-col gap-3 pt-4 border-t border-neutral-700">
+            <div className="flex items-center gap-2 text-neutral-400">
+              <RefreshCw className="w-3 h-3" />
+              <span className="text-[9px] font-black uppercase tracking-widest">Troca fácil</span>
+            </div>
+            <div className="flex items-center gap-2 text-neutral-400">
+              <ShieldCheck className="w-3 h-3" />
+              <span className="text-[9px] font-black uppercase tracking-widest">Pagamento seguro</span>
+            </div>
+            <div className="flex items-center gap-2 text-neutral-400">
+              <Truck className="w-3 h-3" />
+              <span className="text-[9px] font-black uppercase tracking-widest">Envio para todo Brasil</span>
+            </div>
+          </div>
         </div>
       </div>
       

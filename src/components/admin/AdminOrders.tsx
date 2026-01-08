@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { 
   Package, 
   Truck, 
@@ -30,10 +30,12 @@ import {
   Ban,
   Loader2
 } from 'lucide-react';
-import { Order, OrderItem, Product, Asset } from '../../types';
+import { Order, OrderItem, Product, Asset, DEFAULT_FINANCIAL_SETTINGS } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { OrdersApi } from '../../api/orders.api';
+import { pricingService } from '../../services/pricing.service';
+import { OrderEconomics } from '../../types/pricing.types';
 
 interface AdminOrdersProps {
   orders: Order[];
@@ -64,31 +66,32 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
       const diffTime = deadline.getTime() - now.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      if (diffDays <= 1) return { color: 'bg-red-50 border-red-200 text-red-800', priority: 3, label: 'CRÍTICO' };
-      if (diffDays <= 2) return { color: 'bg-yellow-50 border-yellow-200 text-yellow-800', priority: 2, label: 'ATENÇÃO' };
+      if (diffDays <= 0) return { color: 'bg-red-50 border-red-200 text-red-800', priority: 3, label: 'HOJE' };
+      if (diffDays === 1) return { color: 'bg-yellow-50 border-yellow-200 text-yellow-800', priority: 2, label: 'AMANHA' };
       return { color: 'bg-white border-neutral-100 hover:border-blue-200', priority: 1, label: 'NORMAL' };
   };
 
   // --- SEPARATION & SORTING ---
   const { incoming, expedition, transit, history } = useMemo(() => {
-    // 1. Incoming: Pending Approval
-    const inc = orders.filter(o => o.status === 'pending');
+    // 1. Incoming: Pending Approval - oldest first
+    const inc = orders.filter(o => o.status === 'pending')
+                      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
     
-    // 2. Expedition: Confirmed, waiting for docs/shipping
-    const exp = orders.filter(o => o.status === 'confirmed');
+    // 2. Expedition: Confirmed, waiting for docs/shipping - oldest first
+    const exp = orders.filter(o => o.status === 'confirmed')
+                      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
-    // 3. Transit: Shipped, needs SLA sorting
+    // 3. Transit: Shipped, needs SLA sorting - priority first, then oldest
     const tr = orders.filter(o => o.status === 'shipped').sort((a, b) => {
         const slaA = getSLAStatus(a);
         const slaB = getSLAStatus(b);
-        // Sort by Priority (High to Low), then by Date (Oldest first)
         if (slaA.priority !== slaB.priority) return slaB.priority - slaA.priority;
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
 
-    // 4. History
+    // 4. History - oldest first
     const hist = orders.filter(o => o.status === 'delivered' || o.status === 'cancelled')
-                       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
     return { incoming: inc, expedition: exp, transit: tr, history: hist };
   }, [orders]);
@@ -146,18 +149,47 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
       };
   };
 
-  // --- FINANCIAL CALCULATION ---
-  const calculateOrderEconomics = (order: Order) => {
-      const revenue = order.total;
+  const [pricingConfig, setPricingConfig] = useState<Awaited<ReturnType<typeof pricingService.buildPricingConfig>> | null>(null);
+
+  useEffect(() => {
+    pricingService.buildPricingConfig(DEFAULT_FINANCIAL_SETTINGS).then(setPricingConfig);
+  }, []);
+
+  const calculateOrderEconomics = (order: Order): OrderEconomics & { gatewayRate: number; taxRate: number } => {
+      if (!pricingConfig) {
+          return {
+              revenue: order.total,
+              cogs: 0,
+              freightReal: 0,
+              gatewayFee: 0,
+              dasProportional: 0,
+              totalVariableCosts: 0,
+              netProfit: 0,
+              marginPercent: 0,
+              gatewayRate: 0.0399,
+              taxRate: 0
+          };
+      }
+
+      const orderItems = order.items.map(item => ({
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          price: item.price,
+          quantity: item.quantity
+      }));
+
+      const freightReal = order.internal_logistics?.real_cost ?? 0;
+      const paymentMethod = order.payment_method ?? 'credit_card';
+
       let cogs = 0;
       order.items.forEach(item => {
           const product = products.find(p => p.id === item.product_id);
-          const rawId = item.variant_id || item.id;
+          const rawId = item.variant_id ?? item.id;
           const variantId = rawId ? rawId.split('_')[0] : null;
-          const variant = product?.variants?.find(v => v.id === variantId) || product?.variants?.[0]; 
+          const variant = product?.variants?.find(v => v.id === variantId) ?? product?.variants?.[0]; 
           
           if (variant) {
-              const unitCost = variant.cost_price || (item.price * 0.4); 
+              const unitCost = variant.cost_price ?? (item.price * 0.4); 
               let assetCost = 0;
               if (variant.correlated_assets) {
                   variant.correlated_assets.forEach(l => {
@@ -171,17 +203,33 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
           }
       });
 
-      const freightReal = order.internal_logistics?.real_cost || 0;
-      const gatewayRate = 0.0399;
-      const gatewayFixed = 0.50;
-      const gatewayFee = (revenue * gatewayRate) + gatewayFixed;
-      const taxRate = 0.06; 
-      const taxFee = revenue * taxRate;
-      const variableCosts = freightReal + gatewayFee + taxFee;
-      const netProfit = revenue - cogs - variableCosts;
-      const margin = (netProfit / revenue) * 100;
+      const gatewayFee = pricingService.calculateGatewayFee(
+          order.total, 
+          pricingConfig.gateway, 
+          paymentMethod
+      );
 
-      return { revenue, cogs, freightReal, gatewayFee, taxFee, variableCosts, netProfit, margin, gatewayRate, taxRate };
+      const estimatedMonthlyRevenue = pricingConfig.financialSettings.monthly_sales_vol * 100;
+      const dasProportional = pricingConfig.taxRegime === 'mei' 
+          ? (order.total / estimatedMonthlyRevenue) * pricingConfig.financialSettings.das_mei
+          : 0;
+
+      const totalVariableCosts = freightReal + gatewayFee + dasProportional;
+      const netProfit = order.total - cogs - totalVariableCosts;
+      const marginPercent = order.total > 0 ? (netProfit / order.total) * 100 : 0;
+
+      return { 
+          revenue: order.total, 
+          cogs, 
+          freightReal, 
+          gatewayFee, 
+          dasProportional,
+          totalVariableCosts, 
+          netProfit, 
+          marginPercent,
+          gatewayRate: pricingConfig.gateway.feePercentage,
+          taxRate: 0
+      };
   };
 
   const handleGenerateDoc = async () => {
@@ -571,9 +619,9 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                                   <div className="flex justify-between items-center text-red-500">
                                       <div className="flex items-center gap-2">
                                           <Landmark className="w-3 h-3" />
-                                          <span className="text-[10px] font-bold uppercase tracking-widest">Impostos</span>
+                                          <span className="text-[10px] font-bold uppercase tracking-widest">DAS MEI</span>
                                       </div>
-                                      <span className="text-xs font-mono font-medium">-{formatCurrency(economics.taxFee, locale)}</span>
+                                      <span className="text-xs font-mono font-medium">-{formatCurrency(economics.dasProportional, locale)}</span>
                                   </div>
                                   <div className="flex justify-between items-center text-red-500">
                                       <div className="flex items-center gap-2">
@@ -600,7 +648,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                                   {formatCurrency(economics.netProfit, locale)}
                               </span>
                               <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${economics.netProfit > 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                                  {economics.margin.toFixed(1)}% Margem
+                                  {economics.marginPercent.toFixed(1)}% Margem
                               </div>
                           </div>
                       </div>

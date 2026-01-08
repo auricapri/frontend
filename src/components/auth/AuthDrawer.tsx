@@ -14,9 +14,10 @@ interface AuthDrawerProps {
   onLogout: () => void;
   t: (key: string) => any;
   locale: Locale;
+  storeConfig?: any;
 }
 
-const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin, onLogout, t, locale }) => {
+const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin, onLogout, t, locale, storeConfig }) => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<'google' | null>(null); // 'apple' temporarily disabled
@@ -155,6 +156,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                   locale={locale} 
                   onUpdate={onLogin}
                   onLogout={() => { onLogout(); onClose(); }}
+                  storeConfig={storeConfig}
                 />
              </div>
            ) : forgotPasswordMode ? (

@@ -45,7 +45,9 @@ export const translations = {
       rating: 'Rating',
       comment: 'Your thoughts',
       submitReview: 'Post Review',
-      reviewSuccess: 'Thank you for your feedback!'
+      reviewSuccess: 'Thank you for your feedback!',
+      related: 'Related Products',
+      relatedSubtitle: 'Explore more products from the same collection'
     },
     cart: {
       title: 'Shopping Bag',
@@ -159,7 +161,9 @@ export const translations = {
       rating: 'Nota',
       comment: 'Sua opinião',
       submitReview: 'Publicar Avaliação',
-      reviewSuccess: 'Obrigado pelo seu feedback!'
+      reviewSuccess: 'Obrigado pelo seu feedback!',
+      related: 'Produtos Relacionados',
+      relatedSubtitle: 'Explore mais produtos da mesma coleção'
     },
     cart: {
       title: 'Sua Bolsa',
@@ -273,7 +277,9 @@ export const translations = {
       rating: 'Calificación',
       comment: 'Tu opinión',
       submitReview: 'Publicar Reseña',
-      reviewSuccess: '¡Gracias por tu comentario!'
+      reviewSuccess: '¡Gracias por tu comentario!',
+      related: 'Productos Relacionados',
+      relatedSubtitle: 'Explora más productos de la misma colección'
     },
     cart: {
       title: 'Tu Bolsa',
@@ -387,7 +393,9 @@ export const translations = {
       rating: 'Note',
       comment: 'Votre avis',
       submitReview: 'Publier um Avis',
-      reviewSuccess: 'Merci pour votre retour!'
+      reviewSuccess: 'Merci pour votre retour!',
+      related: 'Produits Associés',
+      relatedSubtitle: 'Découvrez plus de produits de la même collection'
     },
     cart: {
       title: 'Votre Sac',

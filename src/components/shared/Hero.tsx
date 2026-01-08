@@ -3,6 +3,7 @@ import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Banner } from '../../types';
 import { Locale } from '../../i18n';
+import { OptimizedImage } from '../ui';
 
 interface HeroProps {
   onNavigate?: (view: 'home' | 'product', target?: string) => void;
@@ -22,7 +23,6 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, t, banners, locale, isLoading }
     const getVal = (obj: any) => {
       if (!obj) return '';
       if (typeof obj === 'string') return obj;
-      // Retorna estritamente o valor do locale ou string vazia, sem fallbacks para outros idiomas neste ponto
       const val = obj[locale];
       return typeof val === 'string' ? val : '';
     };
@@ -33,7 +33,6 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, t, banners, locale, isLoading }
     };
   };
 
-  // Filtra banners que tenham conteúdo válido para o idioma atual
   const validBanners = (banners || []).filter(b => {
     const title = (b.title as any)?.[locale];
     const img = (b.image_url as any)?.[locale];
@@ -56,11 +55,16 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, t, banners, locale, isLoading }
   return (
     <section id="hero" className="w-full h-dvh snap-start relative flex items-center justify-center overflow-hidden bg-neutral-900">
       <div className="absolute inset-0 z-0">
-        <img 
-          src={mainBanner.image} 
-          alt="" 
-          className="w-full h-full object-cover opacity-80 transition-opacity duration-1000"
-          loading="eager"
+        <OptimizedImage
+          src={mainBanner.image}
+          alt=""
+          className="w-full h-full opacity-80"
+          size="xlarge"
+          priority
+          objectFit="cover"
+          placeholder="none"
+          useSrcSet
+          srcSetSizes={['medium', 'large', 'xlarge']}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
       </div>

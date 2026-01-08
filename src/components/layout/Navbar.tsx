@@ -123,7 +123,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       className="p-2 relative hover:opacity-50 transition-all active:scale-90"
                       aria-label="Wishlist"
                     >
-                        <Heart className="w-5 h-5" strokeWidth={1.2} filled={wishlistCount > 0} />
+                        <Heart className="w-5 h-5" strokeWidth={1.2} fill={wishlistCount > 0 ? "currentColor" : "none"} />
                         {wishlistCount > 0 && (
                             <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                         )}
@@ -175,19 +175,19 @@ const Navbar: React.FC<NavbarProps> = ({
               <div className="space-y-8">
                 <button
                   onClick={() => handleNav('home', 'hero')}
-                  className="text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
+                  className="block w-full text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
                 >
                   {t('nav.newArrivals')}
                 </button>
                 <button
                   onClick={() => handleNav('home', 'collection')}
-                  className="text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
+                  className="block w-full text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
                 >
                   {t('nav.collection')}
                 </button>
                 <button
                   onClick={() => handleNav('about')}
-                  className="text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
+                  className="block w-full text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
                 >
                   Sobre Nós
                 </button>

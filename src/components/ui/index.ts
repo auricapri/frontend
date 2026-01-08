@@ -3,4 +3,5 @@ export { Input } from './Input';
 export { Modal } from './Modal';
 export { Drawer } from './Drawer';
 export { default as Toast } from './Toast';
+export { default as OptimizedImage } from './OptimizedImage';
 
