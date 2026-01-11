@@ -21,7 +21,6 @@ export default defineConfig({
     screenshot: 'on',
     video: 'off',
     headless: false, // Abre o navegador visível
-    slowMo: 100, // Adiciona delay para visualizar melhor
   },
 
   timeout: 60000, // 60 segundos de timeout para cada teste

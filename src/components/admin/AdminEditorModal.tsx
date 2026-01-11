@@ -6,13 +6,12 @@ import {
   Monitor, Tag, Package, Link, ArrowDown, HelpCircle, FileText, Landmark, Truck
 } from 'lucide-react';
 import { Locale } from '../../i18n';
-import { ProductVariant, Category, PricingScenario, Collection, Product, GlobalFinancialSettings, UserMode, Asset, SizeGuide, DEFAULT_FINANCIAL_SETTINGS } from '../../types';
+import { ProductVariant, Category, PricingScenario, Collection, Product, GlobalFinancialSettings, UserMode, Asset, SizeGuide, DEFAULT_FINANCIAL_SETTINGS, Supplier } from '../../types';
 import { supabase } from '../../utils/supabase';
 import { formatCurrency } from '../../utils/currency';
 import { ProductDetail } from '../product';
 import { Hero } from '../shared';
 import { CollectionDetail } from '../product';
-import { pricingService } from '../../services/pricing.service';
 
 interface AdminEditorModalProps {
   item: { type: string; data: any; editLocale: Locale };
@@ -20,7 +19,8 @@ interface AdminEditorModalProps {
   collections?: Collection[];
   products?: Product[];
   assets?: Asset[];
-  sizeGuides?: SizeGuide[]; // New Prop
+  sizeGuides?: SizeGuide[];
+  suppliers?: Supplier[];
   onClose: () => void;
   onSave: (e: React.FormEvent) => void;
   onUpdateData: (newData: any) => void;
@@ -46,7 +46,7 @@ interface SimulationResult {
 }
 
 const AdminEditorModal: React.FC<AdminEditorModalProps> = ({ 
-  item, categories, collections = [], products = [], assets = [], sizeGuides = [], onClose, onSave, onUpdateData, onLocaleChange, onCloneLocale, onDelete, globalConfig, t, locale
+  item, categories, collections = [], products = [], assets = [], sizeGuides = [], suppliers = [], onClose, onSave, onUpdateData, onLocaleChange, onCloneLocale, onDelete, globalConfig, t, locale
 }) => {
   const [uploading, setUploading] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
@@ -310,60 +310,35 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
         return;
     }
 
-    const config = globalConfig ?? DEFAULT_FINANCIAL_SETTINGS;
-    const pricingConfig = await pricingService.buildPricingConfig(config);
-    
-    const results: Record<string, SimulationResult> = {};
+    try {
     const variants = item.data.variants || [];
-    const newSelected = new Set<string>();
-
     const hasFreeShipping = item.data.has_free_shipping === true;
-    const freeShippingCost = 35;
+      const config = globalConfig ?? DEFAULT_FINANCIAL_SETTINGS;
 
-    for (const v of variants as ProductVariant[]) {
-        const scenarioInput = {
-            channel: activeScenario.channel,
-            regionUf: activeScenario.region_uf,
-            targetMarginPercent: activeScenario.target_margin_percent,
-            commissionPercent: activeScenario.commission_percent,
-            adsCacTarget: activeScenario.ads_cac_target
-        };
+      // TODO: Restaurar pricingApi quando backend estiver disponível
+      // const response = await pricingApi.calculateMatrix({
+      //   variants: variants as ProductVariant[],
+      //   assets: assets || [],
+      //   scenario: {
+      //     channel: activeScenario.channel,
+      //     region_uf: activeScenario.region_uf,
+      //     target_margin_percent: activeScenario.target_margin_percent,
+      //     commission_percent: activeScenario.commission_percent,
+      //     ads_cac_target: activeScenario.ads_cac_target
+      //   },
+      //   hasFreeShipping,
+      //   financialSettings: config
+      // });
 
-        const priceBreakdown = await pricingService.calculateSuggestedPrice({
-            variant: v,
-            assets,
-            scenario: scenarioInput,
-            config: pricingConfig
-        });
-
-        const gatewayFeePercent = pricingConfig.gateway.feePercentage;
-        const commissionAmount = priceBreakdown.finalPrice * (activeScenario.commission_percent / 100);
-        const taxesAmount = priceBreakdown.taxes.totalTaxAmount + commissionAmount;
-
-        const baseSuggestedPrice = priceBreakdown.finalPrice;
-        const finalSuggestedPrice = hasFreeShipping 
-            ? baseSuggestedPrice + freeShippingCost 
-            : baseSuggestedPrice;
-
-        const logisticsCost = priceBreakdown.baseCost.freightCost + priceBreakdown.baseCost.devolutionCost + priceBreakdown.baseCost.storageCost;
-
-        results[v.id] = {
-            suggestedPrice: finalSuggestedPrice,
-            breakdown: {
-                production: priceBreakdown.baseCost.productionCost,
-                assets: priceBreakdown.baseCost.assetsCost,
-                fixed: priceBreakdown.baseCost.fixedCostAllocation,
-                logistics: hasFreeShipping ? logisticsCost + freeShippingCost : logisticsCost,
-                marketing: priceBreakdown.baseCost.marketingCost + scenarioInput.adsCacTarget,
-                taxes: taxesAmount + (finalSuggestedPrice * gatewayFeePercent),
-                margin: priceBreakdown.targetMarginAmount
-            }
-        };
-        newSelected.add(v.id);
+      // setSimulationResults(response.results);
+      // setSelectedVariantsForUpdate(new Set(Object.keys(response.results)));
+      setSimulationResults({});
+      setSelectedVariantsForUpdate(new Set());
+      alert('Funcionalidade de precificação temporariamente desabilitada.');
+    } catch (error) {
+      console.error('Error calculating matrix:', error);
+      alert('Erro ao calcular matriz de precificação. Tente novamente.');
     }
-
-    setSimulationResults(results);
-    setSelectedVariantsForUpdate(newSelected);
   };
 
   const toggleSelectAll = () => {
@@ -482,18 +457,32 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                               </select>
                             </div>
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Coleções</label>
-                                <div className="max-h-32 overflow-y-auto bg-neutral-50 border border-neutral-100 rounded-2xl p-4 space-y-2 no-scrollbar">
-                                    {collections.map(col => {
-                                        const isSelected = (item.data.collection_ids || []).includes(col.id);
-                                        return (
-                                            <div key={col.id} onClick={() => toggleCollectionForProduct(col.id)} className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all border ${isSelected ? 'bg-black text-white border-black' : 'bg-white hover:bg-neutral-100 border-transparent'}`}>
-                                                <div className={`w-3 h-3 rounded-full border ${isSelected ? 'bg-white border-white' : 'border-neutral-300'}`} />
-                                                <span className="text-[9px] font-bold uppercase tracking-widest truncate">{getLocVal(col.name)}</span>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Fornecedor *</label>
+                                <select 
+                                  className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl font-black uppercase text-[11px] outline-none focus:border-black transition-all" 
+                                  value={item.data.supplier_id || ''} 
+                                  onChange={e => updateSimple('supplier_id', e.target.value)}
+                                  required
+                                >
+                                  <option value="">Selecione um fornecedor...</option>
+                                  {suppliers.filter(s => s.is_active).map(supplier => (
+                                    <option key={supplier.id} value={supplier.id}>{supplier.store_name}</option>
+                                  ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Coleções</label>
+                            <div className="max-h-32 overflow-y-auto bg-neutral-50 border border-neutral-100 rounded-2xl p-4 space-y-2 no-scrollbar">
+                                {collections.map(col => {
+                                    const isSelected = (item.data.collection_ids || []).includes(col.id);
+                                    return (
+                                        <div key={col.id} onClick={() => toggleCollectionForProduct(col.id)} className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all border ${isSelected ? 'bg-black text-white border-black' : 'bg-white hover:bg-neutral-100 border-transparent'}`}>
+                                            <div className={`w-3 h-3 rounded-full border ${isSelected ? 'bg-white border-white' : 'border-neutral-300'}`} />
+                                            <span className="text-[9px] font-bold uppercase tracking-widest truncate">{getLocVal(col.name)}</span>
+                                        </div>
+                                    )
+                                })}
                             </div>
                         </div>
                         <div className="flex items-center gap-4 p-6 bg-neutral-50 border border-neutral-100 rounded-2xl">
@@ -960,7 +949,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
            <div className="flex-1 overflow-y-auto no-scrollbar relative bg-white">
               <div className="absolute top-4 right-4 z-50 bg-black/80 text-white px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest backdrop-blur-md flex items-center gap-2"><Monitor className="w-3 h-3" /> Live Preview Mode</div>
               
-              {item.type === 'product' && <div className="min-h-full"><ProductDetail product={item.data} userMode={UserMode.RETAIL} onAddToCart={() => alert("Preview Mode")} onBack={() => {}} isWishlisted={false} onToggleWishlist={() => {}} t={t} locale={locale} currentUser={null} sizeGuides={sizeGuides} /></div>}
+              {item.type === 'product' && <div className="min-h-full"><ProductDetail product={item.data} userMode={UserMode.VAREJO} onAddToCart={() => alert("Preview Mode")} onBack={() => {}} isWishlisted={false} onToggleWishlist={() => {}} t={t} locale={locale} currentUser={null} sizeGuides={sizeGuides} /></div>}
               {item.type === 'banner' && <div className="h-full"><Hero banners={[item.data]} t={t} locale={locale} onNavigate={() => {}} /></div>}
               
               {item.type === 'collection' && (
@@ -969,7 +958,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                        collection={item.data}
                        products={products}
                        categories={categories}
-                       userMode={UserMode.RETAIL}
+                       userMode={UserMode.VAREJO}
                        onSelectProduct={() => {}}
                        wishlistIds={[]}
                        onToggleWishlist={() => {}}
@@ -988,7 +977,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                        } as any}
                        products={products.map(p => p.category_id === item.data.id ? { ...p, collection_ids: [...(p.collection_ids || []), item.data.id] } : p)}
                        categories={categories}
-                       userMode={UserMode.RETAIL}
+                       userMode={UserMode.VAREJO}
                        onSelectProduct={() => {}}
                        wishlistIds={[]}
                        onToggleWishlist={() => {}}

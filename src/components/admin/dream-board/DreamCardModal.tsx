@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Trash2, Upload, GitBranch, Sparkles, ExternalLink, Loader2, ImagePlus, Clock, AlertTriangle, RotateCcw } from 'lucide-react';
+import { X, Trash2, Upload, GitBranch, Sparkles, ExternalLink, Loader2, ImagePlus, Clock, AlertTriangle, RotateCcw, Download, ChevronDown } from 'lucide-react';
+import { Node, Edge } from 'reactflow';
 import { DreamCard, Category, Collection, Asset, LocalizedText, Product } from '../../../types';
 import { Locale } from '../../../i18n';
 import { DreamApi } from '../../../api/dream.api';
@@ -7,6 +8,7 @@ import DiagramEditor from './DiagramEditor';
 import ResourceSelector from './ResourceSelector';
 import CommentSection from './CommentSection';
 import PreviewPanel from './PreviewPanel';
+import { exportDiagramAsPNG, exportDiagramAsSVG, exportDiagramAsJSON } from '../../../utils/diagram-export';
 
 interface DreamCardModalProps {
   card: DreamCard;
@@ -53,6 +55,9 @@ const DreamCardModal: React.FC<DreamCardModalProps> = ({
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
   const [draftResult, setDraftResult] = useState<{ product_id?: string } | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'png' | 'svg' | 'json' | null>(null);
   
   // Estado de exclusão automática
   const [deletionInfo, setDeletionInfo] = useState<{ is_completed: boolean; deletion_date: string | null; days_until_deletion: number | null } | null>(null);
@@ -61,6 +66,8 @@ const DreamCardModal: React.FC<DreamCardModalProps> = ({
   const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'preview'>('details');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
+  const hiddenDiagramRef = useRef<HTMLDivElement>(null);
   const dreamApi = new DreamApi();
 
   // Buscar informações de exclusão quando card está na última coluna
@@ -161,6 +168,91 @@ const DreamCardModal: React.FC<DreamCardModalProps> = ({
     } catch {
       setIsUploadingImage(false);
       alert('Erro ao processar a imagem.');
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as HTMLElement)) {
+        setShowExportMenu(false);
+      }
+    };
+
+    if (showExportMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showExportMenu]);
+
+  const handleExportPNG = async () => {
+    if (diagram.nodes.length === 0) return;
+    
+    if (!showDiagramEditor) {
+      alert('Para exportar como PNG, abra o editor do diagrama primeiro.');
+      setShowExportMenu(false);
+      return;
+    }
+    
+    setIsExporting(true);
+    setExportFormat('png');
+    setShowExportMenu(false);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const reactFlowElement = document.querySelector('.react-flow__viewport') as HTMLElement || 
+                               document.querySelector('.react-flow') as HTMLElement;
+      if (reactFlowElement) {
+        await exportDiagramAsPNG(reactFlowElement, diagram, title);
+      } else {
+        throw new Error('ReactFlow element not found. Certifique-se de que o editor está aberto.');
+      }
+    } catch (error) {
+      console.error('Error exporting PNG:', error);
+      alert('Erro ao exportar diagrama como PNG. Certifique-se de que o editor está aberto e tente novamente.');
+    } finally {
+      setIsExporting(false);
+      setExportFormat(null);
+    }
+  };
+
+  const handleExportSVG = () => {
+    if (diagram.nodes.length === 0) return;
+    
+    setIsExporting(true);
+    setExportFormat('svg');
+    setShowExportMenu(false);
+
+    try {
+      const nodes = diagram.nodes as Node[];
+      const edges = diagram.edges as Edge[];
+      exportDiagramAsSVG(nodes, edges, diagram, title);
+    } catch (error) {
+      console.error('Error exporting SVG:', error);
+      alert('Erro ao exportar diagrama como SVG. Tente novamente.');
+    } finally {
+      setIsExporting(false);
+      setExportFormat(null);
+    }
+  };
+
+  const handleExportJSON = () => {
+    if (diagram.nodes.length === 0) return;
+    
+    setIsExporting(true);
+    setExportFormat('json');
+    setShowExportMenu(false);
+
+    try {
+      exportDiagramAsJSON(diagram, title);
+    } catch (error) {
+      console.error('Error exporting JSON:', error);
+      alert('Erro ao exportar diagrama como JSON. Tente novamente.');
+    } finally {
+      setIsExporting(false);
+      setExportFormat(null);
     }
   };
 
@@ -396,13 +488,60 @@ const DreamCardModal: React.FC<DreamCardModalProps> = ({
                   <label className="block text-xs font-bold uppercase tracking-wide text-neutral-500 mb-2">
                     Diagrama de Fluxo
                   </label>
-                  <button
-                    onClick={() => setShowDiagramEditor(true)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-4 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-medium text-neutral-500 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
-                  >
-                    <GitBranch className="w-5 h-5" />
-                    {diagram.nodes.length > 0 ? `Editar Diagrama (${diagram.nodes.length} nos)` : 'Criar Diagrama'}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowDiagramEditor(true)}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-4 border-2 border-dashed border-neutral-200 rounded-xl text-sm font-medium text-neutral-500 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+                    >
+                      <GitBranch className="w-5 h-5" />
+                      {diagram.nodes.length > 0 ? `Editar Diagrama (${diagram.nodes.length} nos)` : 'Criar Diagrama'}
+                    </button>
+                    {diagram.nodes.length > 0 && (
+                      <div className="relative" ref={exportMenuRef}>
+                        <button
+                          onClick={() => setShowExportMenu(!showExportMenu)}
+                          disabled={isExporting}
+                          className="flex items-center justify-center gap-2 px-4 py-4 border-2 border-neutral-200 rounded-xl text-sm font-medium text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isExporting ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          ) : (
+                            <>
+                              <Download className="w-5 h-5" />
+                              <ChevronDown className="w-4 h-4" />
+                            </>
+                          )}
+                        </button>
+                        {showExportMenu && !isExporting && (
+                          <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-neutral-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                            <button
+                              onClick={handleExportPNG}
+                              className="w-full px-4 py-3 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors flex items-center gap-2"
+                              title={!showDiagramEditor ? 'Abra o editor primeiro para exportar PNG' : ''}
+                            >
+                              <Download className="w-4 h-4" />
+                              Exportar PNG
+                              {!showDiagramEditor && <span className="text-xs text-neutral-400 ml-auto">(requer editor)</span>}
+                            </button>
+                            <button
+                              onClick={handleExportSVG}
+                              className="w-full px-4 py-3 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors flex items-center gap-2"
+                            >
+                              <Download className="w-4 h-4" />
+                              Exportar SVG
+                            </button>
+                            <button
+                              onClick={handleExportJSON}
+                              className="w-full px-4 py-3 text-left text-sm text-neutral-700 hover:bg-neutral-50 transition-colors flex items-center gap-2"
+                            >
+                              <Download className="w-4 h-4" />
+                              Exportar JSON
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

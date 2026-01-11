@@ -1,5 +1,5 @@
 import React from 'react';
-import { CreditCard as CardIcon, QrCode, Copy, Check, Lock, CheckCircle2, ChevronRight } from 'lucide-react';
+import { CreditCard, QrCode, Copy, Check, Lock, CheckCircle2, ChevronRight } from 'lucide-react';
 import { UserProfile, StoreConfig } from '../../types';
 import { Locale } from '../../i18n';
 
@@ -58,7 +58,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
           }`}
         >
-          <CardIcon className="w-8 h-8" />
+          <CreditCard className="w-8 h-8" />
           <div className="text-center">
             <span className="text-[10px] font-black uppercase tracking-widest block mb-1">
               Cartão de Crédito

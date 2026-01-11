@@ -38,7 +38,7 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const files = Array.from(e.target.files || []) as File[];
     const validFiles: File[] = [];
     const newPreviews: string[] = [];
 

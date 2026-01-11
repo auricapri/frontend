@@ -30,7 +30,7 @@ export const OrderReviewForm: React.FC<OrderReviewFormProps> = ({
   const MAX_TOTAL_SIZE = 50 * 1024 * 1024;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const files = Array.from(e.target.files || []) as File[];
     const validFiles: File[] = [];
     const newPreviews: string[] = [];
 

@@ -23,7 +23,10 @@ const AdminSystem: React.FC<AdminSystemProps> = ({ config, onChange, onSave, isL
       das_mei: 0,
       marketing_fixed: 0,
       packaging_cost: 0,
-      avg_freight_cost: 0
+      avg_freight_cost: 0,
+      tax_regime: 'mei',
+      origin_state: 'SP',
+      origin_cep: '01310100'
   };
 
   const updateFinancial = (field: string, value: number) => {

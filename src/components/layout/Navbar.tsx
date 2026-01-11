@@ -47,6 +47,10 @@ const Navbar: React.FC<NavbarProps> = ({
   // Determine if header should be in "Solid/Scrolled" state
   const isSolid = isScrolled || isProductView;
 
+  // Check if test banner is visible
+  const showTestBanner = import.meta.env.VITE_SHOW_TEST_BANNER === 'true';
+  const topOffset = showTestBanner ? 'top-12' : 'top-0';
+
   const handleNav = (view: 'home' | 'product' | 'admin' | 'checkout' | 'about', target?: string) => {
     onNavigate(view, target);
     setIsMenuOpen(false);
@@ -57,7 +61,7 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       <nav 
-        className={`fixed top-12 left-0 w-full z-50 transition-all duration-700 select-none will-change-transform
+        className={`fixed ${topOffset} left-0 w-full z-50 transition-all duration-700 select-none will-change-transform
           ${isSolid ? 'h-16 md:h-20' : 'h-20 md:h-24'}
         `}
         style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}

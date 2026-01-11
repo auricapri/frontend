@@ -1,70 +1,30 @@
-import { supabase } from '../../utils/supabase';
 import { Coupon } from '../../types';
+import { CouponsApi } from '../coupons.api';
 
 export class CouponsRepository {
-  async getAllActive(): Promise<Coupon[]> {
-    const { data, error } = await supabase
-      .from('coupons')
-      .select('*')
-      .eq('is_active', true)
-      .order('code');
-    
-    if (error) throw error;
-    return (data || []) as Coupon[];
-  }
+  private api: CouponsApi;
 
-  async getAll(): Promise<Coupon[]> {
-    const { data, error } = await supabase
-      .from('coupons')
-      .select('*')
-      .order('code');
-    
-    if (error) throw error;
-    return (data || []) as Coupon[];
-  }
-
-  async getByCode(code: string): Promise<Coupon | null> {
-    const { data, error } = await supabase
-      .from('coupons')
-      .select('*')
-      .eq('code', code.toUpperCase())
-      .eq('is_active', true)
-      .single();
-    
-    if (error) throw error;
-    return data as Coupon | null;
+  constructor() {
+    this.api = new CouponsApi();
   }
 
   async create(coupon: Partial<Coupon>): Promise<Coupon> {
-    const { data, error } = await supabase
-      .from('coupons')
-      .insert(coupon)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data as Coupon;
+    return this.api.create(coupon);
+  }
+
+  async getAll(): Promise<Coupon[]> {
+    return this.api.getAll();
+  }
+
+  async getByCode(code: string): Promise<Coupon | null> {
+    return this.api.getByCode(code);
   }
 
   async update(id: string, updates: Partial<Coupon>): Promise<Coupon> {
-    const { data, error } = await supabase
-      .from('coupons')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data as Coupon;
+    return this.api.update(id, updates);
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('coupons')
-      .delete()
-      .eq('id', id);
-    
-    if (error) throw error;
+    return this.api.delete(id);
   }
 }
-

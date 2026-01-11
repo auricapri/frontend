@@ -31,7 +31,7 @@ import { Locale } from '../../i18n';
 import { MAPBOX_TOKEN, getMapboxStyle } from '../../utils/mapbox';
 import { formatCurrency } from '../../utils/currency';
 import { LogisticsService, ShippingOption } from '../../services/logistics.service';
-import { CouponsRepository } from '../../api/repositories/coupons.repository';
+import { CouponsApi } from '../../api/coupons.api';
 
 interface CheckoutViewProps {
   items: CartItem[];
@@ -251,8 +251,8 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
     setCouponError(null);
     
     try {
-      const couponsRepo = new CouponsRepository();
-      const coupon = await couponsRepo.getByCode(couponCode.trim().toUpperCase());
+      const couponsApi = new CouponsApi();
+      const coupon = await couponsApi.getByCode(couponCode.trim().toUpperCase());
       
       if (!coupon) {
         setCouponError('Cupom inválido ou expirado');
