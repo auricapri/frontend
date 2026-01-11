@@ -1,4 +1,4 @@
-export type View = 'home' | 'product' | 'collection' | 'admin' | 'admin-login' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | 'order-review';
+export type View = 'home' | 'product' | 'collection' | 'admin' | 'admin-login' | 'delivery' | 'delivery-login' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | 'order-review';
 
 export interface Route {
   view: View;
@@ -11,6 +11,8 @@ export const routes: Record<View, Route> = {
   collection: { view: 'collection', path: '/collection' },
   admin: { view: 'admin', path: '/admin' },
   'admin-login': { view: 'admin-login', path: '/admin/login' },
+  delivery: { view: 'delivery', path: '/admin/delivery' },
+  'delivery-login': { view: 'delivery-login', path: '/admin/delivery/login' },
   checkout: { view: 'checkout', path: '/checkout' },
   receipt: { view: 'receipt', path: '/receipt' },
   about: { view: 'about', path: '/about' },

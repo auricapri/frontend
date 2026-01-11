@@ -9,6 +9,7 @@ import { OrderReviewsApi } from '../../api/order-reviews.api';
 import { OrderReviewForm } from './OrderReviewForm';
 import { OrderReviewsList } from './OrderReviewsList';
 import { useAuthContext } from '../../context/AuthContext';
+import { OrderStatus } from '../../constants/enums';
 
 interface OrderReceiptProps {
   order: Order;
@@ -287,7 +288,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale })
       </div>
 
       {/* ORDER REVIEWS SECTION */}
-      {(order.status?.toLowerCase() === 'delivered' || order.status?.toLowerCase() === 'entregue') && (
+      {(order.status === OrderStatus.DELIVERED) && (
         <div className="w-full max-w-md px-4 md:px-0 mt-8 no-print">
           <div className="bg-white rounded-xl p-6 border border-neutral-200">
             <h3 className="text-lg font-bold mb-4">Avaliações</h3>

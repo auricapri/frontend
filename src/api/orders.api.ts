@@ -27,14 +27,14 @@ export class OrdersApi {
     items: CartItem[];
     addressData: AddressData;
     logisticsInfo: InternalLogisticsInfo;
-    paymentMethod: 'credit_card' | 'pix';
+    paymentMethod: PaymentMethod;
     subtotal: number;
     finalAmount: number;
   }): Promise<Order> {
     return apiClient.post<Order>('/orders', order);
   }
 
-  async updateStatus(id: string, status: string, trackingCode?: string): Promise<Order> {
+  async updateStatus(id: string, status: OrderStatus, trackingCode?: string): Promise<Order> {
     return apiClient.put<Order>(`/orders/${id}/status`, { status, trackingCode });
   }
 

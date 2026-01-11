@@ -37,12 +37,13 @@ import { OrdersApi } from '../../api/orders.api';
 import { UsersApi } from '../../api/users.api';
 // import { pricingApi } from '../../api/pricing.api';
 import { OrderEconomics } from '../../types';
+import { OrderStatus } from '../../constants/enums';
 
 interface AdminOrdersProps {
   orders: Order[];
   products?: Product[];
   assets?: Asset[];
-  onUpdateStatus: (orderId: string, newStatus: 'confirmed' | 'shipped' | 'delivered' | 'cancelled', trackingCode?: string) => void;
+  onUpdateStatus: (orderId: string, newStatus: OrderStatus, trackingCode?: string) => void;
   locale: Locale;
 }
 
@@ -78,15 +79,15 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
   // --- SEPARATION & SORTING ---
   const { incoming, expedition, transit, history } = useMemo(() => {
     // 1. Incoming: Pending Approval - oldest first
-    const inc = orders.filter(o => o.status === 'pending')
+    const inc = orders.filter(o => o.status === OrderStatus.PENDING)
                       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
     
     // 2. Expedition: Confirmed, waiting for docs/shipping - oldest first
-    const exp = orders.filter(o => o.status === 'confirmed')
+    const exp = orders.filter(o => o.status === OrderStatus.CONFIRMED)
                       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
     // 3. Transit: Shipped, needs SLA sorting - priority first, then oldest
-    const tr = orders.filter(o => o.status === 'shipped').sort((a, b) => {
+    const tr = orders.filter(o => o.status === OrderStatus.SHIPPED).sort((a, b) => {
         const slaA = getSLAStatus(a);
         const slaB = getSLAStatus(b);
         if (slaA.priority !== slaB.priority) return slaB.priority - slaA.priority;
@@ -94,7 +95,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
     });
 
     // 4. History - oldest first
-    const hist = orders.filter(o => o.status === 'delivered' || o.status === 'cancelled')
+    const hist = orders.filter(o => o.status === OrderStatus.DELIVERED || o.status === OrderStatus.CANCELLED)
                        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
     return { incoming: inc, expedition: exp, transit: tr, history: hist };
@@ -239,21 +240,21 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
           alert("REGRA DE NEGÓCIO: Código de rastreio obrigatório para confirmar envio.");
           return;
       }
-      onUpdateStatus(selectedOrder.id, 'shipped', trackingInput);
+      onUpdateStatus(selectedOrder.id, OrderStatus.SHIPPED, trackingInput);
       setSelectedOrder(null);
       setTrackingInput('');
   };
 
   const handleApproveOrder = () => {
       if (!selectedOrder) return;
-      onUpdateStatus(selectedOrder.id, 'confirmed');
+      onUpdateStatus(selectedOrder.id, OrderStatus.CONFIRMED);
       setSelectedOrder(null);
   };
 
   const handleRejectOrder = () => {
       if (!selectedOrder) return;
       if (confirm("ATENÇÃO: Rejeitar este pedido iniciará o fluxo de reembolso para o cliente. Confirmar rejeição?")) {
-          onUpdateStatus(selectedOrder.id, 'cancelled');
+          onUpdateStatus(selectedOrder.id, OrderStatus.CANCELLED);
           setSelectedOrder(null);
       }
   };
@@ -347,8 +348,8 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                          <span className="text-[9px] font-bold text-neutral-300">{formatDate(order.created_at)}</span>
                       </div>
                       <div className="flex gap-2">
-                          <button onClick={(e) => { e.stopPropagation(); onUpdateStatus(order.id, 'confirmed'); }} className="flex-1 py-2 bg-green-500 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:scale-105 transition-all">Aprovar</button>
-                          <button onClick={(e) => { e.stopPropagation(); if(confirm('Rejeitar e Reembolsar?')) onUpdateStatus(order.id, 'cancelled'); }} className="flex-1 py-2 bg-red-100 text-red-500 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-red-200 transition-all">Rejeitar</button>
+                          <button onClick={(e) => { e.stopPropagation(); onUpdateStatus(order.id, OrderStatus.CONFIRMED); }} className="flex-1 py-2 bg-green-500 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:scale-105 transition-all">Aprovar</button>
+                          <button onClick={(e) => { e.stopPropagation(); if(confirm('Rejeitar e Reembolsar?')) onUpdateStatus(order.id, OrderStatus.CANCELLED); }} className="flex-1 py-2 bg-red-100 text-red-500 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-red-200 transition-all">Rejeitar</button>
                       </div>
                    </div>
                 ))}
@@ -416,7 +417,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                           {order.tracking_code}
                       </div>
                       <button 
-                        onClick={(e) => { e.stopPropagation(); onUpdateStatus(order.id, 'delivered'); }}
+                        onClick={(e) => { e.stopPropagation(); onUpdateStatus(order.id, OrderStatus.DELIVERED); }}
                         className="w-full mt-1 bg-white border border-green-200 text-green-600 px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-green-50 transition-all flex items-center justify-center gap-2"
                       >
                          <CheckCircle2 className="w-3 h-3" /> Marcar Entregue
@@ -439,8 +440,8 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                 {history.map(order => (
                    <div key={order.id} onClick={() => setSelectedOrder(order)} className="bg-neutral-50 p-5 rounded-[2rem] border border-neutral-100 hover:bg-white transition-all cursor-pointer">
                       <div className="flex justify-between items-center mb-2">
-                         <span className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${order.status === 'delivered' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                            {order.status === 'delivered' ? 'Entregue' : 'Cancelado'}
+                         <span className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${order.status === OrderStatus.DELIVERED ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {order.status === OrderStatus.DELIVERED ? 'Entregue' : 'Cancelado'}
                          </span>
                          <span className="text-[9px] font-bold text-neutral-300">{formatDate(order.created_at)}</span>
                       </div>
@@ -463,8 +464,8 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
               
               <header className="h-24 px-8 md:px-12 flex items-center justify-between border-b border-neutral-100 bg-white flex-none">
                  <div className="flex items-center gap-6">
-                    <div className={`p-3 rounded-full ${selectedOrder.status === 'pending' ? 'bg-yellow-100 text-yellow-600' : 'bg-green-100 text-green-600'}`}>
-                        {selectedOrder.status === 'pending' ? <Clock className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+                    <div className={`p-3 rounded-full ${selectedOrder.status === OrderStatus.PENDING ? 'bg-yellow-100 text-yellow-600' : 'bg-green-100 text-green-600'}`}>
+                        {selectedOrder.status === OrderStatus.PENDING ? <Clock className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
                     </div>
                     <div>
                         <h4 className="text-xl font-black uppercase tracking-tighter flex items-center gap-3">
@@ -525,7 +526,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                       )}
                       
                       {/* --- CONFIRMATION STAGE (Pending) --- */}
-                      {selectedOrder.status === 'pending' && (
+                      {selectedOrder.status === OrderStatus.PENDING && (
                           <div className="bg-white p-8 rounded-[2.5rem] border border-neutral-200 shadow-xl space-y-6">
                               <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 flex items-center gap-2"><AlertOctagon className="w-4 h-4" /> Ação Necessária</h5>
                               <p className="text-sm font-medium text-neutral-600">Este pedido aguarda confirmação de estoque e pagamento. Aprovar moverá para expedição.</p>
@@ -537,7 +538,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                       )}
 
                       {/* --- EXPEDITION STAGE (Confirmed) --- */}
-                      {selectedOrder.status === 'confirmed' && (
+                      {selectedOrder.status === OrderStatus.CONFIRMED && (
                           <div className="space-y-6">
                               <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-4 flex items-center gap-2"><Truck className="w-3 h-3" /> Fluxo de Expedição</h5>
                               
@@ -618,7 +619,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                       )}
 
                       {/* --- SHIPPED/DELIVERED STATE --- */}
-                      {(selectedOrder.status === 'shipped' || selectedOrder.status === 'delivered') && (
+                      {(selectedOrder.status === OrderStatus.SHIPPED || selectedOrder.status === OrderStatus.DELIVERED) && (
                           <div className="bg-green-50 border border-green-100 p-8 rounded-[2.5rem] flex items-center justify-center flex-col text-green-800">
                               <Truck className="w-12 h-12 mb-4" />
                               <h3 className="text-xl font-black uppercase tracking-tighter">Pedido em Rota</h3>

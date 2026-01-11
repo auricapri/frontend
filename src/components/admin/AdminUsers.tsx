@@ -5,6 +5,7 @@ import { UserProfile, Order } from '../../types';
 import { supabase } from '../../utils/supabase';
 import { formatCurrency } from '../../utils/currency';
 import { UsersApi } from '../../api/users.api';
+import { OrderStatus } from '../../constants/enums';
 
 interface AdminUsersProps {
   users: UserProfile[];
@@ -287,8 +288,8 @@ const AdminUsers: React.FC<AdminUsersProps> = ({ users: initialUsers }) => {
                                   <div key={order.id} className="flex items-center justify-between p-6 rounded-[2rem] border border-neutral-100 hover:border-black transition-all group">
                                       <div className="flex items-center gap-6">
                                           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                                              order.status === 'delivered' ? 'bg-green-100 text-green-600' :
-                                              order.status === 'cancelled' ? 'bg-red-100 text-red-600' :
+                                              order.status === OrderStatus.DELIVERED ? 'bg-green-100 text-green-600' :
+                                              order.status === OrderStatus.CANCELLED ? 'bg-red-100 text-red-600' :
                                               'bg-neutral-100 text-neutral-600'
                                           }`}>
                                               <Package className="w-5 h-5" />
@@ -301,8 +302,8 @@ const AdminUsers: React.FC<AdminUsersProps> = ({ users: initialUsers }) => {
                                                   <span className="text-sm font-bold">{new Date(order.created_at).toLocaleDateString()}</span>
                                                   <div className="w-1 h-1 bg-neutral-300 rounded-full" />
                                                   <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
-                                                      order.status === 'delivered' ? 'bg-green-50 text-green-700' :
-                                                      order.status === 'cancelled' ? 'bg-red-50 text-red-700' :
+                                                      order.status === OrderStatus.DELIVERED ? 'bg-green-50 text-green-700' :
+                                                      order.status === OrderStatus.CANCELLED ? 'bg-red-50 text-red-700' :
                                                       'bg-yellow-50 text-yellow-700'
                                                   }`}>
                                                       {order.status}

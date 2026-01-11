@@ -5,8 +5,8 @@ import { Hero, LoyaltyBanner, AboutUs } from './src/components/shared';
 import { ProductGrid, ProductDetail, CollectionDetail } from './src/components/product';
 import { CartDrawer, WishlistDrawer, CouponsDrawer } from './src/components/cart';
 import { AuthDrawer } from './src/components/auth';
-import { CheckoutView, CheckoutViewInfinitPay, AddressData } from './src/components/checkout';
-import { AdminDashboard } from './src/components/admin';
+import { CheckoutView, AddressData } from './src/components/checkout';
+import { AdminDashboard, AdminDelivery } from './src/components/admin';
 import { OrderResultOverlay, OrderReceipt } from './src/components/orders';
 import { OrderReviewPage } from './src/pages/OrderReviewPage';
 import { Toast } from './src/components/ui';
@@ -14,8 +14,10 @@ import { NotFoundPage } from './src/pages/NotFoundPage';
 import { ResetPasswordPage } from './src/pages/ResetPasswordPage';
 import SharedWishlistPage from './src/pages/SharedWishlistPage';
 import { AdminLoginPage } from './src/pages/AdminLoginPage';
+import { DeliveryLoginPage } from './src/pages/DeliveryLoginPage';
 import { TestBanner } from './src/components/common/TestBanner';
 import { Product, CartItem, UserMode, UserProfile, Category, Collection, Banner, StoreConfig, Coupon, Asset, InternalLogisticsInfo, Order, SavedAddress, SavedCard, SizeGuide } from './src/types';
+import { PaymentMethod } from './src/constants/enums';
 import { MessageCircle, X, Loader2 } from 'lucide-react';
 import { Locale, translations } from './src/i18n';
 import { supabase } from './src/utils/supabase';
@@ -111,7 +113,9 @@ export const App: React.FC = () => {
   };
 
   // Initialize view from URL
-  const getViewFromPath = (pathname: string): 'home' | 'product' | 'collection' | 'admin' | 'admin-login' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | 'order-review' | '404' => {
+  const getViewFromPath = (pathname: string): 'home' | 'product' | 'collection' | 'admin' | 'admin-login' | 'delivery' | 'delivery-login' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | 'order-review' | '404' => {
+    if (pathname === '/admin/delivery/login') return 'delivery-login';
+    if (pathname === '/admin/delivery') return 'delivery';
     if (pathname === '/admin/login') return 'admin-login';
     if (pathname === '/admin') return 'admin';
     if (pathname === '/checkout') return 'checkout';
@@ -127,7 +131,7 @@ export const App: React.FC = () => {
     return '404';
   };
 
-  const [currentView, setCurrentView] = useState<'home' | 'product' | 'collection' | 'admin' | 'admin-login' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | 'order-review' | '404'>(() => {
+  const [currentView, setCurrentView] = useState<'home' | 'product' | 'collection' | 'admin' | 'admin-login' | 'delivery' | 'delivery-login' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | 'order-review' | '404'>(() => {
     const view = getViewFromPath(window.location.pathname);
     // If not starting on home, hide splash immediately
     if (view !== 'home') {
@@ -265,6 +269,36 @@ export const App: React.FC = () => {
       };
 
       checkMfaStatus();
+    }
+  }, [currentView, currentUser, isAuthLoading]);
+
+  // Check delivery access when navigating to delivery view
+  useEffect(() => {
+    if (currentView === 'delivery') {
+      // Wait for auth to finish loading before checking
+      if (isAuthLoading) {
+        return; // Don't do anything while auth is loading
+      }
+      
+      if (!currentUser) {
+        // Not logged in, redirect to delivery login
+        setCurrentView('delivery-login');
+        window.history.pushState({ view: 'delivery-login' }, '', '/admin/delivery/login');
+        return;
+      }
+      
+      // Check if user is delivery (check both role and is_delivery for compatibility)
+      const isDelivery = (currentUser as any).role === 'delivery' || (currentUser as any).is_delivery === true;
+      
+      if (!isDelivery) {
+        // Logged in but not delivery, redirect to home
+        setCurrentView('home');
+        window.history.pushState({ view: 'home' }, '', '/');
+        if (typeof showToast === 'function') {
+          showToast('Acesso negado. Apenas usuários de entrega podem acessar esta área.', 'error');
+        }
+        return;
+      }
     }
   }, [currentView, currentUser, isAuthLoading]);
 
@@ -446,7 +480,7 @@ export const App: React.FC = () => {
   const handlePlaceOrder = async (
       addressData: AddressData, 
       logisticsInfo: InternalLogisticsInfo, 
-      paymentMethod: 'credit_card' | 'pix', 
+      paymentMethod: PaymentMethod, 
       finalAmount: number,
       saveCard: boolean,
       cardToken?: string
@@ -460,7 +494,7 @@ export const App: React.FC = () => {
 
     try {
       // Save payment method if needed (this should be moved to backend later)
-      if (currentUser && paymentMethod === 'credit_card' && saveCard && !cardToken) {
+      if (currentUser && paymentMethod === PaymentMethod.CREDIT_CARD && saveCard && !cardToken) {
           // TODO: Implement payment method saving via API
           console.log('Payment method saving not yet implemented via API');
       }
@@ -647,6 +681,46 @@ export const App: React.FC = () => {
     return <AdminDashboard onLogout={exitAdmin} t={t} locale={locale} onProductChange={refetchStoreData} />;
   }
 
+  if (currentView === 'delivery-login') {
+    return (
+      <DeliveryLoginPage
+        onLoginSuccess={() => {
+          setCurrentView('delivery');
+          window.history.pushState({ view: 'delivery' }, '', '/admin/delivery');
+        }}
+        t={t}
+        locale={locale}
+      />
+    );
+  }
+
+  if (currentView === 'delivery') {
+    return (
+      <div className="min-h-screen bg-neutral-50">
+        <div className="max-w-7xl mx-auto p-8">
+          <div className="mb-8 flex items-center justify-between">
+            <h1 className="text-3xl font-black uppercase">Delivery Dashboard</h1>
+            <button
+              onClick={async () => {
+                await signOut();
+                setCurrentView('delivery-login');
+                window.history.pushState({ view: 'delivery-login' }, '', '/admin/delivery/login');
+              }}
+              className="px-4 py-2 bg-black text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-neutral-800 transition-all"
+            >
+              Sair
+            </button>
+          </div>
+          <AdminDelivery 
+            orders={userOrders} 
+            suppliers={[]} 
+            locale={locale} 
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (currentView === 'receipt' && lastSuccessOrder) {
       return <OrderReceipt order={lastSuccessOrder} onBack={() => handleNavigate('home')} t={t} locale={locale} />;
   }
@@ -773,23 +847,18 @@ export const App: React.FC = () => {
           />
         )}
 
-        {currentView === 'checkout' && (() => {
-          const useInfinitPay = import.meta.env.VITE_USE_INFINITPAY_CHECKOUT === 'true';
-          const CheckoutComponent = useInfinitPay ? CheckoutViewInfinitPay : CheckoutView;
-          
-          return (
-            <CheckoutComponent 
-              items={cartItems} 
-              currentUser={currentUser}
-              storeConfig={storeConfig}
-              userMode={userMode}
-              onBack={() => handleNavigate('home')} 
-              onComplete={handlePlaceOrder} 
-              locale={locale} 
-              t={t} 
-            />
-          );
-        })()}
+        {currentView === 'checkout' && (
+          <CheckoutView 
+            items={cartItems} 
+            currentUser={currentUser}
+            storeConfig={storeConfig}
+            userMode={userMode}
+            onBack={() => handleNavigate('home')} 
+            onComplete={handlePlaceOrder} 
+            locale={locale} 
+            t={t} 
+          />
+        )}
 
         {currentView === 'order-review' && (() => {
           const orderIdMatch = window.location.pathname.match(/^\/order-review\/(.+)$/);

@@ -340,15 +340,17 @@ export interface LogisticsMetadata {
   doc_url?: string; 
 }
 
+import { OrderStatus, PaymentMethod } from '../constants/enums';
+
 export interface Order {
   id: string;
   created_at: string;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  status: OrderStatus;
   total: number;
   subtotal?: number; 
   discount_amount?: number; 
   shipping_cost?: number;
-  payment_method?: 'credit_card' | 'pix';
+  payment_method?: PaymentMethod;
   items: OrderItem[];
   tracking_code?: string;
   internal_logistics?: InternalLogisticsInfo;

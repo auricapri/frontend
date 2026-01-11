@@ -4,12 +4,13 @@ import { CartItem, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { ShippingOption } from '../../services/logistics.service';
+import { PaymentMethod } from '../../constants/enums';
 
 interface OrderSummaryProps {
   items: CartItem[];
   subtotal: number;
   total: number;
-  paymentMethod: 'credit_card' | 'pix';
+  paymentMethod: PaymentMethod;
   calculatingShipping: boolean;
   shippingDisplay: { price: number; days: number } | null;
   locale: Locale;
@@ -159,7 +160,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
           </>
         )}
 
-        {paymentMethod === 'pix' && (
+        {paymentMethod === PaymentMethod.PIX && (
           <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-green-500">
             <span>Desconto PIX (5%)</span>
             <span>-{formatCurrency(total * 0.05, locale)}</span>
@@ -169,7 +170,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
         <div className="flex justify-between items-center pt-8 mt-6 border-t border-neutral-100">
           <span className="text-xl font-black uppercase italic tracking-tighter">Total</span>
           <span className="text-4xl font-light tracking-tighter">
-            {formatCurrency(paymentMethod === 'pix' ? total * 0.95 : total, locale)}
+            {formatCurrency(paymentMethod === PaymentMethod.PIX ? total * 0.95 : total, locale)}
           </span>
         </div>
       </div>

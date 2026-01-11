@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { CartItem, InternalLogisticsInfo, UserProfile, SavedCard, StoreConfig, UserMode, Coupon } from '../../types';
 import { Locale } from '../../i18n';
+import { PaymentMethod } from '../../constants/enums';
 import { MAPBOX_TOKEN, getMapboxStyle } from '../../utils/mapbox';
 import { formatCurrency } from '../../utils/currency';
 import { LogisticsService, ShippingOption } from '../../services/logistics.service';
@@ -42,7 +43,7 @@ interface CheckoutViewProps {
   onComplete: (
       address: AddressData, 
       logistics: InternalLogisticsInfo, 
-      paymentMethod: 'credit_card' | 'pix', 
+      paymentMethod: PaymentMethod, 
       finalAmount: number,
       saveCard: boolean, // Nova flag
       cardToken?: string // Token se usar cartão salvo
@@ -61,8 +62,6 @@ export interface AddressData {
   complemento?: string;
   erro?: boolean;
 }
-
-type PaymentMethod = 'credit_card' | 'pix';
 
 const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, userMode, onBack, onComplete, locale, t }) => {
   const logisticsService = new LogisticsService();
@@ -87,7 +86,7 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   
   // Payment States
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('credit_card');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CREDIT_CARD);
   const [splitCards, setSplitCards] = useState(false);
   const [card1Amount, setCard1Amount] = useState<number>(0);
   const [pixCopied, setPixCopied] = useState(false);
@@ -228,7 +227,7 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   const totalBeforeDiscounts = subtotal - manualCouponDiscount + shippingCost;
   
   // Apply PIX discount first (if applicable)
-  const pixDiscount = paymentMethod === 'pix' ? totalBeforeDiscounts * 0.05 : 0;
+  const pixDiscount = paymentMethod === PaymentMethod.PIX ? totalBeforeDiscounts * 0.05 : 0;
   const totalAfterPix = totalBeforeDiscounts - pixDiscount;
   
   // Apply cashback discount (limited to total after PIX, never negative)
@@ -879,7 +878,7 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
           
           // Pass Saved Card Token if selected
           let tokenToUse;
-          if (paymentMethod === 'credit_card' && selectedSavedCardId) {
+          if (paymentMethod === PaymentMethod.CREDIT_CARD && selectedSavedCardId) {
               const saved = currentUser?.saved_cards?.find(c => c.id === selectedSavedCardId);
               tokenToUse = saved?.gateway_token;
           }
@@ -970,11 +969,11 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
                 
                 {/* Method Selection */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <button onClick={() => { setPaymentMethod('credit_card'); setSelectedSavedCardId(null); }} className={`p-10 border-2 rounded-[2.5rem] flex flex-col items-center gap-4 transition-all ${paymentMethod === 'credit_card' ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]' : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'}`}><CardIcon className="w-8 h-8" /><div className="text-center"><span className="text-[10px] font-black uppercase tracking-widest block mb-1">Cartão de Crédito</span><span className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest">Até 10x sem juros</span></div></button>
-                  <button onClick={() => setPaymentMethod('pix')} className={`p-10 border-2 rounded-[2.5rem] flex flex-col items-center gap-4 transition-all ${paymentMethod === 'pix' ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]' : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'}`}><div className="w-8 h-8 bg-black text-white rounded flex items-center justify-center font-black text-[10px]">PIX</div><div className="text-center"><span className="text-[10px] font-black uppercase tracking-widest block mb-1">PIX Instantâneo</span><span className="text-[9px] text-green-500 font-black uppercase tracking-widest">5% de desconto</span></div></button>
+                  <button onClick={() => { setPaymentMethod(PaymentMethod.CREDIT_CARD); setSelectedSavedCardId(null); }} className={`p-10 border-2 rounded-[2.5rem] flex flex-col items-center gap-4 transition-all ${paymentMethod === PaymentMethod.CREDIT_CARD ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]' : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'}`}><CardIcon className="w-8 h-8" /><div className="text-center"><span className="text-[10px] font-black uppercase tracking-widest block mb-1">Cartão de Crédito</span><span className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest">Até 10x sem juros</span></div></button>
+                  <button onClick={() => setPaymentMethod(PaymentMethod.PIX)} className={`p-10 border-2 rounded-[2.5rem] flex flex-col items-center gap-4 transition-all ${paymentMethod === PaymentMethod.PIX ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]' : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'}`}><div className="w-8 h-8 bg-black text-white rounded flex items-center justify-center font-black text-[10px]">PIX</div><div className="text-center"><span className="text-[10px] font-black uppercase tracking-widest block mb-1">PIX Instantâneo</span><span className="text-[9px] text-green-500 font-black uppercase tracking-widest">5% de desconto</span></div></button>
                 </div>
 
-                {paymentMethod === 'credit_card' && (
+                {paymentMethod === PaymentMethod.CREDIT_CARD && (
                     <div className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-500">
                         {/* CASHBACK OPTION */}
                         {currentUser && availableCashback > 0 && (
