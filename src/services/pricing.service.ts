@@ -47,6 +47,29 @@ interface OrderEconomicsInput {
   config: PricingConfig;
 }
 
+/**
+ * Serviço responsável pelo cálculo de preços de produtos e análise econômica de pedidos.
+ * 
+ * Este serviço calcula preços sugeridos baseados em:
+ * - Custo de produção e assets (embalagens)
+ * - Estrutura de custos fixos (infraestrutura, marketing, etc.)
+ * - Impostos brasileiros (ICMS, DAS, PIS, COFINS)
+ * - Taxas de gateway de pagamento
+ * - Margem de lucro desejada
+ * 
+ * Também fornece análise econômica de pedidos, calculando COGS, margem líquida e lucro.
+ * 
+ * @example
+ * ```ts
+ * const service = new PricingService();
+ * const breakdown = await service.calculateSuggestedPrice({
+ *   variant: productVariant,
+ *   assets: productAssets,
+ *   scenario: pricingScenario,
+ *   config: pricingConfig
+ * });
+ * ```
+ */
 export class PricingService {
   private taxService: TaxCalculationService;
   private costStructureCache: CostStructureConfig | null = null;
@@ -54,10 +77,38 @@ export class PricingService {
   private cacheLoadedAt: number = 0;
   private readonly CACHE_TTL_MS = 300000;
 
+  /**
+   * Cria uma instância do PricingService.
+   * 
+   * @param taxSvc - Serviço de cálculo de impostos (opcional, usa instância padrão se não fornecido)
+   */
   constructor(taxSvc?: TaxCalculationService) {
     this.taxService = taxSvc ?? taxService;
   }
 
+  /**
+   * Calcula o preço sugerido para uma variante de produto baseado em custos, impostos e margem desejada.
+   * 
+   * O cálculo considera:
+   * - Custo base (produção + assets + custos fixos alocados)
+   * - Impostos (ICMS, DAS, PIS, COFINS)
+   * - Taxas de gateway de pagamento
+   * - Comissões (marketplace, etc.)
+   * - Margem de lucro alvo
+   * 
+   * @param input - Dados da variante, assets, cenário de precificação e configuração
+   * @returns Breakdown completo do preço com todos os componentes
+   * 
+   * @example
+   * ```ts
+   * const breakdown = await pricingService.calculateSuggestedPrice({
+   *   variant: { cost_price: 50, weight_g: 500, ... },
+   *   assets: [{ cost_price: 5, ... }],
+   *   scenario: { targetMarginPercent: 30, commissionPercent: 10, ... },
+   *   config: { costStructure, gateway, financialSettings, ... }
+   * });
+   * ```
+   */
   async calculateSuggestedPrice(input: VariantPricingInput): Promise<PriceBreakdown> {
     const { variant, assets, scenario, config } = input;
 
@@ -111,6 +162,24 @@ export class PricingService {
     };
   }
 
+  /**
+   * Calcula o breakdown detalhado de custos para uma variante de produto.
+   * 
+   * Inclui:
+   * - Custo de produção
+   * - Custo de assets (embalagens)
+   * - Alocação de custos fixos
+   * - Custo de devolução
+   * - Custo de armazenamento
+   * - Custo de perda
+   * - Custo de frete
+   * - Custo de marketing
+   * 
+   * @param variant - Variante do produto
+   * @param assets - Lista de assets (embalagens) disponíveis
+   * @param config - Configuração de precificação
+   * @returns Breakdown detalhado de todos os custos
+   */
   calculateCostBreakdown(
     variant: ProductVariant,
     assets: Asset[],
@@ -178,6 +247,15 @@ export class PricingService {
     return baseCost / (1 - marginDecimal - 0.05);
   }
 
+  /**
+   * Calcula a taxa do gateway de pagamento baseado no método e número de parcelas.
+   * 
+   * @param amount - Valor da transação
+   * @param gateway - Configuração do gateway de pagamento
+   * @param method - Método de pagamento (credit_card, pix, boleto)
+   * @param installments - Número de parcelas (apenas para cartão de crédito, padrão: 1)
+   * @returns Taxa total do gateway
+   */
   calculateGatewayFee(
     amount: number,
     gateway: PaymentGatewayConfig,
@@ -199,6 +277,19 @@ export class PricingService {
     }
   }
 
+  /**
+   * Calcula a análise econômica completa de um pedido.
+   * 
+   * Calcula:
+   * - Revenue (receita total)
+   * - COGS (custo dos produtos vendidos)
+   * - Custos variáveis (frete, gateway, impostos)
+   * - Lucro líquido
+   * - Margem percentual
+   * 
+   * @param input - Dados do pedido, produtos, assets e configuração
+   * @returns Análise econômica completa do pedido
+   */
   async calculateOrderEconomics(input: OrderEconomicsInput): Promise<OrderEconomics> {
     const { items, total, products, assets, freightRealCost, paymentMethod, config } = input;
 
@@ -254,10 +345,28 @@ export class PricingService {
     };
   }
 
+  /**
+   * Calcula o preço de atacado baseado no custo e margem desejada.
+   * 
+   * @param costPrice - Custo do produto
+   * @param marginPercent - Margem de lucro desejada em percentual (padrão: 20%)
+   * @returns Preço de atacado calculado
+   */
   calculateWholesalePrice(costPrice: number, marginPercent: number = 20): number {
     return costPrice * (1 + marginPercent / 100);
   }
 
+  /**
+   * Calcula o preço de varejo para uma variante baseado no modo do usuário.
+   * 
+   * - Modo ATACADO: calcula preço de atacado baseado no custo
+   * - Modo VAREJO: usa preço de varejo da variante, adicionando custo de frete se necessário
+   * 
+   * @param variant - Variante do produto
+   * @param userMode - Modo do usuário (VAREJO ou ATACADO)
+   * @param product - Produto completo (opcional, usado para verificar frete grátis)
+   * @returns Preço calculado para o modo do usuário
+   */
   calculateRetailPrice(
     variant: ProductVariant,
     userMode: UserMode,
@@ -275,6 +384,14 @@ export class PricingService {
     return basePrice;
   }
 
+  /**
+   * Carrega a configuração de estrutura de custos do banco de dados.
+   * 
+   * Usa cache com TTL de 5 minutos para evitar consultas excessivas.
+   * Retorna configuração padrão se não encontrar no banco.
+   * 
+   * @returns Configuração de estrutura de custos
+   */
   async loadCostStructure(): Promise<CostStructureConfig> {
     if (this.costStructureCache && !this.shouldRefreshCache()) {
       return this.costStructureCache;
@@ -312,6 +429,14 @@ export class PricingService {
     }
   }
 
+  /**
+   * Carrega a configuração do gateway de pagamento do banco de dados.
+   * 
+   * Usa cache com TTL de 5 minutos para evitar consultas excessivas.
+   * Retorna configuração padrão se não encontrar no banco.
+   * 
+   * @returns Configuração do gateway de pagamento
+   */
   async loadGatewayConfig(): Promise<PaymentGatewayConfig> {
     if (this.gatewayConfigCache && !this.shouldRefreshCache()) {
       return this.gatewayConfigCache;
@@ -353,6 +478,14 @@ export class PricingService {
     return Date.now() - this.cacheLoadedAt > this.CACHE_TTL_MS;
   }
 
+  /**
+   * Constrói uma configuração completa de precificação a partir das configurações financeiras.
+   * 
+   * Carrega estrutura de custos e gateway do banco e combina com as configurações financeiras.
+   * 
+   * @param financialSettings - Configurações financeiras globais da loja
+   * @returns Configuração completa de precificação
+   */
   async buildPricingConfig(financialSettings: GlobalFinancialSettings): Promise<PricingConfig> {
     const costStructure = await this.loadCostStructure();
     const gateway = await this.loadGatewayConfig();
@@ -366,6 +499,12 @@ export class PricingService {
     };
   }
 
+  /**
+   * Formata um valor numérico como moeda brasileira (BRL).
+   * 
+   * @param value - Valor numérico a ser formatado
+   * @returns String formatada como moeda (ex: "R$ 1.234,56")
+   */
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',

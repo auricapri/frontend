@@ -1,6 +1,35 @@
 import { CartItem, Product, Asset, UserMode } from '../types';
 
+/**
+ * Serviço responsável pela validação e cálculos do carrinho de compras.
+ * 
+ * Valida estoque de produtos e assets (embalagens), verifica quantidades mínimas
+ * para modo atacado e calcula subtotais e totais do carrinho.
+ * 
+ * @example
+ * ```ts
+ * const service = new CartService();
+ * const validation = service.validateStock(cartItems, products, assets, UserMode.VAREJO);
+ * if (!validation.valid) {
+ *   console.error(validation.error);
+ * }
+ * ```
+ */
 export class CartService {
+  /**
+   * Valida o estoque de todos os itens do carrinho.
+   * 
+   * Verifica:
+   * - Quantidade mínima para modo atacado (10 peças)
+   * - Estoque disponível de cada variante
+   * - Estoque disponível de assets (embalagens) necessários
+   * 
+   * @param items - Itens do carrinho
+   * @param products - Lista de produtos disponíveis
+   * @param assets - Lista de assets (embalagens) disponíveis
+   * @param userMode - Modo do usuário (opcional, usado para validar quantidade mínima)
+   * @returns Objeto com valid (boolean) e error (string opcional)
+   */
   validateStock(items: CartItem[], products: Product[], assets: Asset[], userMode?: UserMode): { valid: boolean; error?: string } {
     // Validate minimum quantity for atacado mode
     if (userMode === UserMode.ATACADO) {
@@ -52,10 +81,23 @@ export class CartService {
     return { valid: true };
   }
 
+  /**
+   * Calcula o subtotal do carrinho (soma de preço × quantidade de cada item).
+   * 
+   * @param items - Itens do carrinho
+   * @returns Subtotal calculado
+   */
   calculateSubtotal(items: CartItem[]): number {
     return items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   }
 
+  /**
+   * Calcula o total do carrinho após aplicar desconto.
+   * 
+   * @param items - Itens do carrinho
+   * @param discount - Valor do desconto a ser aplicado (padrão: 0)
+   * @returns Total calculado (nunca negativo)
+   */
   calculateTotal(items: CartItem[], discount: number = 0): number {
     const subtotal = this.calculateSubtotal(items);
     return Math.max(0, subtotal - discount);
