@@ -2,8 +2,7 @@ import React from 'react';
 import { CreditCard, QrCode, Copy, Check, Lock, CheckCircle2, ChevronRight } from 'lucide-react';
 import { UserProfile, StoreConfig } from '../../types';
 import { Locale } from '../../i18n';
-
-type PaymentMethod = 'credit_card' | 'pix';
+import { PaymentMethod } from '../../constants/enums';
 
 interface PaymentFormProps {
   paymentMethod: PaymentMethod;
@@ -49,11 +48,11 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <button
           onClick={() => {
-            onPaymentMethodChange('credit_card');
+            onPaymentMethodChange(PaymentMethod.CREDIT_CARD);
             onSavedCardSelect(null);
           }}
           className={`p-10 border-2 rounded-[2.5rem] flex flex-col items-center gap-4 transition-all ${
-            paymentMethod === 'credit_card'
+            paymentMethod === PaymentMethod.CREDIT_CARD
               ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]'
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
           }`}
@@ -70,9 +69,9 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
         </button>
         
         <button
-          onClick={() => onPaymentMethodChange('pix')}
+          onClick={() => onPaymentMethodChange(PaymentMethod.PIX)}
           className={`p-10 border-2 rounded-[2.5rem] flex flex-col items-center gap-4 transition-all ${
-            paymentMethod === 'pix'
+            paymentMethod === PaymentMethod.PIX
               ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]'
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
           }`}
@@ -91,7 +90,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
         </button>
       </div>
 
-      {paymentMethod === 'credit_card' && (
+      {paymentMethod === PaymentMethod.CREDIT_CARD && (
         <div className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-500">
           {/* SAVED CARDS LIST */}
           {currentUser?.saved_cards && currentUser.saved_cards.length > 0 && (
@@ -209,7 +208,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
         </div>
       )}
 
-      {paymentMethod === 'pix' && (
+      {paymentMethod === PaymentMethod.PIX && (
         <div className="bg-neutral-900 text-white rounded-[3rem] p-10 md:p-16 flex flex-col items-center text-center space-y-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="p-6 bg-white rounded-[2.5rem] shadow-inner">
             <QrCode className="w-40 h-40 text-black" />

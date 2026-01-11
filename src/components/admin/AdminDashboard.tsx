@@ -1,5 +1,7 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
+import { useAdminData } from '../../hooks/useAdminData';
+import { useAdminHandlers } from '../../hooks/useAdminHandlers';
 import { 
   LayoutDashboard, Box, Users, Settings, LogOut, 
   BarChart3, Tag, Layers, Image as ImageIcon, Ticket, Archive, BookOpen, Ruler, Lightbulb,
@@ -43,7 +45,7 @@ import AdminDelivery from './AdminDelivery';
 
 interface AdminDashboardProps {
   onLogout: () => void;
-  t: (key: string) => any;
+  t: (key: string) => string;
   locale: Locale;
   onProductChange: () => void;
 }
@@ -82,7 +84,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   });
 
   // Editor State
-  const [editingItem, setEditingItem] = useState<{ type: string; data: any } | null>(null);
+  const [editingItem, setEditingItem] = useState<{ type: string; data: unknown } | null>(null);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [showSupplierEditor, setShowSupplierEditor] = useState(false);
@@ -162,8 +164,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       const updatedOrder = await ordersApi.updateStatus(orderId, status, trackingCode);
       
       setOrders(prev => prev.map(o => o.id === orderId ? updatedOrder : o));
-    } catch (e: any) {
-      alert(e.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao atualizar pedido';
+      alert(message);
     }
   };
 
@@ -185,7 +188,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
           let updateResult;
           try {
             updateResult = await productsApi.update(data.id, { ...payload, variants });
-          } catch (updateError: any) {
+          } catch (updateError: unknown) {
             throw updateError;
           }
         } else {
@@ -210,8 +213,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       await fetchData();
       onProductChange();
       setEditingItem(null);
-    } catch (e: any) {
-      alert(e.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao atualizar pedido';
+      alert(message);
     }
   };
 
@@ -225,8 +229,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       }
       fetchData();
       setEditingCoupon(null);
-    } catch(e: any) {
-      alert(e.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar cupom';
+      alert(message);
     }
   };
 
@@ -235,12 +240,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
        const storeApi = new StoreApi();
        await storeApi.updateConfig(config);
        alert("Configurações salvas!");
-     } catch (e: any) {
-       alert(e.message);
-     }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar';
+      alert(message);
+    }
   };
 
-  const getLoc = (obj: any): string => {
+  const getLoc = (obj: unknown): string => {
     if (!obj) return '';
     if (typeof obj === 'string') return obj;
     if (typeof obj === 'object') {
@@ -309,8 +315,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       setDeleteConfirm(null);
       setDeleteQueue([]);
       setConfirmationText('');
-    } catch (e: any) {
-      alert(`Erro ao excluir produtos: ${e.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro desconhecido';
+      alert(`Erro ao excluir produtos: ${message}`);
     } finally {
       setIsDeleting(false);
     }
@@ -456,9 +463,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                        const suppliersApi = new SuppliersApi();
                        await suppliersApi.delete(id);
                        await fetchData();
-                     } catch (e: any) {
-                       alert(e.message);
-                     }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar';
+      alert(message);
+    }
                    }}
                    onAdd={() => {
                      setEditingSupplier(null);
@@ -611,9 +619,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                await fetchData();
                setShowSupplierEditor(false);
                setEditingSupplier(null);
-             } catch (e: any) {
-               console.error('[AdminDashboard] Error saving supplier:', e);
-               throw e;
+             } catch (error: unknown) {
+               console.error('[AdminDashboard] Error saving supplier:', error);
+               throw error;
              }
            }}
          />
