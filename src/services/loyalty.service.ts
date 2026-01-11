@@ -98,7 +98,7 @@ export class LoyaltyService {
     newXP: number;
     newCashback: number;
     newLevel: number;
-    rewardPending: any;
+    rewardPending: { code: string; value: number; expires_at: string; level_reached: number } | null;
   } {
     const currentXP = userLoyalty?.current_xp || 0;
     const currentLevel = userLoyalty?.current_level || 1;
@@ -110,7 +110,6 @@ export class LoyaltyService {
     let newCashback = currentCashback + cashbackEarned;
     let newLevel = this.checkLevelUp(newXP, currentLevel, config);
     
-    // Reward pending will be set by generateLevelUpCoupon if level up occurs
     return {
       newXP,
       newCashback,

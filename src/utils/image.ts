@@ -80,7 +80,8 @@ export function getOptimizedImageUrl(
 
 export function generateSrcSet(
   url: string | undefined | null,
-  sizes: Array<keyof typeof IMAGE_SIZES> = ['thumbnail', 'small', 'medium', 'large']
+  sizes: Array<keyof typeof IMAGE_SIZES> = ['thumbnail', 'small', 'medium', 'large'],
+  baseQuality?: number
 ): string {
   if (!url) {
     return '';
@@ -90,10 +91,19 @@ export function generateSrcSet(
     return url;
   }
 
+  const qualityMap: Record<string, number> = {
+    thumbnail: baseQuality ? Math.max(70, baseQuality - 10) : 70,
+    small: baseQuality ? Math.max(75, baseQuality - 5) : 75,
+    medium: baseQuality || 80,
+    large: baseQuality ? Math.min(90, baseQuality + 5) : 85,
+    xlarge: baseQuality ? Math.min(95, baseQuality + 10) : 90,
+  };
+
   return sizes
     .map((size) => {
       const config = IMAGE_SIZES[size];
-      const optimizedUrl = getOptimizedImageUrl(url, size);
+      const quality = qualityMap[size] || 80;
+      const optimizedUrl = getOptimizedImageUrl(url, size, { quality });
       return `${optimizedUrl} ${config.label}`;
     })
     .join(', ');

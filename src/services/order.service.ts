@@ -1,6 +1,7 @@
 import { Order, CartItem, AddressData, InternalLogisticsInfo } from '../types';
 import { OrdersRepository } from '../api/repositories/orders.repository';
 import { UsersRepository } from '../api/repositories/users.repository';
+import { PaymentMethod, OrderStatus } from '../constants/enums';
 
 /**
  * Serviço responsável pela criação e gestão de pedidos.
@@ -49,7 +50,7 @@ export class OrderService {
     items: CartItem[],
     addressData: AddressData,
     logisticsInfo: InternalLogisticsInfo,
-    paymentMethod: 'credit_card' | 'pix',
+    paymentMethod: PaymentMethod,
     subtotal: number,
     finalAmount: number,
     userId?: string
@@ -116,7 +117,7 @@ export class OrderService {
    * @param trackingCode - Código de rastreamento (opcional)
    * @returns Pedido atualizado
    */
-  async updateOrderStatus(id: string, status: string, trackingCode?: string): Promise<Order> {
+  async updateOrderStatus(id: string, status: OrderStatus, trackingCode?: string): Promise<Order> {
     return await this.ordersRepo.updateStatus(id, status, trackingCode);
   }
 }

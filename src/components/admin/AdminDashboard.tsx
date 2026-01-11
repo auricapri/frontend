@@ -18,12 +18,14 @@ import { CollectionsApi } from '../../api/collections.api';
 import { AssetsApi } from '../../api/assets.api';
 import { GuidesApi } from '../../api/guides.api';
 import { BannersApi } from '../../api/banners.api';
+import { logger } from '../../utils/logger';
 import { SuppliersApi } from '../../api/suppliers.api';
 import { Locale } from '../../i18n';
 import { 
   Product, Category, Collection, Banner, Coupon, Asset, 
   StoreConfig, UserProfile, Order, GlobalFinancialSettings, SizeGuide, Supplier
 } from '../../types';
+import { OrderStatus } from '../../constants/enums';
 
 import AdminHealth from './AdminHealth';
 import AdminInventory from './AdminInventory';
@@ -148,7 +150,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       setSuppliers(suppliersData);
 
     } catch (e) {
-      console.error("Admin Fetch Error", e);
+      logger.error("Admin Fetch Error", e);
     } finally {
       setIsLoading(false);
     }
@@ -158,10 +160,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
     fetchData();
   }, [fetchData]);
 
-  const handleUpdateOrderStatus = async (orderId: string, status: string, trackingCode?: string) => {
+  const handleUpdateOrderStatus = async (orderId: string, status: OrderStatus, trackingCode?: string) => {
     try {
       const ordersApi = new OrdersApi();
-      const updatedOrder = await ordersApi.updateStatus(orderId, status, trackingCode);
+      const updatedOrder = await ordersApi.updateStatus(orderId, status as OrderStatus, trackingCode);
       
       setOrders(prev => prev.map(o => o.id === orderId ? updatedOrder : o));
     } catch (error: unknown) {

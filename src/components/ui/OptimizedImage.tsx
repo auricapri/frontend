@@ -38,7 +38,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   onLoad,
   onError,
   placeholder = 'skeleton',
-  quality = 80,
+  quality = 85,
   useSrcSet = false,
   srcSetSizes = ['thumbnail', 'small', 'medium', 'large'],
 }) => {
@@ -49,7 +49,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const optimizedSrc = getOptimizedImageUrl(src, size, { quality });
-  const srcSet = useSrcSet ? generateSrcSet(src, srcSetSizes) : undefined;
+  const srcSet = useSrcSet ? generateSrcSet(src, srcSetSizes, quality) : undefined;
   const defaultSizes = sizes || generateSizes();
   const placeholderSrc = getPlaceholderUrl(
     IMAGE_SIZES[size].width,
@@ -57,10 +57,20 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   );
 
   useEffect(() => {
-    if (priority || !containerRef.current) {
+    if (priority) {
       setIsInView(true);
+      if (src) {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = optimizedSrc;
+        link.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(link);
+      }
       return;
     }
+
+    if (!containerRef.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -72,7 +82,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         });
       },
       {
-        rootMargin: '200px 0px',
+        rootMargin: '300px 0px',
         threshold: 0.01,
       }
     );
@@ -82,7 +92,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return () => {
       observer.disconnect();
     };
-  }, [priority]);
+  }, [priority, src, optimizedSrc]);
 
   const handleLoad = useCallback(() => {
     setIsLoaded(true);
@@ -130,6 +140,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           alt=""
           className={`absolute inset-0 w-full h-full ${objectFitClass} blur-sm scale-110`}
           aria-hidden="true"
+          role="presentation"
         />
       )}
 
@@ -147,7 +158,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           onError={handleError}
           className={`
             w-full h-full ${objectFitClass}
-            transition-opacity duration-500
+            transition-opacity duration-300
             ${isLoaded ? 'opacity-100' : 'opacity-0'}
           `}
         />

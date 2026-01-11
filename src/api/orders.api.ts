@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import { Order, AddressData, InternalLogisticsInfo, CartItem } from '../types';
+import { PaymentMethod, OrderStatus } from '../constants/enums';
 
 export class OrdersApi {
   async getAll(): Promise<Order[]> {

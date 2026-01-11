@@ -7,4 +7,5 @@ export * from './reviews';
 export * from './suppliers';
 export * from './store';
 export * from './dream';
+export * from './diagram';
 export type { OrderEconomics } from './pricing.types';

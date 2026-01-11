@@ -1,7 +1,6 @@
 import { OrderStatus, PaymentMethod } from '../../constants/enums';
 import { OrderItem } from './order-item';
-import { InternalLogisticsInfo } from './logistics';
-import { LogisticsMetadata } from './logistics';
+import { InternalLogisticsInfo, AddressData, LogisticsMetadata } from './logistics';
 
 export interface Order {
   id: string;
@@ -15,7 +14,7 @@ export interface Order {
   items: OrderItem[];
   tracking_code?: string;
   internal_logistics?: InternalLogisticsInfo;
-  shipping_address_snapshot?: any;
+  shipping_address_snapshot?: AddressData;
   logistics_metadata?: LogisticsMetadata;
   wishlist_slug?: string | null;
   gift_from_user_id?: string | null;

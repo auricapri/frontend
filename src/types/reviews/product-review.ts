@@ -28,13 +28,15 @@ export interface ProductReview {
   user_has_helped?: boolean;
 }
 
+import { LocalizedText } from '../common';
+
 export interface OrderItemForReview {
   order_item_id: string;
   product_id: string;
   variant_id?: string;
-  product_name: any;
+  product_name: LocalizedText;
   variant_size: string;
-  variant_color: any;
+  variant_color: LocalizedText;
   image: string;
   quantity: number;
   price: number;

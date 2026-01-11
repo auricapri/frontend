@@ -5,6 +5,7 @@ import { CachedProductsApi } from '../api/cached.products.api';
 import { CachedCollectionsApi } from '../api/cached.collections.api';
 import { CachedCouponsApi } from '../api/cached.coupons.api';
 import { CachedAssetsApi } from '../api/cached.assets.api';
+import { logger } from '../utils/logger';
 
 const defaultStoreConfig: StoreConfig = {
   id: 'main',
@@ -96,7 +97,7 @@ export const useStoreData = () => {
       setIsLoading(false);
 
     } catch (err) {
-      console.error('Error fetching store data:', err);
+      logger.error('Error fetching store data', err);
       if (isMounted.current) {
         setIsLoading(false);
       }

@@ -35,6 +35,7 @@ import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { OrdersApi } from '../../api/orders.api';
 import { UsersApi } from '../../api/users.api';
+import { OptimizedImage } from '../ui';
 // import { pricingApi } from '../../api/pricing.api';
 import { OrderEconomics } from '../../types';
 import { OrderStatus } from '../../constants/enums';
@@ -635,7 +636,13 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                           <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-4 flex items-center gap-2"><Package className="w-3 h-3" /> Itens do Pedido</h5>
                           {selectedOrder.items.map((item, idx) => (
                             <div key={idx} className="flex gap-6 p-4 bg-white rounded-3xl border border-neutral-100 shadow-sm">
-                                <img src={item.image} className="w-16 h-20 object-cover rounded-xl bg-neutral-100" />
+                                <OptimizedImage 
+                                  src={item.image} 
+                                  alt={getLoc(item.name)} 
+                                  size="thumbnail"
+                                  objectFit="cover"
+                                  className="w-16 h-20 rounded-xl"
+                                />
                                 <div className="flex-1">
                                     <h6 className="text-[11px] font-black uppercase tracking-tight">{getLoc(item.name)}</h6>
                                     <p className="text-[9px] text-neutral-400 uppercase font-bold tracking-widest mt-1">{getLoc(item.color_name)} | {item.size}</p>

@@ -53,28 +53,48 @@ export default defineConfig(({ mode }) => {
         sourcemap: false,
         rollupOptions: {
           output: {
-            manualChunks: {
-              'vendor-react': ['react', 'react-dom'],
-              'vendor-lucide': ['lucide-react'],
-              'vendor-supabase': ['@supabase/supabase-js'],
-              'pages-main': [
-                './src/pages/HomePage',
-                './src/pages/ProductPage',
-                './src/pages/CollectionPage',
-              ],
-              'pages-secondary': [
-                './src/pages/CheckoutPage',
-                './src/pages/AdminPage',
-                './src/pages/AboutPage',
-                './src/pages/ReceiptPage'
-              ],
-              'components-product': [
-                './src/components/product/ProductGrid',
-                './src/components/product/ProductDetail',
-              ],
-              'services': [
-                './src/services/cache.service',
-              ],
+            manualChunks: (id) => {
+              if (id.includes('node_modules')) {
+                if (id.includes('react') || id.includes('react-dom')) {
+                  return 'vendor-react';
+                }
+                if (id.includes('lucide-react')) {
+                  return 'vendor-lucide';
+                }
+                if (id.includes('@supabase')) {
+                  return 'vendor-supabase';
+                }
+                return 'vendor-other';
+              }
+              
+              if (id.includes('/pages/')) {
+                if (id.includes('HomePage') || id.includes('ProductPage') || id.includes('CollectionPage')) {
+                  return 'pages-main';
+                }
+                if (id.includes('AdminPage') || id.includes('admin')) {
+                  return 'pages-admin';
+                }
+                if (id.includes('CheckoutPage')) {
+                  return 'pages-checkout';
+                }
+                return 'pages-other';
+              }
+              
+              if (id.includes('/components/admin/')) {
+                return 'components-admin';
+              }
+              
+              if (id.includes('/components/checkout/')) {
+                return 'components-checkout';
+              }
+              
+              if (id.includes('/components/product/')) {
+                return 'components-product';
+              }
+              
+              if (id.includes('/services/')) {
+                return 'services';
+              }
             },
             chunkFileNames: 'assets/[name]-[hash].js',
             entryFileNames: 'assets/[name]-[hash].js',

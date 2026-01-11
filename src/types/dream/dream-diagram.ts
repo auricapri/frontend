@@ -23,13 +23,13 @@ export interface DiagramVariant {
 export interface ModifiedProduct {
   productId: string;
   productName: string;
-  changes: Record<string, any>;
+  changes: Record<string, unknown>;
 }
 
 export interface ModifiedVariant {
   variantId: string;
   productId: string;
-  changes: Record<string, any>;
+  changes: Record<string, unknown>;
 }
 
 export interface DiagramMetadata {
@@ -44,8 +44,10 @@ export interface DiagramMetadata {
   templateType?: 'cost' | 'revenue' | 'collection' | 'custom';
 }
 
+import { DiagramNode, DiagramEdge } from '../diagram';
+
 export interface DiagramData {
-  nodes: any[];
-  edges: any[];
+  nodes: DiagramNode[];
+  edges: DiagramEdge[];
   metadata?: DiagramMetadata;
 }

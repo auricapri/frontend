@@ -574,7 +574,17 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   data-variant-id={imgData.variantIds?.join(',') || imgData.variantId}
                   data-combination-key={imgData.combinationKey}
                   id={isFirstOfCombination ? `anchor-${imgData.combinationKey}` : undefined}
-                  className="relative aspect-[3/4] bg-white overflow-hidden cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Ampliar imagem ${idx + 1} do produto ${getLoc(product.name)}`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setZoomImgIndex(idx);
+                      setIsZoomOpen(true);
+                    }
+                  }}
+                  className="relative aspect-[3/4] bg-white overflow-hidden cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2"
                   onClick={() => { setZoomImgIndex(idx); setIsZoomOpen(true); }}
                 >
                   <OptimizedImage
@@ -620,12 +630,22 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     data-variant-id={imgData.variantIds?.join(',') || imgData.variantId}
                     data-combination-key={imgData.combinationKey}
                     id={isFirstOfCombination ? `anchor-mobile-${imgData.combinationKey}` : undefined}
-                    className="flex-none w-full h-full snap-center relative overflow-hidden"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Ampliar imagem ${idx + 1} do produto ${getLoc(product.name)}`}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setZoomImgIndex(idx);
+                        setIsZoomOpen(true);
+                      }
+                    }}
+                    className="flex-none w-full h-full snap-center relative overflow-hidden focus:outline-2 focus:outline-black focus:outline-offset-2"
                     onClick={() => { setZoomImgIndex(idx); setIsZoomOpen(true); }}
                   >
                     <OptimizedImage
                       src={imgData.url}
-                      alt=""
+                      alt={`${getLoc(product.name)} - ${getLoc(activeVariant?.color_name || {})} - Vista ${idx + 1}`}
                       className="w-full h-full"
                       size="medium"
                       priority={idx === 0}
@@ -1094,9 +1114,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 <button 
                   key={i} 
                   onClick={() => setZoomImgIndex(i)}
+                  aria-label={`Ver imagem ${i + 1} de ${allImagesWithVariant.length} do produto ${getLoc(product.name)}`}
+                  aria-pressed={zoomImgIndex === i}
                   className={`w-12 h-16 rounded-xl overflow-hidden border-2 transition-all ${zoomImgIndex === i ? 'border-black scale-110 shadow-lg' : 'border-transparent opacity-40 hover:opacity-100'}`}
                 >
-                  <img src={imgData.url} className="w-full h-full object-contain" alt="" />
+                  <img src={imgData.url} className="w-full h-full object-contain" alt={`Miniatura ${i + 1}`} />
                 </button>
               ))}
            </div>

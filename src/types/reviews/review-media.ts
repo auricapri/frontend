@@ -1,4 +1,4 @@
-export interface ProductReviewMedia {
+export interface OrderReviewMedia {
   id: string;
   review_id: string;
   media_url: string;
