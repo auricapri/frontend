@@ -1,6 +1,6 @@
 import { LocalizedText } from '../common';
 import { ProductDimensions } from './dimensions';
-import { VariantAssetLink } from './asset';
+import { VariantAssetLink } from './asset-links';
 
 export interface ProductVariant {
   id: string;

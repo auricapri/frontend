@@ -8,25 +8,27 @@ import { AdminPage } from '../pages/AdminPage';
 import { AboutPage } from '../pages/AboutPage';
 import { ReceiptPage } from '../pages/ReceiptPage';
 import { OrderReviewPage } from '../pages/OrderReviewPage';
+import {
+  HomePageProps,
+  ProductPageProps,
+  CollectionPageProps,
+  CheckoutPageProps,
+  AdminPageProps,
+  AboutPageProps,
+  ReceiptPageProps,
+  OrderReviewPageProps
+} from '../types/router-props';
 
 interface RouterProps {
   currentView: View;
-  // HomePage props
-  homeProps?: any;
-  // ProductPage props
-  productProps?: any;
-  // CollectionPage props
-  collectionProps?: any;
-  // CheckoutPage props
-  checkoutProps?: any;
-  // AdminPage props
-  adminProps?: any;
-  // AboutPage props
-  aboutProps?: any;
-  // ReceiptPage props
-  receiptProps?: any;
-  // OrderReviewPage props
-  orderReviewProps?: any;
+  homeProps?: HomePageProps;
+  productProps?: ProductPageProps;
+  collectionProps?: CollectionPageProps;
+  checkoutProps?: CheckoutPageProps;
+  adminProps?: AdminPageProps;
+  aboutProps?: AboutPageProps;
+  receiptProps?: ReceiptPageProps;
+  orderReviewProps?: OrderReviewPageProps;
 }
 
 export const Router: React.FC<RouterProps> = ({

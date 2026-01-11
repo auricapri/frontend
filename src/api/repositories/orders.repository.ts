@@ -1,5 +1,6 @@
 import { Order, CartItem, AddressData, InternalLogisticsInfo } from '../../types';
 import { OrdersApi } from '../orders.api';
+import { PaymentMethod, OrderStatus } from '../../constants/enums';
 
 export class OrdersRepository {
   private api: OrdersApi;
@@ -20,7 +21,7 @@ export class OrdersRepository {
     items: CartItem[];
     addressData: AddressData;
     logisticsInfo: InternalLogisticsInfo;
-    paymentMethod: 'credit_card' | 'pix';
+    paymentMethod: PaymentMethod;
     subtotal: number;
     finalAmount: number;
   }): Promise<Order> {
@@ -31,7 +32,7 @@ export class OrdersRepository {
     return this.api.getByUserId(userId);
   }
 
-  async updateStatus(id: string, status: string, trackingCode?: string): Promise<Order> {
+  async updateStatus(id: string, status: OrderStatus, trackingCode?: string): Promise<Order> {
     return this.api.updateStatus(id, status, trackingCode);
   }
 }

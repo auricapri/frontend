@@ -1,21 +1,27 @@
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, Suspense, lazy } from 'react';
 import { Navbar, Footer } from './src/components/layout';
 import { Hero, LoyaltyBanner, AboutUs } from './src/components/shared';
-import { ProductGrid, ProductDetail, CollectionDetail } from './src/components/product';
+import { ProductGrid, CollectionDetail } from './src/components/product';
 import { CartDrawer, WishlistDrawer, CouponsDrawer } from './src/components/cart';
 import { AuthDrawer } from './src/components/auth';
-import { CheckoutView, AddressData } from './src/components/checkout';
-import { AdminDashboard, AdminDelivery } from './src/components/admin';
-import { OrderResultOverlay, OrderReceipt } from './src/components/orders';
-import { OrderReviewPage } from './src/pages/OrderReviewPage';
 import { Toast } from './src/components/ui';
 import { NotFoundPage } from './src/pages/NotFoundPage';
 import { ResetPasswordPage } from './src/pages/ResetPasswordPage';
-import SharedWishlistPage from './src/pages/SharedWishlistPage';
 import { AdminLoginPage } from './src/pages/AdminLoginPage';
 import { DeliveryLoginPage } from './src/pages/DeliveryLoginPage';
 import { TestBanner } from './src/components/common/TestBanner';
+
+const ProductDetail = lazy(() => import('./src/components/product/ProductDetail'));
+const CheckoutView = lazy(() => import('./src/components/checkout/CheckoutView'));
+const AdminDashboard = lazy(() => import('./src/components/admin/AdminDashboard'));
+const AdminDelivery = lazy(() => import('./src/components/admin/AdminDelivery'));
+const OrderResultOverlay = lazy(() => import('./src/components/orders/OrderResultOverlay'));
+const OrderReceipt = lazy(() => import('./src/components/orders/OrderReceipt'));
+const OrderReviewPage = lazy(() => import('./src/pages/OrderReviewPage'));
+const SharedWishlistPage = lazy(() => import('./src/pages/SharedWishlistPage'));
+
+import type { AddressData } from './src/components/checkout';
 import { Product, CartItem, UserMode, UserProfile, Category, Collection, Banner, StoreConfig, Coupon, Asset, InternalLogisticsInfo, Order, SavedAddress, SavedCard, SizeGuide } from './src/types';
 import { PaymentMethod } from './src/constants/enums';
 import { MessageCircle, X, Loader2 } from 'lucide-react';
@@ -28,11 +34,16 @@ import { OrdersApi } from './src/api/orders.api';
 import { UsersApi } from './src/api/users.api';
 import { ProductsApi } from './src/api/products.api';
 import { calculatePrice, filterProductsForMode } from './src/utils/product';
+import { logger } from './src/utils/logger';
+import { preloadCriticalImages, preloadImagesProgressive } from './src/utils/image-preload';
 
 export const App: React.FC = () => {
-  console.log('App: Component rendering...');
   
   const [locale, setLocale] = useState<Locale>('pt');
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
   const [userMode, setUserMode] = useState<UserMode>(UserMode.VAREJO);
   
   // Use hooks for data fetching
@@ -91,7 +102,7 @@ export const App: React.FC = () => {
         const orders = await ordersApi.getByUserId(currentUser.id);
         setUserOrders(orders || []);
       } catch (error) {
-        console.error('Error fetching user orders:', error);
+        logger.error('Error fetching user orders', error);
         setUserOrders([]);
       }
     };
@@ -359,6 +370,12 @@ export const App: React.FC = () => {
     return result;
   };
 
+  const LoadingFallback: React.FC = () => (
+    <div className="flex items-center justify-center min-h-screen">
+      <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
+    </div>
+  );
+
   const exitAdmin = () => {
     setCurrentView('home');
     window.history.pushState({ view: 'home' }, '', '/');
@@ -483,7 +500,8 @@ export const App: React.FC = () => {
       paymentMethod: PaymentMethod, 
       finalAmount: number,
       saveCard: boolean,
-      cardToken?: string
+      cardToken?: string,
+      phone?: string
   ) => {
     if (cartItems.length === 0) return;
     setIsProcessingOrder(true);
@@ -493,10 +511,23 @@ export const App: React.FC = () => {
     const usersApi = new UsersApi();
 
     try {
+      // Save phone number if provided and user doesn't have one
+      if (currentUser && phone && phone.trim() && (!currentUser.phone || !currentUser.phone.trim())) {
+        try {
+          const cleanedPhone = phone.replace(/\D/g, '');
+          if (cleanedPhone.length >= 10) {
+            await usersApi.updateProfile({ phone: cleanedPhone });
+            console.log('Phone number saved to user profile');
+          }
+        } catch (err) {
+          console.error('Error saving phone number:', err);
+        }
+      }
+
       // Save payment method if needed (this should be moved to backend later)
       if (currentUser && paymentMethod === PaymentMethod.CREDIT_CARD && saveCard && !cardToken) {
           // TODO: Implement payment method saving via API
-          console.log('Payment method saving not yet implemented via API');
+          logger.info('Payment method saving not yet implemented via API');
       }
 
       // Create order via API (backend handles address, stock, and loyalty)
@@ -678,7 +709,11 @@ export const App: React.FC = () => {
   }
 
   if (currentView === 'admin') {
-    return <AdminDashboard onLogout={exitAdmin} t={t} locale={locale} onProductChange={refetchStoreData} />;
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <AdminDashboard onLogout={exitAdmin} t={t} locale={locale} onProductChange={refetchStoreData} />
+      </Suspense>
+    );
   }
 
   if (currentView === 'delivery-login') {
@@ -711,18 +746,24 @@ export const App: React.FC = () => {
               Sair
             </button>
           </div>
-          <AdminDelivery 
-            orders={userOrders} 
-            suppliers={[]} 
-            locale={locale} 
-          />
+          <Suspense fallback={<LoadingFallback />}>
+            <AdminDelivery 
+              orders={userOrders} 
+              suppliers={[]} 
+              locale={locale} 
+            />
+          </Suspense>
         </div>
       </div>
     );
   }
 
   if (currentView === 'receipt' && lastSuccessOrder) {
-      return <OrderReceipt order={lastSuccessOrder} onBack={() => handleNavigate('home')} t={t} locale={locale} />;
+      return (
+        <Suspense fallback={<LoadingFallback />}>
+          <OrderReceipt order={lastSuccessOrder} onBack={() => handleNavigate('home')} t={t} locale={locale} />
+        </Suspense>
+      );
   }
 
   if (currentView === 'about') {
@@ -733,14 +774,16 @@ export const App: React.FC = () => {
     const pathParts = window.location.pathname.split('/');
     const slug = pathParts[pathParts.length - 1];
     return (
-      <SharedWishlistPage
-        locale={locale}
-        t={t}
+      <Suspense fallback={<LoadingFallback />}>
+        <SharedWishlistPage
+          locale={locale}
+          t={t}
         userMode={userMode}
         currentUser={currentUser}
         onNavigate={handleNavigate}
         slug={slug}
       />
+      </Suspense>
     );
   }
 
@@ -803,34 +846,37 @@ export const App: React.FC = () => {
               href="https://wa.me/AURICAPRI" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="fixed bottom-10 right-6 p-5 bg-neutral-900 text-white rounded-full shadow-2xl z-40 border border-white/10 hover:scale-110 active:scale-95 transition-all flex items-center justify-center animate-in slide-in-from-bottom-10 duration-700"
+              aria-label={locale === 'pt' ? 'Contato via WhatsApp' : locale === 'en' ? 'Contact via WhatsApp' : locale === 'es' ? 'Contacto por WhatsApp' : 'Contact via WhatsApp'}
+              className="fixed bottom-10 right-6 p-5 bg-neutral-900 text-white rounded-full shadow-2xl z-40 border border-white/10 hover:scale-110 active:scale-95 transition-all flex items-center justify-center animate-in slide-in-from-bottom-10 duration-700 focus:outline-2 focus:outline-white focus:outline-offset-2"
             >
-              <MessageCircle className="w-6 h-6" />
+              <MessageCircle className="w-6 h-6" aria-hidden="true" />
             </a>
           </div>
         )}
 
         {currentView === 'product' && activeProduct && (
-          <ProductDetail 
-            product={activeProduct} 
-            coupons={coupons} 
-            userMode={userMode} 
-            onAddToCart={addToCart}
-            onBack={() => handleNavigate('home', 'collection')}
-            isWishlisted={wishlistIds.includes(activeProduct.id)}
-            onToggleWishlist={() => handleToggleWishlist(activeProduct.id)}
-            t={t}
-            locale={locale}
-            currentUser={currentUser}
-            userOrders={userOrders}
-            onShowToast={showToast}
-            sizeGuides={sizeGuides}
-            products={products}
-            categories={categories}
-            onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product', undefined, p); }}
-            wishlistIds={wishlistIds}
-            onToggleWishlistProduct={handleToggleWishlist}
-          />
+          <Suspense fallback={<LoadingFallback />}>
+            <ProductDetail 
+              product={activeProduct} 
+              coupons={coupons} 
+              userMode={userMode} 
+              onAddToCart={addToCart}
+              onBack={() => handleNavigate('home', 'collection')}
+              isWishlisted={wishlistIds.includes(activeProduct.id)}
+              onToggleWishlist={() => handleToggleWishlist(activeProduct.id)}
+              t={t}
+              locale={locale}
+              currentUser={currentUser}
+              userOrders={userOrders}
+              onShowToast={showToast}
+              sizeGuides={sizeGuides}
+              products={products}
+              categories={categories}
+              onSelectProduct={(p) => { setActiveProduct(p); handleNavigate('product', undefined, p); }}
+              wishlistIds={wishlistIds}
+              onToggleWishlistProduct={handleToggleWishlist}
+            />
+          </Suspense>
         )}
 
         {currentView === 'collection' && activeCollection && (
@@ -848,16 +894,18 @@ export const App: React.FC = () => {
         )}
 
         {currentView === 'checkout' && (
-          <CheckoutView 
-            items={cartItems} 
-            currentUser={currentUser}
-            storeConfig={storeConfig}
-            userMode={userMode}
-            onBack={() => handleNavigate('home')} 
-            onComplete={handlePlaceOrder} 
-            locale={locale} 
-            t={t} 
-          />
+          <Suspense fallback={<LoadingFallback />}>
+            <CheckoutView 
+              items={cartItems} 
+              currentUser={currentUser}
+              storeConfig={storeConfig}
+              userMode={userMode}
+              onBack={() => handleNavigate('home')} 
+              onComplete={handlePlaceOrder} 
+              locale={locale} 
+              t={t} 
+            />
+          </Suspense>
         )}
 
         {currentView === 'order-review' && (() => {
@@ -869,13 +917,15 @@ export const App: React.FC = () => {
           }
 
           return (
-            <OrderReviewPage
-              orderId={orderId}
-              onBack={() => handleNavigate('home')}
-              t={t}
-              locale={locale}
-              storeConfig={storeConfig}
-            />
+            <Suspense fallback={<LoadingFallback />}>
+              <OrderReviewPage
+                orderId={orderId}
+                onBack={() => handleNavigate('home')}
+                t={t}
+                locale={locale}
+                storeConfig={storeConfig}
+              />
+            </Suspense>
           );
         })()}
       </main>
@@ -911,14 +961,16 @@ export const App: React.FC = () => {
 
       {/* Order Result Animation Overlay */}
       {orderResult && (
-          <OrderResultOverlay 
-              status={orderResult.status} 
-              orderId={orderResult.orderId}
-              errorMessage={orderResult.message}
-              onClose={handleCloseOrderResult}
-              t={t}
-              locale={locale}
-          />
+          <Suspense fallback={null}>
+            <OrderResultOverlay 
+                status={orderResult.status} 
+                orderId={orderResult.orderId}
+                errorMessage={orderResult.message}
+                onClose={handleCloseOrderResult}
+                t={t}
+                locale={locale}
+            />
+          </Suspense>
       )}
 
       {legalView && (

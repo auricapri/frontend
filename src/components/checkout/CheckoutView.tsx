@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { CartItem, InternalLogisticsInfo, UserProfile, SavedCard, StoreConfig, UserMode, Coupon } from '../../types';
 import { Locale } from '../../i18n';
+import { OptimizedImage } from '../ui';
 import { PaymentMethod } from '../../constants/enums';
 import { MAPBOX_TOKEN, getMapboxStyle } from '../../utils/mapbox';
 import { formatCurrency } from '../../utils/currency';
@@ -46,7 +47,8 @@ interface CheckoutViewProps {
       paymentMethod: PaymentMethod, 
       finalAmount: number,
       saveCard: boolean, // Nova flag
-      cardToken?: string // Token se usar cartão salvo
+      cardToken?: string, // Token se usar cartão salvo
+      phone?: string // Telefone do usuário
   ) => void;
   locale: Locale;
   t: (key: string) => any;
@@ -82,8 +84,10 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   const [mapboxLoaded, setMapboxLoaded] = useState(false);
   const [num, setNum] = useState('');
   const [complement, setComplement] = useState('');
+  const [phone, setPhone] = useState('');
   const [cepError, setCepError] = useState<string | null>(null);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
+  const [addressLoaded, setAddressLoaded] = useState(false);
   
   // Payment States
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CREDIT_CARD);
@@ -310,9 +314,16 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
     setCouponError(null);
   };
 
-  // AUTO-FILL DEFAULT ADDRESS
+  // Initialize phone from user profile
   useEffect(() => {
-      if (currentUser?.default_address && !address) {
+    if (currentUser?.phone && !phone) {
+      setPhone(currentUser.phone);
+    }
+  }, [currentUser?.phone, phone]);
+
+  // AUTO-FILL DEFAULT ADDRESS (only once, when component mounts)
+  useEffect(() => {
+      if (currentUser?.default_address && !address && !addressLoaded) {
           const def = currentUser.default_address;
           
           // Parse street_address format: "logradouro, numero - bairro - complemento"
@@ -328,37 +339,70 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
             if (parts.length > 0) {
               // First part contains logradouro and possibly numero
               const firstPart = parts[0];
-              logradouro = firstPart; // Keep full first part as logradouro
+              // Remove number if present (format: "logradouro, numero")
+              const commaIndex = firstPart.lastIndexOf(',');
+              if (commaIndex > 0) {
+                logradouro = firstPart.substring(0, commaIndex).trim();
+                // Extract number if present
+                const numPart = firstPart.substring(commaIndex + 1).trim();
+                if (numPart && !isNaN(Number(numPart.replace(/\D/g, '')))) {
+                  setNum(numPart.replace(/\D/g, ''));
+                }
+              } else {
+                logradouro = firstPart.trim();
+              }
             }
             
             if (parts.length > 1) {
               // Second part is usually bairro
-              bairro = parts[1];
+              bairro = parts[1].trim();
             }
           } else if (def.line1) {
             // Frontend SavedAddress format
-            logradouro = def.line1;
-            bairro = def.line2 || '';
+            logradouro = def.line1.trim();
+            bairro = def.line2?.trim() || '';
           }
+          
+          // If logradouro is still empty, try to get it from line1 or street_address directly
+          if (!logradouro || logradouro.trim() === '') {
+            // Try to extract from street_address if it exists
+            if ((def as any).street_address) {
+              const streetAddr = (def as any).street_address;
+              // If it's just the street name without format, use it directly
+              if (!streetAddr.includes(' - ')) {
+                logradouro = streetAddr.split(',')[0].trim();
+              }
+            }
+            // Fallback to line1
+            if (!logradouro || logradouro.trim() === '') {
+              logradouro = def.line1?.trim() || '';
+            }
+          }
+          
+          const cepValue = (def as any).postal_code || def.postal_code || '';
+          const cleanedCep = cepValue ? cepValue.replace(/\D/g, '') : '';
+          const formattedCep = cleanedCep.length === 8 
+            ? cleanedCep.substring(0, 5) + '-' + cleanedCep.substring(5, 8)
+            : cepValue;
           
           const newAddress: AddressData = {
               logradouro: logradouro,
               bairro: bairro,
               localidade: (def as any).city || def.city || '',
               uf: (def as any).state_province || def.state || '',
-              cep: (def as any).postal_code || def.postal_code || ''
+              cep: formattedCep || ''
           };
           
           setAddress(newAddress);
+          setAddressLoaded(true);
           
-          const cepValue = (def as any).postal_code || def.postal_code || '';
-          if (cepValue) {
-            setCep(cepValue);
+          if (cleanedCep && cleanedCep.length === 8) {
+            setCep(formattedCep);
             // Calculate logistics after address is set
             setTimeout(() => {
               // Use logisticsService directly to avoid dependency issues
               if (userMode === UserMode.ATACADO) {
-                logisticsService.calculateShippingOptions(cepValue, newAddress).then(options => {
+                logisticsService.calculateShippingOptions(cleanedCep, newAddress).then(options => {
                   if (!Array.isArray(options) || options.length === 0) {
                     console.error('No shipping options returned');
                     return;
@@ -382,7 +426,7 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
                   });
                 }).catch(err => console.error('Error calculating shipping:', err));
               } else {
-                logisticsService.calculateShipping(cepValue, newAddress).then(logisticsInfo => {
+                logisticsService.calculateShipping(cleanedCep, newAddress).then(logisticsInfo => {
                   setShippingDisplay({
                     price: logisticsInfo.display_price_was,
                     days: logisticsInfo.display_days_was
@@ -393,7 +437,7 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
             }, 100);
           }
       }
-  }, [currentUser, address, userMode]);
+  }, [currentUser?.default_address, addressLoaded, userMode]);
 
   // Função para buscar coordenadas (Geocoding)
   const fetchCoordinates = async (query: string): Promise<[number, number] | null> => {
@@ -726,8 +770,8 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
       cep: formattedCep || undefined
     });
     
-    // Set CEP in the form field
-    setCep(formattedCep);
+    // Set CEP in the form field (allow editing)
+    setCep(formattedCep || '');
     
     setIsMapPickerOpen(false);
     
@@ -804,13 +848,36 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   };
 
   const handleCepChange = async (val: string) => {
+    // Allow user to clear CEP completely
+    if (val === '') {
+      setCep('');
+      setAddress(null);
+      setShippingDisplay(null);
+      setBestInternalShipping(null);
+      setCepError(null);
+      setAddressLoaded(false);
+      return;
+    }
+    
+    // Format CEP as user types (00000-000)
     const cleaned = val.replace(/\D/g, '');
-    setCep(cleaned);
+    let formatted = cleaned;
+    if (cleaned.length > 5) {
+      formatted = cleaned.substring(0, 5) + '-' + cleaned.substring(5, 8);
+    }
+    
+    setCep(formatted);
     setCepError(null);
+    
+    // Clear address if CEP is incomplete
     if (cleaned.length < 8) {
         setAddress(null);
         setShippingDisplay(null);
+        setBestInternalShipping(null);
+        return;
     }
+    
+    // Only fetch when CEP is complete (8 digits)
     if (cleaned.length === 8) {
       setLoadingCep(true);
       try {
@@ -883,13 +950,15 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
               tokenToUse = saved?.gateway_token;
           }
 
+          const phoneToSave = phone || currentUser?.phone || '';
           onComplete(
               finalAddress, 
               shippingToUse, 
               paymentMethod, 
               finalTotal, 
               saveCardForFuture, 
-              tokenToUse
+              tokenToUse,
+              phoneToSave
           );
       }
   };
@@ -924,7 +993,25 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
                   <div className="md:col-span-2 space-y-4">
                     <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">CEP</label>
                     <div className="relative">
-                        <input className={`w-full p-6 bg-neutral-50 border ${cepError ? 'border-red-200 bg-red-50/20' : 'border-neutral-100'} rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-mono text-lg tracking-widest`} placeholder="00000-000" maxLength={8} value={cep} onChange={(e) => handleCepChange(e.target.value)} />
+                        <input 
+                          className={`w-full p-6 bg-neutral-50 border ${cepError ? 'border-red-200 bg-red-50/20' : 'border-neutral-100'} rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-mono text-lg tracking-widest`} 
+                          placeholder="00000-000" 
+                          maxLength={9}
+                          value={cep} 
+                          onChange={(e) => handleCepChange(e.target.value)}
+                          onKeyDown={(e) => {
+                            // Allow backspace, delete, and arrow keys
+                            if (e.key === 'Backspace' || e.key === 'Delete' || e.key.startsWith('Arrow')) {
+                              return;
+                            }
+                            // Allow numbers
+                            if (e.key >= '0' && e.key <= '9') {
+                              return;
+                            }
+                            // Block other keys
+                            e.preventDefault();
+                          }}
+                        />
                         <div className="absolute right-6 top-1/2 -translate-y-1/2 text-neutral-300">{loadingCep ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}</div>
                     </div>
                     <div className="flex justify-between items-center">
@@ -937,8 +1024,8 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
                         <div className="bg-neutral-900 text-white p-8 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-8 shadow-2xl border border-white/10 overflow-hidden relative">
                             <div className="relative z-10 flex-1">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-white/40 block mb-2">Destino Identificado</span>
-                                <h4 className="text-xl font-black uppercase italic tracking-tight mb-1">{address.logradouro}</h4>
-                                <p className="text-xs text-white/60 font-medium uppercase tracking-widest">{address.bairro} — {address.localidade}, {address.uf}</p>
+                                <h4 className="text-xl font-black uppercase italic tracking-tight mb-1">{address.logradouro || 'Endereço não identificado'}</h4>
+                                <p className="text-xs text-white/60 font-medium uppercase tracking-widest">{address.bairro ? `${address.bairro} — ` : ''}{address.localidade}, {address.uf}</p>
                             </div>
                             <div ref={mapContainerRef} className="w-full md:w-48 h-48 rounded-[2rem] bg-white/5 border border-white/10 overflow-hidden relative shadow-inner">
                                 {(mapError || !mapboxLoaded) && (
@@ -958,8 +1045,46 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
                     </div>
                   )}
                   <div className="md:col-span-2 space-y-3"><label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Nome do Destinatário</label><input className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black uppercase" placeholder="Nome Completo" defaultValue={currentUser?.full_name} /></div>
+                  {(!currentUser?.phone || !currentUser.phone.trim()) && (
+                    <div className="md:col-span-2 space-y-3">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Telefone <span className="text-red-500">*</span></label>
+                      <input 
+                        className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black" 
+                        placeholder="(11) 99999-9999" 
+                        value={phone} 
+                        onChange={(e) => {
+                          const cleaned = e.target.value.replace(/\D/g, '');
+                          let formatted = cleaned;
+                          if (cleaned.length > 10) {
+                            formatted = `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 7)}-${cleaned.substring(7, 11)}`;
+                          } else if (cleaned.length > 6) {
+                            formatted = `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 6)}-${cleaned.substring(6)}`;
+                          } else if (cleaned.length > 2) {
+                            formatted = `(${cleaned.substring(0, 2)}) ${cleaned.substring(2)}`;
+                          } else if (cleaned.length > 0) {
+                            formatted = `(${cleaned}`;
+                          } else {
+                            formatted = '';
+                          }
+                          setPhone(formatted);
+                        }}
+                        maxLength={15}
+                      />
+                    </div>
+                  )}
                 </div>
-                <button onClick={() => address && setStep(2)} disabled={!address || !num || !bestInternalShipping} className="w-full md:w-auto px-16 py-8 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] transition-all disabled:opacity-20 active:scale-95">Confirmar e Pagar <ChevronRight className="w-4 h-4" /></button>
+                <button 
+                  onClick={() => address && setStep(2)} 
+                  disabled={
+                    !address || 
+                    !num || 
+                    !bestInternalShipping || 
+                    ((!currentUser?.phone || !currentUser.phone.trim()) && (!phone || phone.trim().length < 10))
+                  } 
+                  className="w-full md:w-auto px-16 py-8 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] transition-all disabled:opacity-20 active:scale-95"
+                >
+                  Confirmar e Pagar <ChevronRight className="w-4 h-4" />
+                </button>
               </section>
             )}
 
@@ -1269,7 +1394,15 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
                      
                      return (
                        <div key={idx} className="flex gap-4 items-start animate-in slide-in-from-right duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
-                          <div className="w-16 h-20 bg-white rounded-xl overflow-hidden flex-none border border-neutral-100 shadow-sm"><img src={item?.image || ''} className="w-full h-full object-cover" alt={getLoc(item?.name)} /></div>
+                          <div className="w-16 h-20 bg-white rounded-xl overflow-hidden flex-none border border-neutral-100 shadow-sm">
+                            <OptimizedImage 
+                              src={item?.image} 
+                              alt={getLoc(item?.name)} 
+                              size="thumbnail"
+                              objectFit="cover"
+                              className="w-full h-full"
+                            />
+                          </div>
                           <div className="flex-1 min-w-0">
                             <h5 className="text-[10px] font-black uppercase tracking-tight leading-tight mb-1 truncate">{getLoc(item?.name)}</h5>
                             <p className="text-[8px] text-neutral-400 uppercase font-bold tracking-widest">{getLoc(item?.color_name)} | {item?.size || 'N/A'}</p>

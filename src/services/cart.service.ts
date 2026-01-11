@@ -51,9 +51,12 @@ export class CartService {
       if (!variant) continue;
 
       if (item.quantity > variant.stock_quantity) {
+        const productName = typeof item.name === 'string' 
+          ? item.name 
+          : (item.name?.pt || item.name?.en || 'Produto');
         return { 
           valid: false, 
-          error: `Estoque insuficiente para o produto: ${typeof item.name === 'string' ? item.name : (item.name as any).pt}` 
+          error: `Estoque insuficiente para o produto: ${productName}` 
         };
       }
 

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ProductsApi } from '../api/products.api';
 import { OrdersApi } from '../api/orders.api';
 import { CouponsApi } from '../api/coupons.api';
@@ -6,8 +6,9 @@ import { CollectionsApi } from '../api/collections.api';
 import { BannersApi } from '../api/banners.api';
 import { StoreApi } from '../api/store.api';
 import { SuppliersApi } from '../api/suppliers.api';
-import type { Product, Coupon, Supplier, Order } from '../types';
+import type { Product, Coupon, Supplier, Order, ProductVariant } from '../types';
 import type { Locale } from '../i18n';
+import { OrderStatus } from '../constants/enums';
 
 interface EditingItem {
   type: string;
@@ -31,10 +32,10 @@ export function useAdminHandlers(
   const [deleteQueue, setDeleteQueue] = useState<Array<{ id: string; status: 'pending' | 'processing' | 'success' | 'failed'; error?: string }>>([]);
   const [confirmationText, setConfirmationText] = useState('');
 
-  const handleUpdateOrderStatus = useCallback(async (orderId: string, status: string, trackingCode?: string) => {
+  const handleUpdateOrderStatus = useCallback(async (orderId: string, status: OrderStatus, trackingCode?: string) => {
     try {
       const ordersApi = new OrdersApi();
-      const updatedOrder = await ordersApi.updateStatus(orderId, status, trackingCode);
+      const updatedOrder = await ordersApi.updateStatus(orderId, status as OrderStatus, trackingCode);
       if (setOrders) {
         setOrders(prev => prev.map(o => o.id === orderId ? updatedOrder : o));
       }
@@ -53,15 +54,15 @@ export function useAdminHandlers(
     try {
       const { type, data } = editingItem;
       const payload = { ...data as Record<string, unknown> };
-      const variants = (payload.variants as unknown[]) || [];
+      const variants = (payload.variants as ProductVariant[]) || [];
       delete payload.variants;
 
       if (type === 'product') {
         const productsApi = new ProductsApi();
         if ((data as Product).id) {
-          await productsApi.update((data as Product).id, { ...payload, variants });
+          await productsApi.update((data as Product).id, { ...payload, variants: variants as ProductVariant[] });
         } else {
-          await productsApi.create({ ...payload, variants });
+          await productsApi.create({ ...payload, variants: variants as ProductVariant[] });
         }
       } else if (type === 'collection') {
         const collectionsApi = new CollectionsApi();

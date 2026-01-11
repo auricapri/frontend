@@ -5,6 +5,7 @@ import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { ShippingOption } from '../../services/logistics.service';
 import { PaymentMethod } from '../../constants/enums';
+import { OptimizedImage } from '../ui';
 
 interface OrderSummaryProps {
   items: CartItem[];
@@ -50,7 +51,13 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
             style={{ animationDelay: `${idx * 100}ms` }}
           >
             <div className="w-20 h-24 bg-white rounded-2xl overflow-hidden flex-none border border-neutral-100 shadow-sm">
-              <img src={item?.image || ''} className="w-full h-full object-cover" alt={getLoc(item?.name)} />
+              <OptimizedImage 
+                src={item?.image} 
+                alt={getLoc(item?.name)} 
+                size="thumbnail"
+                objectFit="cover"
+                className="w-full h-full"
+              />
             </div>
             <div className="flex-1">
               <h5 className="text-[11px] font-black uppercase tracking-tight leading-tight mb-1">

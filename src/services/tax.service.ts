@@ -1,4 +1,5 @@
 import { supabase } from '../utils/supabase';
+import { logger } from '../utils/logger';
 import {
   BrazilianTaxRegime,
   TaxBreakdown,
@@ -201,7 +202,7 @@ export class TaxCalculationService {
         .select('*');
 
       if (error) {
-        console.error('Error loading ICMS rates:', error);
+        logger.error('Error loading ICMS rates', error);
         return;
       }
 
@@ -219,7 +220,7 @@ export class TaxCalculationService {
 
       this.cacheLoadedAt = Date.now();
     } catch (err) {
-      console.error('Failed to load ICMS rates:', err);
+      logger.error('Failed to load ICMS rates', err);
     }
   }
 
