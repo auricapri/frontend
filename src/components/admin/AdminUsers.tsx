@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { UserCog, ShieldCheck, Mail, Calendar, Eye, X, Package, Ban, AlertTriangle, Globe, Activity } from 'lucide-react';
+import { UserCog, ShieldCheck, Mail, Calendar, Eye, X, Package, Ban, AlertTriangle, Globe, Activity, Truck, Plus } from 'lucide-react';
 import { UserProfile, Order } from '../../types';
 import { supabase } from '../../utils/supabase';
 import { formatCurrency } from '../../utils/currency';
+import { UsersApi } from '../../api/users.api';
 
 interface AdminUsersProps {
   users: UserProfile[];
@@ -15,6 +16,9 @@ const AdminUsers: React.FC<AdminUsersProps> = ({ users: initialUsers }) => {
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [processingBan, setProcessingBan] = useState(false);
+  const [showCreateDelivery, setShowCreateDelivery] = useState(false);
+  const [creatingDelivery, setCreatingDelivery] = useState(false);
+  const [deliveryForm, setDeliveryForm] = useState({ email: '', password: '', fullName: '' });
 
   // Atualiza lista local se props mudarem
   useEffect(() => {
@@ -41,6 +45,32 @@ const AdminUsers: React.FC<AdminUsersProps> = ({ users: initialUsers }) => {
       console.error('Erro ao buscar pedidos:', err);
     } finally {
       setLoadingOrders(false);
+    }
+  };
+
+  const handleCreateDelivery = async () => {
+    if (!deliveryForm.email || !deliveryForm.password || !deliveryForm.fullName) {
+      alert('Preencha todos os campos');
+      return;
+    }
+
+    setCreatingDelivery(true);
+    try {
+      const usersApi = new UsersApi();
+      const newUser = await usersApi.createDeliveryUser({
+        email: deliveryForm.email,
+        password: deliveryForm.password,
+        full_name: deliveryForm.fullName
+      });
+      
+      setUsers(prev => [...prev, newUser as UserProfile]);
+      setShowCreateDelivery(false);
+      setDeliveryForm({ email: '', password: '', fullName: '' });
+      alert('Usuário delivery criado com sucesso! O usuário precisará configurar o MFA no primeiro login.');
+    } catch (err: any) {
+      alert(`Erro ao criar usuário: ${err.message}`);
+    } finally {
+      setCreatingDelivery(false);
     }
   };
 
@@ -81,6 +111,14 @@ const AdminUsers: React.FC<AdminUsersProps> = ({ users: initialUsers }) => {
           <h3 className="text-3xl font-black uppercase italic tracking-tighter">Comunidade & Acessos</h3>
           <p className="text-[10px] font-bold uppercase text-neutral-400 tracking-widest mt-1">Gerencie permissões e histórico de membros</p>
         </div>
+        <button
+          onClick={() => setShowCreateDelivery(true)}
+          className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl hover:bg-neutral-800 transition-all text-sm font-black uppercase tracking-widest"
+        >
+          <Plus className="w-4 h-4" />
+          <Truck className="w-4 h-4" />
+          <span className="hidden md:inline">Criar Delivery</span>
+        </button>
       </div>
 
       <div className="bg-neutral-50 rounded-[3rem] border border-neutral-100 overflow-hidden">
@@ -111,9 +149,18 @@ const AdminUsers: React.FC<AdminUsersProps> = ({ users: initialUsers }) => {
                 </td>
                 <td className="p-10">
                   <span className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border ${
-                    u.role === 'admin' ? 'bg-black text-white border-black' : 'bg-white text-neutral-500 border-neutral-100'
+                    u.role === 'admin' ? 'bg-black text-white border-black' :
+                    u.role === 'delivery' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                    'bg-white text-neutral-500 border-neutral-100'
                   }`}>
-                    {u.role}
+                    {u.role === 'delivery' ? (
+                      <span className="flex items-center gap-1">
+                        <Truck className="w-3 h-3" />
+                        {u.role}
+                      </span>
+                    ) : (
+                      u.role
+                    )}
                   </span>
                 </td>
                 <td className="p-10">
@@ -275,6 +322,87 @@ const AdminUsers: React.FC<AdminUsersProps> = ({ users: initialUsers }) => {
                   </div>
               </div>
            </div>
+        </div>
+      )}
+
+      {showCreateDelivery && (
+        <div className="fixed inset-0 z-[2000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-black uppercase tracking-tight">Criar Usuário Delivery</h3>
+              <button
+                onClick={() => {
+                  setShowCreateDelivery(false);
+                  setDeliveryForm({ email: '', password: '', fullName: '' });
+                }}
+                className="p-2 bg-neutral-50 rounded-full hover:bg-neutral-100 transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-neutral-600 mb-2">
+                  Nome Completo
+                </label>
+                <input
+                  type="text"
+                  value={deliveryForm.fullName}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, fullName: e.target.value })}
+                  className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                  placeholder="João Silva"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-neutral-600 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={deliveryForm.email}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, email: e.target.value })}
+                  className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                  placeholder="joao@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-neutral-600 mb-2">
+                  Senha Temporária
+                </label>
+                <input
+                  type="password"
+                  value={deliveryForm.password}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, password: e.target.value })}
+                  className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                  placeholder="••••••••"
+                />
+                <p className="text-xs text-neutral-400 mt-2">
+                  O usuário precisará configurar o MFA no primeiro login
+                </p>
+              </div>
+
+              <button
+                onClick={handleCreateDelivery}
+                disabled={creatingDelivery}
+                className="w-full py-4 bg-black text-white rounded-xl font-black uppercase tracking-widest hover:bg-neutral-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {creatingDelivery ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Criando...
+                  </>
+                ) : (
+                  <>
+                    <Truck className="w-4 h-4" />
+                    Criar Usuário
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

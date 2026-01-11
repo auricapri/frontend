@@ -356,6 +356,7 @@ export interface Order {
   logistics_metadata?: LogisticsMetadata;
   wishlist_slug?: string | null; // Slug of shared wishlist if purchased via wishlist
   gift_from_user_id?: string | null; // User who bought the gift
+  user_id?: string; // User who placed the order
 }
 
 export interface CartSession {
@@ -530,3 +531,69 @@ export interface DreamComment {
   content: string;
   created_at: string;
 }
+
+export interface OrderReview {
+  id: string;
+  order_id: string;
+  user_id: string;
+  user_name?: string;
+  rating: number;
+  comment: string | null;
+  helpful_count: number;
+  created_at: string;
+  updated_at: string;
+  media?: OrderReviewMedia[];
+  user_has_helped?: boolean;
+}
+
+export interface OrderReviewMedia {
+  id: string;
+  review_id: string;
+  media_url: string;
+  media_type: 'image' | 'video';
+  file_size: number;
+  file_name: string;
+  created_at: string;
+}
+
+export interface Supplier {
+  id: string;
+  store_name: string;
+  image_url?: string | null;
+  facade_image_url?: string | null;
+  instagram_url?: string | null;
+  facebook_url?: string | null;
+  tiktok_url?: string | null;
+  guarantees_stock: boolean;
+  address?: AddressData | null;
+  phone?: string | null;
+  email?: string | null;
+  comments?: string | null;
+  cnpj?: string | null;
+  contact_person?: string | null;
+  payment_terms?: string | null;
+  delivery_time?: string | null;
+  minimum_order_quantity?: number | null;
+  minimum_wholesale_value?: number | null;
+  website?: string | null;
+  notes?: string | null;
+  average_rating: number;
+  total_reviews: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SupplierReview {
+  id: string;
+  supplier_id: string;
+  user_id: string;
+  user_name?: string;
+  rating: number;
+  comment?: string | null;
+  helpful_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type { OrderEconomics } from './pricing.types';

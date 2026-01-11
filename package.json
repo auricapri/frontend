@@ -19,7 +19,9 @@
     "docs:complete": "playwright test --config=playwright.docs.config.ts tests/complete-navigation.spec.ts --headed",
     "docs:complete:headless": "playwright test --config=playwright.docs.config.ts tests/complete-navigation.spec.ts",
     "docs:user-flow": "playwright test --config=playwright.docs.config.ts tests/user-flow.spec.ts --headed",
-    "docs:all": "playwright test --config=playwright.docs.config.ts --headed"
+    "docs:all": "playwright test --config=playwright.docs.config.ts --headed",
+    "version:update": "node ../scripts/update-version.js --app=auricapri",
+    "version:watch": "node ../scripts/version-watcher.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

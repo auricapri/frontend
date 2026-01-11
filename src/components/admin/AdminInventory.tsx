@@ -1,18 +1,19 @@
 
 import React, { useState } from 'react';
-import { Plus, AlertTriangle, Trash2, CheckSquare, Square } from 'lucide-react';
-import { Product } from '../../types';
+import { Plus, AlertTriangle, Trash2, CheckSquare, Square, Store } from 'lucide-react';
+import { Product, Supplier } from '../../types';
 import { Locale } from '../../i18n';
 
 interface AdminInventoryProps {
   products: Product[];
+  suppliers?: Supplier[];
   onEdit: (product: Product) => void;
   onDelete: (ids: string[]) => void;
   onAdd: () => void;
   locale: Locale;
 }
 
-const AdminInventory: React.FC<AdminInventoryProps> = ({ products, onEdit, onDelete, onAdd, locale }) => {
+const AdminInventory: React.FC<AdminInventoryProps> = ({ products, suppliers = [], onEdit, onDelete, onAdd, locale }) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
@@ -177,6 +178,14 @@ const AdminInventory: React.FC<AdminInventoryProps> = ({ products, onEdit, onDel
               <p className="text-[9px] text-neutral-400 font-bold uppercase mt-1 tracking-widest">
                 SKU: {p.variants?.[0]?.sku || 'Sem SKUs'}
               </p>
+              {p.supplier_id && (
+                <div className="flex items-center gap-2 mt-2 text-[9px] text-neutral-500">
+                  <Store className="w-3 h-3" />
+                  <span className="font-bold uppercase">
+                    {suppliers.find(s => s.id === p.supplier_id)?.store_name || 'Fornecedor não encontrado'}
+                  </span>
+                </div>
+              )}
               
               {/* Delete button - appears on hover when not in selection mode */}
               {!isSelectionMode && (

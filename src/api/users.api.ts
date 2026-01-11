@@ -11,6 +11,19 @@ export class UsersApi {
     return apiClient.get<UserProfile[]>('/users');
   }
 
+  async getById(userId: string): Promise<UserProfile | null> {
+    return apiClient.get<UserProfile | null>(`/users/${userId}`);
+  }
+
+  async createDeliveryUser(userData: {
+    email: string;
+    password: string;
+    full_name: string;
+    phone?: string;
+  }): Promise<UserProfile> {
+    return apiClient.post<UserProfile>('/users/delivery', userData);
+  }
+
   async updateProfile(updates: Partial<UserProfile>): Promise<UserProfile> {
     return apiClient.put<UserProfile>('/users/profile', updates);
   }

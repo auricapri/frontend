@@ -77,12 +77,12 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
           return [{
             variant_id: variant.id,
             product_id: product.id,
-            name: product.name || {},
+            name: product.name || { en: '', pt: '' },
             image: (variant.variant_images && Array.isArray(variant.variant_images) && variant.variant_images.length > 0)
               ? variant.variant_images[0]
               : (product.base_images && Array.isArray(product.base_images) && product.base_images.length > 0 ? product.base_images[0] : ''),
             size: variant.size || 'N/A',
-            color_name: variant.color_name || {},
+            color_name: variant.color_name || { en: '', pt: '' },
             color_hex: variant.color_hex || '#000',
             price: calculatePrice(variant, userMode),
             quantity: 1,

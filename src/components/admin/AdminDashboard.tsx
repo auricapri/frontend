@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   LayoutDashboard, Box, Users, Settings, LogOut, 
   BarChart3, Tag, Layers, Image as ImageIcon, Ticket, Archive, BookOpen, Ruler, Lightbulb,
-  AlertTriangle, X, Loader2
+  AlertTriangle, X, Loader2, Store, Truck
 } from 'lucide-react';
 // Supabase is only used for auth.signOut() which is safe
 import { supabase } from '../../utils/supabase';
@@ -16,10 +16,11 @@ import { CollectionsApi } from '../../api/collections.api';
 import { AssetsApi } from '../../api/assets.api';
 import { GuidesApi } from '../../api/guides.api';
 import { BannersApi } from '../../api/banners.api';
+import { SuppliersApi } from '../../api/suppliers.api';
 import { Locale } from '../../i18n';
 import { 
   Product, Category, Collection, Banner, Coupon, Asset, 
-  StoreConfig, UserProfile, Order, GlobalFinancialSettings, SizeGuide 
+  StoreConfig, UserProfile, Order, GlobalFinancialSettings, SizeGuide, Supplier
 } from '../../types';
 
 import AdminHealth from './AdminHealth';
@@ -36,6 +37,9 @@ import AdminGuides from './AdminGuides';
 import AdminEditorModal from './AdminEditorModal';
 import AdminCouponEditor from './AdminCouponEditor';
 import AdminDreamBoard from './AdminDreamBoard';
+import AdminSuppliers from './AdminSuppliers';
+import AdminSupplierEditor from './AdminSupplierEditor';
+import AdminDelivery from './AdminDelivery';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -59,6 +63,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [sizeGuides, setSizeGuides] = useState<SizeGuide[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [config, setConfig] = useState<StoreConfig>({
     brand_name: '',
     about_us: { pt: '', en: '' },
@@ -79,6 +84,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   // Editor State
   const [editingItem, setEditingItem] = useState<{ type: string; data: any } | null>(null);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [showSupplierEditor, setShowSupplierEditor] = useState(false);
   
   // Delete confirmation state
   const [deleteConfirm, setDeleteConfirm] = useState<{ productIds: string[]; productNames: string[] } | null>(null);
@@ -98,6 +105,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       const assetsApi = new AssetsApi();
       const guidesApi = new GuidesApi();
       const bannersApi = new BannersApi();
+      const suppliersApi = new SuppliersApi();
 
       const [
         productsData,
@@ -109,14 +117,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
         ordersData,
         usersData,
         configData,
-        guidesData
+        guidesData,
+        suppliersData
       ] = await Promise.all([
-        productsApi.getAll().then(products => {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/af849f59-06a9-4c87-a481-c8690fe2a6dc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminDashboard.tsx:106',message:'fetchData - products loaded',data:{productsCount:products.length,productsWithVariants:products.filter(p=>p.variants&&p.variants.length>0).length,allVariantsCount:products.reduce((sum,p)=>(sum+(p.variants?.length||0)),0),sampleProductVariants:products.slice(0,3).map(p=>({id:p.id,variantsCount:p.variants?.length||0,variantIds:p.variants?.map(v=>v.id)||[]}))},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-          // #endregion
-          return products;
-        }),
+        productsApi.getAll(),
         storeApi.getAllCategories(),
         collectionsApi.getAll(),
         bannersApi.getAll(),
@@ -125,7 +129,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
         ordersApi.getAllAdmin(),
         usersApi.getAll(),
         storeApi.getConfig(),
-        guidesApi.getAll()
+        guidesApi.getAll(),
+        suppliersApi.getAll()
       ]);
 
       setProducts(productsData);
@@ -138,6 +143,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       setUsers(usersData);
       if (configData) setConfig(configData);
       setSizeGuides(guidesData);
+      setSuppliers(suppliersData);
 
     } catch (e) {
       console.error("Admin Fetch Error", e);
@@ -167,9 +173,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
 
     try {
       const { type, data } = editingItem;
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/af849f59-06a9-4c87-a481-c8690fe2a6dc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminDashboard.tsx:151',message:'handleSaveItem - entry',data:{type,hasData:!!data,dataId:data?.id,hasVariants:!!data?.variants,variantsCount:data?.variants?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       
       const payload = { ...data };
       const variants = payload.variants;
@@ -177,36 +180,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
 
       if (type === 'product') {
         const productsApi = new ProductsApi();
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/af849f59-06a9-4c87-a481-c8690fe2a6dc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminDashboard.tsx:161',message:'handleSaveItem - before product save',data:{productId:data.id,hasVariants:!!variants,variantsCount:variants?.length||0,variantIds:variants?.map(v=>({id:v.id,sku:v.sku,product_id:v.product_id}))||[],payloadKeys:Object.keys(payload)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
         
         if (data.id) {
-          // Include variants in update payload
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/af849f59-06a9-4c87-a481-c8690fe2a6dc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminDashboard.tsx:172',message:'handleSaveItem - calling productsApi.update',data:{productId:data.id,variantsPayload:variants?.map(v=>({id:v.id,sku:v.sku,product_id:v.product_id,hasAllRequiredFields:!!(v.id&&v.sku&&v.product_id)}))||[]},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-          // #endregion
           let updateResult;
           try {
             updateResult = await productsApi.update(data.id, { ...payload, variants });
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/af849f59-06a9-4c87-a481-c8690fe2a6dc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminDashboard.tsx:177',message:'handleSaveItem - product update success',data:{productId:data.id,returnedVariantsCount:updateResult?.variants?.length||0,returnedVariantIds:updateResult?.variants?.map(v=>v.id)||[]},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-            // #endregion
           } catch (updateError: any) {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/af849f59-06a9-4c87-a481-c8690fe2a6dc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminDashboard.tsx:180',message:'handleSaveItem - product update error',data:{productId:data.id,errorMessage:updateError?.message,errorStack:updateError?.stack},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-            // #endregion
             throw updateError;
           }
         } else {
-          // Include variants in create payload
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/af849f59-06a9-4c87-a481-c8690fe2a6dc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminDashboard.tsx:186',message:'handleSaveItem - calling productsApi.create',data:{variantsPayload:variants?.map(v=>({id:v.id,sku:v.sku,product_id:v.product_id}))||[]},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-          // #endregion
           await productsApi.create({ ...payload, variants });
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/af849f59-06a9-4c87-a481-c8690fe2a6dc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminDashboard.tsx:189',message:'handleSaveItem - product create success',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-          // #endregion
         }
       } else if (type === 'collection') {
         const collectionsApi = new CollectionsApi();
@@ -224,13 +207,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
         }
       }
 
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/af849f59-06a9-4c87-a481-c8690fe2a6dc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminDashboard.tsx:200',message:'handleSaveItem - before fetchData',data:{productId:type==='product'?data.id:null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       await fetchData();
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/af849f59-06a9-4c87-a481-c8690fe2a6dc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminDashboard.tsx:203',message:'handleSaveItem - after fetchData',data:{productId:type==='product'?data.id:null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       onProductChange();
       setEditingItem(null);
     } catch (e: any) {
@@ -342,54 +319,104 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   return (
     <div className="flex h-screen w-full bg-neutral-100 font-sans text-neutral-900">
       {/* Sidebar */}
-      <aside className="w-20 md:w-64 bg-black text-white flex flex-col justify-between py-8 z-50 transition-all duration-300">
-        <div className="flex flex-col items-center md:items-start md:px-8 space-y-12">
+      <aside className="w-20 md:w-64 bg-black text-white flex flex-col py-8 z-50 transition-all duration-300">
+        <div className="flex flex-col items-center md:items-start md:px-8 space-y-6 flex-shrink-0">
            <div className="text-2xl font-black uppercase tracking-tighter hidden md:block">AURICAPRI<span className="text-neutral-500">.OS</span></div>
            <div className="md:hidden font-black text-xl">OS</div>
            
-           <nav className="flex flex-col gap-2 w-full">
-              {[
-                { id: 'health', icon: BarChart3, label: 'Health' },
-                { id: 'dream', icon: Lightbulb, label: 'Dream Board' },
-                { id: 'orders', icon: Box, label: 'Pedidos' },
-                { id: 'inventory', icon: Tag, label: 'Catálogo' },
-                { id: 'taxonomy', icon: Layers, label: 'Taxonomia' },
-                { id: 'guides', icon: Ruler, label: 'Guias' },
-                { id: 'marketing', icon: ImageIcon, label: 'Marketing' },
-                { id: 'coupons', icon: Ticket, label: 'Cupons' },
-                { id: 'assets', icon: Archive, label: 'Insumos' },
-                { id: 'about', icon: BookOpen, label: 'Sobre Nós' },
-                { id: 'users', icon: Users, label: 'Usuários' },
-                { id: 'system', icon: Settings, label: 'Sistema' },
-              ].map(item => (
-                <button 
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-4 p-3 rounded-xl transition-all ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
-                >
-                   <item.icon className="w-5 h-5" />
-                   <span className="hidden md:block text-[10px] uppercase tracking-widest">{item.label}</span>
-                </button>
-              ))}
+           <nav className="flex flex-col gap-1 w-full overflow-y-auto flex-1 min-h-0">
+              <div className="space-y-1">
+                <div className="hidden md:block text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 mb-2">Principal</div>
+                {[
+                  { id: 'health', icon: BarChart3, label: 'Health' },
+                  { id: 'dream', icon: Lightbulb, label: 'Dream Board' },
+                  { id: 'orders', icon: Box, label: 'Pedidos' },
+                  { id: 'delivery', icon: Truck, label: 'Delivery' },
+                ].map(item => (
+                  <button 
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
+                  >
+                     <item.icon className="w-4 h-4 flex-shrink-0" />
+                     <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-1 mt-4">
+                <div className="hidden md:block text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 mb-2">Produtos</div>
+                {[
+                  { id: 'inventory', icon: Tag, label: 'Catálogo' },
+                  { id: 'suppliers', icon: Store, label: 'Fornecedores' },
+                  { id: 'taxonomy', icon: Layers, label: 'Taxonomia' },
+                  { id: 'guides', icon: Ruler, label: 'Guias' },
+                ].map(item => (
+                  <button 
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
+                  >
+                     <item.icon className="w-4 h-4 flex-shrink-0" />
+                     <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-1 mt-4">
+                <div className="hidden md:block text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 mb-2">Marketing</div>
+                {[
+                  { id: 'marketing', icon: ImageIcon, label: 'Marketing' },
+                  { id: 'coupons', icon: Ticket, label: 'Cupons' },
+                  { id: 'assets', icon: Archive, label: 'Insumos' },
+                ].map(item => (
+                  <button 
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
+                  >
+                     <item.icon className="w-4 h-4 flex-shrink-0" />
+                     <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-1 mt-4">
+                <div className="hidden md:block text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 mb-2">Sistema</div>
+                {[
+                  { id: 'about', icon: BookOpen, label: 'Sobre Nós' },
+                  { id: 'users', icon: Users, label: 'Usuários' },
+                  { id: 'system', icon: Settings, label: 'Sistema' },
+                ].map(item => (
+                  <button 
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
+                  >
+                     <item.icon className="w-4 h-4 flex-shrink-0" />
+                     <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
+                  </button>
+                ))}
+              </div>
            </nav>
         </div>
         
-        <div className="px-4 md:px-8">
-           <button onClick={onLogout} className="flex items-center gap-4 text-red-500 hover:text-red-400 transition-colors p-3">
-              <LogOut className="w-5 h-5" />
+        <div className="px-4 md:px-8 mt-auto flex-shrink-0">
+           <button onClick={onLogout} className="flex items-center gap-4 text-red-500 hover:text-red-400 transition-colors p-2.5 w-full">
+              <LogOut className="w-4 h-4 flex-shrink-0" />
               <span className="hidden md:block text-[10px] uppercase tracking-widest font-bold">Sair</span>
            </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden relative flex flex-col">
+      <main className="flex-1 overflow-hidden relative flex flex-col min-h-0">
          {isLoading ? (
             <div className="flex items-center justify-center h-full">
                <div className="animate-spin w-8 h-8 border-2 border-black border-t-transparent rounded-full" />
             </div>
          ) : (
-            <div className="flex-1 overflow-y-auto p-8 md:p-12">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 md:p-12 min-h-0">
                {activeTab === 'health' && (
                  <AdminHealth 
                    products={products} 
@@ -409,11 +436,34 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                )}
                {activeTab === 'inventory' && (
                  <AdminInventory 
-                   products={products} 
+                   products={products}
+                   suppliers={suppliers}
                    onEdit={(p) => setEditingItem({ type: 'product', data: p })} 
                    onDelete={(ids) => handleDeleteProduct(ids)} 
                    onAdd={() => setEditingItem({ type: 'product', data: { name: { pt: '' }, variants: [], is_active: true } })} 
                    locale={locale}
+                 />
+               )}
+               {activeTab === 'suppliers' && (
+                 <AdminSuppliers
+                   suppliers={suppliers}
+                   onEdit={(s) => {
+                     setEditingSupplier(s);
+                     setShowSupplierEditor(true);
+                   }}
+                   onDelete={async (id) => {
+                     try {
+                       const suppliersApi = new SuppliersApi();
+                       await suppliersApi.delete(id);
+                       await fetchData();
+                     } catch (e: any) {
+                       alert(e.message);
+                     }
+                   }}
+                   onAdd={() => {
+                     setEditingSupplier(null);
+                     setShowSupplierEditor(true);
+                   }}
                  />
                )}
                {activeTab === 'orders' && (
@@ -423,6 +473,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                    assets={assets} 
                    onUpdateStatus={handleUpdateOrderStatus} 
                    locale={locale} 
+                 />
+               )}
+               {activeTab === 'delivery' && (
+                 <AdminDelivery 
+                   orders={orders}
+                   suppliers={suppliers}
+                   locale={locale}
                  />
                )}
                {activeTab === 'taxonomy' && (
@@ -512,7 +569,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
            collections={collections} 
            products={products} 
            assets={assets} 
-           sizeGuides={sizeGuides} // Pass Size Guides to Editor
+           sizeGuides={sizeGuides}
+           suppliers={suppliers}
            globalConfig={config.financial_settings}
            onClose={() => setEditingItem(null)} 
            onSave={handleSaveItem} 
@@ -532,6 +590,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
            onClose={() => setEditingCoupon(null)} 
            onSave={handleSaveCoupon} 
            locale={locale} 
+         />
+      )}
+
+      {showSupplierEditor && (
+         <AdminSupplierEditor
+           supplier={editingSupplier}
+           onClose={() => {
+             setShowSupplierEditor(false);
+             setEditingSupplier(null);
+           }}
+           onSave={async (supplierData) => {
+             try {
+               const suppliersApi = new SuppliersApi();
+               if (editingSupplier?.id) {
+                 await suppliersApi.update(editingSupplier.id, supplierData);
+               } else {
+                 await suppliersApi.create(supplierData);
+               }
+               await fetchData();
+               setShowSupplierEditor(false);
+               setEditingSupplier(null);
+             } catch (e: any) {
+               console.error('[AdminDashboard] Error saving supplier:', e);
+               throw e;
+             }
+           }}
          />
       )}
 

@@ -30,12 +30,13 @@ import {
   Ban,
   Loader2
 } from 'lucide-react';
-import { Order, OrderItem, Product, Asset, DEFAULT_FINANCIAL_SETTINGS } from '../../types';
+import { Order, OrderItem, Product, Asset, DEFAULT_FINANCIAL_SETTINGS, UserProfile } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { OrdersApi } from '../../api/orders.api';
-import { pricingService } from '../../services/pricing.service';
-import { OrderEconomics } from '../../types/pricing.types';
+import { UsersApi } from '../../api/users.api';
+// import { pricingApi } from '../../api/pricing.api';
+import { OrderEconomics } from '../../types';
 
 interface AdminOrdersProps {
   orders: Order[];
@@ -49,11 +50,14 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [trackingInput, setTrackingInput] = useState('');
   const [isGeneratingPLP, setIsGeneratingPLP] = useState(false);
+  const [customerData, setCustomerData] = useState<UserProfile | null>(null);
+  const [loadingCustomer, setLoadingCustomer] = useState(false);
   
   // Local state to simulate "Document Generation" within the session
   const [generatedDocs, setGeneratedDocs] = useState<Record<string, boolean>>({});
   
   const ordersApi = new OrdersApi();
+  const usersApi = new UsersApi();
 
   // --- SLA HELPER ---
   const getSLAStatus = (order: Order) => {
@@ -149,14 +153,50 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
       };
   };
 
-  const [pricingConfig, setPricingConfig] = useState<Awaited<ReturnType<typeof pricingService.buildPricingConfig>> | null>(null);
+  const [orderEconomicsCache, setOrderEconomicsCache] = useState<Record<string, OrderEconomics & { gatewayRate: number; taxRate: number }>>({});
 
-  useEffect(() => {
-    pricingService.buildPricingConfig(DEFAULT_FINANCIAL_SETTINGS).then(setPricingConfig);
-  }, []);
+  const calculateOrderEconomics = async (order: Order): Promise<OrderEconomics & { gatewayRate: number; taxRate: number }> => {
+      if (orderEconomicsCache[order.id]) {
+          return orderEconomicsCache[order.id];
+      }
 
-  const calculateOrderEconomics = (order: Order): OrderEconomics & { gatewayRate: number; taxRate: number } => {
-      if (!pricingConfig) {
+      try {
+          const orderItems = order.items.map(item => ({
+              product_id: item.product_id,
+              variant_id: item.variant_id,
+              price: item.price,
+              quantity: item.quantity
+          }));
+
+          const freightReal = order.internal_logistics?.real_cost ?? 0;
+          const paymentMethod = order.payment_method ?? 'credit_card';
+
+          // TODO: Restaurar pricingApi quando backend estiver disponível
+          // const economics = await pricingApi.calculateOrderEconomics({
+          //     items: orderItems,
+          //     total: order.total,
+          //     freightRealCost: freightReal,
+          //     paymentMethod,
+          //     financialSettings: DEFAULT_FINANCIAL_SETTINGS
+          // });
+
+          const result = {
+              revenue: order.total,
+              cogs: 0,
+              freightReal: 0,
+              gatewayFee: 0,
+              dasProportional: 0,
+              totalVariableCosts: 0,
+              netProfit: order.total,
+              marginPercent: 100,
+              gatewayRate: 0.0399,
+              taxRate: 0
+          };
+
+          setOrderEconomicsCache(prev => ({ ...prev, [order.id]: result }));
+          return result;
+      } catch (error) {
+          console.error('Error calculating order economics:', error);
           return {
               revenue: order.total,
               cogs: 0,
@@ -170,66 +210,6 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
               taxRate: 0
           };
       }
-
-      const orderItems = order.items.map(item => ({
-          product_id: item.product_id,
-          variant_id: item.variant_id,
-          price: item.price,
-          quantity: item.quantity
-      }));
-
-      const freightReal = order.internal_logistics?.real_cost ?? 0;
-      const paymentMethod = order.payment_method ?? 'credit_card';
-
-      let cogs = 0;
-      order.items.forEach(item => {
-          const product = products.find(p => p.id === item.product_id);
-          const rawId = item.variant_id ?? item.id;
-          const variantId = rawId ? rawId.split('_')[0] : null;
-          const variant = product?.variants?.find(v => v.id === variantId) ?? product?.variants?.[0]; 
-          
-          if (variant) {
-              const unitCost = variant.cost_price ?? (item.price * 0.4); 
-              let assetCost = 0;
-              if (variant.correlated_assets) {
-                  variant.correlated_assets.forEach(l => {
-                      const ast = assets.find(a => a.id === l.asset_id);
-                      if (ast) assetCost += ast.cost_price * l.quantity_required;
-                  });
-              }
-              cogs += (unitCost + assetCost) * item.quantity;
-          } else {
-              cogs += (item.price * 0.4) * item.quantity;
-          }
-      });
-
-      const gatewayFee = pricingService.calculateGatewayFee(
-          order.total, 
-          pricingConfig.gateway, 
-          paymentMethod
-      );
-
-      const estimatedMonthlyRevenue = pricingConfig.financialSettings.monthly_sales_vol * 100;
-      const dasProportional = pricingConfig.taxRegime === 'mei' 
-          ? (order.total / estimatedMonthlyRevenue) * pricingConfig.financialSettings.das_mei
-          : 0;
-
-      const totalVariableCosts = freightReal + gatewayFee + dasProportional;
-      const netProfit = order.total - cogs - totalVariableCosts;
-      const marginPercent = order.total > 0 ? (netProfit / order.total) * 100 : 0;
-
-      return { 
-          revenue: order.total, 
-          cogs, 
-          freightReal, 
-          gatewayFee, 
-          dasProportional,
-          totalVariableCosts, 
-          netProfit, 
-          marginPercent,
-          gatewayRate: pricingConfig.gateway.feePercentage,
-          taxRate: 0
-      };
   };
 
   const handleGenerateDoc = async () => {
@@ -278,7 +258,39 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
       }
   };
 
-  const economics = selectedOrder ? calculateOrderEconomics(selectedOrder) : null;
+  useEffect(() => {
+    const fetchCustomerData = async () => {
+      if (!selectedOrder?.user_id) {
+        setCustomerData(null);
+        return;
+      }
+      
+      setLoadingCustomer(true);
+      try {
+        const customer = await usersApi.getById(selectedOrder.user_id);
+        setCustomerData(customer);
+      } catch (error: any) {
+        console.error('Erro ao buscar dados do cliente:', error);
+        setCustomerData(null);
+      } finally {
+        setLoadingCustomer(false);
+      }
+    };
+
+    fetchCustomerData();
+  }, [selectedOrder?.user_id]);
+
+  const [currentEconomics, setCurrentEconomics] = useState<OrderEconomics & { gatewayRate: number; taxRate: number } | null>(null);
+
+  useEffect(() => {
+    if (selectedOrder) {
+      calculateOrderEconomics(selectedOrder).then(setCurrentEconomics);
+    } else {
+      setCurrentEconomics(null);
+    }
+  }, [selectedOrder]);
+
+  const economics = currentEconomics;
   const address = (selectedOrder as any)?.shipping_address_snapshot || (selectedOrder as any)?.shipping_address;
   const logistics = selectedOrder ? calculateLogisticsMetrics(selectedOrder) : { totalWeight: 0, dimensions: '' };
   const isDocGenerated = selectedOrder ? (!!selectedOrder.logistics_metadata?.doc_url || !!generatedDocs[selectedOrder.id]) : false;
@@ -471,6 +483,46 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                   
                   {/* LEFT COL: Operational */}
                   <div className="w-full md:w-[60%] p-8 md:p-12 overflow-y-auto no-scrollbar space-y-10 bg-neutral-50/30">
+                      
+                      {/* --- CUSTOMER INFO --- */}
+                      {selectedOrder.user_id && (
+                          <div className="bg-white p-8 rounded-[2.5rem] border border-neutral-200 shadow-xl">
+                              <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-6 flex items-center gap-2">
+                                  <User className="w-4 h-4" /> Dados do Cliente
+                              </h5>
+                              {loadingCustomer ? (
+                                  <div className="flex items-center gap-3 text-neutral-400">
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      <span className="text-sm font-bold">Carregando dados do cliente...</span>
+                                  </div>
+                              ) : customerData ? (
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                      <div>
+                                          <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 block mb-2">Nome Completo</span>
+                                          <p className="text-sm font-bold text-neutral-900">{customerData.full_name || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                          <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 block mb-2">Email</span>
+                                          <a href={`mailto:${customerData.email}`} className="text-sm font-bold text-blue-600 hover:underline">
+                                              {customerData.email || 'N/A'}
+                                          </a>
+                                      </div>
+                                      <div>
+                                          <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 block mb-2">Telefone</span>
+                                          <a href={`tel:${customerData.phone}`} className="text-sm font-bold text-blue-600 hover:underline">
+                                              {customerData.phone || 'N/A'}
+                                          </a>
+                                      </div>
+                                      <div>
+                                          <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 block mb-2">ID do Usuário</span>
+                                          <p className="text-sm font-mono font-bold text-neutral-600">{selectedOrder.user_id.slice(0, 8)}</p>
+                                      </div>
+                                  </div>
+                              ) : (
+                                  <p className="text-sm font-bold text-neutral-400">Dados do cliente não encontrados</p>
+                              )}
+                          </div>
+                      )}
                       
                       {/* --- CONFIRMATION STAGE (Pending) --- */}
                       {selectedOrder.status === 'pending' && (

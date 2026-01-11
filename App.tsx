@@ -697,7 +697,7 @@ export const App: React.FC = () => {
         id="main-scroll-container"
         ref={mainRef} 
         onScroll={handleScroll}
-        className={`h-full w-full overflow-y-auto overflow-x-hidden no-scrollbar antialiased relative pt-12`}
+        className={`h-full w-full overflow-y-auto overflow-x-hidden no-scrollbar antialiased relative ${currentView === 'home' ? 'pt-0' : 'pt-12'}`}
       >
         {currentView === 'home' && (
           <div className="min-h-full flex flex-col">

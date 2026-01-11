@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, CreditCard, Lock, MapPin, Mail, Phone, FileText, RefreshCw, Truck } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { StoreConfig } from '../../types';
+import { getVersion } from '../../utils/version';
 
 interface FooterProps {
   t: (key: string) => string;
@@ -21,6 +22,11 @@ const Footer: React.FC<FooterProps> = ({
   onOpenLegal, 
   onNavigate 
 }) => {
+  const [version, setVersion] = useState<string>('');
+
+  useEffect(() => {
+    getVersion().then(setVersion);
+  }, []);
   
   const handleScrollToContact = () => {
     const el = document.getElementById('footer-contact');
@@ -157,6 +163,11 @@ const Footer: React.FC<FooterProps> = ({
               <button onClick={() => onOpenLegal('terms')} className="hover:text-white transition-colors font-bold uppercase">{t('footer.terms')}</button>
             </div>
         </div>
+        {version && (
+          <div className="text-[9px] text-neutral-600 mt-2 md:mt-0">
+            v.{version}
+          </div>
+        )}
       </div>
     </footer>
   );

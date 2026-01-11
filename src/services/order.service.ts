@@ -36,24 +36,19 @@ export class OrderService {
         is_default: isFirstAddress 
       };
       
-      const { data: addrData } = await this.usersRepo.createAddress(newAddrPayload);
-      if (addrData && isFirstAddress) {
-        await this.usersRepo.setDefaultAddress(userId, addrData.id);
+      const addrData = await this.usersRepo.createAddress(newAddrPayload);
+      if (addrData && addrData.id && isFirstAddress) {
+        await this.usersRepo.setDefaultAddress(addrData.id);
       }
     }
 
     const order = await this.ordersRepo.create({
-      user_id: userId,
       items,
+      addressData,
+      logisticsInfo,
+      paymentMethod,
       subtotal,
-      total_amount: finalAmount,
-      discount_amount: discountAmount,
-      shipping_cost: 0,
-      tax_amount: 0,
-      status: 'confirmed',
-      payment_method: paymentMethod,
-      shipping_address_snapshot: addressData,
-      internal_logistics: logisticsInfo
+      finalAmount
     });
 
     return order;
