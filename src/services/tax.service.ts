@@ -16,11 +16,37 @@ interface TaxCalculationInput {
   monthlyRevenue?: number;
 }
 
+/**
+ * Serviço responsável pelo cálculo de impostos brasileiros.
+ * 
+ * Calcula impostos baseado no regime tributário (MEI, Simples, Presumido, Real)
+ * e inclui: DAS, ICMS, PIS, COFINS, IRPJ, CSLL.
+ * 
+ * Usa cache para taxas de ICMS com TTL de 1 hora.
+ * 
+ * @example
+ * ```ts
+ * const service = new TaxCalculationService();
+ * const breakdown = await service.calculateTaxes({
+ *   revenue: 1000,
+ *   regime: 'mei',
+ *   originState: 'SP',
+ *   destinationState: 'RJ',
+ *   monthlyRevenue: 5000
+ * });
+ * ```
+ */
 export class TaxCalculationService {
   private icmsRatesCache: Map<string, ICMSRate> = new Map();
   private cacheLoadedAt: number = 0;
   private readonly CACHE_TTL_MS = 3600000;
 
+  /**
+   * Calcula todos os impostos aplicáveis baseado no regime tributário.
+   * 
+   * @param input - Dados para cálculo (receita, regime, estados, receita mensal)
+   * @returns Breakdown completo de impostos
+   */
   async calculateTaxes(input: TaxCalculationInput): Promise<TaxBreakdown> {
     const { revenue, regime, originState, destinationState, monthlyRevenue } = input;
 
@@ -140,6 +166,15 @@ export class TaxCalculationService {
     };
   }
 
+  /**
+   * Busca a taxa de ICMS entre dois estados.
+   * 
+   * Usa cache e carrega do banco se necessário. Retorna taxa padrão se não encontrar.
+   * 
+   * @param originState - Estado de origem
+   * @param destinationState - Estado de destino
+   * @returns Taxa de ICMS (interna ou interestadual)
+   */
   async getICMSRate(originState: BrazilianState, destinationState: BrazilianState): Promise<ICMSRate> {
     const cacheKey = `${originState}-${destinationState}`;
 
@@ -201,6 +236,14 @@ export class TaxCalculationService {
     };
   }
 
+  /**
+   * Calcula o DAS proporcional para um pedido no regime MEI.
+   * 
+   * @param orderRevenue - Receita do pedido
+   * @param monthlyRevenue - Receita mensal estimada
+   * @param dasFixed - Valor fixo do DAS (padrão: MEI_DAS_COMMERCE)
+   * @returns DAS proporcional calculado
+   */
   calculateDASProportional(
     orderRevenue: number,
     monthlyRevenue: number,
@@ -210,10 +253,21 @@ export class TaxCalculationService {
     return (orderRevenue / monthlyRevenue) * dasFixed;
   }
 
+  /**
+   * Verifica se a receita mensal está dentro do limite do MEI.
+   * 
+   * @param monthlyRevenue - Receita mensal
+   * @returns true se está dentro do limite
+   */
   isWithinMEILimit(monthlyRevenue: number): boolean {
     return monthlyRevenue <= MEI_MONTHLY_LIMIT;
   }
 
+  /**
+   * Retorna o limite anual do MEI.
+   * 
+   * @returns Limite anual em reais
+   */
   getAnnualMEILimit(): number {
     return MEI_MONTHLY_LIMIT * 12;
   }

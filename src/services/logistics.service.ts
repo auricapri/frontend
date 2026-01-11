@@ -47,10 +47,34 @@ const FREIGHT_TABLE: FreightTableEntry[] = [
 
 const ORIGIN_CEP = '01310100';
 
+/**
+ * Serviço responsável por cálculos e consultas de logística.
+ * 
+ * Gerencia:
+ * - Consulta de endereços via ViaCEP
+ * - Cálculo de frete baseado em tabela ou cache
+ * - Cotações de transporte
+ * - Cálculo de peso volumétrico
+ * 
+ * Usa cache com TTL de 1 hora para cotações de frete.
+ * 
+ * @example
+ * ```ts
+ * const service = new LogisticsService();
+ * const address = await service.fetchAddressByCep('01310100');
+ * const shipping = await service.calculateShipping('01310100', address);
+ * ```
+ */
 export class LogisticsService {
   private quoteCache: Map<string, { quotes: FreightQuote[], expiresAt: number }> = new Map();
   private readonly CACHE_TTL_MS = 3600000;
 
+  /**
+   * Busca dados de endereço via API ViaCEP.
+   * 
+   * @param cep - CEP a ser consultado (aceita com ou sem formatação)
+   * @returns Dados do endereço ou null se não encontrado
+   */
   async fetchAddressByCep(cep: string): Promise<ViaCepResponse | null> {
     const cleanCep = cep.replace(/\D/g, '');
     
@@ -78,6 +102,15 @@ export class LogisticsService {
     }
   }
 
+  /**
+   * Calcula informações de frete para um CEP de destino.
+   * 
+   * Retorna a opção mais barata disponível. Usa cache e tabela de frete como fallback.
+   * 
+   * @param cep - CEP de destino
+   * @param addressData - Dados do endereço (opcional, pode ser usado para otimizações)
+   * @returns Informações de logística com transportadora selecionada
+   */
   async calculateShipping(cep: string, addressData?: AddressData): Promise<InternalLogisticsInfo> {
     const quotes = await this.getFreightQuotes({
       originCep: ORIGIN_CEP,
@@ -105,6 +138,13 @@ export class LogisticsService {
     } as InternalLogisticsInfo;
   }
 
+  /**
+   * Calcula todas as opções de frete disponíveis para um CEP.
+   * 
+   * @param cep - CEP de destino
+   * @param addressData - Dados do endereço (opcional)
+   * @returns Lista de opções de frete disponíveis
+   */
   async calculateShippingOptions(cep: string, addressData?: AddressData): Promise<ShippingOption[]> {
     const quotes = await this.getFreightQuotes({
       originCep: ORIGIN_CEP,
@@ -277,6 +317,12 @@ export class LogisticsService {
     return null;
   }
 
+  /**
+   * Determina o estado brasileiro baseado no prefixo do CEP.
+   * 
+   * @param cep - CEP a ser analisado
+   * @returns Sigla do estado (ex: 'SP', 'RJ')
+   */
   getStateFromCep(cep: string): string {
     const cleanCep = cep.replace(/\D/g, '');
     const prefix = parseInt(cleanCep.substring(0, 2), 10);
@@ -308,10 +354,31 @@ export class LogisticsService {
     return 'SP';
   }
 
+  /**
+   * Calcula o peso volumétrico de uma encomenda.
+   * 
+   * Fórmula: (comprimento × largura × altura) / 6000
+   * 
+   * @param lengthCm - Comprimento em centímetros
+   * @param widthCm - Largura em centímetros
+   * @param heightCm - Altura em centímetros
+   * @returns Peso volumétrico em kg
+   */
   calculateVolumetricWeight(lengthCm: number, widthCm: number, heightCm: number): number {
     return (lengthCm * widthCm * heightCm) / 6000;
   }
 
+  /**
+   * Calcula o peso cobrável (maior entre peso real e volumétrico).
+   * 
+   * Transportadoras cobram pelo maior entre peso real e volumétrico.
+   * 
+   * @param realWeightKg - Peso real em kg
+   * @param lengthCm - Comprimento em centímetros
+   * @param widthCm - Largura em centímetros
+   * @param heightCm - Altura em centímetros
+   * @returns Peso cobrável em kg
+   */
   getBillableWeight(realWeightKg: number, lengthCm: number, widthCm: number, heightCm: number): number {
     const volumetricWeight = this.calculateVolumetricWeight(lengthCm, widthCm, heightCm);
     return Math.max(realWeightKg, volumetricWeight);
