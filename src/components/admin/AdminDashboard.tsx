@@ -1,14 +1,10 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { useAdminData } from '../../hooks/useAdminData';
-import { useAdminHandlers } from '../../hooks/useAdminHandlers';
-import { 
-  LayoutDashboard, Box, Users, Settings, LogOut, 
+import { Box, Users, Settings, LogOut, 
   BarChart3, Tag, Layers, Image as ImageIcon, Ticket, Archive, BookOpen, Ruler, Lightbulb,
   AlertTriangle, X, Loader2, Store, Truck
 } from 'lucide-react';
 // Supabase is only used for auth.signOut() which is safe
-import { supabase } from '../../utils/supabase';
 import { ProductsApi } from '../../api/products.api';
 import { OrdersApi } from '../../api/orders.api';
 import { UsersApi } from '../../api/users.api';
@@ -44,6 +40,8 @@ import AdminDreamBoard from './AdminDreamBoard';
 import AdminSuppliers from './AdminSuppliers';
 import AdminSupplierEditor from './AdminSupplierEditor';
 import AdminDelivery from './AdminDelivery';
+import AdminCampaignEditor from './AdminCampaignEditor';
+import { marketingApi, Campaign } from '../../api/marketing.api';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -54,7 +52,9 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, onProductChange }) => {
   const [activeTab, setActiveTab] = useState('health');
+  const [marketingSubTab, setMarketingSubTab] = useState<'banners' | 'campaigns' | 'users' | 'analytics'>('banners');
   const [isLoading, setIsLoading] = useState(true);
+  const [, setIsRefreshing] = useState(false);
   const [editLocale, setEditLocale] = useState<Locale>(locale);
 
   // Data State
@@ -63,6 +63,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   const [collections, setCollections] = useState<Collection[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -90,6 +91,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [showSupplierEditor, setShowSupplierEditor] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+  const [showCampaignEditor, setShowCampaignEditor] = useState(false);
+  const [isDeletingTaxonomy, setIsDeletingTaxonomy] = useState(false);
   
   // Delete confirmation state
   const [deleteConfirm, setDeleteConfirm] = useState<{ productIds: string[]; productNames: string[] } | null>(null);
@@ -97,8 +101,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   const [deleteQueue, setDeleteQueue] = useState<Array<{ id: string; status: 'pending' | 'processing' | 'success' | 'failed'; error?: string }>>([]);
   const [confirmationText, setConfirmationText] = useState('');
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
+  const fetchData = useCallback(async (isSilent = false) => {
+    if (!isSilent) setIsLoading(true);
+    else setIsRefreshing(true);
+    
     try {
       const productsApi = new ProductsApi();
       const ordersApi = new OrdersApi();
@@ -122,10 +128,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
         usersData,
         configData,
         guidesData,
-        suppliersData
+        suppliersData,
+        campaignsData
       ] = await Promise.all([
         productsApi.getAll(),
-        storeApi.getAllCategories(),
+        storeApi.getAllCategoriesAdmin(),
         collectionsApi.getAll(),
         bannersApi.getAll(),
         couponsApi.getAll(),
@@ -134,7 +141,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
         usersApi.getAll(),
         storeApi.getConfig(),
         guidesApi.getAll(),
-        suppliersApi.getAll()
+        suppliersApi.getAll(),
+        marketingApi.getCampaigns()
       ]);
 
       setProducts(productsData);
@@ -148,11 +156,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       if (configData) setConfig(configData);
       setSizeGuides(guidesData);
       setSuppliers(suppliersData);
+      setCampaigns(campaignsData);
 
     } catch (e) {
       logger.error("Admin Fetch Error", e);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   }, []);
 
@@ -187,12 +197,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
         const productsApi = new ProductsApi();
         
         if (data.id) {
-          let updateResult;
-          try {
-            updateResult = await productsApi.update(data.id, { ...payload, variants });
-          } catch (updateError: unknown) {
-            throw updateError;
-          }
+          await productsApi.update(data.id, { ...payload, variants });
         } else {
           await productsApi.create({ ...payload, variants });
         }
@@ -202,6 +207,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
           await collectionsApi.update(data.id, payload);
         } else {
           await collectionsApi.create(payload);
+        }
+      } else if (type === 'category') {
+        const storeApi = new StoreApi();
+        if (data.id) {
+          await storeApi.updateCategory(data.id, payload);
+        } else {
+          await storeApi.createCategory(payload);
         }
       } else if (type === 'banner') {
         const bannersApi = new BannersApi();
@@ -221,6 +233,51 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
     }
   };
 
+  const requestDeleteTaxonomy = useCallback(async () => {
+    if (!editingItem) return;
+    if (editingItem.type !== 'category' && editingItem.type !== 'collection') return;
+    const data = editingItem.data as any;
+    if (!data?.id) return;
+
+    const rawName = data.name;
+    const name =
+      (typeof rawName === 'string'
+        ? rawName
+        : (rawName && typeof rawName === 'object'
+            ? (rawName[locale] || rawName.pt || rawName.en || '')
+            : '')) || (editingItem.type === 'category' ? 'Categoria' : 'Coleção');
+    const associatedCount = Array.isArray(data._associatedProductIds) ? data._associatedProductIds.length : 0;
+
+    if (associatedCount > 0) {
+      alert('Esta taxonomia está vinculada a produtos. Remova os vínculos antes de excluir.');
+      return;
+    }
+
+    if (!confirm(`Tem certeza que deseja excluir "${name}"?`)) return;
+    if (isDeletingTaxonomy) return;
+
+    setIsDeletingTaxonomy(true);
+    try {
+      if (editingItem.type === 'category') {
+        const storeApi = new StoreApi();
+        await storeApi.deleteCategory(String(data.id));
+      } else {
+        const collectionsApi = new CollectionsApi();
+        await collectionsApi.delete(String(data.id));
+      }
+
+      await fetchData();
+      onProductChange();
+      setEditingItem(null);
+      alert(`${editingItem.type === 'category' ? 'Categoria' : 'Coleção'} excluída com sucesso.`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro desconhecido';
+      alert(message);
+    } finally {
+      setIsDeletingTaxonomy(false);
+    }
+  }, [editingItem, fetchData, isDeletingTaxonomy, locale, onProductChange]);
+
   const handleSaveCoupon = async (coupon: Coupon) => {
     try {
       const couponsApi = new CouponsApi();
@@ -234,6 +291,38 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Erro ao salvar cupom';
       alert(message);
+    }
+  };
+
+  const handleDeleteCoupon = async (couponId: string) => {
+    try {
+      const couponsApi = new CouponsApi();
+      await couponsApi.delete(couponId);
+      await fetchData();
+      setEditingCoupon(null);
+      alert('Cupom excluído com sucesso.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao excluir cupom';
+      alert(message);
+      throw error;
+    }
+  };
+
+  const handleSaveCampaign = async (campaign: Partial<Campaign>) => {
+    try {
+      if (campaign.id) {
+        await marketingApi.updateCampaign(campaign.id, campaign);
+      } else {
+        await marketingApi.createCampaign(campaign);
+      }
+      // Since AdminMarketing handles its own state for campaigns, 
+      // we might need a way to tell it to refresh, or just rely on its tab switch effect.
+      // But for better UX, we'll trigger a refresh if we can.
+      fetchData(); // This refreshes banners and other things, but not campaigns directly in AdminMarketing
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar campanha';
+      alert(message);
+      throw error;
     }
   };
 
@@ -514,9 +603,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                {activeTab === 'marketing' && (
                   <AdminMarketing 
                     banners={banners} 
+                    campaigns={campaigns}
                     onEdit={(b) => setEditingItem({ type: 'banner', data: b })} 
-                    onRefresh={fetchData}
+                    onRefresh={() => fetchData(true)}
                     locale={locale}
+                    activeTab={marketingSubTab}
+                    onTabChange={setMarketingSubTab}
+                    onAddCampaign={() => {
+                      setEditingCampaign(null);
+                      setShowCampaignEditor(true);
+                    }}
+                    onEditCampaign={(c) => {
+                      setEditingCampaign(c);
+                      setShowCampaignEditor(true);
+                    }}
                   />
                )}
                {activeTab === 'coupons' && (
@@ -587,6 +687,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
            onUpdateData={(newData) => setEditingItem({ ...editingItem, data: newData })}
            onLocaleChange={setEditLocale} 
            onCloneLocale={() => {}}
+           onDelete={(_id) => requestDeleteTaxonomy()}
            t={t}
            locale={locale}
          />
@@ -599,6 +700,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
            financials={config.financial_settings || {} as GlobalFinancialSettings}
            onClose={() => setEditingCoupon(null)} 
            onSave={handleSaveCoupon} 
+           onDelete={handleDeleteCoupon}
            locale={locale} 
          />
       )}
@@ -627,6 +729,34 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
              }
            }}
          />
+      )}
+
+      {showCampaignEditor && (
+        <AdminCampaignEditor
+          campaign={editingCampaign}
+          onClose={() => {
+            setShowCampaignEditor(false);
+            setEditingCampaign(null);
+          }}
+          onSave={async (campaignData) => {
+            await handleSaveCampaign(campaignData);
+            // After saving, we need to refresh the campaigns in AdminMarketing.
+            // Since AdminMarketing is a child and has its own state, 
+            // the easiest way is to let the user see the update after save.
+            // If AdminMarketing was using props for campaigns, fetchData would work.
+            // But since it fetches on tab switch, we might need a refresh prop.
+          }}
+          onDelete={async (id) => {
+            try {
+              await marketingApi.deleteCampaign(id);
+              fetchData();
+            } catch (error: unknown) {
+              const message = error instanceof Error ? error.message : 'Erro ao excluir campanha';
+              alert(message);
+              throw error;
+            }
+          }}
+        />
       )}
 
       {/* Delete Confirmation Modal */}
@@ -758,6 +888,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
           </div>
         </div>
       )}
+
+
     </div>
   );
 };

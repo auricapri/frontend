@@ -12,7 +12,7 @@ export const routes: Record<View, Route> = {
   admin: { view: 'admin', path: '/admin' },
   'admin-login': { view: 'admin-login', path: '/admin/login' },
   delivery: { view: 'delivery', path: '/admin/delivery' },
-  'delivery-login': { view: 'delivery-login', path: '/admin/delivery/login' },
+  'delivery-login': { view: 'delivery-login', path: '/admin/login/delivery' },
   checkout: { view: 'checkout', path: '/checkout' },
   receipt: { view: 'receipt', path: '/receipt' },
   about: { view: 'about', path: '/about' },
@@ -20,4 +20,3 @@ export const routes: Record<View, Route> = {
   'shared-wishlist': { view: 'shared-wishlist', path: '/wishlist' },
   'order-review': { view: 'order-review', path: '/order-review' }
 };
-

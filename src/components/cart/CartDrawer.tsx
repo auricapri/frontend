@@ -21,7 +21,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
   isOpen, 
   onClose, 
   items, 
-  userMode, 
+  userMode: _userMode, 
   onUpdateQuantity, 
   onRemoveItem, 
   onCheckout,
@@ -55,7 +55,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 md:p-8 border-b border-gray-100">
           <h2 className="text-xl font-light tracking-widest uppercase">{t('cart.title')} ({items.length})</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={onClose} aria-label="Close drawer" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>

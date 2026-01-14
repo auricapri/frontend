@@ -2,19 +2,27 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, Save, Plus, Trash2, ImageIcon, Sliders, Upload, Loader2, 
-  Eye, Layout, Layers, Check, Calculator, TrendingUp, Info, Scale, Ruler, DollarSign,
-  Monitor, Tag, Package, Link, ArrowDown, HelpCircle, FileText, Landmark, Truck
+  Eye, Layout, Check, Calculator, TrendingUp, Scale, Ruler, DollarSign,
+  Monitor, Package, Link, ArrowDown, FileText, Landmark, Truck
 } from 'lucide-react';
 import { Locale } from '../../i18n';
-import { ProductVariant, Category, PricingScenario, Collection, Product, GlobalFinancialSettings, UserMode, Asset, SizeGuide, DEFAULT_FINANCIAL_SETTINGS, Supplier } from '../../types';
+import { ProductVariant, Category, PricingScenario, Collection, Product, GlobalFinancialSettings, UserMode, Asset, SizeGuide, Supplier } from '../../types';
 import { supabase } from '../../utils/supabase';
 import { formatCurrency } from '../../utils/currency';
 import { ProductDetail } from '../product';
 import { Hero } from '../shared';
 import { CollectionDetail } from '../product';
 
+type AdminEditableData = Product | Category | Collection | Asset | SizeGuide | Supplier;
+
+interface AdminEditableItem {
+  type: string;
+  data: AdminEditableData;
+  editLocale: Locale;
+}
+
 interface AdminEditorModalProps {
-  item: { type: string; data: any; editLocale: Locale };
+  item: AdminEditableItem;
   categories: Category[];
   collections?: Collection[];
   products?: Product[];
@@ -23,12 +31,12 @@ interface AdminEditorModalProps {
   suppliers?: Supplier[];
   onClose: () => void;
   onSave: (e: React.FormEvent) => void;
-  onUpdateData: (newData: any) => void;
+  onUpdateData: (newData: AdminEditableData) => void;
   onLocaleChange: (l: Locale) => void;
   onCloneLocale: (from: Locale) => void;
   onDelete?: (id: string) => void;
   globalConfig?: GlobalFinancialSettings;
-  t: (key: string) => any;
+  t: (key: string) => string;
   locale: Locale;
 }
 
@@ -46,7 +54,7 @@ interface SimulationResult {
 }
 
 const AdminEditorModal: React.FC<AdminEditorModalProps> = ({ 
-  item, categories, collections = [], products = [], assets = [], sizeGuides = [], suppliers = [], onClose, onSave, onUpdateData, onLocaleChange, onCloneLocale, onDelete, globalConfig, t, locale
+  item, categories, collections = [], products = [], assets = [], sizeGuides = [], suppliers = [], onClose, onSave, onUpdateData, onLocaleChange, onCloneLocale: _onCloneLocale, onDelete: _onDelete, globalConfig: _globalConfig, t, locale
 }) => {
   const [uploading, setUploading] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
@@ -58,12 +66,11 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
   const [targetPriceField, setTargetPriceField] = useState<'retail_price' | 'wholesale_price'>('retail_price');
   const [selectedVariantsForUpdate, setSelectedVariantsForUpdate] = useState<Set<string>>(new Set());
 
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
-
   // Derived Active Scenario
   const activeScenario = useMemo(() => {
       if (item.type === 'product' && activeScenarioId) {
-          return (item.data.pricing_scenarios || []).find((v: any) => v.id === activeScenarioId) || null;
+          const product = item.data as Product;
+          return (product.pricing_scenarios || []).find((v) => v.id === activeScenarioId) || null;
       }
       return null;
   }, [item.data, item.type, activeScenarioId]);
@@ -72,13 +79,11 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
   useEffect(() => {
     if (item.type === 'category' && item.data.id) {
        const ids = products.filter(p => p.category_id === item.data.id).map(p => p.id);
-       setSelectedProductIds(ids);
        if (item.data._associatedProductIds === undefined) {
           onUpdateData({ ...item.data, _associatedProductIds: ids });
        }
     } else if (item.type === 'collection' && item.data.id) {
        const ids = products.filter(p => (p.collection_ids || []).includes(item.data.id)).map(p => p.id);
-       setSelectedProductIds(ids);
        if (item.data._associatedProductIds === undefined) {
           onUpdateData({ ...item.data, _associatedProductIds: ids });
        }
@@ -107,7 +112,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
     });
   };
 
-  const getLocVal = (obj: any): string => {
+  const getLocVal = (obj: LocalizedText | string | null | undefined): string => {
     if (obj === null || obj === undefined) return '';
     
     // Handle Object (Already parsed or came as object)
@@ -123,7 +128,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
             const parsed = JSON.parse(obj);
             // Recursive
             return getLocVal(parsed); 
-        } catch (e) { 
+        } catch { 
             return obj; 
         }
       }
@@ -132,29 +137,36 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
     return String(obj || '');
   };
 
-  const updateNested = (field: string, value: any) => {
-    const newData = { ...item.data };
+  const updateNested = (field: string, value: string | number | boolean | null | undefined) => {
+    const newData = { ...item.data } as Record<string, unknown>;
     
     // Ensure the field exists as an object before assigning
-    let currentFieldVal = newData[field];
+    let currentFieldVal: unknown = newData[field];
     
     // If it's string JSON, parse it first
     if (typeof currentFieldVal === 'string' && currentFieldVal.startsWith('{')) {
-        try { currentFieldVal = JSON.parse(currentFieldVal); } catch(e){}
+        try { 
+            currentFieldVal = JSON.parse(currentFieldVal); 
+        } catch { 
+            // ignore 
+        }
     }
 
-    if (!currentFieldVal || typeof currentFieldVal !== 'object') {
-        // Recover existing value if it was a plain string, put it in default locale or pt
+    let fieldObject: Record<string, unknown>;
+
+    if (currentFieldVal && typeof currentFieldVal === 'object') {
+        fieldObject = currentFieldVal as Record<string, unknown>;
+    } else {
         const existingStr = typeof currentFieldVal === 'string' ? currentFieldVal : '';
-        currentFieldVal = { pt: existingStr, en: existingStr, es: '', fr: '' };
+        fieldObject = { pt: existingStr, en: existingStr, es: '', fr: '' };
     }
 
-    newData[field] = { ...currentFieldVal, [item.editLocale]: value };
-    onUpdateData(newData);
+    newData[field] = { ...fieldObject, [item.editLocale]: value };
+    onUpdateData(newData as unknown as AdminEditableData);
   };
 
-  const updateSimple = (field: string, value: any) => {
-    onUpdateData({ ...item.data, [field]: value });
+  const updateSimple = (field: string, value: string | number | boolean | null | undefined | string[]) => {
+    onUpdateData({ ...item.data, [field]: value } as AdminEditableData);
   };
 
   const handleMasterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,9 +180,12 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
       const { error } = await supabase.storage.from('products').upload(filePath, file);
       if (error) throw error;
       const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(filePath);
-      const current = item.data.base_images || [];
+      const current = (item.data as Product).base_images || [];
       onUpdateData({ ...item.data, base_images: [...current, publicUrl] });
-    } catch (err: any) { alert(`Upload error: ${err.message}`); } finally { setUploading(null); }
+    } catch (err: unknown) { 
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      alert(`Upload error: ${message}`); 
+    } finally { setUploading(null); }
   };
   
   const handleGenericUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: string = 'image_url') => {
@@ -222,7 +237,10 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
     let currentVal = v[field as keyof ProductVariant];
     // JSON parsing check
     if (typeof currentVal === 'string' && (currentVal as string).startsWith('{')) {
-        try { currentVal = JSON.parse(currentVal as string); } catch(e){}
+        const parsed = (() => {
+          try { return JSON.parse(currentVal as string); } catch { return null; }
+        })();
+        if (parsed) currentVal = parsed;
     }
 
     if (!currentVal || typeof currentVal !== 'object') {
@@ -296,12 +314,13 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
     setActiveScenarioId(newSc.id);
   };
 
-  const updateScenario = (id: string, field: keyof PricingScenario, value: any) => {
-    const scs = [...(item.data.pricing_scenarios || [])];
+  const updateScenario = (id: string, field: keyof PricingScenario, value: PricingScenario[keyof PricingScenario]) => {
+    const productData = item.data as Product;
+    const scs = [...(productData.pricing_scenarios || [])];
     const idx = scs.findIndex((s: PricingScenario) => s.id === id);
     if (idx === -1) return;
     scs[idx] = { ...scs[idx], [field]: value };
-    onUpdateData({ ...item.data, pricing_scenarios: scs });
+    onUpdateData({ ...productData, pricing_scenarios: scs });
   };
 
   const calculateMatrix = async () => {
@@ -311,10 +330,6 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
     }
 
     try {
-    const variants = item.data.variants || [];
-    const hasFreeShipping = item.data.has_free_shipping === true;
-      const config = globalConfig ?? DEFAULT_FINANCIAL_SETTINGS;
-
       // TODO: Restaurar pricingApi quando backend estiver disponível
       // const response = await pricingApi.calculateMatrix({
       //   variants: variants as ProductVariant[],
@@ -990,6 +1005,14 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
         )}
 
         <footer className="h-28 md:h-32 px-6 md:px-16 border-t border-neutral-100 flex items-center justify-end gap-3 md:gap-6 bg-white sticky bottom-0 z-[100]">
+          {_onDelete && (item.type === 'category' || item.type === 'collection') && (item.data as any)?.id && (
+            <button
+              onClick={() => _onDelete(String((item.data as any).id))}
+              className="px-10 md:px-12 py-4 md:py-6 border border-red-200 text-red-600 rounded-2xl md:rounded-3xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all flex items-center gap-2 md:gap-3"
+            >
+              <Trash2 className="w-4 h-4" /> Excluir
+            </button>
+          )}
           <button onClick={onClose} className="px-6 md:px-12 py-4 md:py-6 border border-neutral-200 rounded-2xl md:rounded-3xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-neutral-50 transition-all">Descartar</button>
           <button onClick={onSave} className="px-10 md:px-16 py-4 md:py-6 bg-black text-white rounded-2xl md:rounded-3xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] shadow-2xl hover:scale-[1.02] transition-all flex items-center gap-2 md:gap-4"><Save className="w-4 h-4 md:w-5 md:h-5" /> Sincronizar Tudo</button>
         </footer>

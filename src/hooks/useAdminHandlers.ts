@@ -5,7 +5,6 @@ import { CouponsApi } from '../api/coupons.api';
 import { CollectionsApi } from '../api/collections.api';
 import { BannersApi } from '../api/banners.api';
 import { StoreApi } from '../api/store.api';
-import { SuppliersApi } from '../api/suppliers.api';
 import type { Product, Coupon, Supplier, Order, ProductVariant } from '../types';
 import type { Locale } from '../i18n';
 import { OrderStatus } from '../constants/enums';

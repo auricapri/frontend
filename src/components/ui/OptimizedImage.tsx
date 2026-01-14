@@ -38,7 +38,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   onLoad,
   onError,
   placeholder = 'skeleton',
-  quality = 85,
+  quality = 75,
   useSrcSet = false,
   srcSetSizes = ['thumbnail', 'small', 'medium', 'large'],
 }) => {

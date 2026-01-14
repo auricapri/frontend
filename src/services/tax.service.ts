@@ -84,8 +84,8 @@ export class TaxCalculationService {
 
   private async calculateSimplesTaxes(
     revenue: number,
-    originState: BrazilianState,
-    destinationState: BrazilianState
+    _originState: BrazilianState,
+    _destinationState: BrazilianState
   ): Promise<TaxBreakdown> {
     const annexRate = this.getSimplesAnnexIRate(revenue * 12);
     const totalTax = revenue * annexRate;
@@ -275,4 +275,3 @@ export class TaxCalculationService {
 }
 
 export const taxService = new TaxCalculationService();
-

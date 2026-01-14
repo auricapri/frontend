@@ -19,7 +19,7 @@ export class OrdersApi {
     return apiClient.get<Order | null>(`/orders/${id}/review`);
   }
 
-  async getByUserId(userId: string): Promise<Order[]> {
+  async getByUserId(_userId: string): Promise<Order[]> {
     // Backend filters by authenticated user, so we just call getAll
     return apiClient.get<Order[]>('/orders');
   }
@@ -32,7 +32,38 @@ export class OrdersApi {
     subtotal: number;
     finalAmount: number;
   }): Promise<Order> {
-    return apiClient.post<Order>('/orders', order);
+    const addressData: any = order.addressData as any;
+    const logisticsInfo: any = order.logisticsInfo as any;
+
+    const normalizedAddress = {
+      cep: String(addressData.cep || ''),
+      street: String(addressData.street || addressData.logradouro || ''),
+      number: String(addressData.number || addressData.numero || ''),
+      complement: addressData.complement || addressData.complemento || undefined,
+      neighborhood: String(addressData.neighborhood || addressData.bairro || ''),
+      city: String(addressData.city || addressData.localidade || ''),
+      state: String(addressData.state || addressData.uf || ''),
+      country: String(addressData.country || 'BR'),
+    };
+
+    const normalizedLogistics = {
+      provider: logisticsInfo.provider || logisticsInfo.selected_carrier || logisticsInfo.carrier || undefined,
+      service: logisticsInfo.service || logisticsInfo.method || undefined,
+      cost: logisticsInfo.cost ?? logisticsInfo.real_cost ?? undefined,
+      estimated_days: logisticsInfo.estimated_days ?? undefined,
+    };
+
+    return apiClient.post<Order>('/orders', {
+      ...order,
+      addressData: {
+        ...(order.addressData as any),
+        ...normalizedAddress,
+      },
+      logisticsInfo: {
+        ...(order.logisticsInfo as any),
+        ...normalizedLogistics,
+      },
+    });
   }
 
   async updateStatus(id: string, status: OrderStatus, trackingCode?: string): Promise<Order> {
@@ -51,4 +82,3 @@ export class OrdersApi {
     return apiClient.get<any[]>(`/orders/${orderId}/status-history`);
   }
 }
-

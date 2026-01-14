@@ -26,4 +26,3 @@ export class CouponsApi {
     return apiClient.delete<void>(`/coupons/${id}`);
   }
 }
-

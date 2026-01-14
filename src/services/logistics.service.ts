@@ -3,8 +3,7 @@ import { InternalLogisticsInfo, AddressData } from '../types';
 import {
   FreightQuote,
   FreightCalculationInput,
-  ViaCepResponse,
-  MelhorEnvioQuote
+  ViaCepResponse
 } from '../types/pricing.types';
 
 export interface ShippingOption {
@@ -111,7 +110,7 @@ export class LogisticsService {
    * @param addressData - Dados do endereço (opcional, pode ser usado para otimizações)
    * @returns Informações de logística com transportadora selecionada
    */
-  async calculateShipping(cep: string, addressData?: AddressData): Promise<InternalLogisticsInfo> {
+  async calculateShipping(cep: string, _addressData?: AddressData): Promise<InternalLogisticsInfo> {
     const quotes = await this.getFreightQuotes({
       originCep: ORIGIN_CEP,
       destinationCep: cep,
@@ -145,7 +144,7 @@ export class LogisticsService {
    * @param addressData - Dados do endereço (opcional)
    * @returns Lista de opções de frete disponíveis
    */
-  async calculateShippingOptions(cep: string, addressData?: AddressData): Promise<ShippingOption[]> {
+  async calculateShippingOptions(cep: string, _addressData?: AddressData): Promise<ShippingOption[]> {
     const quotes = await this.getFreightQuotes({
       originCep: ORIGIN_CEP,
       destinationCep: cep,
@@ -313,7 +312,7 @@ export class LogisticsService {
     }));
   }
 
-  async fetchCoordinates(address: string): Promise<[number, number] | null> {
+  async fetchCoordinates(_address: string): Promise<[number, number] | null> {
     return null;
   }
 

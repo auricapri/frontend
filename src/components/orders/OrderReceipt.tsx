@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Download, ShoppingBag, MapPin, Calendar, Clock, DollarSign, Share2, MessageCircle, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Download, MessageCircle, Check, Loader2 } from 'lucide-react';
 import { Order, OrderItem, OrderReview } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
@@ -60,10 +60,6 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale })
 
   const formattedDate = new Date(order.created_at).toLocaleDateString(locale, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-  });
-  
-  const formattedTime = new Date(order.created_at).toLocaleTimeString(locale, {
-    hour: '2-digit', minute: '2-digit'
   });
 
   useEffect(() => {

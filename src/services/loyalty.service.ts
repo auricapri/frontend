@@ -1,4 +1,4 @@
-import { StoreConfig, UserProfile, LoyaltySettings } from '../types';
+import { UserProfile, LoyaltySettings } from '../types';
 import { CouponsRepository } from '../api/repositories/coupons.repository';
 
 /**

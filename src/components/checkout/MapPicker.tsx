@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Search, Check, Loader2 } from 'lucide-react';
 import { MAPBOX_TOKEN } from '../../utils/mapbox';
-import { AddressData } from './CheckoutView';
+import { type AddressData } from '../../types';
 
 interface MapPickerProps {
   isOpen: boolean;
@@ -137,7 +137,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
     
     return () => {
       if (pickerMapRef.current) {
-        try { pickerMapRef.current.remove(); } catch(e){}
+        try { pickerMapRef.current.remove(); } catch (_e) { void _e; }
         pickerMapRef.current = null;
         pickerMarkerRef.current = null;
       }
@@ -195,7 +195,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
       const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${MAPBOX_TOKEN}&country=br&limit=5&types=address,place,locality,neighborhood`);
       const data = await res.json();
       setSearchResults(data.features || []);
-    } catch (e) { } finally { setIsSearching(false); }
+    } catch (_e) { void _e; } finally { setIsSearching(false); }
   };
 
   const handleSelectSearchResult = async (result: any) => {
@@ -386,4 +386,3 @@ export const MapPicker: React.FC<MapPickerProps> = ({
     </div>
   );
 };
-

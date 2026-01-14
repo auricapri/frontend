@@ -123,9 +123,6 @@ export class PricingService {
       monthlyRevenue: config.financialSettings.monthly_sales_vol * (config.financialSettings.avg_freight_cost + 50)
     });
 
-    const gatewayFee = this.calculateGatewayFee(estimatedPrice, config.gateway, 'credit_card');
-    const commissionAmount = estimatedPrice * (scenario.commissionPercent / 100);
-
     const targetMarginDecimal = scenario.targetMarginPercent / 100;
     const gatewayRateDecimal = config.gateway.feePercentage;
     const commissionDecimal = scenario.commissionPercent / 100;
@@ -269,11 +266,13 @@ export class PricingService {
         return gateway.boletoFeeFixed;
       case 'credit_card':
       default:
-        let fee = amount * gateway.feePercentage + gateway.feeFixed;
-        if (installments > 1) {
-          fee += amount * gateway.installmentFeePercentPerInstallment * (installments - 1);
+        {
+          let fee = amount * gateway.feePercentage + gateway.feeFixed;
+          if (installments > 1) {
+            fee += amount * gateway.installmentFeePercentPerInstallment * (installments - 1);
+          }
+          return fee;
         }
-        return fee;
     }
   }
 
@@ -514,4 +513,3 @@ export class PricingService {
 }
 
 export const pricingService = new PricingService();
-

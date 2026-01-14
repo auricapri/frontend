@@ -23,11 +23,11 @@ interface PaymentFormProps {
 export const PaymentForm: React.FC<PaymentFormProps> = ({
   paymentMethod,
   currentUser,
-  storeConfig,
+  storeConfig: _storeConfig,
   selectedSavedCardId,
   saveCardForFuture,
   pixCopied,
-  locale,
+  locale: _locale,
   onPaymentMethodChange,
   onSavedCardSelect,
   onSaveCardToggle,
@@ -248,4 +248,3 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
     </section>
   );
 };
-

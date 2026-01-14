@@ -8,9 +8,11 @@ interface AdminMfaSetupProps {
   onCancel: () => void;
   t: (key: string) => any;
   locale: Locale;
+  subtitle?: string;
+  friendlyName?: string;
 }
 
-const AdminMfaSetup: React.FC<AdminMfaSetupProps> = ({ onComplete, onCancel, t, locale }) => {
+const AdminMfaSetup: React.FC<AdminMfaSetupProps> = ({ onComplete, onCancel, t: _t, locale: _locale, subtitle, friendlyName }) => {
   const [factorId, setFactorId] = useState('');
   const [qrCode, setQrCode] = useState('');
   const [secret, setSecret] = useState('');
@@ -24,7 +26,7 @@ const AdminMfaSetup: React.FC<AdminMfaSetupProps> = ({ onComplete, onCancel, t, 
       try {
         const { data, error: enrollError } = await supabase.auth.mfa.enroll({
           factorType: 'totp',
-          friendlyName: 'Admin Authenticator',
+          friendlyName: friendlyName || 'Admin Authenticator',
         });
 
         if (enrollError) throw enrollError;
@@ -83,7 +85,7 @@ const AdminMfaSetup: React.FC<AdminMfaSetupProps> = ({ onComplete, onCancel, t, 
               </div>
               <div>
                 <h2 className="text-xl font-black uppercase tracking-tighter">Configurar MFA</h2>
-                <p className="text-xs text-neutral-400 uppercase tracking-widest">Obrigatório para Admin</p>
+                <p className="text-xs text-neutral-400 uppercase tracking-widest">{subtitle || 'Obrigatório para Admin'}</p>
               </div>
             </div>
             <button
@@ -190,4 +192,3 @@ const AdminMfaSetup: React.FC<AdminMfaSetupProps> = ({ onComplete, onCancel, t, 
 };
 
 export default AdminMfaSetup;
-

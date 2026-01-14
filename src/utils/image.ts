@@ -72,7 +72,7 @@ export function getOptimizedImageUrl(
   return transformSupabaseUrl(url, {
     width: options.width ?? sizeConfig.width,
     height: options.height ?? sizeConfig.height,
-    quality: options.quality ?? 80,
+    quality: options.quality ?? (size === 'thumbnail' ? 75 : 80),
     format: options.format ?? 'webp',
     resize: options.resize ?? 'cover',
   });

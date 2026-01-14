@@ -352,7 +352,7 @@ class CacheService {
       const storageKey = this.getStorageKey(key);
       localStorage.removeItem(storageKey);
       this.stats.storageSize = this.getStorageSize();
-    } catch (error) {
+    } catch {
       this.stats.errors++;
     }
   }
@@ -394,7 +394,7 @@ class CacheService {
       }
 
       this.stats.storageSize = this.getStorageSize();
-    } catch (error) {
+    } catch {
       this.stats.errors++;
     }
   }
@@ -420,7 +420,7 @@ class CacheService {
       }
 
       this.stats.storageSize = 0;
-    } catch (error) {
+    } catch {
       this.stats.errors++;
     }
   }
@@ -447,6 +447,7 @@ export const CacheConfigs = {
   COLLECTIONS: { ttl: 15 * 60 * 1000, persist: true, maxSize: 200 * 1024 },
   BANNERS: { ttl: 30 * 60 * 1000, persist: true, maxSize: 100 * 1024 },
   STORE_CONFIG: { ttl: 60 * 60 * 1000, persist: true, maxSize: 50 * 1024 },
+  STORE_BOOTSTRAP: { ttl: 2 * 60 * 1000, persist: false, maxSize: 2 * 1024 * 1024 },
   COUPONS: { ttl: 10 * 60 * 1000, persist: false, maxSize: 200 * 1024 },
   ASSETS: { ttl: 60 * 60 * 1000, persist: true, maxSize: 500 * 1024 },
   SIZE_GUIDES: { ttl: 60 * 60 * 1000, persist: true, maxSize: 200 * 1024 },
@@ -455,4 +456,3 @@ export const CacheConfigs = {
 } as const;
 
 export type { CacheConfig, CacheStats };
-

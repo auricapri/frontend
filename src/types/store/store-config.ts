@@ -13,6 +13,7 @@ export interface StoreConfig {
   support_phone?: string;
   tax_id?: string;
   address?: string;
+  pix_key?: string; // Adicionado para suportar pagamentos via PIX
   financial_settings?: GlobalFinancialSettings;
   loyalty_program?: LoyaltySettings;
 }

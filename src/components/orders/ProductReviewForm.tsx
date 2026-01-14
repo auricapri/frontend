@@ -40,7 +40,6 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[];
     const validFiles: File[] = [];
-    const newPreviews: string[] = [];
 
     let totalSize = mediaFiles.reduce((acc, f) => acc + f.size, 0);
 
@@ -300,4 +299,3 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
     </form>
   );
 };
-

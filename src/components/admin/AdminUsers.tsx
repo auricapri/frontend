@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { UserCog, ShieldCheck, Mail, Calendar, Eye, X, Package, Ban, AlertTriangle, Globe, Activity, Truck, Plus } from 'lucide-react';
+import { ShieldCheck, Mail, Calendar, Eye, X, Package, Ban, AlertTriangle, Globe, Activity, Truck, Plus } from 'lucide-react';
 import { UserProfile, Order } from '../../types';
 import { supabase } from '../../utils/supabase';
 import { formatCurrency } from '../../utils/currency';

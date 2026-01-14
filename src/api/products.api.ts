@@ -2,12 +2,20 @@ import { apiClient } from './client';
 import { Product } from '../types';
 
 export class ProductsApi {
-  async getAllActive(): Promise<Product[]> {
-    return apiClient.get<Product[]>('/products');
+  async getAllActive(options?: { limit?: number; offset?: number }): Promise<Product[]> {
+    const params = new URLSearchParams();
+    if (options?.limit) params.set('limit', String(options.limit));
+    if (options?.offset) params.set('offset', String(options.offset));
+    const query = params.toString();
+    return apiClient.get<Product[]>(`/products${query ? `?${query}` : ''}`);
   }
 
-  async getAll(): Promise<Product[]> {
-    return apiClient.get<Product[]>('/products/all');
+  async getAll(options?: { limit?: number; offset?: number }): Promise<Product[]> {
+    const params = new URLSearchParams();
+    if (options?.limit) params.set('limit', String(options.limit));
+    if (options?.offset) params.set('offset', String(options.offset));
+    const query = params.toString();
+    return apiClient.get<Product[]>(`/products/all${query ? `?${query}` : ''}`);
   }
 
   async getById(id: string): Promise<Product | null> {
@@ -18,7 +26,7 @@ export class ProductsApi {
     return apiClient.get<Product | null>(`/products/slug/${slug}`);
   }
 
-  async updateStock(variantId: string, quantity: number): Promise<void> {
+  async updateStock(_variantId: string, _quantity: number): Promise<void> {
     // This might need a specific endpoint or be part of variant update
     // For now, we'll need to implement this in the backend
     throw new Error('updateStock not yet implemented via API');
@@ -40,4 +48,3 @@ export class ProductsApi {
     return apiClient.delete<{ success: string[]; failed: Array<{ id: string; error: string }> }>('/products/batch', { ids });
   }
 }
-

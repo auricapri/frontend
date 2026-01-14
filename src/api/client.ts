@@ -3,12 +3,16 @@
  * Replaces direct Supabase calls with HTTP requests
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
 export interface ApiError {
   error: {
     message: string;
     code?: string;
+    details?: Array<{
+      path: string;
+      message: string;
+    }>;
   };
 }
 
@@ -58,7 +62,8 @@ class ApiClient {
       const error: ApiError = await response.json().catch(() => ({
         error: { message: `HTTP ${response.status}: ${response.statusText}` },
       }));
-      throw new Error(error.error.message);
+      const details = error.error.details?.map(d => `${d.path}: ${d.message}`).join(', ');
+      throw new Error(details ? `${error.error.message}: ${details}` : error.error.message);
     }
 
     // Handle empty responses (204 No Content)
@@ -151,4 +156,3 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
-

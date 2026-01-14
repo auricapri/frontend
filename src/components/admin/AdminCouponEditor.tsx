@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Save, AlertTriangle, Calculator, Check, Search, DollarSign, Info } from 'lucide-react';
-import { Coupon, Product, GlobalFinancialSettings, ProductVariant } from '../../types';
+import { X, Save, AlertTriangle, Calculator, Check, Search, Trash2, Loader2 } from 'lucide-react';
+import { Coupon, Product, GlobalFinancialSettings } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 
@@ -11,6 +11,7 @@ interface AdminCouponEditorProps {
   financials: GlobalFinancialSettings;
   onClose: () => void;
   onSave: (coupon: Coupon) => void;
+  onDelete?: (id: string) => Promise<void> | void;
   locale: Locale;
 }
 
@@ -20,10 +21,12 @@ const AdminCouponEditor: React.FC<AdminCouponEditorProps> = ({
   financials, 
   onClose, 
   onSave, 
+  onDelete,
   locale 
 }) => {
   const [data, setData] = useState<Coupon>(initialData);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const [simulation, setSimulation] = useState<{
     items: { 
         sku: string; 
@@ -120,6 +123,8 @@ const AdminCouponEditor: React.FC<AdminCouponEditorProps> = ({
   useEffect(() => {
     runSimulation();
   }, [data.discount_value, data.discount_type, data.product_ids]);
+
+  const canDelete = Boolean(onDelete && data.id);
 
   const toggleProduct = (id: string) => {
     const current = data.product_ids || [];
@@ -306,11 +311,43 @@ const AdminCouponEditor: React.FC<AdminCouponEditorProps> = ({
         </div>
 
         <div className="h-24 px-12 border-t border-neutral-100 flex items-center justify-end gap-6 bg-white">
-           <div className="text-right">
+           <div className="flex-1">
               {simulation.hasRisk && (
                  <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">Atenção: Margem Negativa em alguns itens</p>
               )}
            </div>
+
+           {canDelete && (
+             <button
+               onClick={async () => {
+                 if (!data.id) return;
+                 if (!confirm(`Tem certeza que deseja excluir o cupom "${data.code}"?`)) return;
+
+                 try {
+                   setIsDeleting(true);
+                   await onDelete?.(data.id);
+                 } catch (error: unknown) {
+                   const message = error instanceof Error ? error.message : 'Erro ao excluir cupom';
+                   alert(message);
+                 } finally {
+                   setIsDeleting(false);
+                 }
+               }}
+               disabled={isDeleting}
+               className="px-8 py-5 bg-white text-red-600 border border-red-200 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-red-50 transition-all shadow-sm disabled:opacity-50 disabled:hover:bg-white flex items-center gap-3"
+             >
+               {isDeleting ? (
+                 <>
+                   <Loader2 className="w-4 h-4 animate-spin" /> Excluindo
+                 </>
+               ) : (
+                 <>
+                   <Trash2 className="w-4 h-4" /> Excluir
+                 </>
+               )}
+             </button>
+           )}
+
            <button 
              onClick={() => onSave(data)}
              disabled={simulation.hasRisk || !data.code}

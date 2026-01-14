@@ -23,7 +23,8 @@ export function usePrefetch() {
       const optimizedUrl = getOptimizedImageUrl(url, 'medium');
       await preloadImage(optimizedUrl);
       prefetchedUrls.current.add(url);
-    } catch {
+    } catch (_e) {
+      return;
     }
   }, []);
 
@@ -36,7 +37,8 @@ export function usePrefetch() {
           const optimizedUrl = getOptimizedImageUrl(url, 'medium');
           await preloadImage(optimizedUrl);
           prefetchedUrls.current.add(url);
-        } catch {
+        } catch (_e) {
+          return;
         }
       })
     );
@@ -53,7 +55,8 @@ export function usePrefetch() {
         cacheKey: `api:products:id:${productId}`,
       });
       prefetchedProducts.current.add(productId);
-    } catch {
+    } catch (_e) {
+      return;
     }
   }, []);
 
@@ -70,7 +73,8 @@ export function usePrefetch() {
         cacheConfig: CacheConfigs.PRODUCT_DETAIL,
         cacheKey,
       });
-    } catch {
+    } catch (_e) {
+      return;
     }
   }, []);
 
@@ -135,4 +139,3 @@ export function usePrefetch() {
 }
 
 export default usePrefetch;
-

@@ -9,7 +9,6 @@ import {
   X, 
   ChevronRight, 
   ChevronLeft,
-  ChevronDown,
   Star,
   Tag,
   Ruler,
@@ -18,7 +17,6 @@ import {
   Check,
   Facebook,
   Twitter,
-  Linkedin,
   MessageCircle,
   ShieldCheck,
   Truck,
@@ -29,7 +27,6 @@ import ProductReviews from './ProductReviews';
 import { formatCurrency } from '../../utils/currency';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
 import { OptimizedImage } from '../ui';
-import { usePrefetch } from '../../hooks/usePrefetch';
 import { ProductReviewsApi } from '../../api/product-reviews.api';
 
 interface ProductDetailProps {
@@ -67,7 +64,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   onShowToast,
   sizeGuides = [],
   products = [],
-  categories = [],
+  categories: _categories = [],
   onSelectProduct,
   wishlistIds = [],
   onToggleWishlistProduct
@@ -324,33 +321,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   // Extract just URLs for display (backward compatibility)
   const displayImages = useMemo(() => allImagesWithVariant.map(img => img.url), [allImagesWithVariant]);
 
-  // Find the index of the first image of the active variant's combination
-  const activeVariantFirstImageIndex = useMemo(() => {
-    if (!activeVariant) return 0;
-    
-    const size = activeVariant.size || '';
-    const colorHex = activeVariant.color_hex || '';
-    const combinationKey = `${size}-${colorHex}`;
-    
-    // First, try to find images that belong to this specific combination
-    const combinationImageIndex = allImagesWithVariant.findIndex(img => 
-      !img.isBase && img.combinationKey === combinationKey
-    );
-    if (combinationImageIndex >= 0) {
-      return combinationImageIndex;
-    }
-    
-    // Fallback: try to find images by variant ID
-    const variantImageIndex = allImagesWithVariant.findIndex(img => img.variantId === activeVariant.id);
-    if (variantImageIndex >= 0) {
-      return variantImageIndex;
-    }
-    
-    // If variant has no specific images, check if it should use base images
-    const baseImageIndex = allImagesWithVariant.findIndex(img => img.isBase);
-    return baseImageIndex >= 0 ? baseImageIndex : 0;
-  }, [activeVariant, allImagesWithVariant]);
-
   // Scroll to active variant images when variant changes
   useEffect(() => {
     if (!activeVariant) return;
@@ -434,11 +404,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         return;
     }
 
+    // Priorizar imagem da variante, depois imagem base do produto
+    const itemImage = (activeVariant.variant_images && activeVariant.variant_images.length > 0)
+      ? activeVariant.variant_images[0]
+      : (product.base_images && product.base_images.length > 0)
+        ? product.base_images[0]
+        : '';
+
     onAddToCart({
       variant_id: activeVariant.id,
       product_id: product.id,
       name: product.name,
-      image: displayImages[0],
+      image: itemImage,
       size: activeVariant.size || 'N/A',
       color_name: activeVariant.color_name,
       color_hex: activeVariant.color_hex || '#000',
@@ -793,6 +770,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
                   <button 
                     onClick={onToggleWishlist}
+                    aria-label="Toggle wishlist"
                     className={`flex-none aspect-square border rounded-2xl flex items-center justify-center transition-all duration-500 ${isWishlisted ? 'bg-black text-white border-black shadow-lg' : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'}`}
                   >
                     <Heart 

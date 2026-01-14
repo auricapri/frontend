@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Ruler, Plus, Trash2, Edit3, Image as ImageIcon, Upload, Loader2, Save, X } from 'lucide-react';
+import { Ruler, Plus, Trash2, Edit3, Image as ImageIcon, Loader2, Save, X } from 'lucide-react';
 import { SizeGuide } from '../../types';
 import { GuidesApi } from '../../api/guides.api';
 import { supabase } from '../../utils/supabase';

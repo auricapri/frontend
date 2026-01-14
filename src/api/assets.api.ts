@@ -10,7 +10,7 @@ export class AssetsApi {
     return apiClient.get<Asset | null>(`/assets/${id}`);
   }
 
-  async updateStock(assetId: string, quantity: number): Promise<void> {
+  async updateStock(_assetId: string, _quantity: number): Promise<void> {
     // This might need a specific endpoint
     throw new Error('updateStock not yet implemented via API');
   }
@@ -27,4 +27,3 @@ export class AssetsApi {
     return apiClient.delete<void>(`/assets/${id}`);
   }
 }
-

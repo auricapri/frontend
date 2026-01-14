@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Save, Upload, Image as ImageIcon, Loader2, MapPin, Star, Instagram, Facebook, Globe, Phone, Mail, Building2, User, FileText, Truck, Package, DollarSign, AlertCircle } from 'lucide-react';
+import { X, Save, Upload, Image as ImageIcon, Loader2, MapPin, Instagram, Facebook, Globe, Phone, Mail, Building2, User, FileText, Truck, Package, DollarSign } from 'lucide-react';
 import { Supplier, AddressData } from '../../types';
 import { supabase } from '../../utils/supabase';
 import { MapPicker } from '../checkout/MapPicker';
@@ -60,7 +60,7 @@ const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onC
     }
   };
 
-  const handleAddressConfirm = (address: AddressData, cep: string) => {
+  const handleAddressConfirm = (address: AddressData, _cep: string) => {
     setFormData(prev => ({ ...prev, address }));
     setShowMapPicker(false);
   };
@@ -469,9 +469,7 @@ const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onC
           isOpen={showMapPicker}
           onClose={() => setShowMapPicker(false)}
           onConfirm={handleAddressConfirm}
-          onCalculateLogistics={(cep: string) => {
-            // Not needed for supplier address, but required by MapPicker interface
-          }}
+          onCalculateLogistics={(_cep: string) => undefined}
         />
       )}
     </>

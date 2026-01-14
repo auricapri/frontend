@@ -1,10 +1,15 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Product, UserMode, Category, Collection, Coupon } from '../../types';
-import { Heart, SlidersHorizontal, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
+import { Heart, ArrowLeft, ArrowRight, Tag, Plus, Minus } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
+import { useProductFilters } from '../../hooks/useProductFilters';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { FilterBottomSheet } from './FilterBottomSheet';
+import { FilterModal } from './FilterModal';
+import { FilterContent } from './FilterContent';
 
 interface ProductGridProps {
   products: Product[];
@@ -39,6 +44,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 }) => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const getLoc = (obj: any): string => {
     if (obj === null || obj === undefined) return "";
@@ -107,8 +114,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     setTimeout(scrollToFilters, 100);
   };
 
-  const filteredProducts = useMemo(() => {
-    // First filter by mode (atacado filters variants with stock < 10)
+  const categoryFilteredProducts = useMemo(() => {
     const modeFiltered = filterProductsForMode(products, userMode);
     
     const productsInLocale = modeFiltered.filter(p => {
@@ -122,8 +128,34 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     return productsInLocale.filter(p => p.category_id === cat?.id);
   }, [activeCategory, products, categories, locale, userMode]);
 
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const currentProducts = useMemo(() => filteredProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE), [currentPage, filteredProducts]);
+  const {
+    selectedSizes,
+    priceMin,
+    priceMax,
+    sortBy,
+    availableSizes,
+    priceBounds,
+    sizeCounts,
+    filteredAndSortedProducts,
+    toggleSize,
+    setPriceRange,
+    setSortBy,
+    clearFilters,
+    hasActiveFilters
+  } = useProductFilters({
+    products: categoryFilteredProducts,
+    activeCategory,
+    userMode
+  });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory, selectedSizes, priceMin, priceMax, sortBy]);
+
+  const totalPages = Math.ceil(filteredAndSortedProducts.length / ITEMS_PER_PAGE);
+  const currentProducts = useMemo(() => {
+    return filteredAndSortedProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  }, [currentPage, filteredAndSortedProducts]);
 
   // Helper to calculate discounted price
   const getDisplayPrice = (product: Product, originalPrice: number) => {
@@ -167,34 +199,111 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       {/* Anchor for Scrolling (Non-sticky) */}
       <div id="grid-anchor" className="w-full h-1" />
 
-      {/* Filters Sticky Bar */}
-      <div id="product-filters" className="sticky top-16 md:top-20 z-30 bg-white/95 backdrop-blur-md border-y border-neutral-100 py-6 px-6 md:px-12 mb-16 transition-all">
-         <div className="flex flex-col md:flex-row justify-between md:items-center gap-6">
-           <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-3 text-[10px] uppercase tracking-[0.3em] font-bold text-neutral-400">
-                  <SlidersHorizontal className="w-4 h-4" />
-                  <span>{t('grid.filter')}</span>
-              </div>
-           </div>
-           <div className="flex overflow-x-auto no-scrollbar space-x-2 pb-2 md:pb-0">
+        {/* Filters Sticky Bar - Categories Only */}
+      <div id="product-filters" className="sticky top-16 md:top-20 z-30 bg-white/95 backdrop-blur-md border-b border-neutral-100 py-4 px-6 md:px-12 mb-12 transition-all">
+         <div className="flex items-center justify-between gap-4">
+           <button
+            onClick={() => setIsFiltersOpen(prev => !prev)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-700 hover:bg-neutral-50 transition-all"
+            aria-label={isFiltersOpen ? 'Fechar filtros' : 'Abrir filtros'}
+           >
+            {isFiltersOpen ? (
+              <Minus className="w-3 h-3 transition-all duration-300 transform" />
+            ) : (
+              <Plus className="w-3 h-3 transition-all duration-300 transform" />
+            )}
+            <span>{t('grid.filter')}</span>
+            {hasActiveFilters && (
+              <span className="ml-1 w-1.5 h-1.5 bg-neutral-900 rounded-full" aria-hidden="true" />
+             )}
+           </button>
+           
+           <div className="flex-1 flex overflow-x-auto no-scrollbar gap-2">
+             <button 
+               onClick={() => handleFilterClick("All")} 
+               className={`flex-shrink-0 px-6 py-2.5 rounded-lg text-[10px] uppercase tracking-[0.2em] font-bold transition-all ${
+                 activeCategory === "All" 
+                   ? 'bg-neutral-100 text-neutral-900' 
+                   : 'text-neutral-500 hover:text-neutral-900'
+               }`}
+               aria-pressed={activeCategory === "All"}
+             >
+               {t('grid.allItems')}
+             </button>
+             {categories.map(cat => (
                <button 
-                 onClick={() => handleFilterClick("All")} 
-                 className={`px-8 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold border transition-all ${activeCategory === "All" ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-400 border-neutral-100 hover:border-neutral-900'}`}
+                 key={cat.id} 
+                 onClick={() => handleFilterClick(getLoc(cat.name))} 
+                 className={`flex-shrink-0 px-6 py-2.5 rounded-lg text-[10px] uppercase tracking-[0.2em] font-bold transition-all ${
+                   activeCategory === getLoc(cat.name)
+                     ? 'bg-neutral-100 text-neutral-900'
+                     : 'text-neutral-500 hover:text-neutral-900'
+                 }`}
+                 aria-pressed={activeCategory === getLoc(cat.name)}
                >
-                 All Items
+                 {getLoc(cat.name)}
                </button>
-               {categories.map(cat => (
-                 <button 
-                   key={cat.id} 
-                   onClick={() => handleFilterClick(getLoc(cat.name))} 
-                   className={`px-8 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold border transition-all ${activeCategory === getLoc(cat.name) ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-400 border-neutral-100 hover:border-neutral-900'}`}
-                 >
-                   {getLoc(cat.name)}
-                 </button>
-               ))}
+             ))}
            </div>
          </div>
       </div>
+
+      {/* Mobile: Bottom Sheet */}
+      {isMobile && (
+        <FilterBottomSheet
+          isOpen={isFiltersOpen}
+          onClose={() => setIsFiltersOpen(false)}
+          hasActiveFilters={hasActiveFilters}
+          productCount={filteredAndSortedProducts.length}
+          onClear={clearFilters}
+          t={t}
+        >
+          <FilterContent
+            availableSizes={availableSizes}
+            selectedSizes={selectedSizes}
+            sizeCounts={sizeCounts}
+            priceBounds={priceBounds}
+            priceMin={priceMin}
+            priceMax={priceMax}
+            sortBy={sortBy}
+            toggleSize={toggleSize}
+            setPriceRange={setPriceRange}
+            setSortBy={setSortBy}
+            locale={locale}
+            t={t}
+            isMobile={true}
+          />
+        </FilterBottomSheet>
+      )}
+
+      {/* Desktop: Modal */}
+      {!isMobile && (
+        <FilterModal
+          isOpen={isFiltersOpen}
+          onClose={() => setIsFiltersOpen(false)}
+          productCount={filteredAndSortedProducts.length}
+          onApply={() => setIsFiltersOpen(false)}
+          onClear={clearFilters}
+          title={t('grid.filter')}
+          t={t}
+        >
+          <FilterContent
+            availableSizes={availableSizes}
+            selectedSizes={selectedSizes}
+            sizeCounts={sizeCounts}
+            priceBounds={priceBounds}
+            priceMin={priceMin}
+            priceMax={priceMax}
+            sortBy={sortBy}
+            toggleSize={toggleSize}
+            setPriceRange={setPriceRange}
+            setSortBy={setSortBy}
+            locale={locale}
+            t={t}
+            isMobile={false}
+          />
+        </FilterModal>
+      )}
 
       {/* Product Grid */}
       <div className="px-6 md:px-12">
@@ -203,7 +312,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <p className="text-[10px] font-black uppercase tracking-widest text-neutral-300">{t('grid.noItems')}</p>
            </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-24">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-2 gap-y-4">
             {!isLoading && currentProducts.map(p => {
                  const mainVariant = p.variants?.[0];
                  const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
@@ -212,7 +321,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                  const isWishlisted = wishlistIds.includes(p.id);
                  return (
                   <div key={p.id} onClick={() => onSelectProduct(p)} className="cursor-pointer group flex flex-col relative animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="relative aspect-[3/4] overflow-hidden bg-neutral-50 mb-6 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm border border-neutral-100">
+                    <div className="relative aspect-[3/4] overflow-hidden bg-neutral-50 mb-6 shadow-sm border border-neutral-100">
                       <img src={displayImg} alt={getLoc(p.name)} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                       
                       {hasDiscount && (
@@ -224,6 +333,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
                       <button 
                         onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id); }} 
+                        aria-label="Toggle wishlist"
                         className={`absolute top-4 right-4 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-sm transition-all transform hover:scale-110 active:scale-90 ${isWishlisted ? 'text-red-500' : 'text-neutral-400 hover:text-neutral-900'}`}
                       >
                         <Heart className="w-4 h-4" fill={isWishlisted ? "currentColor" : "none"} />

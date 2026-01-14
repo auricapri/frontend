@@ -30,7 +30,7 @@ export const formatCurrency = (amount: number, locale: Locale): string => {
       style: 'currency',
       currency: currencyCode,
     }).format(amount);
-  } catch (e) {
+  } catch {
     return `${currencyCode} ${amount.toFixed(2)}`;
   }
 };

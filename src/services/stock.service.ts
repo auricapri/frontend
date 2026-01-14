@@ -1,12 +1,13 @@
 export class StockService {
-  async checkStock(variantId: string): Promise<{ available: number }> {
+  async checkStock(_variantId: string): Promise<{ available: number }> {
     return { available: 0 };
   }
 
-  async reserveStock(variantId: string, quantity: number): Promise<boolean> {
+  async reserveStock(_variantId: string, _quantity: number): Promise<boolean> {
     return false;
   }
 
-  async releaseStock(variantId: string, quantity: number): Promise<void> {
+  async releaseStock(_variantId: string, _quantity: number): Promise<void> {
+    return;
   }
 }

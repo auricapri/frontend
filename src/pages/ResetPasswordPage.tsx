@@ -9,7 +9,7 @@ interface ResetPasswordPageProps {
   t: (key: string) => any;
 }
 
-export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale, onNavigate, t }) => {
+export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _locale, onNavigate, t: _t }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +41,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale, on
         } else {
           setIsValidatingToken(false);
         }
-      } catch (err) {
+      } catch {
         setError('Erro ao validar o link de recuperação.');
         setIsValidatingToken(false);
       }
@@ -214,4 +214,3 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale, on
     </div>
   );
 };
-

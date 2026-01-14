@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Menu, X, Heart, ArrowLeft, Ticket, User, Globe } from 'lucide-react';
+import { ShoppingBag, Menu, X, Heart, ArrowLeft, Ticket, User } from 'lucide-react';
 import { UserMode } from '../../types';
 import { Locale } from '../../i18n';
 
@@ -38,8 +38,8 @@ const Navbar: React.FC<NavbarProps> = ({
   onBack,
   isLoggedIn,
   t,
-  currentLocale,
-  onChangeLocale,
+  currentLocale: _currentLocale,
+  onChangeLocale: _onChangeLocale,
   storeName
 }) => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -55,8 +55,6 @@ const Navbar: React.FC<NavbarProps> = ({
     onNavigate(view, target);
     setIsMenuOpen(false);
   };
-
-  const languages: Locale[] = ['en', 'pt', 'es', 'fr'];
 
   return (
     <>

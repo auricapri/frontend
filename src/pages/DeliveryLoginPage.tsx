@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { supabase } from '../utils/supabase';
 import { UsersApi } from '../api/users.api';
 import { Locale } from '../i18n';
+import AdminMfaSetup from '../components/admin/AdminMfaSetup';
+import AdminMfaChallenge from '../components/admin/AdminMfaChallenge';
 
 interface DeliveryLoginPageProps {
   onLoginSuccess: () => void;
@@ -9,11 +11,14 @@ interface DeliveryLoginPageProps {
   locale: Locale;
 }
 
-export const DeliveryLoginPage: React.FC<DeliveryLoginPageProps> = ({ onLoginSuccess, t, locale }) => {
+type LoginStep = 'login' | 'mfa-setup' | 'mfa-challenge';
+
+export const DeliveryLoginPage: React.FC<DeliveryLoginPageProps> = ({ onLoginSuccess, t: _t, locale: _locale }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [step, setStep] = useState<LoginStep>('login');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,20 +44,88 @@ export const DeliveryLoginPage: React.FC<DeliveryLoginPageProps> = ({ onLoginSuc
         throw new Error('Profile not found');
       }
 
-      const isDelivery = (profile as any).role === 'delivery' || (profile as any).is_delivery === true;
+      const role = (profile as any).role;
+      const isDelivery = role === 'delivery' || (profile as any).is_delivery === true;
+      const isAdmin = role === 'admin' || (profile as any).is_admin === true;
 
-      if (!isDelivery) {
+      if (!isDelivery && !isAdmin) {
         await supabase.auth.signOut();
-        throw new Error('Acesso negado. Apenas usuários de entrega podem acessar.');
+        throw new Error('Acesso negado. Apenas usuários de entrega ou administradores podem acessar.');
       }
 
-      onLoginSuccess();
+      const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aalError) throw aalError;
+
+      const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
+      if (factorsError) throw factorsError;
+
+      const hasVerifiedFactors = factorsData.totp.some((f: any) => f.status === 'verified') ||
+        factorsData.phone.some((f: any) => f.status === 'verified');
+
+      if (!hasVerifiedFactors) {
+        setStep('mfa-setup');
+      } else if (aalData?.currentLevel === 'aal1' && aalData?.nextLevel === 'aal2') {
+        setStep('mfa-challenge');
+      } else if (aalData?.currentLevel === 'aal2') {
+        onLoginSuccess();
+      } else {
+        setStep('mfa-setup');
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleMfaSetupComplete = async () => {
+    const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalError) {
+      setError(aalError.message);
+      return;
+    }
+
+    if (aalData?.currentLevel === 'aal2') {
+      onLoginSuccess();
+    } else {
+      setStep('mfa-challenge');
+    }
+  };
+
+  const handleMfaChallengeComplete = () => {
+    onLoginSuccess();
+  };
+
+  if (step === 'mfa-setup') {
+    return (
+      <AdminMfaSetup
+        onComplete={handleMfaSetupComplete}
+        onCancel={() => {
+          supabase.auth.signOut();
+          setStep('login');
+        }}
+        t={_t}
+        locale={_locale}
+        subtitle="Obrigatório para entregadores"
+        friendlyName="Delivery Authenticator"
+      />
+    );
+  }
+
+  if (step === 'mfa-challenge') {
+    return (
+      <AdminMfaChallenge
+        onComplete={handleMfaChallengeComplete}
+        onCancel={() => {
+          supabase.auth.signOut();
+          setStep('login');
+        }}
+        t={_t}
+        locale={_locale}
+        subtitle="Código do autenticador"
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">

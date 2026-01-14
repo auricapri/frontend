@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
 export interface WishlistResponse {
   productIds: string[];
@@ -55,6 +55,7 @@ export class WishlistApi {
       paymentMethod: 'credit_card' | 'pix';
       subtotal: number;
       finalAmount: number;
+      productIds?: string[];
     }
   ): Promise<any> {
     return apiClient.post(`/wishlist/shared/${slug}/buy-all`, orderData);

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, User, LogOut, /* Apple, */ Loader2, ShoppingBag, Mail, ArrowLeft, Check } from 'lucide-react';
+import { X, /* Apple, */ Loader2, ShoppingBag, Mail, ArrowLeft, Check } from 'lucide-react';
 import { UserProfile as UserType } from '../../types';
 import { Locale } from '../../i18n';
 import { supabase } from '../../utils/supabase';
@@ -34,15 +34,15 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
 
     try {
       if (authMode === 'login') {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
         // Profile will be fetched automatically by useAuth hook
         // Just close the drawer - the hook will update currentUser
         onClose();
       } else {
-        const { data, error } = await supabase.auth.signUp({ 
-          email, 
+        const { error } = await supabase.auth.signUp({ 
+          email,
           password,
           options: { data: { full_name: fullName } }
         });
@@ -142,7 +142,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                 : (authMode === 'login' ? t('auth.signIn') : t('auth.createAccount'))
             }
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-neutral-900">
+          <button onClick={onClose} aria-label="Close drawer" className="p-2 hover:bg-gray-100 rounded-full text-neutral-900">
             <X className="w-5 h-5" />
           </button>
         </div>

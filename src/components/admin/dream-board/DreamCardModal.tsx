@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Trash2, Upload, GitBranch, Sparkles, ExternalLink, Loader2, ImagePlus, Clock, AlertTriangle, RotateCcw, Download, ChevronDown } from 'lucide-react';
+import { X, Trash2, GitBranch, Sparkles, ExternalLink, Loader2, ImagePlus, Clock, AlertTriangle, RotateCcw, Download, ChevronDown } from 'lucide-react';
 import { Node, Edge } from 'reactflow';
 import { DreamCard, Category, Collection, Asset, LocalizedText, Product } from '../../../types';
 import { Locale } from '../../../i18n';
@@ -57,8 +57,7 @@ const DreamCardModal: React.FC<DreamCardModalProps> = ({
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [exportFormat, setExportFormat] = useState<'png' | 'svg' | 'json' | null>(null);
-  
+  const [, setExportFormat] = useState<'png' | 'svg' | 'json' | null>(null);
   // Estado de exclusão automática
   const [deletionInfo, setDeletionInfo] = useState<{ is_completed: boolean; deletion_date: string | null; days_until_deletion: number | null } | null>(null);
   const [isReopening, setIsReopening] = useState(false);
@@ -67,7 +66,6 @@ const DreamCardModal: React.FC<DreamCardModalProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const exportMenuRef = useRef<HTMLDivElement>(null);
-  const hiddenDiagramRef = useRef<HTMLDivElement>(null);
   const dreamApi = new DreamApi();
 
   // Buscar informações de exclusão quando card está na última coluna
@@ -693,4 +691,3 @@ const DreamCardModal: React.FC<DreamCardModalProps> = ({
 };
 
 export default DreamCardModal;
-

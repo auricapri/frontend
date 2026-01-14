@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Settings, Globe, Save, DollarSign, BarChart3, TrendingUp, Building2, MapPin, Mail, Phone, Trophy, AlertTriangle, Terminal, Star } from 'lucide-react';
+import { Settings, Globe, Save, DollarSign, BarChart3, TrendingUp, Building2, MapPin, Mail, Phone, Trophy, AlertTriangle, Star } from 'lucide-react';
 import { StoreConfig, GlobalFinancialSettings, LoyaltyLevel } from '../../types';
 import { Locale } from '../../i18n';
 

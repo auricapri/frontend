@@ -42,8 +42,12 @@ export const Modal: React.FC<ModalProps> = ({
         className="fixed inset-0 bg-black/60 backdrop-blur-xl z-[200] animate-in fade-in duration-500"
         onClick={onClose}
       />
-      <div className={`fixed inset-0 z-[201] flex items-center justify-center p-4 md:p-12`}>
-        <div className={`bg-white w-full ${sizeClasses[size]} rounded-[3rem] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 duration-500`}>
+      <div className="fixed inset-0 z-[201] flex items-start md:items-center justify-center p-4 md:p-12 overflow-y-auto">
+        <div
+          className={`bg-white w-full ${
+            sizeClasses[size]
+          } rounded-[3rem] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 duration-500 max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-6rem)] flex flex-col`}
+        >
           {title && (
             <div className="flex items-center justify-between p-6 md:p-8 border-b border-neutral-100">
               <h2 className="text-2xl font-black uppercase italic tracking-tighter leading-none">
@@ -57,7 +61,7 @@ export const Modal: React.FC<ModalProps> = ({
               </button>
             </div>
           )}
-          <div className="p-6 md:p-8">
+          <div className="p-6 md:p-8 overflow-y-auto min-h-0">
             {children}
           </div>
         </div>
@@ -65,4 +69,3 @@ export const Modal: React.FC<ModalProps> = ({
     </>
   );
 };
-
