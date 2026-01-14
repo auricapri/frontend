@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, ShoppingBag, Trash2, ArrowRight, Share2, Link2, Instagram, MessageCircle, ShoppingCart } from 'lucide-react';
+import { X, ShoppingBag, Trash2, ArrowRight, Link2, MessageCircle, ShoppingCart, Facebook, Twitter } from 'lucide-react';
 import { Product, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { WishlistApi } from '../../api/wishlist.api';
@@ -91,7 +91,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
         const successful = document.execCommand('copy');
         document.body.removeChild(textArea);
         return successful;
-      } catch (err) {
+      } catch {
         document.body.removeChild(textArea);
         return false;
       }
@@ -159,6 +159,8 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
       window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + url)}`, '_blank');
     } else if (platform === 'twitter') {
       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+    } else if (platform === 'facebook') {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
     }
   };
 
@@ -181,7 +183,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
             <span className="text-[9px] font-black uppercase tracking-[0.4em] text-neutral-300">My Curation</span>
             <h2 className="text-2xl font-black tracking-tighter uppercase italic">{t('wishlist.title')} ({items.length})</h2>
           </div>
-          <button onClick={onClose} className="p-4 bg-neutral-50 rounded-full hover:rotate-90 transition-all">
+          <button onClick={onClose} aria-label="Close drawer" className="p-4 bg-neutral-50 rounded-full hover:rotate-90 transition-all">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -246,45 +248,44 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
               <div className="pt-10 border-t border-neutral-200">
                 <div className="mb-6">
                   <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-6">Social Sharing & Gift Link</h4>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-4 gap-4">
                     <button 
                       onClick={handleShareLink}
                       disabled={isGeneratingLink || !currentUserId}
-                      className="flex items-center justify-center gap-3 p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Copiar Link de Presente"
+                      className="flex items-center justify-center p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                       {isGeneratingLink ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Gerando...</span>
-                        </>
+                        <div className="w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
                       ) : copiedLink ? (
-                        <>
-                          <Link2 className="w-4 h-4 text-green-500" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-green-500">Copiado!</span>
-                        </>
+                        <Link2 className="w-4 h-4 text-green-500" />
                       ) : (
-                        <>
-                          <Link2 className="w-4 h-4" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Gift Link</span>
-                        </>
+                        <Link2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
                       )}
                     </button>
                     <button 
                       onClick={() => handleSocialShare('whatsapp')}
                       disabled={isGeneratingLink || !currentUserId}
-                      className="flex items-center justify-center gap-3 p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Compartilhar no WhatsApp"
+                      className="flex items-center justify-center p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
-                      {isGeneratingLink ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Gerando...</span>
-                        </>
-                      ) : (
-                        <>
-                          <MessageCircle className="w-4 h-4" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp</span>
-                        </>
-                      )}
+                      <MessageCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    </button>
+                    <button 
+                      onClick={() => handleSocialShare('facebook')}
+                      disabled={isGeneratingLink || !currentUserId}
+                      title="Compartilhar no Facebook"
+                      className="flex items-center justify-center p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                    >
+                      <Facebook className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    </button>
+                    <button 
+                      onClick={() => handleSocialShare('twitter')}
+                      disabled={isGeneratingLink || !currentUserId}
+                      title="Compartilhar no Twitter"
+                      className="flex items-center justify-center p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                    >
+                      <Twitter className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     </button>
                   </div>
                 </div>

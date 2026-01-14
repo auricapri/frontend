@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, CheckCircle2, MessageSquare, Loader2, User, ThumbsUp, ChevronDown } from 'lucide-react';
 import { ProductReview, UserProfile } from '../../types';
-import { Locale } from '../../i18n';
 import { ProductReviewsApi } from '../../api/product-reviews.api';
 
 interface ProductReviewsProps {
@@ -15,7 +14,7 @@ interface ProductReviewsProps {
   isLoading?: boolean;
 }
 
-const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, user, userOrders = [], t, onAddReview, isLoading }) => {
+const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, user, userOrders = [], t, onAddReview, isLoading: _isLoading }) => {
   const [isWriting, setIsWriting] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
@@ -88,7 +87,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
       setIsWriting(false);
       setComment('');
       setRating(5);
-    } catch (err) {
+    } catch (_err) {
       alert('Erro ao enviar avaliação. Tente novamente.');
     } finally {
       setIsSubmitting(false);

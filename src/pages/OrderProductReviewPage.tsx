@@ -20,7 +20,7 @@ interface OrderProductReviewPageProps {
 export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
   orderId,
   onBack,
-  t,
+  t: _t,
   locale,
   storeConfig
 }) => {
@@ -101,7 +101,12 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
         setOrderItems(items);
       } catch (err: any) {
         console.error('Error loading order review data:', err);
-        setError(err.message || 'Erro ao carregar dados do pedido');
+        const msg = String(err?.message || '');
+        if (/not delivered/i.test(msg)) {
+          setError('Este pedido ainda não foi entregue. Você só pode avaliar pedidos entregues.');
+        } else {
+          setError(msg || 'Erro ao carregar dados do pedido');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -112,7 +117,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
     }
   }, [orderId, currentUser?.id]);
 
-  const handleReviewSuccess = async (review: ProductReview, orderItemId: string) => {
+  const handleReviewSuccess = async (_review: ProductReview, _orderItemId: string) => {
     setEditingItem(null);
     const items = await reviewsApi.getOrderItemsForReview(orderId, currentUser?.id || order?.user_id || '');
     setOrderItems(items);
@@ -300,4 +305,3 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
     </div>
   );
 };
-

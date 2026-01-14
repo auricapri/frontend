@@ -1,4 +1,3 @@
-import { LocalizedText } from '../common';
 import { CartItem } from './cart-item';
 
 export interface CartSession {

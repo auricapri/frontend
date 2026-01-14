@@ -1,0 +1,368 @@
+import React, { Suspense } from 'react';
+import { MessageCircle, X, Loader2 } from 'lucide-react';
+import { Navbar, Footer } from '../components/layout';
+import { Hero, LoyaltyBanner } from '../components/shared';
+import { ProductGrid, CollectionDetail } from '../components/product';
+import { CartDrawer, WishlistDrawer, CouponsDrawer } from '../components/cart';
+import { AuthDrawer } from '../components/auth';
+import { Toast } from '../components/ui';
+import { TestBanner } from '../components/common/TestBanner';
+import { filterProductsForMode } from '../utils/product';
+import { trackingService } from '../services/tracking.service';
+import { UserMode, type Category, type Collection, type Coupon, type Order, type Product, type SizeGuide, type StoreConfig, type UserProfile } from '../types';
+
+const ProductDetail = React.lazy(() => import('../components/product/ProductDetail'));
+const CheckoutView = React.lazy(() => import('../components/checkout/CheckoutViewV2'));
+const OrderResultOverlay = React.lazy(() => import('../components/orders/OrderResultOverlay'));
+const OrderReviewPage = React.lazy(() => import('../pages/OrderReviewPage'));
+
+function LoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
+    </div>
+  );
+}
+
+export function AppLayout(props: {
+  app: {
+    locale: any;
+    setLocale: (l: any) => void;
+    t: (key: string) => any;
+    userMode: UserMode;
+    setUserMode: React.Dispatch<React.SetStateAction<UserMode>>;
+
+    currentView: 'home' | 'product' | 'collection' | 'checkout' | 'order-review';
+    isScrolled: boolean;
+    mainRef: React.RefObject<HTMLElement>;
+    handleScroll: () => void;
+
+    products: Product[];
+    categories: Category[];
+    collections: Collection[];
+    banners: any[];
+    coupons: Coupon[];
+    storeConfig: StoreConfig;
+    isLoading: boolean;
+
+    currentUser: UserProfile | null;
+    userOrders: Order[];
+    sizeGuides: SizeGuide[];
+
+    cartItems: any[];
+    setCartItems: React.Dispatch<React.SetStateAction<any[]>>;
+    addToCart: (cartItem: any) => void;
+    handleUpdateQuantity: (id: string, delta: number) => void;
+
+    wishlistIds: string[];
+    toggleWishlist: (id: string) => Promise<void>;
+    handleToggleWishlist: (id: string) => Promise<void>;
+    handleBuyAllWishlist: () => void;
+
+    activeProduct: Product | null;
+    setActiveProduct: (p: Product | null) => void;
+    activeCollection: Collection | null;
+    setActiveCollection: (c: Collection | null) => void;
+
+    isCartOpen: boolean;
+    setIsCartOpen: (v: boolean) => void;
+    isWishlistOpen: boolean;
+    setIsWishlistOpen: (v: boolean) => void;
+    isCouponsOpen: boolean;
+    setIsCouponsOpen: (v: boolean) => void;
+    isAuthOpen: boolean;
+    setIsAuthOpen: (v: boolean) => void;
+    pendingCheckout: boolean;
+    setPendingCheckout: (v: boolean) => void;
+
+    legalView: 'terms' | 'privacy' | null;
+    setLegalView: (v: 'terms' | 'privacy' | null) => void;
+
+    toast: { message: string; visible: boolean; type?: 'info' | 'error' };
+    closeToast: () => void;
+    showToast: (message: string, type?: 'info' | 'error') => void;
+
+    loyaltyBanner: { visible: boolean; level: number; reward: number; code: string; expires: string };
+    handleCloseLoyaltyBanner: () => void;
+    handleLoyaltyBannerClick: () => void;
+
+    isProcessingOrder: boolean;
+    orderResult: any;
+    handleCloseOrderResult: () => void;
+    handlePlaceOrder: (...args: any[]) => Promise<void>;
+    handleCheckoutIntent: () => void;
+
+    signOut: () => Promise<any>;
+
+    onNavigate: (view: any, targetSection?: string, product?: Product) => void;
+  };
+}) {
+  const { app } = props;
+
+  return (
+    <div className="relative h-dvh w-full bg-white overflow-hidden text-neutral-900 font-sans">
+      <TestBanner />
+      <Navbar
+        cartCount={app.cartItems.reduce((acc: number, item: any) => acc + item.quantity, 0)}
+        onOpenCart={() => app.setIsCartOpen(true)}
+        wishlistCount={app.wishlistIds.length}
+        onOpenWishlist={() => app.setIsWishlistOpen(true)}
+        onOpenCoupons={() => app.setIsCouponsOpen(true)}
+        onOpenAuth={() => app.setIsAuthOpen(true)}
+        userMode={app.userMode}
+        onToggleMode={() => app.setUserMode((prev) => (prev === UserMode.VAREJO ? UserMode.ATACADO : UserMode.VAREJO))}
+        onNavigate={app.onNavigate}
+        isScrolled={app.currentView === 'home' && app.isScrolled}
+        isProductView={app.currentView === 'product' || app.currentView === 'checkout' || app.currentView === 'collection'}
+        onBack={() => app.onNavigate('home', 'collection')}
+        isLoggedIn={!!app.currentUser}
+        t={app.t}
+        currentLocale={app.locale}
+        onChangeLocale={app.setLocale}
+        storeName={app.storeConfig.brand_name}
+      />
+
+      <main
+        id="main-scroll-container"
+        ref={app.mainRef}
+        onScroll={app.handleScroll}
+        className={`h-full w-full overflow-y-auto overflow-x-hidden no-scrollbar antialiased relative ${app.currentView === 'home' ? 'pt-0' : 'pt-12'}`}
+      >
+        {app.currentView === 'home' && (
+          <div className="min-h-full flex flex-col">
+            <Hero onNavigate={app.onNavigate as any} t={app.t} banners={app.banners} locale={app.locale} isLoading={app.isLoading} />
+            <ProductGrid
+              products={app.products}
+              categories={app.categories}
+              collections={app.collections}
+              coupons={app.coupons}
+              userMode={app.userMode}
+              onSelectProduct={(p) => {
+                app.setActiveProduct(p);
+                app.onNavigate('product', undefined, p);
+              }}
+              onSelectCollection={(c) => {
+                app.setActiveCollection(c);
+                app.onNavigate('collection');
+              }}
+              wishlistIds={app.wishlistIds}
+              onToggleWishlist={app.handleToggleWishlist}
+              t={app.t}
+              locale={app.locale}
+              isLoading={app.isLoading}
+            />
+            <Footer
+              t={app.t}
+              currentLocale={app.locale}
+              onChangeLocale={app.setLocale}
+              storeConfig={app.storeConfig}
+              onOpenLegal={app.setLegalView}
+              onNavigate={app.onNavigate}
+            />
+
+            <a
+              href="https://wa.me/AURICAPRI"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={
+                app.locale === 'pt'
+                  ? 'Contato via WhatsApp'
+                  : app.locale === 'en'
+                    ? 'Contact via WhatsApp'
+                    : app.locale === 'es'
+                      ? 'Contacto por WhatsApp'
+                      : 'Contact via WhatsApp'
+              }
+              className="fixed bottom-10 right-6 p-5 bg-neutral-900 text-white rounded-full shadow-2xl z-40 border border-white/10 hover:scale-110 active:scale-95 transition-all flex items-center justify-center animate-in slide-in-from-bottom-10 duration-700 focus:outline-2 focus:outline-white focus:outline-offset-2"
+            >
+              <MessageCircle className="w-6 h-6" aria-hidden="true" />
+            </a>
+          </div>
+        )}
+
+        {app.currentView === 'product' && app.activeProduct && (
+          <Suspense fallback={<LoadingFallback />}>
+            <ProductDetail
+              product={app.activeProduct}
+              coupons={app.coupons}
+              userMode={app.userMode}
+              onAddToCart={app.addToCart}
+              onBack={() => app.onNavigate('home', 'collection')}
+              isWishlisted={app.wishlistIds.includes(app.activeProduct.id)}
+              onToggleWishlist={() => app.handleToggleWishlist(app.activeProduct!.id)}
+              t={app.t}
+              locale={app.locale}
+              currentUser={app.currentUser}
+              userOrders={app.userOrders}
+              onShowToast={app.showToast}
+              sizeGuides={app.sizeGuides}
+              products={app.products}
+              categories={app.categories}
+              onSelectProduct={(p) => {
+                app.setActiveProduct(p);
+                app.onNavigate('product', undefined, p);
+              }}
+              wishlistIds={app.wishlistIds}
+              onToggleWishlistProduct={app.handleToggleWishlist}
+            />
+          </Suspense>
+        )}
+
+        {app.currentView === 'collection' && app.activeCollection && (
+          <CollectionDetail
+            collection={app.activeCollection}
+            products={app.products}
+            categories={app.categories}
+            userMode={app.userMode}
+            onSelectProduct={(p) => {
+              app.setActiveProduct(p);
+              app.onNavigate('product', undefined, p);
+            }}
+            wishlistIds={app.wishlistIds}
+            onToggleWishlist={app.handleToggleWishlist}
+            onBack={() => app.onNavigate('home', 'collection')}
+            locale={app.locale}
+          />
+        )}
+
+        {app.currentView === 'checkout' && (
+          <Suspense fallback={<LoadingFallback />}>
+            <CheckoutView
+              items={app.cartItems}
+              currentUser={app.currentUser}
+              storeConfig={app.storeConfig}
+              userMode={app.userMode}
+              onBack={() => app.onNavigate('home')}
+              onComplete={app.handlePlaceOrder}
+              locale={app.locale}
+              t={app.t}
+            />
+          </Suspense>
+        )}
+
+        {app.currentView === 'order-review' &&
+          (() => {
+            const orderIdMatch = window.location.pathname.match(/^\/order-review\/(.+)$/);
+            const orderId = orderIdMatch ? orderIdMatch[1] : null;
+            if (!orderId) return null;
+
+            return (
+              <Suspense fallback={<LoadingFallback />}>
+                <OrderReviewPage orderId={orderId} onBack={() => app.onNavigate('home')} t={app.t} locale={app.locale} storeConfig={app.storeConfig} />
+              </Suspense>
+            );
+          })()}
+      </main>
+
+      <Toast message={app.toast.message} isVisible={app.toast.visible} onClose={app.closeToast} type={app.toast.type} />
+
+      <LoyaltyBanner
+        isVisible={app.loyaltyBanner.visible}
+        level={app.loyaltyBanner.level}
+        rewardValue={app.loyaltyBanner.reward}
+        couponCode={app.loyaltyBanner.code}
+        expiresAt={app.loyaltyBanner.expires}
+        onClose={app.handleCloseLoyaltyBanner}
+        onOpenCoupons={app.handleLoyaltyBannerClick}
+        locale={app.locale}
+      />
+
+      {app.isProcessingOrder && (
+        <div className="fixed inset-0 z-[2000] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center">
+          <Loader2 className="w-12 h-12 animate-spin text-black mb-4" />
+          <h3 className="text-xl font-black uppercase tracking-tighter">Processando Pedido</h3>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mt-2">Não feche esta janela...</p>
+        </div>
+      )}
+
+      {app.orderResult && (
+        <Suspense fallback={null}>
+          <OrderResultOverlay
+            status={app.orderResult.status}
+            orderId={app.orderResult.orderId}
+            errorMessage={app.orderResult.message}
+            onClose={app.handleCloseOrderResult}
+            t={app.t}
+            locale={app.locale}
+          />
+        </Suspense>
+      )}
+
+      {app.legalView && (
+        <div className="fixed inset-0 z-[200] bg-white flex flex-col animate-in slide-in-from-bottom duration-700 overflow-hidden">
+          <header className="h-24 px-12 flex justify-between items-center border-b border-neutral-100">
+            <h2 className="text-xl font-black uppercase italic tracking-widest">
+              {app.legalView === 'terms' ? app.t('footer.terms') : app.t('footer.privacy')}
+            </h2>
+            <button onClick={() => app.setLegalView(null)} className="p-4 bg-neutral-50 rounded-full hover:rotate-90 transition-all">
+              <X className="w-6 h-6" />
+            </button>
+          </header>
+          <div className="flex-1 overflow-y-auto p-12 md:p-24 no-scrollbar bg-neutral-50/50">
+            <div className="max-w-4xl mx-auto bg-white p-12 md:p-20 rounded-[3rem] shadow-sm border border-neutral-100">
+              <div className="prose prose-neutral max-w-none whitespace-pre-wrap font-medium text-neutral-600 leading-relaxed text-sm">
+                {app.legalView === 'terms' ? app.storeConfig.terms_of_service[app.locale] : app.storeConfig.privacy_policy[app.locale]}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <CartDrawer
+        isOpen={app.isCartOpen}
+        onClose={() => app.setIsCartOpen(false)}
+        items={app.cartItems}
+        userMode={app.userMode}
+        onUpdateQuantity={app.handleUpdateQuantity}
+        onRemoveItem={(id) => {
+          const removed = app.cartItems.find((i: any) => i.variant_id === id);
+          app.setCartItems(app.cartItems.filter((i: any) => i.variant_id !== id));
+          if (removed) {
+            trackingService.trackCartRemove(removed.product_id, removed.variant_id);
+          }
+        }}
+        onCheckout={app.handleCheckoutIntent}
+        t={app.t}
+        locale={app.locale}
+      />
+
+      <AuthDrawer
+        isOpen={app.isAuthOpen}
+        onClose={() => {
+          app.setIsAuthOpen(false);
+          app.setPendingCheckout(false);
+        }}
+        user={app.currentUser}
+        onLogin={async () => {
+          return;
+        }}
+        onLogout={async () => {
+          await app.signOut();
+        }}
+        t={app.t}
+        locale={app.locale}
+        storeConfig={app.storeConfig}
+      />
+
+      <WishlistDrawer
+        currentUserId={app.currentUser?.id}
+        isOpen={app.isWishlistOpen}
+        onClose={() => app.setIsWishlistOpen(false)}
+        items={filterProductsForMode(app.products.filter((p) => app.wishlistIds.includes(p.id)), app.userMode)}
+        userMode={app.userMode}
+        onRemoveItem={async (id) => {
+          await app.toggleWishlist(id);
+        }}
+        onSelectProduct={(p) => {
+          app.setActiveProduct(p);
+          app.onNavigate('product', undefined, p);
+        }}
+        onBuyAll={app.handleBuyAllWishlist}
+        t={app.t}
+        locale={app.locale}
+      />
+
+      <CouponsDrawer isOpen={app.isCouponsOpen} onClose={() => app.setIsCouponsOpen(false)} t={app.t} />
+    </div>
+  );
+}

@@ -1,6 +1,6 @@
 
 import React, { useMemo } from 'react';
-import { ShoppingCart, CreditCard, XCircle, Clock, User, ArrowRight } from 'lucide-react';
+import { ShoppingCart, CreditCard, XCircle, User, ArrowRight } from 'lucide-react';
 import { CartSession } from '../../types';
 import { Locale } from '../../i18n';
 

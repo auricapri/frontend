@@ -1,8 +1,9 @@
 import { apiClient } from './client';
 import { UserProfile, SavedAddress, SavedCard } from '../types';
+import type { UserLoyaltyData } from '../types/users/loyalty';
 
 export class UsersApi {
-  async getProfile(userId: string): Promise<UserProfile | null> {
+  async getProfile(_userId: string): Promise<UserProfile | null> {
     // Backend returns current user profile
     return apiClient.get<UserProfile | null>('/users/profile');
   }
@@ -44,7 +45,7 @@ export class UsersApi {
     return apiClient.put<void>(`/users/addresses/${addressId}/default`, {});
   }
 
-  async savePaymentMethod(card: {
+  async savePaymentMethod(_card: {
     gateway_token: string;
     last4: string;
     brand: string;
@@ -56,8 +57,7 @@ export class UsersApi {
     throw new Error('savePaymentMethod not yet implemented via API');
   }
 
-  async updateLoyalty(loyalty: any): Promise<UserProfile> {
+  async updateLoyalty(loyalty: UserLoyaltyData): Promise<UserProfile> {
     return apiClient.put<UserProfile>('/users/loyalty', { loyalty });
   }
 }
-

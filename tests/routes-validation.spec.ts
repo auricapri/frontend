@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test';
 
+const apiBaseUrl = process.env.PLAYWRIGHT_API_BASE_URL || 'http://localhost:3002';
+
 test.describe('Routes Validation - Type Safety', () => {
   test('should handle orders routes with proper types', async ({ request }) => {
     test.setTimeout(30000);
     
-    const response = await request.get('http://localhost:3001/api/orders', {
+    const response = await request.get(`${apiBaseUrl}/api/orders`, {
       headers: {
         'Authorization': 'Bearer invalid-token',
       },
@@ -21,7 +23,7 @@ test.describe('Routes Validation - Type Safety', () => {
       password: '123',
     };
 
-    const response = await request.post('http://localhost:3001/api/auth/signup', {
+    const response = await request.post(`${apiBaseUrl}/api/auth/signup`, {
       data: invalidSignup,
     });
 
@@ -31,7 +33,7 @@ test.describe('Routes Validation - Type Safety', () => {
   test('should handle products routes', async ({ request }) => {
     test.setTimeout(30000);
     
-    const response = await request.get('http://localhost:3001/api/products');
+    const response = await request.get(`${apiBaseUrl}/api/products`);
     
     expect(response.status()).toBe(200);
     const products = await response.json();

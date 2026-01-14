@@ -4,33 +4,20 @@ import {
   Package, 
   Truck, 
   CheckCircle2, 
-  Clock, 
-  MapPin, 
-  ArrowRight,
-  XCircle,
-  Calendar,
-  DollarSign,
-  Info,
-  TrendingUp,
+  Clock,
   X,
   CreditCard,
   User,
-  AlertTriangle,
   Receipt,
-  Scale,
   Landmark,
-  Wallet,
   FileText,
   Printer,
-  Box,
   Barcode,
   Lock,
-  Download,
   AlertOctagon,
-  Ban,
   Loader2
 } from 'lucide-react';
-import { Order, OrderItem, Product, Asset, DEFAULT_FINANCIAL_SETTINGS, UserProfile } from '../../types';
+import { Order, Product, Asset, UserProfile } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { OrdersApi } from '../../api/orders.api';
@@ -163,22 +150,17 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
       }
 
       try {
-          const orderItems = order.items.map(item => ({
-              product_id: item.product_id,
-              variant_id: item.variant_id,
-              price: item.price,
-              quantity: item.quantity
-          }));
-
-          const freightReal = order.internal_logistics?.real_cost ?? 0;
-          const paymentMethod = order.payment_method ?? 'credit_card';
-
           // TODO: Restaurar pricingApi quando backend estiver disponível
           // const economics = await pricingApi.calculateOrderEconomics({
-          //     items: orderItems,
+          //     items: order.items.map(item => ({
+          //       product_id: item.product_id,
+          //       variant_id: item.variant_id,
+          //       price: item.price,
+          //       quantity: item.quantity
+          //     })),
           //     total: order.total,
-          //     freightRealCost: freightReal,
-          //     paymentMethod,
+          //     freightRealCost: order.internal_logistics?.real_cost ?? 0,
+          //     paymentMethod: order.payment_method ?? 'credit_card',
           //     financialSettings: DEFAULT_FINANCIAL_SETTINGS
           // });
 
@@ -293,7 +275,6 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
   }, [selectedOrder]);
 
   const economics = currentEconomics;
-  const address = (selectedOrder as any)?.shipping_address_snapshot || (selectedOrder as any)?.shipping_address;
   const logistics = selectedOrder ? calculateLogisticsMetrics(selectedOrder) : { totalWeight: 0, dimensions: '' };
   const isDocGenerated = selectedOrder ? (!!selectedOrder.logistics_metadata?.doc_url || !!generatedDocs[selectedOrder.id]) : false;
 

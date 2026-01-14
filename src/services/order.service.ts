@@ -55,8 +55,6 @@ export class OrderService {
     finalAmount: number,
     userId?: string
   ): Promise<Order> {
-    const discountAmount = subtotal - finalAmount;
-
     // Save address if user is logged in
     if (userId) {
       const isFirstAddress = true; // Check if user has addresses
@@ -121,4 +119,3 @@ export class OrderService {
     return await this.ordersRepo.updateStatus(id, status, trackingCode);
   }
 }
-

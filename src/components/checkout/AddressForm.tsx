@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { MapPin, Search, Navigation, AlertCircle, Loader2, ChevronRight } from 'lucide-react';
-import { AddressData } from './CheckoutView';
+import { type AddressData } from '../../types';
 import { Locale } from '../../i18n';
 
 interface AddressFormProps {
@@ -23,6 +23,7 @@ interface AddressFormProps {
   mapContainerRef: React.RefObject<HTMLDivElement>;
   mapError: boolean;
   mapboxLoaded: boolean;
+  isManualAddress?: boolean;
 }
 
 export const AddressForm: React.FC<AddressFormProps> = ({
@@ -32,11 +33,11 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   complement,
   cepError,
   loadingCep,
-  calculatingShipping,
-  shippingDisplay,
+  calculatingShipping: _calculatingShipping,
+  shippingDisplay: _shippingDisplay,
   bestInternalShipping,
   currentUser,
-  locale,
+  locale: _locale,
   onCepChange,
   onNumChange,
   onComplementChange,
@@ -44,7 +45,8 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   onNext,
   mapContainerRef,
   mapError,
-  mapboxLoaded
+  mapboxLoaded,
+  isManualAddress
 }) => {
   return (
     <section className="space-y-10 animate-in fade-in slide-in-from-left duration-700">
@@ -94,28 +96,31 @@ export const AddressForm: React.FC<AddressFormProps> = ({
             <div className="bg-neutral-900 text-white p-8 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-8 shadow-2xl border border-white/10 overflow-hidden relative">
               <div className="relative z-10 flex-1">
                 <span className="text-[10px] font-black uppercase tracking-widest text-white/40 block mb-2">
-                  Destino Identificado
+                  {isManualAddress ? 'Localização Confirmada' : 'Destino Identificado'}
                 </span>
                 <h4 className="text-xl font-black uppercase italic tracking-tight mb-1">
-                  {address.logradouro}
+                  {address.logradouro || (isManualAddress ? 'Rua não informada' : 'Endereço Identificado')}
                 </h4>
                 <p className="text-xs text-white/60 font-medium uppercase tracking-widest">
-                  {address.bairro} — {address.localidade}, {address.uf}
+                  {address.bairro ? `${address.bairro} — ` : ''}{address.localidade}, {address.uf}
                 </p>
               </div>
-              <div
-                ref={mapContainerRef}
-                className="w-full md:w-48 h-48 rounded-[2rem] bg-white/5 border border-white/10 overflow-hidden relative shadow-inner"
-              >
-                {(mapError || !mapboxLoaded) && (
-                  <div className="w-full h-full flex items-center justify-center bg-neutral-800">
-                    <div className="text-center">
-                      <MapPin className="w-6 h-6 text-white/20 mx-auto mb-2" />
-                      <p className="text-[10px] text-white/40">Carregando mapa...</p>
+              
+              {isManualAddress && (
+                <div
+                  ref={mapContainerRef}
+                  className="w-full md:w-48 h-48 rounded-[2rem] bg-white/5 border border-white/10 overflow-hidden relative shadow-inner"
+                >
+                  {(mapError || !mapboxLoaded) && (
+                    <div className="w-full h-full flex items-center justify-center bg-neutral-800">
+                      <div className="text-center">
+                        <MapPin className="w-6 h-6 text-white/20 mx-auto mb-2" />
+                        <p className="text-[10px] text-white/40">Carregando mapa...</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
             
             <div className="grid grid-cols-2 gap-6">
@@ -167,4 +172,3 @@ export const AddressForm: React.FC<AddressFormProps> = ({
     </section>
   );
 };
-

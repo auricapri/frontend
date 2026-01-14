@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Ticket, Plus, Tag, Calendar, ShoppingBag, Edit3 } from 'lucide-react';
+import { Ticket, Plus, Tag, ShoppingBag, Edit3 } from 'lucide-react';
 import { Coupon, Product, GlobalFinancialSettings } from '../../types';
-import { Locale } from '../../i18n';
 
 interface AdminCouponsProps {
   coupons: Coupon[];

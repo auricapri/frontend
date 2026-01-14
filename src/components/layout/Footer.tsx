@@ -16,8 +16,8 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ 
   t, 
-  currentLocale, 
-  onChangeLocale, 
+  currentLocale: _currentLocale, 
+  onChangeLocale: _onChangeLocale, 
   storeConfig, 
   onOpenLegal, 
   onNavigate 

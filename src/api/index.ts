@@ -16,3 +16,4 @@ export { PaymentsApi } from './payments.api';
 export { ReturnsApi } from './returns.api';
 export { NotificationsApi } from './notifications.api';
 export { UserConsentsApi } from './user_consents.api';
+export { CartApi } from './cart.api';

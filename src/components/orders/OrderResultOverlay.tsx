@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, RefreshCw, XCircle } from 'lucide-react';
+import { RefreshCw, XCircle } from 'lucide-react';
 import { Locale } from '../../i18n';
 
 interface OrderResultOverlayProps {
@@ -14,10 +14,10 @@ interface OrderResultOverlayProps {
 
 const OrderResultOverlay: React.FC<OrderResultOverlayProps> = ({ 
   status, 
-  orderId, 
+  orderId: _orderId, 
   errorMessage, 
   onClose,
-  t,
+  t: _t,
   locale 
 }) => {
   const [showContent, setShowContent] = useState(false);

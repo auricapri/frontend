@@ -10,7 +10,7 @@ interface CommentSectionProps {
   locale: Locale;
 }
 
-const CommentSection: React.FC<CommentSectionProps> = ({ cardId, locale }) => {
+const CommentSection: React.FC<CommentSectionProps> = ({ cardId, locale: _locale }) => {
   const [comments, setComments] = useState<DreamComment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -153,4 +153,3 @@ const CommentSection: React.FC<CommentSectionProps> = ({ cardId, locale }) => {
 };
 
 export default CommentSection;
-

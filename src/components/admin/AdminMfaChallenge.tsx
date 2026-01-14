@@ -8,9 +8,10 @@ interface AdminMfaChallengeProps {
   onCancel: () => void;
   t: (key: string) => any;
   locale: Locale;
+  subtitle?: string;
 }
 
-const AdminMfaChallenge: React.FC<AdminMfaChallengeProps> = ({ onComplete, onCancel, t, locale }) => {
+const AdminMfaChallenge: React.FC<AdminMfaChallengeProps> = ({ onComplete, onCancel, t: _t, locale: _locale, subtitle }) => {
   const [verifyCode, setVerifyCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -76,7 +77,7 @@ const AdminMfaChallenge: React.FC<AdminMfaChallengeProps> = ({ onComplete, onCan
               </div>
               <div>
                 <h2 className="text-xl font-black uppercase tracking-tighter">Verificação MFA</h2>
-                <p className="text-xs text-neutral-400 uppercase tracking-widest">Código de Autenticação</p>
+                <p className="text-xs text-neutral-400 uppercase tracking-widest">{subtitle || 'Código de Autenticação'}</p>
               </div>
             </div>
             <button
@@ -127,4 +128,3 @@ const AdminMfaChallenge: React.FC<AdminMfaChallengeProps> = ({ onComplete, onCan
 };
 
 export default AdminMfaChallenge;
-

@@ -4,7 +4,7 @@ import { ProductsApi } from '../api/products.api';
 import { Product, CartItem, AddressData, InternalLogisticsInfo } from '../types';
 import { formatCurrency } from '../utils/currency';
 import { Locale } from '../i18n';
-import CheckoutView from '../components/checkout/CheckoutView';
+import CheckoutView from '../components/checkout/CheckoutViewV2';
 import { UserMode } from '../types';
 import { calculatePrice } from '../utils/product';
 
@@ -31,6 +31,8 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [itemsToCheckout, setCheckoutItems] = useState<CartItem[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const wishlistApi = new WishlistApi();
   const productsApi = new ProductsApi();
@@ -119,36 +121,67 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       alert('Você precisa estar logado para comprar');
       return;
     }
+    setCheckoutItems(cartItems);
     setShowCheckout(true);
+  };
+
+  const handleBuyItem = (productId: string) => {
+    if (!currentUser) {
+      alert('Você precisa estar logado para comprar');
+      return;
+    }
+    const item = cartItems.find(i => i.product_id === productId);
+    if (item) {
+      setCheckoutItems([item]);
+      setShowCheckout(true);
+    }
   };
 
   const handlePlaceOrder = async (
     addressData: AddressData,
     logisticsInfo: InternalLogisticsInfo,
-    paymentMethod: 'credit_card' | 'pix',
+    paymentMethod: any,
     finalAmount: number
   ) => {
     if (!slug || !currentUser) return;
 
     try {
-      if (!Array.isArray(cartItems) || cartItems.length === 0) {
+      setIsProcessing(true);
+      if (!Array.isArray(itemsToCheckout) || itemsToCheckout.length === 0) {
         throw new Error('Carrinho vazio');
       }
       
-      const subtotal = cartItems.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 0)), 0);
+      const subtotal = itemsToCheckout.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 0)), 0);
       
-      await wishlistApi.buyAllFromSharedWishlist(slug, {
-        addressData,
-        logisticsInfo,
-        paymentMethod,
-        subtotal,
-        finalAmount
-      });
+      // If buying all items, use the buyAll endpoint
+      if (itemsToCheckout.length === cartItems.length) {
+        await wishlistApi.buyAllFromSharedWishlist(slug, {
+          addressData,
+          logisticsInfo,
+          paymentMethod,
+          subtotal,
+          finalAmount
+        });
+      } else {
+        // For individual item, we might need a specific endpoint or just pass the ID
+        // Assuming buyAll handles a subset if we pass it, but let's check API
+        // For now, let's assume buyAll can take specific product IDs if we extend it
+        await wishlistApi.buyAllFromSharedWishlist(slug, {
+          addressData,
+          logisticsInfo,
+          paymentMethod,
+          subtotal,
+          finalAmount,
+          productIds: itemsToCheckout.map(i => i.product_id)
+        });
+      }
 
       alert('Pedido realizado com sucesso! O presente será enviado para o dono da wishlist.');
       onNavigate('home');
     } catch (err: any) {
       alert(`Erro ao realizar pedido: ${err.message}`);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -194,35 +227,44 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   if (showCheckout) {
     return (
       <CheckoutView
-        cartItems={Array.isArray(cartItems) ? cartItems : []}
-        onPlaceOrder={handlePlaceOrder}
+        items={itemsToCheckout}
+        onComplete={(address, logistics, method, amount) => handlePlaceOrder(address, logistics, method, amount)}
         onBack={() => setShowCheckout(false)}
         t={t}
         locale={locale}
         currentUser={currentUser}
+        userMode={userMode}
       />
     );
   }
 
   return (
-    <div className="min-h-screen bg-white pt-24 pb-20">
+    <div className="min-h-screen bg-white pt-24 pb-20 relative">
+      {isProcessing && (
+        <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <Loader2 className="w-12 h-12 animate-spin mx-auto text-black" />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em]">Processando seu pedido...</p>
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="mb-12">
-          <h1 className="text-4xl font-black uppercase tracking-tighter mb-4">
+          <h1 className="text-4xl font-black uppercase tracking-tighter mb-4 italic">
             Wishlist Compartilhada
           </h1>
-          <p className="text-neutral-500">
-            Compre todos os itens desta wishlist como presente
+          <p className="text-neutral-500 text-[10px] font-bold uppercase tracking-widest">
+            Compre itens desta curadoria exclusiva como presente
           </p>
         </div>
 
         {!Array.isArray(products) || products.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-neutral-400">Esta wishlist está vazia</p>
+          <div className="text-center py-20 bg-neutral-50 rounded-[3rem] border-2 border-dashed border-neutral-100">
+            <p className="text-neutral-400 text-[10px] font-black uppercase tracking-widest">Esta wishlist está vazia</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
               {products.map(product => {
                 if (!product) return null;
                 
@@ -231,30 +273,44 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
                 const image = variant?.variant_images?.[0] || (product.base_images && Array.isArray(product.base_images) ? product.base_images[0] : '') || '';
 
                 return (
-                  <div key={product.id || Math.random()} className="flex flex-col">
-                    <div className="aspect-[3/4] bg-neutral-50 rounded-2xl overflow-hidden mb-4">
+                  <div key={product.id || Math.random()} className="flex flex-col group">
+                    <div className="aspect-[3/4] bg-neutral-50 rounded-[2.5rem] overflow-hidden mb-6 relative shadow-sm group-hover:shadow-2xl transition-all duration-700">
                       <img
                         src={image}
                         alt={getLoc(product.name)}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                       />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center p-8">
+                        <button 
+                          onClick={() => handleBuyItem(product.id)}
+                          className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                        >
+                          Presentear Este Item
+                        </button>
+                      </div>
                     </div>
-                    <h3 className="text-sm font-black uppercase tracking-widest mb-2">
-                      {getLoc(product.name)}
-                    </h3>
-                    <p className="text-lg font-light">{formatCurrency(price, locale)}</p>
+                    <div className="px-2">
+                      <h3 className="text-sm font-black uppercase tracking-tight mb-1 truncate">
+                        {getLoc(product.name)}
+                      </h3>
+                      <p className="text-lg font-light tracking-tighter text-neutral-900">{formatCurrency(price, locale)}</p>
+                    </div>
                   </div>
                 );
               })}
             </div>
 
-            <div className="flex justify-center">
+            <div className="flex justify-center border-t border-neutral-100 pt-20">
               <button
                 onClick={handleBuyAll}
                 disabled={!currentUser || !Array.isArray(cartItems) || cartItems.length === 0}
-                className="px-12 py-4 bg-black text-white rounded-2xl text-sm font-black uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-16 py-8 bg-black text-white rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-105 active:scale-95 disabled:opacity-20 transition-all flex items-center gap-4"
               >
-                {currentUser ? 'Comprar Todos os Itens' : 'Faça login para comprar'}
+                {currentUser ? (
+                  <>Comprar Toda a Curadoria <ArrowRight className="w-4 h-4" /></>
+                ) : (
+                  'Faça login para comprar'
+                )}
               </button>
             </div>
           </>
@@ -264,5 +320,16 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   );
 };
 
-export default SharedWishlistPage;
+const ArrowRight = ({ className }: { className?: string }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h14M12 5l7 7-7 7" />
+  </svg>
+);
 
+const Loader2 = ({ className }: { className?: string }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+);
+
+export default SharedWishlistPage;

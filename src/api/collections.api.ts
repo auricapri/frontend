@@ -25,5 +25,8 @@ export class CollectionsApi {
   async update(id: string, updates: Partial<Collection>): Promise<Collection> {
     return apiClient.put<Collection>(`/collections/${id}`, updates);
   }
-}
 
+  async delete(id: string): Promise<void> {
+    return apiClient.delete<void>(`/collections/${id}`);
+  }
+}

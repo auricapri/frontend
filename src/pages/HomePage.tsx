@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { MessageCircle } from 'lucide-react';
 import { Hero } from '../components/shared';
 import { ProductGrid } from '../components/product';
@@ -46,16 +46,6 @@ export const HomePage: React.FC<HomePageProps> = ({
   storeConfig,
   isLoading
 }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
     <div className="min-h-full flex flex-col">
       <Hero 
@@ -99,4 +89,3 @@ export const HomePage: React.FC<HomePageProps> = ({
     </div>
   );
 };
-

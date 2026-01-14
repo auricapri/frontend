@@ -1,12 +1,36 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { CartItem, Product, Asset } from '../types';
 import { CartService } from '../services/cart.service';
+import { CartApi } from '../api/cart.api';
 
 export const useCart = (products: Product[], assets: Asset[]) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const cartService = useMemo(() => new CartService(), []);
+  const cartApi = useMemo(() => new CartApi(), []);
 
-  const addToCart = useCallback((cartItem: CartItem) => {
+  const loadCart = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const cart = await cartApi.getCart();
+      setCartItems(cart.items || []);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load cart';
+      setError(errorMessage);
+      console.error('Error loading cart:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [cartApi]);
+
+  useEffect(() => {
+    loadCart();
+  }, [loadCart]);
+
+  const addToCart = useCallback(async (cartItem: CartItem) => {
     const product = products.find(p => p.id === cartItem.product_id);
     const variant = product?.variants?.find(v => v.id === cartItem.variant_id);
     const maxStock = variant?.stock_quantity || 0;
@@ -32,36 +56,93 @@ export const useCart = (products: Product[], assets: Asset[]) => {
       }
       return [...prev, cartItem];
     });
+
+    try {
+      setIsSyncing(true);
+      setError(null);
+      const cart = await cartApi.addItem(cartItem);
+      setCartItems(cart.items || []);
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add item to cart';
+      setError(errorMessage);
+      await loadCart();
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [products, cartItems, cartApi, loadCart]);
+
+  const updateQuantity = useCallback(async (variantId: string, delta: number) => {
+    const item = cartItems.find(i => i.variant_id === variantId);
+    if (!item) return;
+
+    const product = products.find(p => p.id === item.product_id);
+    const variant = product?.variants?.find(v => v.id === item.variant_id);
+    const maxStock = variant?.stock_quantity || 0;
     
-    return { success: true };
-  }, [products, cartItems]);
+    const newQuantity = Math.max(0, item.quantity + delta);
+    
+    if (delta > 0 && newQuantity > maxStock) {
+      return;
+    }
 
-  const updateQuantity = useCallback((variantId: string, delta: number) => {
     setCartItems(prev => {
-      return prev.map(item => {
-        if (item.variant_id === variantId) {
-          const product = products.find(p => p.id === item.product_id);
-          const variant = product?.variants?.find(v => v.id === item.variant_id);
-          const maxStock = variant?.stock_quantity || 0;
-          
-          if (delta > 0 && item.quantity + delta > maxStock) {
-            return item;
-          }
-          const newQuantity = Math.max(1, item.quantity + delta);
-          return { ...item, quantity: newQuantity };
+      return prev.map(i => {
+        if (i.variant_id === variantId) {
+          return { ...i, quantity: newQuantity };
         }
-        return item;
-      }).filter(item => item.quantity > 0);
+        return i;
+      }).filter(i => i.quantity > 0);
     });
-  }, [products]);
 
-  const removeFromCart = useCallback((variantId: string) => {
+    try {
+      setIsSyncing(true);
+      setError(null);
+      const cart = await cartApi.updateItem(variantId, newQuantity);
+      setCartItems(cart.items || []);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update cart item';
+      setError(errorMessage);
+      await loadCart();
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [products, cartItems, cartApi, loadCart]);
+
+  const removeFromCart = useCallback(async (variantId: string) => {
     setCartItems(prev => prev.filter(item => item.variant_id !== variantId));
-  }, []);
 
-  const clearCart = useCallback(() => {
+    try {
+      setIsSyncing(true);
+      setError(null);
+      const cart = await cartApi.removeItem(variantId);
+      setCartItems(cart.items || []);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to remove item from cart';
+      setError(errorMessage);
+      await loadCart();
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [cartApi, loadCart]);
+
+  const clearCart = useCallback(async () => {
     setCartItems([]);
-  }, []);
+
+    try {
+      setIsSyncing(true);
+      setError(null);
+      await cartApi.clearCart();
+      setCartItems([]);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to clear cart';
+      setError(errorMessage);
+      await loadCart();
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [cartApi, loadCart]);
 
   const validateStock = useCallback((): { valid: boolean; error?: string } => {
     return cartService.validateStock(cartItems, products, assets);
@@ -79,7 +160,11 @@ export const useCart = (products: Product[], assets: Asset[]) => {
     clearCart,
     validateStock,
     subtotal,
-    setCartItems
+    setCartItems,
+    isLoading,
+    isSyncing,
+    error,
+    refreshCart: loadCart,
   };
 };
 

@@ -52,17 +52,18 @@ export const useStoreData = () => {
   const fetchStoreData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [productsData, categoriesData, collectionsData, bannersData, configData, relationsData, couponsData, assetsData, guidesData] = await Promise.all([
-        productsApi.getAllActive(),
-        storeApi.getAllCategories(),
-        collectionsApi.getAllActive(),
-        storeApi.getAllBanners(),
-        storeApi.getConfig(),
-        collectionsApi.getCollectionProducts(),
-        couponsApi.getAllActive(),
-        assetsApi.getAll(),
-        storeApi.getAllSizeGuides()
-      ]);
+      const bootstrap = await storeApi.getBootstrap();
+      const {
+        products: productsData,
+        categories: categoriesData,
+        collections: collectionsData,
+        banners: bannersData,
+        config: configData,
+        relations: relationsData,
+        coupons: couponsData,
+        assets: assetsData,
+        sizeGuides: guidesData,
+      } = bootstrap;
 
       if (!isMounted.current) return;
 
@@ -96,8 +97,57 @@ export const useStoreData = () => {
 
       setIsLoading(false);
 
-    } catch (err) {
-      logger.error('Error fetching store data', err);
+    } catch (_err) {
+      try {
+        const [productsData, categoriesData, collectionsData, bannersData, configData, relationsData, couponsData, assetsData, guidesData] = await Promise.all([
+          productsApi.getAllActive(),
+          storeApi.getAllCategories(),
+          collectionsApi.getAllActive(),
+          storeApi.getAllBanners(),
+          storeApi.getConfig(),
+          collectionsApi.getCollectionProducts(),
+          couponsApi.getAllActive(),
+          assetsApi.getAll(),
+          storeApi.getAllSizeGuides()
+        ]);
+
+        if (!isMounted.current) return;
+
+        const processedProducts = productsData.map(p => {
+          const linkedCollectionIds = relationsData
+            .filter(r => r.product_id === p.id)
+            .map(r => r.collection_id);
+
+          return {
+            ...p,
+            collection_ids: linkedCollectionIds
+          };
+        });
+
+        setProducts(processedProducts);
+        setCategories(categoriesData);
+        setCollections(collectionsData);
+        setBanners(bannersData);
+        setCoupons(couponsData);
+        setAssets(assetsData);
+        setSizeGuides(guidesData);
+
+        if (configData) {
+          const mergedConfig = {
+            ...configData,
+            loyalty_program: configData.loyalty_program || defaultStoreConfig.loyalty_program
+          };
+          setStoreConfig(mergedConfig);
+          document.title = configData.brand_name;
+        }
+
+        setIsLoading(false);
+      } catch (fallbackErr) {
+        logger.error('Error fetching store data', fallbackErr);
+        if (isMounted.current) {
+          setIsLoading(false);
+        }
+      }
       if (isMounted.current) {
         setIsLoading(false);
       }

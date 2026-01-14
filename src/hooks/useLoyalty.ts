@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { UserProfile, StoreConfig } from '../types';
-import { LoyaltyService } from '../services/loyalty.service';
 import { UsersApi } from '../api/users.api';
 
-export const useLoyalty = (currentUser: UserProfile | null, storeConfig: StoreConfig) => {
+export const useLoyalty = (currentUser: UserProfile | null, _storeConfig: StoreConfig) => {
   const [loyaltyBanner, setLoyaltyBanner] = useState<{ 
     visible: boolean; 
     level: number; 
@@ -49,4 +48,3 @@ export const useLoyalty = (currentUser: UserProfile | null, storeConfig: StoreCo
     dismissBanner
   };
 };
-

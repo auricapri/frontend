@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Auricapri</title>
     <link rel="icon" type="image/png" href="/logo.png" />
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' crossorigin="anonymous" />
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js' crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
       // Set Mapbox token when library loads
       (function() {
@@ -261,13 +261,13 @@
       // Debug: Log when DOM is ready
       console.log('HTML: DOM loaded, root element:', document.getElementById('root'));
       
-      // Check if script loaded after 500ms (only on home page)
+      // Check if script loaded after 2000ms (only on home page)
       setTimeout(function() {
         if (window.location.pathname === '/' && !document.getElementById('root')?.hasChildNodes()) {
-          console.error('HTML: Root element is empty after 500ms - app may not have loaded');
+          console.error('HTML: Root element is empty after 2000ms - app may not have loaded');
           document.body.classList.add('loaded');
         }
-      }, 500);
+      }, 2000);
     </script>
   </body>
 </html>

@@ -1,7 +1,26 @@
 import { cachedApiClient, CacheConfigs } from './cached-client';
-import { Category, Banner, StoreConfig, SizeGuide } from '../types';
+import { Category, Banner, StoreConfig, SizeGuide, Product, Collection, Coupon, Asset } from '../types';
+
+export type StoreBootstrapResponse = {
+  products: Product[];
+  categories: Category[];
+  collections: Collection[];
+  banners: Banner[];
+  config: StoreConfig | null;
+  relations: Array<{ product_id: string; collection_id: string }>;
+  coupons: Coupon[];
+  assets: Asset[];
+  sizeGuides: SizeGuide[];
+};
 
 export class CachedStoreApi {
+  async getBootstrap(): Promise<StoreBootstrapResponse> {
+    return cachedApiClient.get<StoreBootstrapResponse>('/store/bootstrap', {
+      cacheConfig: CacheConfigs.STORE_BOOTSTRAP,
+      cacheKey: 'api:store:bootstrap',
+    });
+  }
+
   async getAllCategories(): Promise<Category[]> {
     return cachedApiClient.get<Category[]>('/store/categories', {
       cacheConfig: CacheConfigs.CATEGORIES,
@@ -36,4 +55,3 @@ export class CachedStoreApi {
     });
   }
 }
-

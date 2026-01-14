@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+const apiBaseUrl = process.env.PLAYWRIGHT_API_BASE_URL || 'http://localhost:3002';
+
 test.describe('Zod Validation - API Routes', () => {
   test('should reject invalid order creation data', async ({ request }) => {
     test.setTimeout(30000);
@@ -14,7 +16,7 @@ test.describe('Zod Validation - API Routes', () => {
       subtotal: -100,
     };
 
-    const response = await request.post('http://localhost:3001/api/orders', {
+    const response = await request.post(`${apiBaseUrl}/api/orders`, {
       data: invalidOrderData,
       headers: {
         'Authorization': 'Bearer invalid-token',
@@ -32,7 +34,7 @@ test.describe('Zod Validation - API Routes', () => {
       password: '123',
     };
 
-    const response = await request.post('http://localhost:3001/api/auth/signup', {
+    const response = await request.post(`${apiBaseUrl}/api/auth/signup`, {
       data: invalidSignupData,
     });
 
@@ -50,7 +52,7 @@ test.describe('Zod Validation - API Routes', () => {
       password: '',
     };
 
-    const response = await request.post('http://localhost:3001/api/auth/signin', {
+    const response = await request.post(`${apiBaseUrl}/api/auth/signin`, {
       data: invalidSigninData,
     });
 
@@ -67,7 +69,7 @@ test.describe('Zod Validation - API Routes', () => {
       trackingCode: null,
     };
 
-    const response = await request.put('http://localhost:3001/api/orders/00000000-0000-0000-0000-000000000000/status', {
+    const response = await request.put(`${apiBaseUrl}/api/orders/00000000-0000-0000-0000-000000000000/status`, {
       data: invalidStatusUpdate,
       headers: {
         'Authorization': 'Bearer invalid-token',

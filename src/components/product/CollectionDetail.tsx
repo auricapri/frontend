@@ -40,7 +40,7 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
           const parsed = JSON.parse(obj);
           // Chamada recursiva para extrair do objeto parseado
           return getLoc(parsed);
-        } catch (e) {
+        } catch {
           return obj;
         }
       }

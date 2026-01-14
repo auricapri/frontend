@@ -22,7 +22,7 @@ export async function getVersion(): Promise<string> {
       cacheTimestamp = now;
       return version;
     }
-  } catch (error) {
+  } catch {
     console.warn('[Version] Failed to read VERSION file, using default');
   }
 

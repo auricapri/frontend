@@ -1,17 +1,21 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { CartItem, Product, Asset } from '../types';
+import { CartItem } from '../types';
 import { useCart } from '../hooks/useCart';
 import { useAppContext } from './AppContext';
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: CartItem) => { success: boolean; error?: string };
-  updateQuantity: (variantId: string, delta: number) => void;
-  removeFromCart: (variantId: string) => void;
-  clearCart: () => void;
+  addToCart: (item: CartItem) => Promise<{ success: boolean; error?: string }>;
+  updateQuantity: (variantId: string, delta: number) => Promise<void>;
+  removeFromCart: (variantId: string) => Promise<void>;
+  clearCart: () => Promise<void>;
   validateStock: () => { valid: boolean; error?: string };
   subtotal: number;
   setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
+  isLoading: boolean;
+  isSyncing: boolean;
+  error: string | null;
+  refreshCart: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);

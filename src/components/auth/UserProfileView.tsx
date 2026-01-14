@@ -19,11 +19,13 @@ import {
   LogOut,
   DollarSign
 } from 'lucide-react';
-import { UserProfile, Order, OrderItem } from '../../types';
+import { UserProfile, Order } from '../../types';
 import { Locale } from '../../i18n';
 import { supabase } from '../../utils/supabase';
 import { OrderReceipt } from '../orders';
 import { formatCurrency } from '../../utils/currency';
+
+import { maskPhone } from '../../utils/masks';
 
 interface UserProfileViewProps {
   user: UserProfile;
@@ -230,7 +232,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                       className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-black outline-none focus:bg-white focus:border-black transition-all pl-14"
                       placeholder="+55 11 99999-9999"
                       value={phone}
-                      onChange={e => setPhone(e.target.value)}
+                      onChange={e => setPhone(maskPhone(e.target.value))}
                     />
                     <Phone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" />
                   </div>
@@ -347,7 +349,8 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                        </div>
                     )}
                  </div>
-               )})
+                 );
+               })
              )}
           </div>
         )}

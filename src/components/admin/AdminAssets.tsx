@@ -1,10 +1,9 @@
 
 import React, { useState } from 'react';
-import { Package, Plus, Trash2, Edit3, DollarSign, Archive, AlertCircle, Image as ImageIcon, Upload, Loader2, Save, X } from 'lucide-react';
+import { Package, Plus, Trash2, Edit3, DollarSign, Archive, AlertCircle, Image as ImageIcon, Loader2, Save, X } from 'lucide-react';
 import { Asset } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { Locale } from '../../i18n';
-import { AssetsApi } from '../../api/assets.api';
 // Supabase storage is still used for image uploads (safe)
 import { supabase } from '../../utils/supabase';
 
