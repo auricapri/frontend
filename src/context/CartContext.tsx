@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { CartItem } from '../types';
 import { useCart } from '../hooks/useCart';
 import { useAppContext } from './AppContext';
@@ -35,6 +35,16 @@ interface CartProviderProps {
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const { products, assets } = useAppContext();
   const cart = useCart(products, assets);
+
+  // Escutar evento de merge do carrinho após login
+  const handleCartMerged = useCallback(() => {
+    cart.refreshCart();
+  }, [cart]);
+
+  useEffect(() => {
+    window.addEventListener('cart-merged', handleCartMerged);
+    return () => window.removeEventListener('cart-merged', handleCartMerged);
+  }, [handleCartMerged]);
 
   return (
     <CartContext.Provider value={cart}>

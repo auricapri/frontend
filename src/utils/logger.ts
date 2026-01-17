@@ -1,74 +1,44 @@
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+/**
+ * Logger utilitario para o frontend
+ * Centraliza logs e permite desabilitar em producao
+ */
 
-interface LogEntry {
-  level: LogLevel;
-  message: string;
-  data?: unknown;
-  timestamp: string;
+const isDev = import.meta.env.DEV;
+
+interface LoggerOptions {
+  context?: string;
 }
 
-class Logger {
-  private isDevelopment: boolean;
-  private logHistory: LogEntry[] = [];
-  private readonly MAX_HISTORY = 100;
-
-  constructor() {
-    this.isDevelopment = import.meta.env.DEV || process.env.NODE_ENV === 'development';
-  }
-
-  private log(level: LogLevel, message: string, data?: unknown): void {
-    const entry: LogEntry = {
-      level,
-      message,
-      data,
-      timestamp: new Date().toISOString(),
-    };
-
-    if (this.isDevelopment) {
-      const consoleMethod = level === 'error' ? 'error' : level === 'warn' ? 'warn' : level === 'info' ? 'info' : 'log';
-      const prefix = `[${level.toUpperCase()}]`;
-      
-      if (data) {
-        console[consoleMethod](prefix, message, data);
-      } else {
-        console[consoleMethod](prefix, message);
-      }
-    }
-
-    this.logHistory.push(entry);
-    if (this.logHistory.length > this.MAX_HISTORY) {
-      this.logHistory.shift();
-    }
-
-    if (level === 'error' && !this.isDevelopment) {
-      // In production, send errors to monitoring service
-      // Example: sendToErrorTracking(entry);
-    }
-  }
-
-  debug(message: string, data?: unknown): void {
-    this.log('debug', message, data);
-  }
-
-  info(message: string, data?: unknown): void {
-    this.log('info', message, data);
-  }
-
-  warn(message: string, data?: unknown): void {
-    this.log('warn', message, data);
-  }
-
-  error(message: string, error?: unknown): void {
-    this.log('error', message, error);
-  }
-
-  getHistory(): readonly LogEntry[] {
-    return [...this.logHistory];
-  }
-
-  clearHistory(): void {
-    this.logHistory = [];
-  }
+function formatMessage(level: string, message: string, context?: string): string {
+  const timestamp = new Date().toISOString();
+  const prefix = context ? `[${context}]` : '';
+  return `${timestamp} ${level} ${prefix} ${message}`;
 }
 
-export const logger = new Logger();
+export const logger = {
+  info(message: string, data?: unknown, options?: LoggerOptions) {
+    if (isDev) {
+      console.info(formatMessage('INFO', message, options?.context), data ?? '');
+    }
+  },
+
+  warn(message: string, data?: unknown, options?: LoggerOptions) {
+    if (isDev) {
+      console.warn(formatMessage('WARN', message, options?.context), data ?? '');
+    }
+  },
+
+  error(message: string, error?: unknown, options?: LoggerOptions) {
+    // Sempre loga erros, mesmo em producao
+    const errorMessage = error instanceof Error ? error.message : String(error ?? '');
+    console.error(formatMessage('ERROR', message, options?.context), errorMessage);
+  },
+
+  debug(message: string, data?: unknown, options?: LoggerOptions) {
+    if (isDev) {
+      console.debug(formatMessage('DEBUG', message, options?.context), data ?? '');
+    }
+  },
+};
+
+export default logger;

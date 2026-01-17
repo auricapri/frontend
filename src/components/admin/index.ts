@@ -15,4 +15,5 @@ export { default as AdminSystem } from './AdminSystem';
 export { default as AdminTaxonomy } from './AdminTaxonomy';
 export { default as AdminUsers } from './AdminUsers';
 export { default as AdminDelivery } from './AdminDelivery';
+export { default as AdminMarketplaces } from './AdminMarketplaces';
 

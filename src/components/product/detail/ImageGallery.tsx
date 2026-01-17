@@ -1,5 +1,5 @@
 import React from 'react';
-import { Maximize2 } from 'lucide-react';
+import { Maximize2, ScanFace } from 'lucide-react';
 import { OptimizedImage } from '../../ui';
 import { type Product } from '../../../types';
 
@@ -25,6 +25,8 @@ export function ImageGallery(props: {
   mobileGalleryRef: React.RefObject<HTMLDivElement>;
   handleMobileScroll: React.UIEventHandler<HTMLDivElement>;
   mobileActiveIdx: number;
+  showFaceSwap?: boolean;
+  onFaceSwapClick?: () => void;
 }) {
   const {
     product,
@@ -37,6 +39,8 @@ export function ImageGallery(props: {
     mobileGalleryRef,
     handleMobileScroll,
     mobileActiveIdx,
+    showFaceSwap,
+    onFaceSwapClick,
   } = props;
 
   return (
@@ -81,6 +85,16 @@ export function ImageGallery(props: {
               <div className="absolute bottom-10 right-10 p-5 bg-white/90 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">
                 <Maximize2 className="w-6 h-6" />
               </div>
+              {showFaceSwap && idx === 0 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onFaceSwapClick?.(); }}
+                  className="absolute bottom-10 left-10 flex items-center gap-2 px-4 py-2.5 bg-white/90 backdrop-blur-md rounded-full opacity-80 hover:opacity-100 transition-all shadow-lg border border-neutral-100 group/faceswap z-10"
+                  aria-label="Provador virtual - experimente esta peça"
+                >
+                  <ScanFace className="w-4 h-4 text-neutral-700 group-hover/faceswap:text-black transition-colors" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-600 group-hover/faceswap:text-black">Provador</span>
+                </button>
+              )}
               {isActiveVariantImage && (
                 <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-full">
                   {getLoc(activeVariantColorName)}
@@ -142,6 +156,17 @@ export function ImageGallery(props: {
             {mobileActiveIdx + 1} <span className="text-white/40">/ {allImagesWithVariant.length}</span>
           </span>
         </div>
+
+        {showFaceSwap && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onFaceSwapClick?.(); }}
+            className="absolute bottom-24 left-4 flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg border border-neutral-100 z-10"
+            aria-label="Provador virtual - experimente esta peça"
+          >
+            <ScanFace className="w-4 h-4 text-neutral-700" />
+            <span className="text-[8px] font-bold uppercase tracking-wider text-neutral-600">Provador</span>
+          </button>
+        )}
       </div>
     </div>
   );

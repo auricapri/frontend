@@ -1,17 +1,38 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  X, Save, Plus, Trash2, ImageIcon, Sliders, Upload, Loader2, 
+import {
+  X, Save, Plus, Trash2, ImageIcon, Sliders, Upload, Loader2,
   Eye, Layout, Check, Calculator, TrendingUp, Scale, Ruler, DollarSign,
-  Monitor, Package, Link, ArrowDown, FileText, Landmark, Truck
+  Monitor, Package, Link, ArrowDown, FileText, Landmark, Truck,
+  // Category icons
+  Shirt, Watch, Gem, Glasses, ShoppingBag, Crown, Sparkles, Heart,
+  Footprints, Gift, Flower2, Ribbon, type LucideIcon
 } from 'lucide-react';
+
+// Available icons for categories
+const CATEGORY_ICONS: { name: string; icon: LucideIcon; label: string }[] = [
+  { name: 'Shirt', icon: Shirt, label: 'Roupas' },
+  { name: 'ShoppingBag', icon: ShoppingBag, label: 'Bolsas' },
+  { name: 'Watch', icon: Watch, label: 'Relógios' },
+  { name: 'Gem', icon: Gem, label: 'Joias' },
+  { name: 'Glasses', icon: Glasses, label: 'Óculos' },
+  { name: 'Footprints', icon: Footprints, label: 'Calçados' },
+  { name: 'Crown', icon: Crown, label: 'Acessórios' },
+  { name: 'Sparkles', icon: Sparkles, label: 'Destaque' },
+  { name: 'Heart', icon: Heart, label: 'Favoritos' },
+  { name: 'Gift', icon: Gift, label: 'Presentes' },
+  { name: 'Flower2', icon: Flower2, label: 'Flores' },
+  { name: 'Ribbon', icon: Ribbon, label: 'Laços' },
+];
 import { Locale } from '../../i18n';
 import { ProductVariant, Category, PricingScenario, Collection, Product, GlobalFinancialSettings, UserMode, Asset, SizeGuide, Supplier } from '../../types';
+import { Gender } from '../../constants/enums';
 import { supabase } from '../../utils/supabase';
 import { formatCurrency } from '../../utils/currency';
 import { ProductDetail } from '../product';
 import { Hero } from '../shared';
 import { CollectionDetail } from '../product';
+import { PricingApi } from '../../api/pricing.api';
 
 type AdminEditableData = Product | Category | Collection | Asset | SizeGuide | Supplier;
 
@@ -65,6 +86,9 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
   const [simulationResults, setSimulationResults] = useState<Record<string, SimulationResult>>({}); 
   const [targetPriceField, setTargetPriceField] = useState<'retail_price' | 'wholesale_price'>('retail_price');
   const [selectedVariantsForUpdate, setSelectedVariantsForUpdate] = useState<Set<string>>(new Set());
+  const [historyVariantId, setHistoryVariantId] = useState<string | null>(null);
+  const [historyEntries, setHistoryEntries] = useState<any[] | null>(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   // Derived Active Scenario
   const activeScenario = useMemo(() => {
@@ -75,27 +99,35 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
       return null;
   }, [item.data, item.type, activeScenarioId]);
 
+  const historyVariant = useMemo(() => {
+      if (item.type !== 'product' || !historyVariantId) return null;
+      const product = item.data as Product;
+      return (product.variants || []).find((v) => v.id === historyVariantId) || null;
+  }, [item.type, item.data, historyVariantId]);
+
   // Initial Logic for Collections/Cats
   useEffect(() => {
     if (item.type === 'category' && item.data.id) {
        const ids = products.filter(p => p.category_id === item.data.id).map(p => p.id);
-       if (item.data._associatedProductIds === undefined) {
-          onUpdateData({ ...item.data, _associatedProductIds: ids });
+       if ((item.data as any)._associatedProductIds === undefined) {
+          onUpdateData({ ...(item.data as any), _associatedProductIds: ids });
        }
     } else if (item.type === 'collection' && item.data.id) {
        const ids = products.filter(p => (p.collection_ids || []).includes(item.data.id)).map(p => p.id);
-       if (item.data._associatedProductIds === undefined) {
-          onUpdateData({ ...item.data, _associatedProductIds: ids });
+       if ((item.data as any)._associatedProductIds === undefined) {
+          onUpdateData({ ...(item.data as any), _associatedProductIds: ids });
        }
     }
-  }, [item.type, item.data.id]);
+  }, [item.type, item.data, products]);
 
   // Auto-select first scenario if present and none selected
   useEffect(() => {
-      if (item.type === 'product' && productSubTab === 'pricing' && !activeScenarioId && item.data.pricing_scenarios?.length > 0) {
-          setActiveScenarioId(item.data.pricing_scenarios[0].id);
+      if (item.type !== 'product') return;
+      const productData = item.data as Product;
+      if (productSubTab === 'pricing' && !activeScenarioId && (productData.pricing_scenarios?.length || 0) > 0) {
+          setActiveScenarioId(productData.pricing_scenarios![0].id);
       }
-  }, [productSubTab, item.type, item.data.pricing_scenarios]);
+  }, [productSubTab, item.type, activeScenarioId, item.data]);
 
   // Auto-set target field based on scenario channel
   useEffect(() => {
@@ -211,16 +243,17 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
     } catch (err: any) { alert(`Upload error: ${err.message}`); } finally { setUploading(null); }
   };
 
-  // Replaces direct variant upload with selection from Master Gallery
   const handleSelectVariantImage = (variantIndex: number, imageUrl: string) => {
-    const newData = { ...item.data };
-    const variants = [...newData.variants];
+    if (item.type !== 'product') return;
+    const newData = { ...(item.data as Product) };
+    const variants = [...(newData.variants || [])];
     variants[variantIndex] = { ...variants[variantIndex], variant_images: [imageUrl] };
     onUpdateData({ ...newData, variants });
   };
 
   const updateVariant = (index: number, field: keyof ProductVariant, value: any) => {
-    const newData = { ...item.data };
+    if (item.type !== 'product') return;
+    const newData = { ...(item.data as Product) };
     const variants = [...(newData.variants || [])];
     if (!variants[index]) return;
     variants[index] = { ...variants[index], [field]: value };
@@ -229,7 +262,8 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
   };
 
   const updateVariantLocalized = (idx: number, field: string, value: string) => {
-    const newData = { ...item.data };
+    if (item.type !== 'product') return;
+    const newData = { ...(item.data as Product) };
     const variants = [...(newData.variants || [])];
     if (!variants[idx]) return;
     const v = { ...variants[idx] };
@@ -252,13 +286,14 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
     v[field] = { ...currentVal, [item.editLocale]: value };
     variants[idx] = v;
     newData.variants = variants;
-    onUpdateData(newData);
+    onUpdateData(newData as unknown as AdminEditableData);
   };
 
   // Asset Linking Logic
   const handleToggleAsset = (variantIdx: number, assetId: string) => {
-      const newData = { ...item.data };
-      const variants = [...newData.variants];
+      if (item.type !== 'product') return;
+      const newData = { ...(item.data as Product) };
+      const variants = [...(newData.variants || [])];
       const variant = variants[variantIdx];
       const currentLinks = variant.correlated_assets || [];
       
@@ -270,15 +305,16 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
       }
       
       variants[variantIdx] = { ...variant, correlated_assets: newLinks };
-      onUpdateData({ ...newData, variants });
+      onUpdateData({ ...newData, variants } as unknown as AdminEditableData);
   };
 
   const addVariant = () => {
-    const newData = { ...item.data };
+    if (item.type !== 'product') return;
+    const newData = { ...(item.data as Product) };
     const variants = [...(newData.variants || [])];
     variants.push({
       id: generateUUID(),
-      product_id: item.data.id,
+      product_id: (item.data as Product).id,
       sku: `SKU-${Date.now()}`,
       size: 'Unique',
       color_name: { pt: 'Nova Cor', en: 'New Color', es: '', fr: '' },
@@ -290,15 +326,18 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
       stock_quantity: 1,
       variant_images: [],
       is_active: true,
+      face_swap_enabled: false,
       correlated_assets: [],
       composition: { pt: '', en: '' },
       care_instructions: { pt: '', en: '' }
     });
     newData.variants = variants;
-    onUpdateData(newData);
+    onUpdateData(newData as unknown as AdminEditableData);
   };
 
   const handleAddScenario = () => {
+    if (item.type !== 'product') return;
+    const productData = item.data as Product;
     const newSc: PricingScenario = {
       id: generateUUID(),
       name: 'Novo Cenário',
@@ -309,8 +348,8 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
       commission_percent: 0,
       target_margin_percent: 20
     };
-    const currentSc = item.data.pricing_scenarios || [];
-    onUpdateData({ ...item.data, pricing_scenarios: [...currentSc, newSc] });
+    const currentSc = productData.pricing_scenarios || [];
+    onUpdateData({ ...productData, pricing_scenarios: [...currentSc, newSc] } as unknown as AdminEditableData);
     setActiveScenarioId(newSc.id);
   };
 
@@ -324,40 +363,66 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
   };
 
   const calculateMatrix = async () => {
+    if (item.type !== 'product') return;
+    const productData = item.data as Product;
+    const variants = (productData.variants || []) as ProductVariant[];
+
     if (!activeScenario) {
-        alert("Erro: Cenario de precificacao nao encontrado.");
-        return;
+      alert('Erro: Cenario de precificacao nao encontrado.');
+      return;
+    }
+
+    if (!variants || variants.length === 0) {
+      alert('Nenhuma variante encontrada para calcular.');
+      return;
     }
 
     try {
-      // TODO: Restaurar pricingApi quando backend estiver disponível
-      // const response = await pricingApi.calculateMatrix({
-      //   variants: variants as ProductVariant[],
-      //   assets: assets || [],
-      //   scenario: {
-      //     channel: activeScenario.channel,
-      //     region_uf: activeScenario.region_uf,
-      //     target_margin_percent: activeScenario.target_margin_percent,
-      //     commission_percent: activeScenario.commission_percent,
-      //     ads_cac_target: activeScenario.ads_cac_target
-      //   },
-      //   hasFreeShipping,
-      //   financialSettings: config
-      // });
+      const pricingApi = new PricingApi();
+      const payloadFinancial: GlobalFinancialSettings | undefined = (global as any).financialConfig || undefined;
 
-      // setSimulationResults(response.results);
-      // setSelectedVariantsForUpdate(new Set(Object.keys(response.results)));
-      setSimulationResults({});
-      setSelectedVariantsForUpdate(new Set());
-      alert('Funcionalidade de precificação temporariamente desabilitada.');
+      const response = await pricingApi.calculateMatrix({
+        variants,
+        assets: assets || [],
+        scenario: {
+          channel: activeScenario.channel,
+          region_uf: activeScenario.region_uf,
+          target_margin_percent: activeScenario.target_margin_percent,
+          commission_percent: activeScenario.commission_percent,
+          ads_cac_target: activeScenario.ads_cac_target,
+        },
+        hasFreeShipping: productData.has_free_shipping,
+        financialSettings: payloadFinancial,
+      });
+
+      setSimulationResults(response.results);
+      setSelectedVariantsForUpdate(new Set(Object.keys(response.results)));
     } catch (error) {
       console.error('Error calculating matrix:', error);
       alert('Erro ao calcular matriz de precificação. Tente novamente.');
     }
   };
 
+  const openPriceHistory = async (variantId: string) => {
+    try {
+      setHistoryVariantId(variantId);
+      setHistoryLoading(true);
+      setHistoryEntries(null);
+      const pricingApi = new PricingApi();
+      const entries = await pricingApi.getVariantPriceHistory(variantId, { limit: 20, offset: 0 });
+      setHistoryEntries(entries);
+    } catch (error) {
+      console.error('Error loading price history:', error);
+      alert('Erro ao carregar histórico de preços.');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   const toggleSelectAll = () => {
-      const allIds = (item.data.variants || []).map((v: any) => v.id);
+      if (item.type !== 'product') return;
+      const productData = item.data as Product;
+      const allIds = (productData.variants || []).map((v: any) => v.id);
       if (selectedVariantsForUpdate.size === allIds.length) {
           setSelectedVariantsForUpdate(new Set());
       } else {
@@ -373,7 +438,9 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
   };
 
   const applyPricesToSelected = () => {
-    const variants = [...(item.data.variants || [])];
+    if (item.type !== 'product') return;
+    const productData = item.data as Product;
+    const variants = [...(productData.variants || [])];
     const newVariants = variants.map((v: ProductVariant) => {
        if (selectedVariantsForUpdate.has(v.id) && simulationResults[v.id]) {
           return { 
@@ -383,7 +450,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
        }
        return v;
     });
-    onUpdateData({ ...item.data, variants: newVariants });
+    onUpdateData({ ...productData, variants: newVariants } as unknown as AdminEditableData);
     alert(`Preços aplicados com sucesso para ${selectedVariantsForUpdate.size} variantes selecionadas!`);
   };
 
@@ -431,6 +498,9 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
           <div className="flex-1 overflow-y-auto p-8 md:p-16 no-scrollbar">
             
             {item.type === 'product' && (
+              (() => {
+                const productData = item.data as Product;
+                return (
               <div className="space-y-12">
                 <div className="flex gap-4 border-b border-neutral-100 pb-2 overflow-x-auto no-scrollbar">
                   {[
@@ -457,16 +527,16 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                       <div className="space-y-10">
                         <div className="space-y-4">
                           <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Identidade ({item.editLocale})</label>
-                          <input className="w-full p-8 bg-neutral-50 border border-neutral-100 rounded-[2rem] text-3xl font-black outline-none focus:bg-white focus:border-black transition-all" value={getLocVal(item.data.name)} onChange={e => updateNested('name', e.target.value)} placeholder="Nome do Produto" />
+                          <input className="w-full p-8 bg-neutral-50 border border-neutral-100 rounded-[2rem] text-3xl font-black outline-none focus:bg-white focus:border-black transition-all" value={getLocVal(productData.name)} onChange={e => updateNested('name', e.target.value)} placeholder="Nome do Produto" />
                         </div>
                         <div className="space-y-4">
                           <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Descrição</label>
-                          <textarea className="w-full p-8 bg-neutral-50 border border-neutral-100 rounded-[2rem] text-sm font-medium min-h-[200px] outline-none focus:bg-white focus:border-black transition-all" value={getLocVal(item.data.description)} onChange={e => updateNested('description', e.target.value)} placeholder="Descrição..." />
+                          <textarea className="w-full p-8 bg-neutral-50 border border-neutral-100 rounded-[2rem] text-sm font-medium min-h-[200px] outline-none focus:bg-white focus:border-black transition-all" value={getLocVal(productData.description)} onChange={e => updateNested('description', e.target.value)} placeholder="Descrição..." />
                         </div>
                         <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-4">
                               <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Categoria</label>
-                              <select className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl font-black uppercase text-[11px] outline-none" value={item.data.category_id || ''} onChange={e => updateSimple('category_id', e.target.value)}>
+                              <select className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl font-black uppercase text-[11px] outline-none" value={productData.category_id || ''} onChange={e => updateSimple('category_id', e.target.value)}>
                                 <option value="">Selecione...</option>
                                 {categories.map(cat => <option key={cat.id} value={cat.id}>{getLocVal(cat.name)}</option>)}
                               </select>
@@ -475,7 +545,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                 <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Fornecedor *</label>
                                 <select 
                                   className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl font-black uppercase text-[11px] outline-none focus:border-black transition-all" 
-                                  value={item.data.supplier_id || ''} 
+                                  value={productData.supplier_id || ''} 
                                   onChange={e => updateSimple('supplier_id', e.target.value)}
                                   required
                                 >
@@ -490,7 +560,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                             <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Coleções</label>
                             <div className="max-h-32 overflow-y-auto bg-neutral-50 border border-neutral-100 rounded-2xl p-4 space-y-2 no-scrollbar">
                                 {collections.map(col => {
-                                    const isSelected = (item.data.collection_ids || []).includes(col.id);
+                                    const isSelected = (productData.collection_ids || []).includes(col.id);
                                     return (
                                         <div key={col.id} onClick={() => toggleCollectionForProduct(col.id)} className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all border ${isSelected ? 'bg-black text-white border-black' : 'bg-white hover:bg-neutral-100 border-transparent'}`}>
                                             <div className={`w-3 h-3 rounded-full border ${isSelected ? 'bg-white border-white' : 'border-neutral-300'}`} />
@@ -501,33 +571,46 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                             </div>
                         </div>
                         <div className="flex items-center gap-4 p-6 bg-neutral-50 border border-neutral-100 rounded-2xl">
-                          <input 
-                            type="checkbox" 
-                            className="w-5 h-5 accent-black cursor-pointer" 
-                            checked={item.data.has_free_shipping || false} 
-                            onChange={e => updateSimple('has_free_shipping', e.target.checked)} 
+                            <input
+                            type="checkbox"
+                            className="w-5 h-5 accent-black cursor-pointer"
+                            checked={productData.has_free_shipping || false}
+                            onChange={e => updateSimple('has_free_shipping', e.target.checked)}
                           />
                           <div className="flex-1">
                             <label className="text-[10px] font-black uppercase tracking-widest text-neutral-900 cursor-pointer">Frete Grátis</label>
                             <p className="text-[8px] text-neutral-400 mt-1">Ao ativar, R$35 será adicionado ao preço de varejo</p>
                           </div>
                         </div>
+                        {/* Gender selection for products */}
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Gênero</label>
+                          <select
+                            className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl font-black uppercase text-[11px] outline-none focus:border-black transition-all"
+                            value={productData.gender || Gender.FEMALE}
+                            onChange={e => updateSimple('gender', e.target.value)}
+                          >
+                            <option value={Gender.FEMALE}>{t('gender.female')}</option>
+                            <option value={Gender.MALE}>{t('gender.male')}</option>
+                            <option value={Gender.UNISEX}>{t('gender.unisex')}</option>
+                          </select>
+                        </div>
                       </div>
                       
                       <div className="space-y-10">
                         <div className="bg-neutral-50 p-10 rounded-[2.5rem] border border-neutral-100">
                           <div className="flex justify-between items-center mb-10">
-                            <div className="flex flex-col"><label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Galeria Master</label></div>
+                          <div className="flex flex-col"><label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Galeria Master</label></div>
                             <label className="cursor-pointer flex items-center gap-2 px-6 py-3 bg-black text-white rounded-2xl text-[9px] font-black uppercase tracking-widest hover:scale-105 transition-all">
                                 {uploading === 'master' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />} Upload
                                 <input type="file" className="hidden" accept="image/*" onChange={handleMasterUpload} disabled={!!uploading} />
                             </label>
                           </div>
                           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 mb-8">
-                            {(item.data.base_images || []).map((img: string, i: number) => (
+                            {(productData.base_images || []).map((img: string, i: number) => (
                               <div key={i} className="relative aspect-[3/4] bg-white rounded-xl overflow-hidden border border-neutral-200 group shadow-sm">
                                   <img src={img} className="w-full h-full object-cover" />
-                                  <button onClick={() => { const newData = { ...item.data, base_images: item.data.base_images.filter((_:any, idx:number) => idx !== i) }; onUpdateData(newData); }} className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100"><Trash2 className="w-3 h-3" /></button>
+                                  <button onClick={() => { const newData = { ...productData, base_images: (productData.base_images || []).filter((_:any, idx:number) => idx !== i) }; onUpdateData(newData as unknown as AdminEditableData); }} className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100"><Trash2 className="w-3 h-3" /></button>
                               </div>
                             ))}
                           </div>
@@ -542,9 +625,9 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                       </div>
 
                       <div className="space-y-12">
-                        {(item.data.variants || []).map((v: ProductVariant, idx: number) => (
+                        {(productData.variants || []).map((v: ProductVariant, idx: number) => (
                           <div key={v.id || idx} className="bg-neutral-50 p-12 rounded-[4rem] border border-neutral-100 space-y-12 relative group animate-in slide-in-from-bottom-4">
-                            <button onClick={() => onUpdateData({...item.data, variants: item.data.variants.filter((_: any, i: number) => i !== idx)})} className="absolute top-10 right-10 p-4 text-red-400 hover:bg-red-50 rounded-2xl transition-all"><Trash2 className="w-6 h-6" /></button>
+                            <button onClick={() => onUpdateData({...productData, variants: (productData.variants || []).filter((_: any, i: number) => i !== idx)} as unknown as AdminEditableData)} className="absolute top-10 right-10 p-4 text-red-400 hover:bg-red-50 rounded-2xl transition-all"><Trash2 className="w-6 h-6" /></button>
 
                             <div className="grid grid-cols-1 md:grid-cols-5 gap-10">
                               <div className="md:col-span-1 space-y-4">
@@ -565,9 +648,9 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                 {/* Master Gallery Selection */}
                                 <div>
                                   <span className="text-[8px] font-bold uppercase tracking-widest text-neutral-300 mb-2 block">Selecionar da Galeria Master</span>
-                                  {item.data.base_images && item.data.base_images.length > 0 ? (
+                                  {productData.base_images && productData.base_images.length > 0 ? (
                                     <div className="grid grid-cols-4 gap-2">
-                                      {item.data.base_images.map((img: string, i: number) => (
+                                      {productData.base_images.map((img: string, i: number) => (
                                         <button 
                                           key={i}
                                           onClick={() => handleSelectVariantImage(idx, img)}
@@ -578,7 +661,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                         </button>
                                       ))}
                                     </div>
-                                  ) : (
+                                      ) : (
                                     <p className="text-[8px] text-red-400 font-medium bg-red-50 p-2 rounded-lg">
                                       Nenhuma imagem na galeria master. Faça upload acima primeiro.
                                     </p>
@@ -670,7 +753,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                        {assets.map(asset => {
                                           const isLinked = (v.correlated_assets || []).find((l: any) => l.asset_id === asset.id);
                                           return (
-                                             <button 
+                                             <button
                                                 key={asset.id}
                                                 onClick={() => handleToggleAsset(idx, asset.id)}
                                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-[9px] font-bold uppercase tracking-widest transition-all ${isLinked ? 'bg-black text-white border-black' : 'bg-white text-neutral-400 border-neutral-200 hover:border-black'}`}
@@ -681,6 +764,26 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                              </button>
                                           );
                                        })}
+                                    </div>
+                                 </div>
+
+                                 {/* FACE SWAP SECTION */}
+                                 <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-2xl border border-purple-200">
+                                    <div className="flex items-center gap-4">
+                                       <input
+                                          type="checkbox"
+                                          className="w-5 h-5 accent-purple-600 cursor-pointer"
+                                          checked={v.face_swap_enabled || false}
+                                          onChange={e => updateVariant(idx, 'face_swap_enabled', e.target.checked)}
+                                       />
+                                       <div className="flex-1">
+                                          <label className="text-[10px] font-black uppercase tracking-widest text-purple-900 cursor-pointer">
+                                             Face Swap (Experimentar Virtualmente)
+                                          </label>
+                                          <p className="text-[8px] text-purple-600 mt-1">
+                                             Permite que clientes enviem uma foto para ver como ficariam usando este produto
+                                          </p>
+                                       </div>
                                     </div>
                                  </div>
                               </div>
@@ -702,7 +805,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                           >
                              <Plus className="w-3 h-3" /> Novo Cenário
                           </button>
-                          {(item.data.pricing_scenarios || []).map((sc: PricingScenario) => (
+                        {(productData.pricing_scenarios || []).map((sc: PricingScenario) => (
                               <button
                                  key={sc.id}
                                  onClick={() => setActiveScenarioId(sc.id)}
@@ -754,7 +857,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                           <Landmark className="w-3 h-3 text-emerald-600" />
                                           <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700">MEI - DAS Fixo R$71,60/mes</span>
                                       </div>
-                                      {item.data.has_free_shipping && (
+                                      {productData.has_free_shipping && (
                                           <div className="px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-2">
                                               <Truck className="w-3 h-3 text-blue-600" />
                                               <span className="text-[9px] font-black uppercase tracking-widest text-blue-700">Frete Gratis (+R$35 no preco)</span>
@@ -795,7 +898,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                                       <input 
                                                         type="checkbox" 
                                                         className="w-4 h-4 accent-black cursor-pointer"
-                                                        checked={selectedVariantsForUpdate.size > 0 && selectedVariantsForUpdate.size === (item.data.variants || []).length}
+                                                        checked={selectedVariantsForUpdate.size > 0 && selectedVariantsForUpdate.size === (productData.variants || []).length}
                                                         onChange={toggleSelectAll}
                                                       />
                                                   </th>
@@ -803,11 +906,12 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                                   <th className="p-6 text-right">Composição de Custo</th>
                                                   <th className="p-6 text-right text-blue-600">Preço Sugerido</th>
                                                   <th className="p-6 text-right">Preço Atual ({targetPriceField === 'retail_price' ? 'Varejo' : 'Atacado'})</th>
+                                                  <th className="p-6 text-right">Histórico</th>
                                                   <th className="p-6 text-right">Margem</th>
                                               </tr>
                                           </thead>
                                           <tbody className="divide-y divide-neutral-50">
-                                              {(item.data.variants || []).map((v: ProductVariant) => {
+                                              {(productData.variants || []).map((v: ProductVariant) => {
                                                   const result = simulationResults[v.id];
                                                   if (!result) return null;
                                                   
@@ -847,6 +951,14 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                                               {formatCurrency(current, locale)}
                                                           </td>
                                                           <td className="p-6 text-right">
+                                                              <button
+                                                                onClick={() => openPriceHistory(v.id)}
+                                                                className="px-4 py-2 bg-neutral-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-black hover:scale-105 transition-all"
+                                                              >
+                                                                Histórico
+                                                              </button>
+                                                          </td>
+                                                          <td className="p-6 text-right">
                                                               {diff < -0.01 ? (
                                                                   <span className="text-[9px] font-bold text-red-500 bg-red-50 px-3 py-1 rounded-full">Baixa</span>
                                                               ) : (
@@ -870,6 +982,85 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                               <Check className="w-4 h-4" /> Aplicar Selecionados
                                           </button>
                                       </div>
+                                      {historyVariantId && (
+                                        <div className="border-t border-neutral-100 bg-white p-6">
+                                          <div className="flex items-center justify-between mb-4">
+                                            <div className="flex flex-col">
+                                              <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                                                Histórico de preços
+                                              </span>
+                                              {historyVariant && (
+                                                <span className="text-xs font-bold text-neutral-800">
+                                                  {getLocVal(historyVariant.color_name)} - {historyVariant.size} · {historyVariant.sku}
+                                                </span>
+                                              )}
+                                            </div>
+                                            <button
+                                              onClick={() => {
+                                                setHistoryVariantId(null);
+                                                setHistoryEntries(null);
+                                              }}
+                                              className="px-4 py-2 border border-neutral-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-neutral-500 hover:bg-neutral-50 transition-all"
+                                            >
+                                              Fechar
+                                            </button>
+                                          </div>
+                                          {historyLoading ? (
+                                            <div className="flex items-center gap-2 text-xs text-neutral-500">
+                                              <Loader2 className="w-4 h-4 animate-spin" />
+                                              <span>Carregando histórico...</span>
+                                            </div>
+                                          ) : historyEntries && historyEntries.length > 0 ? (
+                                            <div className="overflow-x-auto">
+                                              <table className="w-full text-left text-[11px]">
+                                                <thead className="bg-neutral-50 text-[9px] font-black uppercase tracking-widest text-neutral-400 border border-neutral-100">
+                                                  <tr>
+                                                    <th className="p-3">Data</th>
+                                                    <th className="p-3">Ação</th>
+                                                    <th className="p-3 text-right">Preço Antigo</th>
+                                                    <th className="p-3 text-right">Preço Novo</th>
+                                                    <th className="p-3 text-right">Cenário</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-neutral-100">
+                                                  {historyEntries.map((entry: any) => {
+                                                    const meta = entry.metadata || {};
+                                                    const oldPrice = typeof meta.old_price === 'number' ? meta.old_price : null;
+                                                    const newPrice = typeof meta.new_price === 'number' ? meta.new_price : null;
+                                                    const scenarioName =
+                                                      (meta.scenario && meta.scenario.name) ||
+                                                      meta.scenario_name ||
+                                                      '';
+                                                    return (
+                                                      <tr key={entry.id}>
+                                                        <td className="p-3 text-xs text-neutral-500">
+                                                          {entry.created_at ? new Date(entry.created_at).toLocaleString() : '-'}
+                                                        </td>
+                                                        <td className="p-3 text-xs font-bold uppercase text-neutral-700">
+                                                          {entry.action || '-'}
+                                                        </td>
+                                                        <td className="p-3 text-xs text-right">
+                                                          {oldPrice != null ? formatCurrency(oldPrice, locale) : '-'}
+                                                        </td>
+                                                        <td className="p-3 text-xs text-right">
+                                                          {newPrice != null ? formatCurrency(newPrice, locale) : '-'}
+                                                        </td>
+                                                        <td className="p-3 text-[10px] text-right text-neutral-400">
+                                                          {scenarioName || '-'}
+                                                        </td>
+                                                      </tr>
+                                                    );
+                                                  })}
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          ) : (
+                                            <p className="text-[10px] text-neutral-400 uppercase tracking-widest">
+                                              Nenhum histórico de preço encontrado.
+                                            </p>
+                                          )}
+                                        </div>
+                                      )}
                                   </div>
                               )}
                           </div>
@@ -883,6 +1074,8 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                    </div>
                 )}
               </div>
+                );
+              })()
             )}
 
             {/* BANNERS EDITOR */}
@@ -956,6 +1149,46 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                             <div className="flex items-center gap-4 p-5 bg-white border border-neutral-200 rounded-2xl"><input type="checkbox" className="w-5 h-5 accent-black" checked={item.data.is_active} onChange={e => updateSimple('is_active', e.target.checked)} /><span className="text-xs font-black uppercase tracking-widest">Ativo</span></div>
                         </div>
                     </div>
+
+                    {/* CATEGORY-ONLY: Icon and Gender */}
+                    {item.type === 'category' && (
+                      <div className="space-y-6 pt-4 border-t border-neutral-100">
+                        <div className="space-y-4">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Ícone da Categoria</label>
+                          <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                            {/* No icon option */}
+                            <button
+                              type="button"
+                              onClick={() => updateSimple('icon', null)}
+                              className={`aspect-square rounded-2xl border-2 flex flex-col items-center justify-center gap-1 transition-all hover:scale-105 ${
+                                !(item.data as Category).icon
+                                  ? 'border-black bg-black text-white'
+                                  : 'border-neutral-200 bg-white text-neutral-400 hover:border-neutral-300'
+                              }`}
+                            >
+                              <X className="w-5 h-5" />
+                              <span className="text-[8px] font-bold">Nenhum</span>
+                            </button>
+                            {/* Icon options */}
+                            {CATEGORY_ICONS.map(({ name, icon: Icon, label }) => (
+                              <button
+                                key={name}
+                                type="button"
+                                onClick={() => updateSimple('icon', name)}
+                                className={`aspect-square rounded-2xl border-2 flex flex-col items-center justify-center gap-1 transition-all hover:scale-105 ${
+                                  (item.data as Category).icon === name
+                                    ? 'border-black bg-black text-white'
+                                    : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300'
+                                }`}
+                              >
+                                <Icon className="w-5 h-5" />
+                                <span className="text-[8px] font-bold truncate px-1">{label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                 </div>
             )}
             

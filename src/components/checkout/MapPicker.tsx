@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Search, Check, Loader2 } from 'lucide-react';
 import { MAPBOX_TOKEN } from '../../utils/mapbox';
 import { type AddressData } from '../../types';
+import { useDebounce } from '../../hooks/useDebounce';
 
 interface MapPickerProps {
   isOpen: boolean;
@@ -188,14 +189,21 @@ export const MapPicker: React.FC<MapPickerProps> = ({
     });
   };
 
-  const handlePickerSearch = async () => {
-    if (!searchQuery) return;
+  const executeSearch = useCallback(async (query: string) => {
+    if (!query) return;
     setIsSearching(true);
     try {
-      const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${MAPBOX_TOKEN}&country=br&limit=5&types=address,place,locality,neighborhood`);
+      const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=br&limit=5&types=address,place,locality,neighborhood`);
       const data = await res.json();
       setSearchResults(data.features || []);
     } catch (_e) { void _e; } finally { setIsSearching(false); }
+  }, []);
+
+  const debouncedSearch = useDebounce(executeSearch, 400);
+
+  const handlePickerSearch = () => {
+    if (!searchQuery) return;
+    debouncedSearch(searchQuery);
   };
 
   const handleSelectSearchResult = async (result: any) => {

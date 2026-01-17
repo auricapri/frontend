@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PaymentMethod } from '../../../constants/enums';
 import { Locale } from '../../../i18n';
 import { CouponsApi } from '../../../api/coupons.api';
+import { PaymentsApi } from '../../../api/payments.api';
 import { formatCurrency } from '../../../utils/currency';
 import { MAPBOX_TOKEN, getMapboxStyle } from '../../../utils/mapbox';
-import { maskCep, maskCreditCard, maskExpiryDate, maskPhone, normalizeCepDigits, unmask } from '../../../utils/masks';
+import { maskCep, maskCPF, maskCreditCard, maskExpiryDate, maskPhone, normalizeCepDigits, unmask } from '../../../utils/masks';
 import { LogisticsService } from '../../../services/logistics.service';
+import type { InstallmentOption } from '../../../types/payment.types';
 import {
   AddressData,
   type CartItem,
@@ -42,6 +44,8 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const { items, currentUser, storeConfig, userMode, onComplete, locale } = params;
 
   const logisticsService = useMemo(() => new LogisticsService(), []);
+  const couponsApi = useMemo(() => new CouponsApi(), []);
+  const paymentsApi = useMemo(() => new PaymentsApi(), []);
 
   const [step, setStep] = useState(1);
   const [cep, setCep] = useState('');
@@ -56,6 +60,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const [num, setNum] = useState('');
   const [complement, setComplement] = useState('');
   const [phone, setPhone] = useState('');
+  const [cpf, setCpf] = useState('');
   const [cepError, setCepError] = useState<string | null>(null);
   const [manualCepError, setManualCepError] = useState<string | null>(null);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
@@ -64,8 +69,23 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CREDIT_CARD);
   const [splitCards, setSplitCards] = useState(false);
-  const [, setCard1Amount] = useState<number>(0);
+  const [card1Amount, setCard1Amount] = useState<number>(0);
+  const [card2Amount, setCard2Amount] = useState<number>(0);
   const [useCashback, setUseCashback] = useState(false);
+
+  // Installment states
+  const [installmentOptions, setInstallmentOptions] = useState<InstallmentOption[]>([]);
+  const [selectedInstallments, setSelectedInstallments] = useState(1);
+  const [selectedInstallmentCode, setSelectedInstallmentCode] = useState('INST_1');
+  const [installmentsLoading, setInstallmentsLoading] = useState(false);
+
+  // Split card installment states
+  const [card1Installments, setCard1Installments] = useState(1);
+  const [card1InstallmentCode, setCard1InstallmentCode] = useState('INST_1');
+  const [card1Options, setCard1Options] = useState<InstallmentOption[]>([]);
+  const [card2Installments, setCard2Installments] = useState(1);
+  const [card2InstallmentCode, setCard2InstallmentCode] = useState('INST_1');
+  const [card2Options, setCard2Options] = useState<InstallmentOption[]>([]);
 
   const [selectedSavedCardId, setSelectedSavedCardId] = useState<string | null>(null);
   const [selectedSavedCardId2, setSelectedSavedCardId2] = useState<string | null>(null);
@@ -169,11 +189,133 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
 
   useEffect(() => {
     if (splitCards && finalTotal > 0) {
-      setCard1Amount(finalTotal / 2);
+      const half = Math.round((finalTotal / 2) * 100) / 100;
+      setCard1Amount(half);
+      setCard2Amount(Math.round((finalTotal - half) * 100) / 100);
     } else {
       setCard1Amount(finalTotal);
+      setCard2Amount(0);
     }
   }, [splitCards, finalTotal]);
+
+  // Load installment options when finalTotal changes
+  const loadInstallmentOptions = useCallback(async (amount: number) => {
+    if (amount <= 0) {
+      setInstallmentOptions([]);
+      return;
+    }
+
+    setInstallmentsLoading(true);
+    try {
+      const response = await paymentsApi.getInstallmentOptions(amount);
+      setInstallmentOptions(response.options);
+      // Reset to 1x if current selection is invalid
+      if (selectedInstallments > response.maxInstallments) {
+        setSelectedInstallments(1);
+        setSelectedInstallmentCode('INST_1');
+      }
+    } catch (error) {
+      console.error('Failed to load installment options:', error);
+      setInstallmentOptions([]);
+    } finally {
+      setInstallmentsLoading(false);
+    }
+  }, [paymentsApi, selectedInstallments]);
+
+  // Load split card options
+  const loadSplitCardOptions = useCallback(async () => {
+    if (!splitCards || card1Amount <= 0 || card2Amount <= 0) return;
+
+    try {
+      const [card1Response, card2Response] = await Promise.all([
+        paymentsApi.getInstallmentOptions(card1Amount),
+        paymentsApi.getInstallmentOptions(card2Amount)
+      ]);
+
+      setCard1Options(card1Response.options);
+      setCard2Options(card2Response.options);
+
+      // Reset installments if invalid
+      if (card1Installments > card1Response.maxInstallments) {
+        setCard1Installments(1);
+        setCard1InstallmentCode('INST_1');
+      }
+      if (card2Installments > card2Response.maxInstallments) {
+        setCard2Installments(1);
+        setCard2InstallmentCode('INST_1');
+      }
+    } catch (error) {
+      console.error('Failed to load split card options:', error);
+    }
+  }, [splitCards, card1Amount, card2Amount, card1Installments, card2Installments, paymentsApi]);
+
+  // Effect to load installment options
+  useEffect(() => {
+    if (paymentMethod === PaymentMethod.CREDIT_CARD && !splitCards && finalTotal > 0) {
+      loadInstallmentOptions(finalTotal);
+    }
+  }, [paymentMethod, splitCards, finalTotal, loadInstallmentOptions]);
+
+  // Effect to load split card options
+  useEffect(() => {
+    if (paymentMethod === PaymentMethod.CREDIT_CARD && splitCards) {
+      loadSplitCardOptions();
+    }
+  }, [paymentMethod, splitCards, card1Amount, card2Amount, loadSplitCardOptions]);
+
+  // Handle installment selection
+  const handleSelectInstallments = useCallback((installments: number, code: string) => {
+    setSelectedInstallments(installments);
+    setSelectedInstallmentCode(code);
+  }, []);
+
+  // Handle card 1 installment selection
+  const handleSelectCard1Installments = useCallback((installments: number, code: string) => {
+    setCard1Installments(installments);
+    setCard1InstallmentCode(code);
+  }, []);
+
+  // Handle card 2 installment selection
+  const handleSelectCard2Installments = useCallback((installments: number, code: string) => {
+    setCard2Installments(installments);
+    setCard2InstallmentCode(code);
+  }, []);
+
+  // Handle card 1 amount change for split (no clamping - validation is done in component)
+  const handleCard1AmountChange = useCallback((amount: number) => {
+    setCard1Amount(Math.round(amount * 100) / 100);
+  }, []);
+
+  // Handle card 2 amount change for split
+  const handleCard2AmountChange = useCallback((amount: number) => {
+    setCard2Amount(Math.round(amount * 100) / 100);
+  }, []);
+
+  // Validation for split cards
+  const splitCardsValid = useMemo(() => {
+    if (!splitCards) return true;
+    const difference = Math.abs((card1Amount + card2Amount) - finalTotal);
+    return difference < 0.01; // 1 centavo tolerance
+  }, [splitCards, card1Amount, card2Amount, finalTotal]);
+
+  // Calculate final amount with fees for credit card
+  const selectedInstallmentOption = useMemo(() => {
+    return installmentOptions.find(o => o.installments === selectedInstallments);
+  }, [installmentOptions, selectedInstallments]);
+
+  const finalTotalWithFees = useMemo(() => {
+    if (paymentMethod !== PaymentMethod.CREDIT_CARD) {
+      return finalTotal;
+    }
+
+    if (splitCards) {
+      const card1Option = card1Options.find(o => o.installments === card1Installments);
+      const card2Option = card2Options.find(o => o.installments === card2Installments);
+      return (card1Option?.totalValue || card1Amount) + (card2Option?.totalValue || card2Amount);
+    }
+
+    return selectedInstallmentOption?.totalValue || finalTotal;
+  }, [paymentMethod, splitCards, selectedInstallmentOption, card1Options, card2Options, card1Installments, card2Installments, card1Amount, card2Amount, finalTotal]);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -182,7 +324,6 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     setCouponError(null);
 
     try {
-      const couponsApi = new CouponsApi();
       const coupon = await couponsApi.getByCode(couponCode.trim().toUpperCase());
 
       if (!coupon) {
@@ -720,6 +861,8 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     setComplement,
     phone,
     setPhone,
+    cpf,
+    setCpf,
     cepError,
     manualCepError,
     isMapPickerOpen,
@@ -778,6 +921,28 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     pixDiscount,
     cashbackUsed,
     finalTotal,
+    finalTotalWithFees,
+    // Installment states
+    installmentOptions,
+    selectedInstallments,
+    selectedInstallmentCode,
+    selectedInstallmentOption,
+    installmentsLoading,
+    handleSelectInstallments,
+    // Split card states
+    card1Amount,
+    card2Amount,
+    card1Installments,
+    card1InstallmentCode,
+    card1Options,
+    card2Installments,
+    card2InstallmentCode,
+    card2Options,
+    splitCardsValid,
+    handleCard1AmountChange,
+    handleCard2AmountChange,
+    handleSelectCard1Installments,
+    handleSelectCard2Installments,
     handleApplyCoupon,
     handleRemoveCoupon,
     getLoc,
@@ -794,6 +959,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     confirmManualAddress,
     handleCepChange,
     maskPhone,
+    maskCPF,
     unmask,
   };
 }

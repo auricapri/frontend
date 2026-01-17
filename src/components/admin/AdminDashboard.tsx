@@ -1,24 +1,27 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Box, Users, Settings, LogOut, 
+import { Box, Users, Settings, LogOut,
   BarChart3, Tag, Layers, Image as ImageIcon, Ticket, Archive, BookOpen, Ruler, Lightbulb,
-  AlertTriangle, X, Loader2, Store, Truck
+  AlertTriangle, X, Loader2, Store, Truck, ShoppingBag, ChevronDown
 } from 'lucide-react';
 // Supabase is only used for auth.signOut() which is safe
-import { ProductsApi } from '../../api/products.api';
-import { OrdersApi } from '../../api/orders.api';
-import { UsersApi } from '../../api/users.api';
-import { StoreApi } from '../../api/store.api';
-import { CouponsApi } from '../../api/coupons.api';
-import { CollectionsApi } from '../../api/collections.api';
-import { AssetsApi } from '../../api/assets.api';
-import { GuidesApi } from '../../api/guides.api';
-import { BannersApi } from '../../api/banners.api';
+import {
+  productsApi,
+  ordersApi,
+  usersApi,
+  storeApi,
+  couponsApi,
+  collectionsApi,
+  assetsApi,
+  guidesApi,
+  bannersApi,
+  suppliersApi,
+  marketingApi,
+} from '../../api/instances';
 import { logger } from '../../utils/logger';
-import { SuppliersApi } from '../../api/suppliers.api';
 import { Locale } from '../../i18n';
-import { 
-  Product, Category, Collection, Banner, Coupon, Asset, 
+import {
+  Product, Category, Collection, Banner, Coupon, Asset,
   StoreConfig, UserProfile, Order, GlobalFinancialSettings, SizeGuide, Supplier
 } from '../../types';
 import { OrderStatus } from '../../constants/enums';
@@ -41,7 +44,8 @@ import AdminSuppliers from './AdminSuppliers';
 import AdminSupplierEditor from './AdminSupplierEditor';
 import AdminDelivery from './AdminDelivery';
 import AdminCampaignEditor from './AdminCampaignEditor';
-import { marketingApi, Campaign } from '../../api/marketing.api';
+import AdminMarketplaces from './AdminMarketplaces';
+import { Campaign } from '../../api/marketing.api';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -56,6 +60,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   const [isLoading, setIsLoading] = useState(true);
   const [, setIsRefreshing] = useState(false);
   const [editLocale, setEditLocale] = useState<Locale>(locale);
+
+  // Sidebar categories collapse state
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set(['principal', 'produtos', 'vendas', 'sistema'])
+  );
+
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(category)) {
+        next.delete(category);
+      } else {
+        next.add(category);
+      }
+      return next;
+    });
+  };
 
   // Data State
   const [products, setProducts] = useState<Product[]>([]);
@@ -104,19 +125,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   const fetchData = useCallback(async (isSilent = false) => {
     if (!isSilent) setIsLoading(true);
     else setIsRefreshing(true);
-    
-    try {
-      const productsApi = new ProductsApi();
-      const ordersApi = new OrdersApi();
-      const usersApi = new UsersApi();
-      const storeApi = new StoreApi();
-      const couponsApi = new CouponsApi();
-      const collectionsApi = new CollectionsApi();
-      const assetsApi = new AssetsApi();
-      const guidesApi = new GuidesApi();
-      const bannersApi = new BannersApi();
-      const suppliersApi = new SuppliersApi();
 
+    try {
+      // Usa singletons de API em vez de criar novas instâncias
       const [
         productsData,
         categoriesData,
@@ -172,9 +183,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
 
   const handleUpdateOrderStatus = async (orderId: string, status: OrderStatus, trackingCode?: string) => {
     try {
-      const ordersApi = new OrdersApi();
       const updatedOrder = await ordersApi.updateStatus(orderId, status as OrderStatus, trackingCode);
-      
       setOrders(prev => prev.map(o => o.id === orderId ? updatedOrder : o));
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Erro ao atualizar pedido';
@@ -188,35 +197,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
 
     try {
       const { type, data } = editingItem;
-      
+
       const payload = { ...data };
       const variants = payload.variants;
       delete payload.variants; // Variants handled separately
+      delete payload._associatedProductIds; // Virtual field - computed client-side only
 
       if (type === 'product') {
-        const productsApi = new ProductsApi();
-        
         if (data.id) {
           await productsApi.update(data.id, { ...payload, variants });
         } else {
           await productsApi.create({ ...payload, variants });
         }
       } else if (type === 'collection') {
-        const collectionsApi = new CollectionsApi();
         if (data.id) {
           await collectionsApi.update(data.id, payload);
         } else {
           await collectionsApi.create(payload);
         }
       } else if (type === 'category') {
-        const storeApi = new StoreApi();
         if (data.id) {
           await storeApi.updateCategory(data.id, payload);
         } else {
           await storeApi.createCategory(payload);
         }
       } else if (type === 'banner') {
-        const bannersApi = new BannersApi();
         if (data.id) {
           await bannersApi.update(data.id, payload);
         } else {
@@ -259,10 +264,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
     setIsDeletingTaxonomy(true);
     try {
       if (editingItem.type === 'category') {
-        const storeApi = new StoreApi();
         await storeApi.deleteCategory(String(data.id));
       } else {
-        const collectionsApi = new CollectionsApi();
         await collectionsApi.delete(String(data.id));
       }
 
@@ -280,7 +283,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
 
   const handleSaveCoupon = async (coupon: Coupon) => {
     try {
-      const couponsApi = new CouponsApi();
       if (coupon.id) {
         await couponsApi.update(coupon.id, coupon);
       } else {
@@ -296,7 +298,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
 
   const handleDeleteCoupon = async (couponId: string) => {
     try {
-      const couponsApi = new CouponsApi();
       await couponsApi.delete(couponId);
       await fetchData();
       setEditingCoupon(null);
@@ -327,10 +328,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   };
 
   const handleSystemSave = async () => {
-     try {
-       const storeApi = new StoreApi();
-       await storeApi.updateConfig(config);
-       alert("Configurações salvas!");
+    try {
+      await storeApi.updateConfig(config);
+      alert("Configurações salvas!");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Erro ao salvar';
       alert(message);
@@ -369,10 +369,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
     }
     
     setIsDeleting(true);
-    
+
     try {
-      const productsApi = new ProductsApi();
-      
       // Process in queue (batch delete)
       const result = await productsApi.deleteBatch(deleteConfirm.productIds);
       
@@ -422,79 +420,124 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
            <div className="text-2xl font-black uppercase tracking-tighter hidden md:block">AURICAPRI<span className="text-neutral-500">.OS</span></div>
            <div className="md:hidden font-black text-xl">OS</div>
            
-           <nav className="flex flex-col gap-1 w-full overflow-y-auto flex-1 min-h-0">
+           <nav className="flex flex-col gap-1 w-full overflow-y-auto flex-1 min-h-0 pr-1">
+              {/* Principal Category */}
               <div className="space-y-1">
-                <div className="hidden md:block text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 mb-2">Principal</div>
-                {[
-                  { id: 'health', icon: BarChart3, label: 'Health' },
-                  { id: 'dream', icon: Lightbulb, label: 'Dream Board' },
-                  { id: 'orders', icon: Box, label: 'Pedidos' },
-                  { id: 'delivery', icon: Truck, label: 'Delivery' },
-                ].map(item => (
-                  <button 
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
-                  >
-                     <item.icon className="w-4 h-4 flex-shrink-0" />
-                     <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
-                  </button>
-                ))}
+                <button
+                  onClick={() => toggleCategory('principal')}
+                  className="hidden md:flex items-center justify-between w-full text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 py-1.5 hover:text-neutral-300 transition-colors"
+                >
+                  <span>Principal</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${!expandedCategories.has('principal') ? '-rotate-90' : ''}`} />
+                </button>
+                {expandedCategories.has('principal') && (
+                  <div className="space-y-1">
+                    {[
+                      { id: 'health', icon: BarChart3, label: 'Health' },
+                      { id: 'dream', icon: Lightbulb, label: 'Dream Board' },
+                      { id: 'orders', icon: Box, label: 'Pedidos' },
+                      { id: 'delivery', icon: Truck, label: 'Delivery' },
+                    ].map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id)}
+                        className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
+                      >
+                        <item.icon className="w-4 h-4 flex-shrink-0" />
+                        <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-1 mt-4">
-                <div className="hidden md:block text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 mb-2">Produtos</div>
-                {[
-                  { id: 'inventory', icon: Tag, label: 'Catálogo' },
-                  { id: 'suppliers', icon: Store, label: 'Fornecedores' },
-                  { id: 'taxonomy', icon: Layers, label: 'Taxonomia' },
-                  { id: 'guides', icon: Ruler, label: 'Guias' },
-                ].map(item => (
-                  <button 
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
-                  >
-                     <item.icon className="w-4 h-4 flex-shrink-0" />
-                     <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
-                  </button>
-                ))}
+              {/* Produtos Category */}
+              <div className="space-y-1 mt-2">
+                <button
+                  onClick={() => toggleCategory('produtos')}
+                  className="hidden md:flex items-center justify-between w-full text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 py-1.5 hover:text-neutral-300 transition-colors"
+                >
+                  <span>Produtos</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${!expandedCategories.has('produtos') ? '-rotate-90' : ''}`} />
+                </button>
+                {expandedCategories.has('produtos') && (
+                  <div className="space-y-1">
+                    {[
+                      { id: 'inventory', icon: Tag, label: 'Catálogo' },
+                      { id: 'suppliers', icon: Store, label: 'Fornecedores' },
+                      { id: 'taxonomy', icon: Layers, label: 'Taxonomia' },
+                      { id: 'guides', icon: Ruler, label: 'Guias' },
+                    ].map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id)}
+                        className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
+                      >
+                        <item.icon className="w-4 h-4 flex-shrink-0" />
+                        <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-1 mt-4">
-                <div className="hidden md:block text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 mb-2">Marketing</div>
-                {[
-                  { id: 'marketing', icon: ImageIcon, label: 'Marketing' },
-                  { id: 'coupons', icon: Ticket, label: 'Cupons' },
-                  { id: 'assets', icon: Archive, label: 'Insumos' },
-                ].map(item => (
-                  <button 
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
-                  >
-                     <item.icon className="w-4 h-4 flex-shrink-0" />
-                     <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
-                  </button>
-                ))}
+              {/* Vendas Category */}
+              <div className="space-y-1 mt-2">
+                <button
+                  onClick={() => toggleCategory('vendas')}
+                  className="hidden md:flex items-center justify-between w-full text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 py-1.5 hover:text-neutral-300 transition-colors"
+                >
+                  <span>Vendas</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${!expandedCategories.has('vendas') ? '-rotate-90' : ''}`} />
+                </button>
+                {expandedCategories.has('vendas') && (
+                  <div className="space-y-1">
+                    {[
+                      { id: 'marketplaces', icon: ShoppingBag, label: 'Marketplaces' },
+                      { id: 'marketing', icon: ImageIcon, label: 'Marketing' },
+                      { id: 'coupons', icon: Ticket, label: 'Cupons' },
+                      { id: 'assets', icon: Archive, label: 'Insumos' },
+                    ].map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id)}
+                        className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
+                      >
+                        <item.icon className="w-4 h-4 flex-shrink-0" />
+                        <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-1 mt-4">
-                <div className="hidden md:block text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 mb-2">Sistema</div>
-                {[
-                  { id: 'about', icon: BookOpen, label: 'Sobre Nós' },
-                  { id: 'users', icon: Users, label: 'Usuários' },
-                  { id: 'system', icon: Settings, label: 'Sistema' },
-                ].map(item => (
-                  <button 
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
-                  >
-                     <item.icon className="w-4 h-4 flex-shrink-0" />
-                     <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
-                  </button>
-                ))}
+              {/* Sistema Category */}
+              <div className="space-y-1 mt-2">
+                <button
+                  onClick={() => toggleCategory('sistema')}
+                  className="hidden md:flex items-center justify-between w-full text-[8px] font-black uppercase tracking-widest text-neutral-500 px-3 py-1.5 hover:text-neutral-300 transition-colors"
+                >
+                  <span>Sistema</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${!expandedCategories.has('sistema') ? '-rotate-90' : ''}`} />
+                </button>
+                {expandedCategories.has('sistema') && (
+                  <div className="space-y-1">
+                    {[
+                      { id: 'about', icon: BookOpen, label: 'Sobre Nós' },
+                      { id: 'users', icon: Users, label: 'Usuários' },
+                      { id: 'system', icon: Settings, label: 'Sistema' },
+                    ].map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id)}
+                        className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
+                      >
+                        <item.icon className="w-4 h-4 flex-shrink-0" />
+                        <span className="hidden md:block text-[10px] uppercase tracking-widest truncate">{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
            </nav>
         </div>
@@ -550,15 +593,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                      setShowSupplierEditor(true);
                    }}
                    onDelete={async (id) => {
-                     try {
-                       const suppliersApi = new SuppliersApi();
-                       await suppliersApi.delete(id);
-                       await fetchData();
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Erro ao salvar';
-      alert(message);
-    }
-                   }}
+                    try {
+                      await suppliersApi.delete(id);
+                      await fetchData();
+                    } catch (error: unknown) {
+                      const message = error instanceof Error ? error.message : 'Erro ao salvar';
+                      alert(message);
+                    }
+                  }}
                    onAdd={() => {
                      setEditingSupplier(null);
                      setShowSupplierEditor(true);
@@ -575,11 +617,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                  />
                )}
                {activeTab === 'delivery' && (
-                 <AdminDelivery 
+                 <AdminDelivery
                    orders={orders}
                    suppliers={suppliers}
                    locale={locale}
                  />
+               )}
+               {activeTab === 'marketplaces' && (
+                 <AdminMarketplaces locale={locale} />
                )}
                {activeTab === 'taxonomy' && (
                   <AdminTaxonomy 
@@ -627,23 +672,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                   />
                )}
                {activeTab === 'assets' && (
-                  <AdminAssets 
-                    assets={assets} 
-                    onAdd={async (a) => { 
-                      const assetsApi = new AssetsApi();
+                  <AdminAssets
+                    assets={assets}
+                    onAdd={async (a) => {
                       await assetsApi.create(a);
                       fetchData();
-                    }} 
-                    onUpdate={async (a) => { 
-                      const assetsApi = new AssetsApi();
+                    }}
+                    onUpdate={async (a) => {
                       await assetsApi.update(a.id, a);
                       fetchData();
-                    }} 
-                    onDelete={async (id) => { 
-                      const assetsApi = new AssetsApi();
+                    }}
+                    onDelete={async (id) => {
                       await assetsApi.delete(id);
                       fetchData();
-                    }} 
+                    }}
                     locale={locale}
                   />
                )}
@@ -714,7 +756,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
            }}
            onSave={async (supplierData) => {
              try {
-               const suppliersApi = new SuppliersApi();
                if (editingSupplier?.id) {
                  await suppliersApi.update(editingSupplier.id, supplierData);
                } else {

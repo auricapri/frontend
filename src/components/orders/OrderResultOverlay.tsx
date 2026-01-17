@@ -1,49 +1,55 @@
 
 import React, { useEffect, useState } from 'react';
-import { RefreshCw, XCircle } from 'lucide-react';
+import { RefreshCw, XCircle, X } from 'lucide-react';
 import { Locale } from '../../i18n';
 
 interface OrderResultOverlayProps {
   status: 'success' | 'error';
   orderId?: string;
   errorMessage?: string;
-  onClose: () => void; // Called automatically after 2s if success
+  onClose: () => void;
   t: (key: string) => any;
   locale: Locale;
 }
 
-const OrderResultOverlay: React.FC<OrderResultOverlayProps> = ({ 
-  status, 
-  orderId: _orderId, 
-  errorMessage, 
+const OrderResultOverlay: React.FC<OrderResultOverlayProps> = ({
+  status,
+  orderId: _orderId,
+  errorMessage,
   onClose,
   t: _t,
-  locale 
+  locale
 }) => {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
     // Reveal text
     const timer = setTimeout(() => setShowContent(true), 100);
-    
-    // If success, auto-close after 2.5 seconds (to show check animation)
-    let closeTimer: any;
-    if (status === 'success') {
-        closeTimer = setTimeout(() => {
-            onClose();
-        }, 2500);
-    }
+
+    // Auto-close after 5 seconds for both success and error
+    const closeTimer = setTimeout(() => {
+      onClose();
+    }, 5000);
 
     return () => {
-        clearTimeout(timer);
-        if (closeTimer) clearTimeout(closeTimer);
+      clearTimeout(timer);
+      clearTimeout(closeTimer);
     };
   }, [status, onClose]);
 
   return (
     <div className="fixed inset-0 z-[3000] bg-white flex flex-col items-center justify-center p-6 animate-in fade-in duration-500">
+      {/* Close Button - Always visible */}
+      <button
+        onClick={onClose}
+        className="absolute top-6 right-6 p-3 rounded-full hover:bg-neutral-100 transition-colors z-10"
+        aria-label="Fechar"
+      >
+        <X className="w-6 h-6 text-neutral-400" />
+      </button>
+
       <div className={`flex flex-col items-center max-w-lg text-center transition-all duration-1000 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-        
+
         {/* ICON & TITLE ANIMATION */}
         <div className="mb-12 relative flex flex-col items-center">
             {status === 'success' ? (
@@ -58,7 +64,7 @@ const OrderResultOverlay: React.FC<OrderResultOverlayProps> = ({
                     <div className="w-32 h-32 bg-red-200 rounded-full" />
                 </div>
             )}
-            
+
             <h1 className={`text-3xl md:text-5xl font-light uppercase tracking-[0.2em] md:tracking-[0.4em] leading-tight splash-logo text-black`}>
                 {status === 'success' ? 'Confirmed' : 'Payment\nDeclined'}
             </h1>
@@ -90,10 +96,10 @@ const OrderResultOverlay: React.FC<OrderResultOverlayProps> = ({
             )}
         </div>
 
-        {/* ACTION BUTTON (Only for Error, success is auto) */}
+        {/* ACTION BUTTON (Only for Error) */}
         {status === 'error' && (
             <div className="mt-20 animate-in fade-in zoom-in-95 duration-1000 delay-1000 fill-mode-forwards opacity-0" style={{ animationDelay: '1000ms' }}>
-                <button 
+                <button
                     onClick={onClose}
                     className="group flex items-center gap-4 px-12 py-5 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:scale-105 transition-all shadow-2xl active:scale-95"
                 >

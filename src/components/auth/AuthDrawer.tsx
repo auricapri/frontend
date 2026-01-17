@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, /* Apple, */ Loader2, ShoppingBag, Mail, ArrowLeft, Check } from 'lucide-react';
+import { X, Loader2, ShoppingBag, Mail, ArrowLeft, Check } from 'lucide-react';
 import { UserProfile as UserType } from '../../types';
 import { Locale } from '../../i18n';
 import { supabase } from '../../utils/supabase';
@@ -20,7 +20,7 @@ interface AuthDrawerProps {
 const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin, onLogout, t, locale, storeConfig }) => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isLoading, setIsLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<'google' | null>(null); // 'apple' temporarily disabled
+  const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null);
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [passwordResetSent, setPasswordResetSent] = useState(false);
   
@@ -50,14 +50,15 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
         alert('Cadastro realizado! Verifique seu email para confirmar.');
         setAuthMode('login');
       }
-    } catch (err: any) {
-      alert(`Erro: ${err.message}`);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      alert(`Erro: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialLogin = async (provider: 'google' /* | 'apple' temporarily disabled */) => {
+  const handleSocialLogin = async (provider: 'google' | 'apple') => {
     setSocialLoading(provider);
     try {
       // Get redirect URL from environment variable
@@ -65,31 +66,40 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
       // Fallback to window.location.origin only in development
       const envRedirectUrl = import.meta.env.VITE_FRONTEND_URL;
       const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-      
+
       // Prefer environment variable, but validate it's not localhost in production
       let redirectUrl = envRedirectUrl || currentOrigin;
-      
+
       // Safety check: if we're in production (not localhost) and env var is not set, warn
       if (!envRedirectUrl && currentOrigin && !currentOrigin.includes('localhost')) {
         console.warn('VITE_FRONTEND_URL not set in production. Using current origin:', currentOrigin);
       }
-      
+
       // Ensure we have a valid URL
       if (!redirectUrl) {
         throw new Error('Redirect URL não configurada. Configure VITE_FRONTEND_URL no arquivo .env');
       }
-      
+
       console.log('OAuth redirect URL:', redirectUrl); // Debug log
-      
+
+      // Build OAuth options based on provider
+      const oauthOptions: { redirectTo: string; scopes?: string } = {
+        redirectTo: redirectUrl
+      };
+
+      // Apple requires specific scopes for email and name
+      if (provider === 'apple') {
+        oauthOptions.scopes = 'email name';
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo: redirectUrl
-        }
+        options: oauthOptions
       });
       if (error) throw error;
-    } catch (err: any) {
-      alert(`Erro no login social: ${err.message}`);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      alert(`Erro no login social: ${errorMessage}`);
       setSocialLoading(null);
     }
   };
@@ -119,8 +129,9 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
       if (error) throw error;
       
       setPasswordResetSent(true);
-    } catch (err: any) {
-      alert(`Erro: ${err.message}`);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      alert(`Erro: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -255,11 +266,11 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                 </div>
 
                 {/* Social Auth Buttons */}
-                <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                    <button 
                      onClick={() => handleSocialLogin('google')}
                      disabled={!!socialLoading}
-                     className="w-full flex items-center justify-center gap-4 py-4 border border-neutral-100 rounded-2xl hover:border-neutral-900 transition-all active:scale-95 disabled:opacity-50"
+                     className="flex-1 flex items-center justify-center gap-4 py-4 border border-neutral-100 rounded-2xl hover:border-neutral-900 transition-all active:scale-95 disabled:opacity-50"
                    >
                      {socialLoading === 'google' ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                        <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -272,16 +283,20 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                      <span className="text-[10px] font-black uppercase tracking-widest">Google Login</span>
                    </button>
                    
-                   {/* Apple OAuth temporarily disabled
                    <button 
                      onClick={() => handleSocialLogin('apple')}
                      disabled={!!socialLoading}
-                     className="w-full flex items-center justify-center gap-4 py-4 bg-neutral-50 rounded-2xl hover:bg-neutral-100 transition-all active:scale-95 disabled:opacity-50"
+                     className="flex-1 flex items-center justify-center gap-4 py-4 border border-neutral-100 rounded-2xl hover:border-neutral-900 transition-all active:scale-95 disabled:opacity-50"
                    >
-                     {socialLoading === 'apple' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Apple className="w-4 h-4 fill-current" />}
+                     {socialLoading === 'apple' ? (
+                       <Loader2 className="w-4 h-4 animate-spin" />
+                     ) : (
+                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                         <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/>
+                       </svg>
+                     )}
                      <span className="text-[10px] font-black uppercase tracking-widest">Apple Login</span>
                    </button>
-                   */}
                 </div>
 
                 <div className="flex items-center gap-4 py-2">

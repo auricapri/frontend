@@ -1,13 +1,13 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Product, UserMode, CartItem, UserProfile, Coupon, SizeGuide, Category, ProductReview } from '../../types';
-import { 
-  Plus, 
-  Minus, 
-  Heart, 
-  Maximize2, 
-  X, 
-  ChevronRight, 
+import {
+  Plus,
+  Minus,
+  Heart,
+  Maximize2,
+  X,
+  ChevronRight,
   ChevronLeft,
   Star,
   Tag,
@@ -20,14 +20,21 @@ import {
   MessageCircle,
   ShieldCheck,
   Truck,
-  RefreshCw
+  RefreshCw,
+  Camera,
+  Shirt
 } from 'lucide-react';
 import { Locale } from '../../i18n';
 import ProductReviews from './ProductReviews';
+import { FaceSwapModal } from './FaceSwapModal';
 import { formatCurrency } from '../../utils/currency';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
 import { OptimizedImage } from '../ui';
-import { ProductReviewsApi } from '../../api/product-reviews.api';
+import { productReviewsApi } from '../../api/instances';
+
+// Cache de reviews por produto (TTL 5 min)
+const reviewsCache = new Map<string, { reviews: ProductReview[]; timestamp: number }>();
+const REVIEWS_CACHE_TTL = 5 * 60 * 1000;
 
 interface ProductDetailProps {
   product: Product;
@@ -160,6 +167,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   // Share State
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+
+  // Face Swap State
+  const [showFaceSwap, setShowFaceSwap] = useState(false);
 
   const actionsRef = useRef<HTMLDivElement>(null);
   const mobileGalleryRef = useRef<HTMLDivElement>(null);
@@ -466,23 +476,39 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
-  const reviewsApi = new ProductReviewsApi();
 
   useEffect(() => {
+    let isMounted = true;
+
     const loadReviews = async () => {
+      // Verifica cache primeiro
+      const cached = reviewsCache.get(product.id);
+      if (cached && Date.now() - cached.timestamp < REVIEWS_CACHE_TTL) {
+        setReviews(cached.reviews);
+        return;
+      }
+
       setIsLoadingReviews(true);
       try {
-        const productReviews: ProductReview[] = await reviewsApi.getByProductId(product.id);
+        const productReviews: ProductReview[] = await productReviewsApi.getByProductId(product.id);
+        if (!isMounted) return;
+
         setReviews(productReviews);
+        // Salva no cache
+        reviewsCache.set(product.id, { reviews: productReviews, timestamp: Date.now() });
       } catch (error) {
         console.error('Error loading reviews:', error);
-        setReviews([]);
+        if (isMounted) setReviews([]);
       } finally {
-        setIsLoadingReviews(false);
+        if (isMounted) setIsLoadingReviews(false);
       }
     };
 
     loadReviews();
+
+    return () => {
+      isMounted = false;
+    };
   }, [product.id]);
 
 
@@ -709,11 +735,16 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <label className="text-[10px] uppercase font-black tracking-[0.3em] text-neutral-400">Medidas</label>
-                    {activeSizeGuideImage && (
-                        <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-neutral-900 border-b border-black pb-0.5 hover:opacity-50 transition-opacity">
-                            <Ruler className="w-3 h-3" /> Guia de Tamanhos
-                        </button>
-                    )}
+                    <div className="flex items-center gap-4">
+                      <button onClick={() => setShowFaceSwap(true)} className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-neutral-900 border-b border-black pb-0.5 hover:opacity-50 transition-opacity">
+                        <Shirt className="w-3 h-3" /> Provador
+                      </button>
+                      {activeSizeGuideImage && (
+                          <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-neutral-900 border-b border-black pb-0.5 hover:opacity-50 transition-opacity">
+                              <Ruler className="w-3 h-3" /> Guia de Tamanhos
+                          </button>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {sizes.map(s => {
@@ -1101,6 +1132,25 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               ))}
            </div>
         </div>
+      )}
+
+      {/* FACE SWAP MODAL */}
+      {activeVariant && (
+        <FaceSwapModal
+          isOpen={showFaceSwap}
+          onClose={() => setShowFaceSwap(false)}
+          variant={activeVariant}
+          productName={product.name}
+          productImage={
+            (activeVariant.variant_images && activeVariant.variant_images.length > 0)
+              ? activeVariant.variant_images[0]
+              : (product.base_images && product.base_images.length > 0)
+                ? product.base_images[0]
+                : ''
+          }
+          userId={currentUser?.id || `guest_${Date.now()}`}
+          locale={locale}
+        />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { calculatePrice } from '../utils/product';
 import { trackingService } from '../services/tracking.service';
 import { useStoreData } from '../hooks/useStoreData';
@@ -37,8 +37,30 @@ export function AppRoot() {
     onRefetchStoreData: refetchStoreData,
   });
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  // Cart state with localStorage persistence
+  const CART_STORAGE_KEY = 'auricapri_cart_items';
+
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(CART_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Persist cart to localStorage on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+    } catch (err) {
+      console.warn('Failed to persist cart to localStorage:', err);
+    }
+  }, [cartItems]);
+
   const [userOrders, setUserOrders] = useState<Order[]>([]);
+
+  // Page view tracking removed - centralized in useAppState.ts to avoid duplicate calls
 
   useEffect(() => {
     const fetchUserOrders = async () => {

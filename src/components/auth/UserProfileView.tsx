@@ -25,7 +25,7 @@ import { supabase } from '../../utils/supabase';
 import { OrderReceipt } from '../orders';
 import { formatCurrency } from '../../utils/currency';
 
-import { maskPhone } from '../../utils/masks';
+import { maskPhone, maskCPF } from '../../utils/masks';
 
 interface UserProfileViewProps {
   user: UserProfile;
@@ -53,6 +53,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
   };
 
   const [phone, setPhone] = useState(user.phone || getPhonePrefix(locale));
+  const [cpf, setCpf] = useState(user.cpf || '');
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
@@ -119,9 +120,10 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
     try {
       const { UsersApi } = await import('../../api/users.api');
       const usersApi = new UsersApi();
-      const updatedProfile = await usersApi.updateProfile({ 
-        full_name: fullName, 
-        phone 
+      const updatedProfile = await usersApi.updateProfile({
+        full_name: fullName,
+        phone,
+        cpf
       });
       
       onUpdate(updatedProfile);
@@ -228,7 +230,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                 <div className="space-y-2">
                   <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 px-4">{t('auth.phone')}</label>
                   <div className="relative">
-                    <input 
+                    <input
                       className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-black outline-none focus:bg-white focus:border-black transition-all pl-14"
                       placeholder="+55 11 99999-9999"
                       value={phone}
@@ -236,6 +238,18 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                     />
                     <Phone className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-300" />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 px-4">
+                    CPF <span className="text-neutral-300">(opcional para nota fiscal)</span>
+                  </label>
+                  <input
+                    className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-mono outline-none focus:bg-white focus:border-black transition-all"
+                    placeholder="000.000.000-00"
+                    value={cpf}
+                    onChange={e => setCpf(maskCPF(e.target.value))}
+                    maxLength={14}
+                  />
                 </div>
 
                 <button 
@@ -311,7 +325,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                        </div>
                     </div>
                     <div className="text-right flex items-center gap-6">
-                       <span className="text-xl font-light tracking-tighter">${order.total?.toFixed(2)}</span>
+                       <span className="text-xl font-light tracking-tighter">{formatCurrency(order.total || 0, locale)}</span>
                        <ChevronRight className="w-5 h-5 text-neutral-300 group-hover:translate-x-1 transition-transform" />
                     </div>
                  </div>
@@ -387,7 +401,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
              <div className="grid grid-cols-2 gap-6">
                 <div className="p-6 bg-neutral-50 rounded-[2rem] border border-neutral-100 text-center">
                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">Total Ganhos</span>
-                   <span className="text-2xl font-light tracking-tighter">$0.00</span>
+                   <span className="text-2xl font-light tracking-tighter">{formatCurrency(0, locale)}</span>
                 </div>
                 <div className="p-6 bg-neutral-50 rounded-[2rem] border border-neutral-100 text-center">
                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block mb-2">Vendas</span>
@@ -440,7 +454,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
                          <p className="text-[10px] font-black mt-1">Qtd: {item.quantity}</p>
                       </div>
                       <div className="flex flex-col items-end gap-3">
-                         <span className="text-sm font-black tracking-tighter">${(item.price * item.quantity).toFixed(2)}</span>
+                         <span className="text-sm font-black tracking-tighter">{formatCurrency(item.price * item.quantity, locale)}</span>
                       </div>
                    </div>
                  ))}
@@ -449,7 +463,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
               <div className="pt-8 border-t border-neutral-100 space-y-6">
                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-neutral-400">
                     <span>Total Pago</span>
-                    <span className="text-xl text-black font-light tracking-tighter">${selectedOrder.total?.toFixed(2)}</span>
+                    <span className="text-xl text-black font-light tracking-tighter">{formatCurrency(selectedOrder.total || 0, locale)}</span>
                  </div>
                  
                  <button 

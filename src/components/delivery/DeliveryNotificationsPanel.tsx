@@ -1,27 +1,59 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Bell, Check, RefreshCw } from 'lucide-react';
-import { NotificationsApi, type Notification } from '../../api/notifications.api';
+import { notificationsApi } from '../../api/instances';
+import { type Notification } from '../../api/notifications.api';
 import { supabase } from '../../utils/supabase';
 
+// Throttle helper
+function useThrottle<T extends (...args: any[]) => any>(fn: T, delay: number): T {
+  const lastRun = useRef(0);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  return useCallback((...args: Parameters<T>) => {
+    const now = Date.now();
+    const timeSinceLastRun = now - lastRun.current;
+
+    if (timeSinceLastRun >= delay) {
+      lastRun.current = now;
+      return fn(...args);
+    } else {
+      // Agenda para rodar quando o delay terminar
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        lastRun.current = Date.now();
+        fn(...args);
+      }, delay - timeSinceLastRun);
+    }
+  }, [fn, delay]) as T;
+}
+
 export function DeliveryNotificationsPanel() {
-  const api = useMemo(() => new NotificationsApi(), []);
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<Notification[]>([]);
   const [error, setError] = useState<string>('');
   const [userId, setUserId] = useState<string | null>(null);
+  const isFetchingRef = useRef(false);
 
   const fetchAll = useCallback(async () => {
+    // Evita chamadas simultâneas
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+
     setIsLoading(true);
     setError('');
     try {
-      const list = await api.getAll(false);
+      const list = await notificationsApi.getAll(false);
       setItems(list);
     } catch (e: any) {
       setError(e?.message || 'Falha ao carregar notificações');
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
-  }, [api]);
+  }, []);
+
+  // Versão com throttle de 2s para o listener real-time
+  const throttledFetchAll = useThrottle(fetchAll, 2000);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -46,7 +78,8 @@ export function DeliveryNotificationsPanel() {
           filter: `user_id=eq.${userId}`,
         },
         () => {
-          fetchAll();
+          // Usa versão throttled para evitar múltiplas chamadas em rajada
+          throttledFetchAll();
         }
       )
       .subscribe();
@@ -54,11 +87,11 @@ export function DeliveryNotificationsPanel() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchAll, userId]);
+  }, [throttledFetchAll, userId]);
 
   const markRead = async (id: string) => {
     try {
-      await api.markAsRead(id);
+      await notificationsApi.markAsRead(id);
       setItems((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
     } catch {
       return;
@@ -67,7 +100,7 @@ export function DeliveryNotificationsPanel() {
 
   const markAll = async () => {
     try {
-      await api.markAllAsRead();
+      await notificationsApi.markAllAsRead();
       setItems((prev) => prev.map((n) => ({ ...n, is_read: true })));
     } catch {
       return;
