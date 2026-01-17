@@ -42,7 +42,9 @@ export const translations = {
       productsCount: '{count} products',
       applyFilters: 'Apply Filters',
       filtersApplied: '{count} products found',
-      swipeToExpand: 'Swipe up to expand filters'
+      swipeToExpand: 'Swipe up to expand filters',
+      showFilters: 'Show Filters',
+      hideFilters: 'Hide Filters'
     },
     product: {
       color: 'Color',
@@ -120,6 +122,11 @@ export const translations = {
       amount: 'Total',
       save: 'Sync with Cloud'
     },
+    gender: {
+      female: 'Women',
+      male: 'Men',
+      unisex: 'Unisex'
+    },
     footer: {
       tagline: 'Timeless elegance for the global woman. V16 Production Edition.',
       shop: 'Shop',
@@ -171,7 +178,9 @@ export const translations = {
       productsCount: '{count} produtos',
       applyFilters: 'Aplicar Filtros',
       filtersApplied: '{count} produtos encontrados',
-      swipeToExpand: 'Deslize para expandir filtros'
+      swipeToExpand: 'Deslize para expandir filtros',
+      showFilters: 'Exibir Filtros',
+      hideFilters: 'Ocultar Filtros'
     },
     product: {
       color: 'Cor',
@@ -249,6 +258,11 @@ export const translations = {
       amount: 'Total',
       save: 'Sincronizar Cloud'
     },
+    gender: {
+      female: 'Feminino',
+      male: 'Masculino',
+      unisex: 'Unissex'
+    },
     footer: {
       tagline: 'Elegância atemporal. Edição de Produção V16.',
       shop: 'Loja',
@@ -300,7 +314,9 @@ export const translations = {
       productsCount: '{count} productos',
       applyFilters: 'Aplicar Filtros',
       filtersApplied: '{count} productos encontrados',
-      swipeToExpand: 'Desliza para expandir filtros'
+      swipeToExpand: 'Desliza para expandir filtros',
+      showFilters: 'Mostrar Filtros',
+      hideFilters: 'Ocultar Filtros'
     },
     product: {
       color: 'Color',
@@ -378,6 +394,11 @@ export const translations = {
       amount: 'Total',
       save: 'Sincronizar'
     },
+    gender: {
+      female: 'Femenino',
+      male: 'Masculino',
+      unisex: 'Unisex'
+    },
     footer: {
       tagline: 'Elegancia atemporal. Edición V16.',
       shop: 'Tienda',
@@ -429,7 +450,9 @@ export const translations = {
       productsCount: '{count} produits',
       applyFilters: 'Appliquer les Filtres',
       filtersApplied: '{count} produits trouvés',
-      swipeToExpand: 'Glissez pour développer les filtres'
+      swipeToExpand: 'Glissez pour développer les filtres',
+      showFilters: 'Afficher les Filtres',
+      hideFilters: 'Masquer les Filtres'
     },
     product: {
       color: 'Couleur',
@@ -506,6 +529,11 @@ export const translations = {
       customer: 'Profil',
       amount: 'Total',
       save: 'Synchroniser'
+    },
+    gender: {
+      female: 'Femme',
+      male: 'Homme',
+      unisex: 'Unisexe'
     },
     footer: {
       tagline: 'Élégance intemporelle. Édition V16.',

@@ -9,7 +9,8 @@ export enum OrderStatus {
 
 export enum PaymentMethod {
   CREDIT_CARD = 'credit_card',
-  PIX = 'pix'
+  PIX = 'pix',
+  BOLETO = 'boleto'
 }
 
 export enum UserRole {
@@ -44,4 +45,10 @@ export enum View {
   RESET_PASSWORD = 'reset-password',
   SHARED_WISHLIST = 'shared-wishlist',
   ORDER_REVIEW = 'order-review'
+}
+
+export enum Gender {
+  FEMALE = 'female',
+  MALE = 'male',
+  UNISEX = 'unisex'
 }

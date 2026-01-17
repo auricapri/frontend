@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Package, Plus, Trash2, Edit3, DollarSign, Archive, AlertCircle, Image as ImageIcon, Loader2, Save, X } from 'lucide-react';
 import { Asset } from '../../types';
-import { formatCurrency } from '../../utils/currency';
+import { formatCurrency, getCurrencySymbol } from '../../utils/currency';
 import { Locale } from '../../i18n';
 // Supabase storage is still used for image uploads (safe)
 import { supabase } from '../../utils/supabase';
@@ -154,7 +154,7 @@ const AdminAssets: React.FC<AdminAssetsProps> = ({ assets, onAdd, onUpdate, onDe
 
                       <div className="grid grid-cols-2 gap-8">
                           <div className="space-y-4">
-                              <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Custo Unitário (R$)</label>
+                              <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Custo Unitário ({getCurrencySymbol(locale)})</label>
                               <div className="relative">
                                   <DollarSign className="w-4 h-4 absolute left-6 top-1/2 -translate-y-1/2 text-neutral-400" />
                                   <input 

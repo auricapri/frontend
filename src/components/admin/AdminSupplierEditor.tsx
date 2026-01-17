@@ -3,14 +3,17 @@ import { X, Save, Upload, Image as ImageIcon, Loader2, MapPin, Instagram, Facebo
 import { Supplier, AddressData } from '../../types';
 import { supabase } from '../../utils/supabase';
 import { MapPicker } from '../checkout/MapPicker';
+import { getCurrencySymbol } from '../../utils/currency';
+import { Locale } from '../../i18n';
 
 interface AdminSupplierEditorProps {
   supplier: Supplier | null;
   onClose: () => void;
   onSave: (supplier: Partial<Supplier>) => Promise<void>;
+  locale?: Locale;
 }
 
-const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onClose, onSave }) => {
+const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onClose, onSave, locale = 'pt' }) => {
   const [formData, setFormData] = useState<Partial<Supplier>>({
     store_name: supplier?.store_name || '',
     image_url: supplier?.image_url || null,
@@ -370,7 +373,7 @@ const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onC
                   </div>
                   <div>
                     <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-3 block flex items-center gap-2">
-                      <DollarSign className="w-3 h-3" /> Valor Mínimo Atacado (R$)
+                      <DollarSign className="w-3 h-3" /> Valor Mínimo Atacado ({getCurrencySymbol(locale)})
                     </label>
                     <input
                       type="number"

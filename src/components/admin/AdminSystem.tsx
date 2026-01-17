@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Settings, Globe, Save, DollarSign, BarChart3, TrendingUp, Building2, MapPin, Mail, Phone, Trophy, AlertTriangle, Star } from 'lucide-react';
 import { StoreConfig, GlobalFinancialSettings, LoyaltyLevel } from '../../types';
 import { Locale } from '../../i18n';
+import { getCurrencySymbol } from '../../utils/currency';
 
 interface AdminSystemProps {
   config: StoreConfig;
@@ -167,14 +168,14 @@ const AdminSystem: React.FC<AdminSystemProps> = ({ config, onChange, onSave, isL
                               <input type="number" className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold outline-none" value={loyalty.cashback_percentage} onChange={e => updateLoyalty('cashback_percentage', Number(e.target.value))} />
                           </div>
                           <div className="space-y-2">
-                              <label className="text-[8px] font-bold uppercase tracking-widest text-white/40">XP por $1</label>
+                              <label className="text-[8px] font-bold uppercase tracking-widest text-white/40">XP por {getCurrencySymbol(editLocale)}1</label>
                               <input type="number" className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold outline-none" value={loyalty.xp_per_currency_unit} onChange={e => updateLoyalty('xp_per_currency_unit', Number(e.target.value))} />
                           </div>
                       </div>
                       <div className="mb-8">
                           <div className="space-y-2">
                               <label className="text-[8px] font-bold uppercase tracking-widest text-white/40 flex items-center gap-2">
-                                  <Star className="w-3 h-3" /> Cashback por Avaliação ($)
+                                  <Star className="w-3 h-3" /> Cashback por Avaliação ({getCurrencySymbol(editLocale)})
                               </label>
                               <input 
                                   type="number" 
@@ -193,7 +194,7 @@ const AdminSystem: React.FC<AdminSystemProps> = ({ config, onChange, onSave, isL
                               <div key={idx} className="flex gap-4 items-center">
                                   <div className="w-10 text-center font-black text-xl text-yellow-500">{lvl.level}</div>
                                   <input placeholder="XP Req." type="number" className="w-20 p-3 bg-white/5 border border-white/10 rounded-xl text-xs" value={lvl.xp_required} onChange={e => updateLevel(idx, 'xp_required', Number(e.target.value))} />
-                                  <input placeholder="Reward Value $" type="number" className="w-24 p-3 bg-white/5 border border-white/10 rounded-xl text-xs" value={lvl.reward_coupon_value} onChange={e => updateLevel(idx, 'reward_coupon_value', Number(e.target.value))} />
+                                  <input placeholder={`Reward Value ${getCurrencySymbol(editLocale)}`} type="number" className="w-24 p-3 bg-white/5 border border-white/10 rounded-xl text-xs" value={lvl.reward_coupon_value} onChange={e => updateLevel(idx, 'reward_coupon_value', Number(e.target.value))} />
                                   <input placeholder="Label (ex: Gold)" className="flex-1 p-3 bg-white/5 border border-white/10 rounded-xl text-xs" value={lvl.reward_description} onChange={e => updateLevel(idx, 'reward_description', e.target.value)} />
                               </div>
                           ))}

@@ -1,20 +1,24 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { MessageCircle, X, Loader2 } from 'lucide-react';
 import { Navbar, Footer } from '../components/layout';
 import { Hero, LoyaltyBanner } from '../components/shared';
 import { ProductGrid, CollectionDetail } from '../components/product';
 import { CartDrawer, WishlistDrawer, CouponsDrawer } from '../components/cart';
 import { AuthDrawer } from '../components/auth';
+import { ChatDrawer } from '../components/chat';
 import { Toast } from '../components/ui';
 import { TestBanner } from '../components/common/TestBanner';
 import { filterProductsForMode } from '../utils/product';
 import { trackingService } from '../services/tracking.service';
+import { ChatProduct } from '../api/ai-chat.api';
+import { Gender } from '../constants/enums';
 import { UserMode, type Category, type Collection, type Coupon, type Order, type Product, type SizeGuide, type StoreConfig, type UserProfile } from '../types';
 
 const ProductDetail = React.lazy(() => import('../components/product/ProductDetail'));
 const CheckoutView = React.lazy(() => import('../components/checkout/CheckoutViewV2'));
 const OrderResultOverlay = React.lazy(() => import('../components/orders/OrderResultOverlay'));
 const OrderReviewPage = React.lazy(() => import('../pages/OrderReviewPage'));
+const NewArrivalsPage = React.lazy(() => import('../pages/NewArrivalsPage'));
 
 function LoadingFallback() {
   return (
@@ -32,7 +36,7 @@ export function AppLayout(props: {
     userMode: UserMode;
     setUserMode: React.Dispatch<React.SetStateAction<UserMode>>;
 
-    currentView: 'home' | 'product' | 'collection' | 'checkout' | 'order-review';
+    currentView: 'home' | 'product' | 'collection' | 'checkout' | 'order-review' | 'new-arrivals';
     isScrolled: boolean;
     mainRef: React.RefObject<HTMLElement>;
     handleScroll: () => void;
@@ -98,6 +102,18 @@ export function AppLayout(props: {
   };
 }) {
   const { app } = props;
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedGender, setSelectedGender] = useState<Gender>(Gender.FEMALE);
+
+  // Handle selecting a product from chat
+  const handleChatSelectProduct = (chatProduct: ChatProduct) => {
+    // Find the matching product in our products list
+    const product = app.products.find(p => p.id === chatProduct.id);
+    if (product) {
+      app.setActiveProduct(product);
+      app.onNavigate('product', undefined, product);
+    }
+  };
 
   return (
     <div className="relative h-dvh w-full bg-white overflow-hidden text-neutral-900 font-sans">
@@ -113,13 +129,20 @@ export function AppLayout(props: {
         onToggleMode={() => app.setUserMode((prev) => (prev === UserMode.VAREJO ? UserMode.ATACADO : UserMode.VAREJO))}
         onNavigate={app.onNavigate}
         isScrolled={app.currentView === 'home' && app.isScrolled}
-        isProductView={app.currentView === 'product' || app.currentView === 'checkout' || app.currentView === 'collection'}
+        isProductView={app.currentView === 'product' || app.currentView === 'checkout' || app.currentView === 'collection' || app.currentView === 'new-arrivals'}
         onBack={() => app.onNavigate('home', 'collection')}
         isLoggedIn={!!app.currentUser}
         t={app.t}
         currentLocale={app.locale}
         onChangeLocale={app.setLocale}
         storeName={app.storeConfig.brand_name}
+        collections={app.collections}
+        onSelectCollection={(c) => {
+          app.setActiveCollection(c);
+          app.onNavigate('collection');
+        }}
+        selectedGender={selectedGender}
+        onGenderChange={setSelectedGender}
       />
 
       <main
@@ -147,9 +170,11 @@ export function AppLayout(props: {
               }}
               wishlistIds={app.wishlistIds}
               onToggleWishlist={app.handleToggleWishlist}
+              onAddToCart={app.addToCart}
               t={app.t}
               locale={app.locale}
               isLoading={app.isLoading}
+              selectedGender={selectedGender}
             />
             <Footer
               t={app.t}
@@ -160,23 +185,26 @@ export function AppLayout(props: {
               onNavigate={app.onNavigate}
             />
 
-            <a
-              href="https://wa.me/AURICAPRI"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={
-                app.locale === 'pt'
-                  ? 'Contato via WhatsApp'
-                  : app.locale === 'en'
-                    ? 'Contact via WhatsApp'
-                    : app.locale === 'es'
-                      ? 'Contacto por WhatsApp'
-                      : 'Contact via WhatsApp'
-              }
-              className="fixed bottom-10 right-6 p-5 bg-neutral-900 text-white rounded-full shadow-2xl z-40 border border-white/10 hover:scale-110 active:scale-95 transition-all flex items-center justify-center animate-in slide-in-from-bottom-10 duration-700 focus:outline-2 focus:outline-white focus:outline-offset-2"
-            >
-              <MessageCircle className="w-6 h-6" aria-hidden="true" />
-            </a>
+            {/* WhatsApp Button */}
+            {app.storeConfig.support_phone && (
+              <a
+                href={`https://wa.me/${app.storeConfig.support_phone.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={
+                  app.locale === 'pt'
+                    ? 'Contato via WhatsApp'
+                    : app.locale === 'en'
+                      ? 'Contact via WhatsApp'
+                      : app.locale === 'es'
+                        ? 'Contacto por WhatsApp'
+                        : 'Contact via WhatsApp'
+                }
+                className="fixed bottom-10 right-6 p-5 bg-neutral-900 text-white rounded-full shadow-2xl z-40 border border-white/10 hover:scale-110 active:scale-95 transition-all flex items-center justify-center animate-in slide-in-from-bottom-10 duration-700 focus:outline-2 focus:outline-white focus:outline-offset-2"
+              >
+                <MessageCircle className="w-6 h-6" aria-hidden="true" />
+              </a>
+            )}
           </div>
         )}
 
@@ -252,6 +280,25 @@ export function AppLayout(props: {
               </Suspense>
             );
           })()}
+
+        {app.currentView === 'new-arrivals' && (
+          <Suspense fallback={<LoadingFallback />}>
+            <NewArrivalsPage
+              collections={app.collections}
+              onSelectCollection={(c) => {
+                app.setActiveCollection(c);
+                app.onNavigate('collection');
+              }}
+              locale={app.locale}
+              t={app.t}
+              onBack={() => app.onNavigate('home')}
+              onChangeLocale={app.setLocale}
+              storeConfig={app.storeConfig}
+              onOpenLegal={app.setLegalView}
+              onNavigate={app.onNavigate}
+            />
+          </Suspense>
+        )}
       </main>
 
       <Toast message={app.toast.message} isVisible={app.toast.visible} onClose={app.closeToast} type={app.toast.type} />
@@ -363,6 +410,15 @@ export function AppLayout(props: {
       />
 
       <CouponsDrawer isOpen={app.isCouponsOpen} onClose={() => app.setIsCouponsOpen(false)} t={app.t} />
+
+      <ChatDrawer
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        onSelectProduct={handleChatSelectProduct}
+        onAddToCart={app.addToCart}
+        locale={app.locale}
+        userId={app.currentUser?.id}
+      />
     </div>
   );
 }

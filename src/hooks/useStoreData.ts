@@ -67,16 +67,21 @@ export const useStoreData = () => {
 
       if (!isMounted.current) return;
 
-      const processedProducts = productsData.map(p => {
-        const linkedCollectionIds = relationsData
-          .filter(r => r.product_id === p.id)
-          .map(r => r.collection_id);
-        
-        return {
-          ...p,
-          collection_ids: linkedCollectionIds
-        };
-      });
+      // PERFORMANCE: Usar Map para evitar O(n²) na associação produto-coleção
+      const relationsMap = new Map<string, string[]>();
+      for (const r of relationsData) {
+        const existing = relationsMap.get(r.product_id);
+        if (existing) {
+          existing.push(r.collection_id);
+        } else {
+          relationsMap.set(r.product_id, [r.collection_id]);
+        }
+      }
+
+      const processedProducts = productsData.map(p => ({
+        ...p,
+        collection_ids: relationsMap.get(p.id) || []
+      }));
 
       setProducts(processedProducts);
       setCategories(categoriesData);
@@ -113,16 +118,21 @@ export const useStoreData = () => {
 
         if (!isMounted.current) return;
 
-        const processedProducts = productsData.map(p => {
-          const linkedCollectionIds = relationsData
-            .filter(r => r.product_id === p.id)
-            .map(r => r.collection_id);
+        // PERFORMANCE: Usar Map para evitar O(n²) na associação produto-coleção
+        const relationsMap = new Map<string, string[]>();
+        for (const r of relationsData) {
+          const existing = relationsMap.get(r.product_id);
+          if (existing) {
+            existing.push(r.collection_id);
+          } else {
+            relationsMap.set(r.product_id, [r.collection_id]);
+          }
+        }
 
-          return {
-            ...p,
-            collection_ids: linkedCollectionIds
-          };
-        });
+        const processedProducts = productsData.map(p => ({
+          ...p,
+          collection_ids: relationsMap.get(p.id) || []
+        }));
 
         setProducts(processedProducts);
         setCategories(categoriesData);

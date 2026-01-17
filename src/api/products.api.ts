@@ -26,6 +26,18 @@ export class ProductsApi {
     return apiClient.get<Product | null>(`/products/slug/${slug}`);
   }
 
+  /**
+   * Busca múltiplos produtos por IDs.
+   * Mais eficiente que getAllActive() quando você só precisa de alguns produtos.
+   */
+  async getByIds(ids: string[]): Promise<Product[]> {
+    if (ids.length === 0) return [];
+    // Usa query param para passar os IDs
+    const params = new URLSearchParams();
+    params.set('ids', ids.join(','));
+    return apiClient.get<Product[]>(`/products/by-ids?${params.toString()}`);
+  }
+
   async updateStock(_variantId: string, _quantity: number): Promise<void> {
     // This might need a specific endpoint or be part of variant update
     // For now, we'll need to implement this in the backend

@@ -4,6 +4,8 @@
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
+const AI_CHAT_URL = import.meta.env.VITE_AI_CHAT_URL || 'http://localhost:7001';
+const FACESWAP_URL = import.meta.env.VITE_FACESWAP_URL || 'http://localhost:7001';
 
 export interface ApiError {
   error: {
@@ -156,3 +158,5 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
+export const aiChatClient = new ApiClient(AI_CHAT_URL);
+export const faceSwapClient = new ApiClient(FACESWAP_URL);

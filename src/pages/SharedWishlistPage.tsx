@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { WishlistApi } from '../api/wishlist.api';
-import { ProductsApi } from '../api/products.api';
+import React, { useState, useEffect, useRef } from 'react';
+import { wishlistApi, productsApi } from '../api/instances';
 import { Product, CartItem, AddressData, InternalLogisticsInfo } from '../types';
 import { formatCurrency } from '../utils/currency';
 import { Locale } from '../i18n';
@@ -33,9 +32,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [itemsToCheckout, setCheckoutItems] = useState<CartItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-
-  const wishlistApi = new WishlistApi();
-  const productsApi = new ProductsApi();
+  const isMounted = useRef(true);
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -48,23 +45,27 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       try {
         setIsLoading(true);
         const data = await wishlistApi.getSharedWishlist(slug);
-        
+
+        if (!isMounted.current) return;
+
         if (!data || !data.product_ids || !Array.isArray(data.product_ids)) {
           throw new Error('Dados da wishlist inválidos');
         }
-        
+
         setWishlistData(data);
 
-        // Fetch products (use getAllActive for public access, not getAll which requires admin)
-        const allProducts = await productsApi.getAllActive();
-        if (!Array.isArray(allProducts)) {
-          console.warn('[SharedWishlistPage] getAllActive returned non-array:', allProducts);
+        // Busca apenas os produtos da wishlist por IDs (muito mais eficiente!)
+        const wishlistProducts = await productsApi.getByIds(data.product_ids);
+
+        if (!isMounted.current) return;
+
+        if (!Array.isArray(wishlistProducts)) {
+          console.warn('[SharedWishlistPage] getByIds returned non-array:', wishlistProducts);
           setProducts([]);
           setCartItems([]);
           return;
         }
-        
-        const wishlistProducts = allProducts.filter(p => p && p.id && data.product_ids.includes(p.id));
+
         setProducts(wishlistProducts);
 
         // Build cart items
@@ -104,7 +105,12 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       }
     };
 
+    isMounted.current = true;
     fetchWishlist();
+
+    return () => {
+      isMounted.current = false;
+    };
   }, [slug, userMode]);
 
   const getLoc = (obj: any): string => {

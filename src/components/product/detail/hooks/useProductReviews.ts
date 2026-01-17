@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ProductReview } from '../../../../types';
 import { ProductReviewsApi } from '../../../../api/product-reviews.api';
 
 export function useProductReviews(productId: string) {
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
-  const reviewsApi = new ProductReviewsApi();
+  const reviewsApi = useMemo(() => new ProductReviewsApi(), []);
 
   useEffect(() => {
     const loadReviews = async () => {

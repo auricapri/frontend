@@ -1,5 +1,7 @@
 import { Node, Edge, MarkerType } from 'reactflow';
 import { Product, Collection, ProductVariant, LocalizedText } from '../../../types';
+import { getCurrencySymbol } from '../../../utils/currency';
+import { Locale } from '../../../i18n';
 
 export type TemplateType = 'cost' | 'revenue' | 'collection' | 'custom';
 
@@ -41,7 +43,8 @@ export const TEMPLATE_CONFIGS: Record<TemplateType, TemplateConfig> = {
   },
 };
 
-export function generateCostFlowTemplate(): { nodes: Node[]; edges: Edge[] } {
+export function generateCostFlowTemplate(locale: Locale = 'pt'): { nodes: Node[]; edges: Edge[] } {
+  const currencySymbol = getCurrencySymbol(locale);
   const baseX = 100;
   const baseY = 200;
   const spacing = 280;
@@ -61,7 +64,7 @@ export function generateCostFlowTemplate(): { nodes: Node[]; edges: Edge[] } {
         label: 'Fornecedor',
         varName: 'fornecedor',
         value: 0,
-        unit: 'R$',
+        unit: currencySymbol,
         description: 'Custo do fornecedor',
       },
     },
@@ -73,7 +76,7 @@ export function generateCostFlowTemplate(): { nodes: Node[]; edges: Edge[] } {
         label: 'Produto',
         productName: 'Produto',
         value: 0,
-        unit: 'R$',
+        unit: currencySymbol,
         category: 'custo',
       },
     },
@@ -85,7 +88,7 @@ export function generateCostFlowTemplate(): { nodes: Node[]; edges: Edge[] } {
         label: 'Embalagem',
         varName: 'embalagem',
         value: 0,
-        unit: 'R$',
+        unit: currencySymbol,
         description: 'Custo de embalagem',
       },
     },
@@ -97,7 +100,7 @@ export function generateCostFlowTemplate(): { nodes: Node[]; edges: Edge[] } {
         label: 'Frete',
         varName: 'frete',
         value: 0,
-        unit: 'R$',
+        unit: currencySymbol,
         description: 'Custo de frete',
       },
     },
@@ -147,7 +150,8 @@ export function generateCostFlowTemplate(): { nodes: Node[]; edges: Edge[] } {
   return { nodes, edges };
 }
 
-export function generateRevenueFlowTemplate(): { nodes: Node[]; edges: Edge[] } {
+export function generateRevenueFlowTemplate(locale: Locale = 'pt'): { nodes: Node[]; edges: Edge[] } {
+  const currencySymbol = getCurrencySymbol(locale);
   const baseX = 100;
   const baseY = 200;
   const spacing = 280;
@@ -167,7 +171,7 @@ export function generateRevenueFlowTemplate(): { nodes: Node[]; edges: Edge[] } 
         label: 'Produto',
         productName: 'Produto',
         value: 0,
-        unit: 'R$',
+        unit: currencySymbol,
         category: 'receita',
       },
     },
@@ -179,7 +183,7 @@ export function generateRevenueFlowTemplate(): { nodes: Node[]; edges: Edge[] } 
         label: 'Marketing',
         varName: 'marketing',
         value: 0,
-        unit: 'R$',
+        unit: currencySymbol,
         description: 'Custo de marketing',
       },
     },
@@ -254,8 +258,9 @@ export function generateRevenueFlowTemplate(): { nodes: Node[]; edges: Edge[] } 
 export function generateCollectionFlowTemplate(
   collection: Collection,
   products: Product[],
-  locale: string = 'pt'
+  locale: Locale = 'pt'
 ): { nodes: Node[]; edges: Edge[] } {
+  const currencySymbol = getCurrencySymbol(locale);
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
@@ -305,7 +310,7 @@ export function generateCollectionFlowTemplate(
         productName: getLocalizedText(product.name, locale),
         productImage: product.base_images?.[0] || '',
         value: product.variants?.[0]?.retail_price || 0,
-        unit: 'R$',
+        unit: currencySymbol,
         category: 'colecao',
         variants: product.variants?.map(v => ({
           variantId: v.id,
@@ -390,8 +395,9 @@ export function generateCollectionFlowTemplate(
 export function generateProductNode(
   product: Product,
   position: { x: number; y: number },
-  locale: string = 'pt'
+  locale: Locale = 'pt'
 ): Node {
+  const currencySymbol = getCurrencySymbol(locale);
   return {
     id: generateNodeId(),
     type: 'product',
@@ -402,7 +408,7 @@ export function generateProductNode(
       productName: getLocalizedText(product.name, locale),
       productImage: product.base_images?.[0] || '',
       value: product.variants?.[0]?.retail_price || 0,
-      unit: 'R$',
+      unit: currencySymbol,
       category: '',
       variants: product.variants?.map(v => ({
         variantId: v.id,
@@ -425,7 +431,7 @@ export function generateVariantNode(
   product: Product,
   variant: ProductVariant,
   position: { x: number; y: number },
-  locale: string = 'pt'
+  locale: Locale = 'pt'
 ): Node {
   return {
     id: generateNodeId(),
@@ -450,12 +456,12 @@ export function generateVariantNode(
   };
 }
 
-export function getTemplateByType(type: TemplateType): { nodes: Node[]; edges: Edge[] } {
+export function getTemplateByType(type: TemplateType, locale: Locale = 'pt'): { nodes: Node[]; edges: Edge[] } {
   switch (type) {
     case 'cost':
-      return generateCostFlowTemplate();
+      return generateCostFlowTemplate(locale);
     case 'revenue':
-      return generateRevenueFlowTemplate();
+      return generateRevenueFlowTemplate(locale);
     case 'collection':
       return { nodes: [], edges: [] };
     case 'custom':

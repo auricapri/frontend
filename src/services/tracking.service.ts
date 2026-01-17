@@ -66,16 +66,44 @@ function safeJsonStringify(value: unknown, maxLen: number): string | null {
   }
 }
 
-function optimizeMetadata(metadata: Record<string, unknown> | null, productId: string | null, campaignId: string | null): Record<string, unknown> | null {
+function optimizeMetadata(
+  metadata: Record<string, unknown> | null,
+  productId: string | null,
+  campaignId: string | null
+): Record<string, unknown> | null {
   const optimized: Record<string, unknown> = {};
+
+  if (metadata) {
+    Object.entries(metadata).forEach(([key, value]) => {
+      if (value === undefined || value === null) return;
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        optimized[key] = value;
+        return;
+      }
+      if (Array.isArray(value)) {
+        optimized[key] = value.slice(0, 20);
+        return;
+      }
+      if (typeof value === 'object') {
+        if (key === 'filters') {
+          optimized[key] = value;
+        }
+      }
+    });
+  }
+
   if (productId) optimized.productId = productId;
   if (campaignId) optimized.campaignId = campaignId;
-  
+
   const metadataStr = JSON.stringify(optimized);
-  if (metadataStr.length > 128) {
-    return productId || campaignId ? { ...(productId ? { productId } : {}), ...(campaignId ? { campaignId } : {}) } : null;
+  if (metadataStr.length > 512) {
+    const slim: Record<string, unknown> = {};
+    if (optimized.filters) slim.filters = optimized.filters;
+    if (productId) slim.productId = productId;
+    if (campaignId) slim.campaignId = campaignId;
+    return Object.keys(slim).length > 0 ? slim : null;
   }
-  
+
   return Object.keys(optimized).length > 0 ? optimized : null;
 }
 
@@ -97,6 +125,8 @@ function writeQueue(items: unknown[]): void {
 export class TrackingService {
   private inFlight = 0;
   private geoInFlight = false;
+  private lastEventHash: string | null = null;
+  private lastEventTs = 0;
 
   getConsent(): ConsentState {
     const raw = localStorage.getItem('tracking_consent');
@@ -227,6 +257,19 @@ export class TrackingService {
     this.primeGeoIfAllowed(consent);
     const geo = consent.geolocation ? readGeoCache(60 * 60 * 1000) : null;
 
+    const signatureBase = JSON.stringify({
+      event: input.event,
+      productId: input.productId ?? null,
+      campaignId: input.campaignId ?? null,
+      path,
+    });
+    const now = Date.now();
+    if (this.lastEventHash === signatureBase && now - this.lastEventTs < 3000) {
+      return;
+    }
+    this.lastEventHash = signatureBase;
+    this.lastEventTs = now;
+
     const payload: Record<string, unknown> = {
       event: input.event,
       userId: input.userId ?? null,
@@ -234,7 +277,32 @@ export class TrackingService {
       productId: input.productId ?? null,
       campaignId: input.campaignId ?? null,
       metadata: (() => {
+        const filters = (() => {
+          try {
+            const url = new URL(window.location.href);
+            const entries: Record<string, string | string[]> = {};
+            url.searchParams.forEach((value, key) => {
+              if (entries[key] === undefined) {
+                entries[key] = value;
+              } else {
+                const current = entries[key];
+                if (Array.isArray(current)) {
+                  if (!current.includes(value)) entries[key] = [...current, value];
+                } else if (current !== value) {
+                  entries[key] = [current, value];
+                }
+              }
+            });
+            return Object.keys(entries).length > 0 ? entries : null;
+          } catch {
+            return null;
+          }
+        })();
+
         const base = metadata ? { ...metadata, path } : { path };
+        if (filters) {
+          (base as Record<string, unknown>).filters = filters;
+        }
         if (geo) return { ...base, geo: { lat: geo.lat, lon: geo.lon } };
         return base;
       })(),
@@ -247,7 +315,14 @@ export class TrackingService {
       const ok = await this.sendEvent(payload);
       if (!ok) this.enqueueEvent(payload);
     } else {
-      const metadataStr = safeJsonStringify(payload.metadata, 128);
+      if (input.event === 'page_view' && (path === '/' || path === '')) {
+        return;
+      }
+      if (input.event === 'product_view' && !input.productId) {
+        return;
+      }
+
+      const metadataStr = safeJsonStringify(payload.metadata, 512);
       this.sendPixel({
         event: payload.event as string,
         userId: (payload.userId as string | null) ?? '',
@@ -273,20 +348,28 @@ export class TrackingService {
     void this.trackEvent({ event: 'page_view', metadata: { path, ...(metadata ?? {}) } });
   }
 
-  trackProductView(productId: string, metadata?: Record<string, unknown>): void {
-    void this.trackEvent({ event: 'product_view', productId, metadata });
+  // Desabilitado para reduzir requisições ao Supabase
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  trackProductView(_productId: string, _metadata?: Record<string, unknown>): void {
+    // Desabilitado - usar apenas page_view e purchase
   }
 
-  trackCartAdd(productId: string, variantId: string, quantity: number): void {
-    void this.trackEvent({ event: 'cart_add', productId, metadata: { variantId, quantity } });
+  // Desabilitado para reduzir requisições ao Supabase
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  trackCartAdd(_productId: string, _variantId: string, _quantity: number): void {
+    // Desabilitado - usar apenas page_view e purchase
   }
 
-  trackCartRemove(productId: string, variantId: string): void {
-    void this.trackEvent({ event: 'cart_remove', productId, metadata: { variantId } });
+  // Desabilitado para reduzir requisições ao Supabase
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  trackCartRemove(_productId: string, _variantId: string): void {
+    // Desabilitado - usar apenas page_view e purchase
   }
 
-  trackCheckoutStart(total: number, itemsCount: number): void {
-    void this.trackEvent({ event: 'checkout_start', metadata: { total, itemsCount }, preferBeacon: true });
+  // Desabilitado para reduzir requisições ao Supabase
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  trackCheckoutStart(_total: number, _itemsCount: number): void {
+    // Desabilitado - usar apenas page_view e purchase
   }
 
   trackPurchase(orderId: string, total: number, items: Array<{ product_id: string; variant_id: string; quantity: number; price: number }>): void {

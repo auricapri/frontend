@@ -4,6 +4,7 @@ import { supabase } from '../utils/supabase';
 import { UsersApi } from '../api/users.api';
 import { AuthApi } from '../api/auth.api';
 import { CartApi } from '../api/cart.api';
+import { logger } from '../utils/logger';
 
 export const useAuth = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -26,7 +27,7 @@ export const useAuth = () => {
       const errorDescription = hashParams.get('error_description');
 
       if (error) {
-        console.error('OAuth error:', error, errorDescription);
+        logger.error('OAuth error', { error, errorDescription }, { context: 'useAuth' });
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
         return;
       }
@@ -41,12 +42,12 @@ export const useAuth = () => {
           });
 
           if (sessionError) {
-            console.error('Error setting session from OAuth hash:', sessionError);
+            logger.error('Error setting session from OAuth hash', sessionError, { context: 'useAuth' });
           }
 
           window.history.replaceState(null, '', window.location.pathname + window.location.search);
         } catch (error) {
-          console.error('Error processing OAuth hash:', error);
+          logger.error('Error processing OAuth hash', error, { context: 'useAuth' });
           window.history.replaceState(null, '', window.location.pathname + window.location.search);
         }
       } else {
@@ -64,7 +65,7 @@ export const useAuth = () => {
         if (!profile) throw new Error('Profile not found');
         setCurrentUser(profile);
       } catch (err) {
-        console.error('Error fetching profile:', err);
+        logger.error('Error fetching profile', err, { context: 'useAuth' });
         const fallback: UserProfile = {
           id: user.id,
           email: user.email || '',
@@ -102,9 +103,11 @@ export const useAuth = () => {
               await cartApi.mergeCart(sessionId);
               // Limpar sessionId após merge bem-sucedido
               localStorage.removeItem(STORAGE_KEY);
+              // Disparar evento para notificar que o carrinho foi mergeado
+              window.dispatchEvent(new CustomEvent('cart-merged'));
             }
           } catch (error) {
-            console.error('Error merging cart on login:', error);
+            logger.error('Error merging cart on login', error, { context: 'useAuth' });
             // Não bloquear o login se o merge falhar
           }
         }

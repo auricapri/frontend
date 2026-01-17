@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
-import { X, ChevronUp } from 'lucide-react';
-import { useBottomSheetGesture } from '../../hooks/useBottomSheetGesture';
+import React, { useEffect, useRef, useState } from 'react';
+import { X } from 'lucide-react';
 
 interface FilterBottomSheetProps {
   isOpen: boolean;
@@ -21,137 +20,120 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   onClear,
   t = (key: string) => key
 }) => {
-  const {
-    state,
-    translateY,
-    isDragging,
-    handleRef,
-    contentRef,
-    handleTouchStart,
-    handleTouchMove,
-    handleTouchEnd,
-    setState
-  } = useBottomSheetGesture({
-    initialState: isOpen ? 'open' : 'closed',
-    onStateChange: (newState) => {
-      if (newState === 'closed') {
-        onClose();
-      }
-    },
-    peekHeight: 80,
-    openHeight: 88,
-  });
+  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen && state === 'closed') {
-      setState('open');
-    } else if (!isOpen && state !== 'closed') {
-      setState('closed');
-    }
-  }, [isOpen, state, setState]);
-
-  useEffect(() => {
-    if (state !== 'closed') {
+    if (isOpen) {
+      setIsVisible(true);
+      // Small delay to trigger animation
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(true);
+        });
+      });
       document.body.style.overflow = 'hidden';
     } else {
+      setIsAnimating(false);
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 300);
       document.body.style.overflow = '';
+      return () => clearTimeout(timer);
     }
+
     return () => {
       document.body.style.overflow = '';
     };
-  }, [state]);
+  }, [isOpen]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      setState('closed');
+      onClose();
     }
   };
 
-  if (!isOpen && state === 'closed') return null;
+  if (!isVisible) return null;
 
   return (
     <>
+      {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] transition-opacity duration-300 ${
-          state === 'closed' ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        className={`fixed inset-0 bg-black/60 z-[100] transition-opacity duration-300 ${
+          isAnimating ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={handleBackdropClick}
         aria-hidden="true"
       />
+
+      {/* Bottom Sheet */}
       <div
-        ref={contentRef}
-        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2rem] shadow-2xl z-[101] flex flex-col max-h-[85vh]"
-        style={{
-          transform: `translateY(${translateY}%)`,
-          transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          willChange: 'transform'
-        }}
+        ref={sheetRef}
+        className={`fixed inset-x-0 bottom-0 z-[101] transition-transform duration-300 ease-out ${
+          isAnimating ? 'translate-y-0' : 'translate-y-full'
+        }`}
         role="dialog"
         aria-modal="true"
         aria-label="Filtros de produtos"
+        style={{
+          maxHeight: 'calc(90vh - env(safe-area-inset-top, 0px))',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+        }}
       >
-        <div
-          ref={handleRef}
-          className="flex-shrink-0 px-6 pt-4 pb-2 cursor-grab active:cursor-grabbing touch-none"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex-1 flex items-center justify-center">
-              <div className="w-full max-w-[120px] h-1.5 bg-neutral-300 rounded-full" />
+        <div className="bg-white rounded-t-3xl shadow-2xl flex flex-col h-full max-h-[85vh]">
+          {/* Header */}
+          <div className="flex-shrink-0 px-5 pt-4 pb-4 border-b border-neutral-100">
+            {/* Drag Handle */}
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-1.5 bg-neutral-300 rounded-full" />
             </div>
-            <button
-              onClick={() => setState('closed')}
-              className="p-2 -mr-2 hover:bg-neutral-100 rounded-full transition-colors"
-              aria-label="Fechar filtros"
-            >
-              <X className="w-5 h-5 text-neutral-600" />
-            </button>
-          </div>
-          {state === 'peek' && (
-            <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-500 mb-2">
-              <ChevronUp className="w-4 h-4" />
-              <span>{t('grid.swipeToExpand')}</span>
-            </div>
-          )}
-        </div>
 
-        <div className="flex-1 overflow-y-auto overscroll-contain px-6 pb-6 touch-pan-y">
-          <div className="max-w-2xl mx-auto">
-            {children}
-          </div>
-        </div>
-
-        {state === 'open' && (
-          <div className="flex-shrink-0 border-t border-neutral-100 px-6 py-4 bg-neutral-50">
-            <div className="flex items-center justify-between gap-4">
-              {productCount !== undefined && (
-                <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-600">
-                  {t('grid.filtersApplied').replace('{count}', productCount.toString())}
-                </span>
-              )}
-              <div className="flex gap-3">
-                {onClear && (
+            {/* Title Row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <h3 className="text-[16px] font-bold uppercase tracking-[0.08em] text-neutral-900">
+                  {t('grid.filter')}
+                </h3>
+                {hasActiveFilters && onClear && (
                   <button
                     onClick={onClear}
-                    className="px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-600 hover:text-neutral-900 bg-white rounded-lg shadow-sm transition-colors"
-                    aria-label={t('grid.clearFilters')}
+                    className="text-[12px] font-semibold text-red-500 active:text-red-600 underline underline-offset-2"
                   >
-                    {t('grid.clearFilters')}
+                    Limpar tudo
                   </button>
                 )}
-                <button
-                  onClick={() => setState('closed')}
-                  className="px-6 py-2.5 bg-neutral-900 text-white text-[10px] uppercase tracking-[0.2em] font-bold rounded-lg hover:bg-neutral-800 transition-colors shadow-sm"
-                  aria-label={t('grid.applyFilters')}
-                >
-                  {t('grid.applyFilters')}
-                </button>
               </div>
+              <button
+                onClick={onClose}
+                className="w-10 h-10 flex items-center justify-center bg-neutral-100 active:bg-neutral-200 rounded-full transition-colors"
+                aria-label="Fechar filtros"
+              >
+                <X className="w-5 h-5 text-neutral-700" />
+              </button>
             </div>
           </div>
-        )}
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5">
+            {children}
+          </div>
+
+          {/* Footer - Fixed at bottom with safe area */}
+          <div
+            className="flex-shrink-0 border-t border-neutral-200 px-5 pt-4 bg-white"
+            style={{
+              paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 16px))'
+            }}
+          >
+            <button
+              onClick={onClose}
+              className="w-full py-4 bg-neutral-900 text-white text-[13px] font-bold uppercase tracking-[0.12em] rounded-xl active:bg-neutral-700 transition-colors"
+            >
+              {t('grid.applyFilters')} {productCount !== undefined && `(${productCount})`}
+            </button>
+          </div>
+        </div>
       </div>
     </>
   );

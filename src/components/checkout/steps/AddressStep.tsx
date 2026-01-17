@@ -22,6 +22,9 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
     num,
     complement,
     phone,
+    cpf,
+    setCpf,
+    maskCPF,
     pickerContainerRef,
     searchQuery,
     setComplement,
@@ -45,11 +48,11 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           <div className="p-4 bg-neutral-50 rounded-2xl">
             <MapPin className="w-6 h-6" />
           </div>
-          <h3 className="text-xl font-black uppercase italic tracking-tighter">Endereço de Entrega</h3>
+          <h3 className="text-2xl font-black uppercase italic tracking-tight text-neutral-900">Endereço de Entrega</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="md:col-span-2 space-y-4">
-            <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">CEP</label>
+            <label className="text-xs font-black uppercase tracking-widest text-neutral-600">CEP</label>
             <div className="relative">
               <input
                 data-testid="checkout-cep-input"
@@ -72,12 +75,12 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 type="button"
                 onClick={() => setIsMapPickerOpen(true)}
                 data-testid="open-map-picker"
-                className="text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-black transition-colors flex items-center gap-2"
+                className="text-xs font-black uppercase tracking-widest text-neutral-600 hover:text-black transition-colors flex items-center gap-2"
               >
                 <Navigation className="w-3 h-3" /> Não sei meu CEP
               </button>
               {cepError && (
-                <div className="flex items-center gap-2 text-[10px] text-red-500 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
+                <div className="flex items-center gap-2 text-xs text-red-500 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
                   <AlertCircle className="w-3 h-3" />
                   {cepError}
                 </div>
@@ -88,7 +91,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             <div className="md:col-span-2 space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
               <div className="bg-neutral-900 text-white p-8 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-8 shadow-2xl border border-white/10 overflow-hidden relative">
                 <div className="relative z-10 flex-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/40 block mb-2">
+                  <span className="text-xs font-black uppercase tracking-widest text-white/40 block mb-2">
                     {isManualAddress ? 'Localização Confirmada' : 'Destino Identificado'}
                   </span>
                   <h4 className="text-xl font-black uppercase italic tracking-tight mb-1">
@@ -109,7 +112,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                       <div className="w-full h-full flex items-center justify-center bg-neutral-800">
                         <div className="text-center">
                           <MapPin className="w-6 h-6 text-white/20 mx-auto mb-2" />
-                          <p className="text-[10px] text-white/40">Carregando mapa...</p>
+                          <p className="text-xs text-white/40">Carregando mapa...</p>
                         </div>
                       </div>
                     )}
@@ -118,7 +121,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Número</label>
+                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Número</label>
                   <input
                     className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black"
                     placeholder="Ex: 123"
@@ -127,7 +130,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Complemento</label>
+                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Complemento</label>
                   <input
                     className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black"
                     placeholder="Ex: Apto 12"
@@ -139,7 +142,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             </div>
           )}
           <div className="md:col-span-2 space-y-3">
-            <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Nome do Destinatário</label>
+            <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Nome do Destinatário</label>
             <input
               className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black uppercase"
               placeholder="Nome Completo"
@@ -148,7 +151,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           </div>
           {(!currentUser?.phone || !currentUser.phone.trim()) && (
             <div className="md:col-span-2 space-y-3">
-              <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+              <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
                 Telefone <span className="text-red-500">*</span>
               </label>
               <input
@@ -160,6 +163,18 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
               />
             </div>
           )}
+          <div className="md:col-span-2 space-y-3">
+            <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+              CPF <span className="text-neutral-300">(opcional para nota fiscal)</span>
+            </label>
+            <input
+              className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-mono"
+              placeholder="000.000.000-00"
+              value={cpf}
+              onChange={(e) => setCpf(maskCPF(e.target.value))}
+              maxLength={14}
+            />
+          </div>
         </div>
         <button
           onClick={() => address && setStep(2)}
@@ -169,7 +184,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             !shipping.bestInternalShipping ||
             ((!currentUser?.phone || !currentUser.phone.trim()) && (!phone || phone.trim().length < 10))
           }
-          className="w-full md:w-auto px-16 py-8 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] transition-all disabled:opacity-20 active:scale-95"
+          className="w-full md:w-auto px-16 py-8 bg-black text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] transition-all disabled:opacity-20 active:scale-95"
         >
           Confirmar e Pagar
         </button>
@@ -204,8 +219,8 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                         onClick={() => handleSelectSearchResult(res)}
                         className="w-full p-4 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors"
                       >
-                        <p className="text-[10px] font-black uppercase tracking-widest">{res.text}</p>
-                        <p className="text-[9px] text-neutral-400 truncate">{res.place_name}</p>
+                        <p className="text-xs font-black uppercase tracking-widest">{res.text}</p>
+                        <p className="text-xs text-neutral-600 truncate">{res.place_name}</p>
                       </button>
                     ))}
                   </div>
@@ -217,7 +232,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 <div className="flex justify-between items-center">
                   <div>
                     <h2 className="text-2xl font-black uppercase italic tracking-tighter leading-none mb-2">Localizador</h2>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Confirme os detalhes do endereço</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-neutral-600">Confirme os detalhes do endereço</p>
                   </div>
                   <button onClick={() => setIsMapPickerOpen(false)} className="p-4 bg-neutral-50 rounded-full hover:bg-neutral-100 transition-all">
                     <X className="w-5 h-5" />
@@ -225,7 +240,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 </div>
                 <div className="space-y-8">
                   <div className="space-y-2">
-                    <label className="text-[8px] font-black uppercase tracking-widest text-neutral-400">Rua / Logradouro</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Rua / Logradouro</label>
                     <input
                       className="w-full p-5 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-black uppercase outline-none focus:border-black transition-all"
                       value={manualAddress.street}
@@ -235,7 +250,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                   </div>
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[8px] font-black uppercase tracking-widest text-neutral-400">Bairro</label>
+                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Bairro</label>
                       <input
                         className="w-full p-5 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
                         value={manualAddress.neighborhood}
@@ -244,7 +259,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[8px] font-black uppercase tracking-widest text-neutral-400">Cidade</label>
+                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Cidade</label>
                       <input
                         className="w-full p-5 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
                         value={manualAddress.city}
@@ -255,7 +270,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                   </div>
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[8px] font-black uppercase tracking-widest text-neutral-400">Estado</label>
+                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Estado</label>
                       <input
                         className="w-full p-5 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
                         value={manualAddress.state}
@@ -265,7 +280,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[8px] font-black uppercase tracking-widest text-neutral-400">CEP</label>
+                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">CEP</label>
                       <input
                         className="w-full p-5 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
                         value={manualAddress.cep}
@@ -279,7 +294,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                         maxLength={9}
                       />
                       {manualCepError && (
-                        <div className="flex items-center gap-2 text-[10px] text-red-500 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
+                        <div className="flex items-center gap-2 text-xs text-red-500 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
                           <AlertCircle className="w-3 h-3" />
                           {manualCepError}
                         </div>
@@ -292,7 +307,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 onClick={confirmManualAddress}
                 data-testid="manual-address-confirm"
                 disabled={!manualAddress.street || !manualAddress.city || !manualAddress.neighborhood}
-                className="w-full py-8 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 mt-12 hover:scale-[1.02] active:scale-95 disabled:opacity-20 transition-all"
+                className="w-full py-8 bg-black text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 mt-12 hover:scale-[1.02] active:scale-95 disabled:opacity-20 transition-all"
               >
                 <Check className="w-4 h-4" /> Confirmar Localização
               </button>

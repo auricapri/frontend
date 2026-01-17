@@ -3,6 +3,8 @@ import { NodeProps, Handle, Position } from 'reactflow';
 import { Upload, Package, Tag, Calculator, Variable, CheckCircle2, TrendingUp, Zap, MessageSquare, X, ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { ProductNodeData, VariantNodeData, ResultNodeData, NodeComment } from '../types';
 import { generateVarName } from '../hooks/useDiagramState';
+import { useAppContext } from '../../../../../context/AppContext';
+import { getCurrencySymbol, formatCurrency } from '../../../../../utils/currency';
 
 interface CollapsibleCommentsProps {
   comments: NodeComment[];
@@ -156,11 +158,13 @@ export const ImageNode: React.FC<NodeProps> = ({ data, selected }) => {
 };
 
 export const ProductNode: React.FC<NodeProps<ProductNodeData>> = ({ data, selected }) => {
+  const { locale } = useAppContext();
+  const currencySymbol = getCurrencySymbol(locale);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [productName, setProductName] = useState(data.productName || 'Produto');
   const [productImage, setProductImage] = useState(data.productImage || '');
   const [value, setValue] = useState<number>(data.value ?? 0);
-  const [unit, setUnit] = useState<string>(data.unit ?? 'R$');
+  const [unit, setUnit] = useState<string>(data.unit ?? currencySymbol);
   const [category, setCategory] = useState<string>(data.category ?? '');
 
   const varName = generateVarName(productName);
@@ -280,7 +284,7 @@ export const ProductNode: React.FC<NodeProps<ProductNodeData>> = ({ data, select
             }}
             className="px-2 py-1.5 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-cyan-500 font-medium"
           >
-            <option value="R$">R$</option>
+            <option value={currencySymbol}>{currencySymbol}</option>
             <option value="kg">kg</option>
             <option value="un">un</option>
             <option value="%">%</option>
@@ -304,6 +308,7 @@ export const ProductNode: React.FC<NodeProps<ProductNodeData>> = ({ data, select
 };
 
 export const VariantNode: React.FC<NodeProps<VariantNodeData>> = ({ data, selected }) => {
+  const { locale } = useAppContext();
   const [sku, setSku] = useState(data.sku || '');
   const [color, setColor] = useState(data.color || '');
   const [colorHex, setColorHex] = useState(data.colorHex || '#6B7280');
@@ -504,7 +509,7 @@ export const VariantNode: React.FC<NodeProps<VariantNodeData>> = ({ data, select
 
         <div className="bg-purple-50 px-2 py-1 rounded border border-purple-200">
           <p className="text-[8px] font-mono text-purple-700 font-bold">{varName}</p>
-          <p className="text-[10px] font-bold text-purple-900">R$ {retailPrice.toFixed(2)}</p>
+          <p className="text-[10px] font-bold text-purple-900">{formatCurrency(retailPrice, locale)}</p>
         </div>
       </div>
 

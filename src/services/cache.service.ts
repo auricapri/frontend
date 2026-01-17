@@ -1,3 +1,5 @@
+import { logger } from '../utils/logger';
+
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -57,7 +59,7 @@ class CacheService {
       this.stats.storageSize = this.getStorageSize();
       this.isInitialized = true;
     } catch (error) {
-      console.warn('Cache initialization error:', error);
+      logger.warn('Cache initialization error', error, { context: 'CacheService' });
       this.stats.errors++;
     }
   }
@@ -239,7 +241,7 @@ class CacheService {
       }
     } catch (error) {
       this.stats.errors++;
-      console.warn('Cache get error:', error);
+      logger.warn('Cache get error', error, { context: 'CacheService' });
     }
 
     return null;
@@ -307,7 +309,7 @@ class CacheService {
       }
     } catch (error) {
       this.stats.errors++;
-      console.warn('Cache set error:', error);
+      logger.warn('Cache set error', error, { context: 'CacheService' });
     }
   }
 

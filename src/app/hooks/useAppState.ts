@@ -11,6 +11,7 @@ export type AppView =
   | 'home'
   | 'product'
   | 'collection'
+  | 'new-arrivals'
   | 'admin'
   | 'admin-login'
   | 'delivery'
@@ -71,6 +72,7 @@ export function useAppState(params: {
     if (pathname === '/checkout') return 'checkout';
     if (pathname === '/receipt') return 'receipt';
     if (pathname === '/about') return 'about';
+    if (pathname === '/novidades') return 'new-arrivals';
     if (pathname === '/reset-password') return 'reset-password';
     if (pathname.startsWith('/order-review/')) return 'order-review';
     if (pathname.startsWith('/wishlist/')) return 'shared-wishlist';
@@ -129,19 +131,10 @@ export function useAppState(params: {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [extractProductSlug, getViewFromPath, loadProductFromSlug]);
 
+  // Single page view tracking on mount - removed duplicate popstate listener
   useEffect(() => {
     const currentPath = window.location.pathname;
     trackingService.trackPageView(currentPath);
-  }, []);
-  
-  useEffect(() => {
-    const handleLocationChange = () => {
-      const currentPath = window.location.pathname;
-      trackingService.trackPageView(currentPath);
-    };
-    
-    window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
 
   useEffect(() => {
@@ -292,12 +285,13 @@ export function useAppState(params: {
           path = `/product/${slug}`;
         } else {
           const routes: Record<
-            Exclude<typeof view, '404' | 'product' | 'collection' | 'receipt' | 'about' | 'reset-password'> | 'product' | 'collection' | 'receipt' | 'about' | 'reset-password',
+            Exclude<typeof view, '404' | 'product' | 'collection' | 'receipt' | 'about' | 'reset-password' | 'new-arrivals'> | 'product' | 'collection' | 'receipt' | 'about' | 'reset-password' | 'new-arrivals',
             string
           > = {
             home: '/',
             product: '/product',
             collection: '/collection',
+            'new-arrivals': '/novidades',
             admin: '/admin',
             checkout: '/checkout',
             receipt: '/receipt',

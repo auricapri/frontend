@@ -1,6 +1,38 @@
 
 import { Locale } from '../../i18n';
 
+/**
+ * Get the currency symbol for a given locale
+ */
+export const getCurrencySymbol = (locale: Locale): string => {
+  switch (locale) {
+    case 'pt':
+      return 'R$';
+    case 'es':
+    case 'fr':
+      return '€';
+    case 'en':
+    default:
+      return '$';
+  }
+};
+
+/**
+ * Get currency code for a given locale
+ */
+export const getCurrencyCode = (locale: Locale): string => {
+  switch (locale) {
+    case 'pt':
+      return 'BRL';
+    case 'es':
+    case 'fr':
+      return 'EUR';
+    case 'en':
+    default:
+      return 'USD';
+  }
+};
+
 export const formatCurrency = (amount: number, locale: Locale): string => {
   let currencyCode = 'USD';
   let formatLocale = 'en-US';

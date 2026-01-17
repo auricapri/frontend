@@ -1,6 +1,7 @@
 import { LocalizedText } from '../common';
 import { ProductVariant } from './variant';
 import { PricingScenario } from './pricing';
+import { Gender } from '../../constants/enums';
 
 export interface Product {
   id: string;
@@ -12,6 +13,7 @@ export interface Product {
   is_active: boolean;
   is_highlight: boolean;
   has_free_shipping?: boolean;
+  gender?: Gender; // Gênero do produto (feminino, masculino, unissex)
   pricing_scenarios?: PricingScenario[];
   pricing_variables?: any[];
   base_images: string[];

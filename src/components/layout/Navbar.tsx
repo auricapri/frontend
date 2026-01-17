@@ -1,7 +1,9 @@
-import React from 'react';
-import { ShoppingBag, Menu, X, Heart, ArrowLeft, Ticket, User } from 'lucide-react';
-import { UserMode } from '../../types';
+import React, { useState } from 'react';
+import { ShoppingBag, Menu, X, Heart, ArrowLeft, Ticket, User, ChevronDown } from 'lucide-react';
+import { UserMode, Collection } from '../../types';
+import { Gender } from '../../constants/enums';
 import { Locale } from '../../i18n';
+import { createGetLoc } from '../../utils/localization';
 
 interface NavbarProps {
   cartCount: number;
@@ -12,7 +14,7 @@ interface NavbarProps {
   onOpenAuth: () => void;
   userMode: UserMode;
   onToggleMode: () => void;
-  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about', target?: string) => void;
+  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals', target?: string) => void;
   isScrolled: boolean;
   isProductView?: boolean;
   onBack?: () => void;
@@ -21,28 +23,47 @@ interface NavbarProps {
   currentLocale: Locale;
   onChangeLocale: (locale: Locale) => void;
   storeName: string;
+  collections?: Collection[];
+  onSelectCollection?: (collection: Collection) => void;
+  selectedGender?: Gender;
+  onGenderChange?: (gender: Gender) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ 
-  cartCount, 
-  onOpenCart, 
+const Navbar: React.FC<NavbarProps> = ({
+  cartCount,
+  onOpenCart,
   wishlistCount,
   onOpenWishlist,
   onOpenCoupons,
   onOpenAuth,
-  userMode, 
-  onToggleMode, 
-  onNavigate, 
+  userMode,
+  onToggleMode,
+  onNavigate,
   isScrolled,
   isProductView,
   onBack,
   isLoggedIn,
   t,
-  currentLocale: _currentLocale,
+  currentLocale,
   onChangeLocale: _onChangeLocale,
-  storeName
+  storeName,
+  collections = [],
+  onSelectCollection,
+  selectedGender = Gender.FEMALE,
+  onGenderChange
 }) => {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCollectionsOpen, setIsCollectionsOpen] = useState(false);
+
+  const getLoc = React.useMemo(() => createGetLoc(currentLocale), [currentLocale]);
+
+  const handleSelectCollection = (collection: Collection) => {
+    if (onSelectCollection) {
+      onSelectCollection(collection);
+      setIsMenuOpen(false);
+      setIsCollectionsOpen(false);
+    }
+  };
 
   // Determine if header should be in "Solid/Scrolled" state
   const isSolid = isScrolled || isProductView;
@@ -51,7 +72,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const showTestBanner = import.meta.env.VITE_SHOW_TEST_BANNER === 'true';
   const topOffset = showTestBanner ? 'top-12' : 'top-0';
 
-  const handleNav = (view: 'home' | 'product' | 'admin' | 'checkout' | 'about', target?: string) => {
+  const handleNav = (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals', target?: string) => {
     onNavigate(view, target);
     setIsMenuOpen(false);
   };
@@ -172,31 +193,111 @@ const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
             
-            {/* Menu Content */}
-            <div className="flex-1 flex flex-col justify-between py-12">
-              <div className="space-y-8">
-                <button
-                  onClick={() => handleNav('home', 'hero')}
-                  className="block w-full text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
-                >
-                  {t('nav.newArrivals')}
-                </button>
-                <button
-                  onClick={() => handleNav('home', 'collection')}
-                  className="block w-full text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
-                >
-                  {t('nav.collection')}
-                </button>
-                <button
-                  onClick={() => handleNav('about')}
-                  className="block w-full text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
-                >
-                  Sobre Nós
-                </button>
+            {/* Menu Content - Scrollable */}
+            <div className="flex-1 flex flex-col py-12 overflow-hidden">
+              {/* Gender Toggle */}
+              <div className="mb-10 pb-8 border-b border-neutral-100 flex-shrink-0">
+                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4">Comprar por</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      onGenderChange?.(Gender.FEMALE);
+                      setIsMenuOpen(false);
+                    }}
+                    className={`flex-1 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all ${
+                      selectedGender === Gender.FEMALE
+                        ? 'bg-black text-white'
+                        : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200'
+                    }`}
+                  >
+                    {t('gender.female')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      onGenderChange?.(Gender.MALE);
+                      setIsMenuOpen(false);
+                    }}
+                    className={`flex-1 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all ${
+                      selectedGender === Gender.MALE
+                        ? 'bg-black text-white'
+                        : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200'
+                    }`}
+                  >
+                    {t('gender.male')}
+                  </button>
+                </div>
               </div>
-              
+
+              {/* Scrollable Navigation Area */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 -mr-2">
+                <div className="space-y-6">
+                  <button
+                    onClick={() => handleNav('new-arrivals')}
+                    className="block w-full text-3xl md:text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
+                  >
+                    {t('nav.newArrivals')}
+                  </button>
+
+                  {/* Collections Collapse */}
+                  <div>
+                    <button
+                      onClick={() => setIsCollectionsOpen(!isCollectionsOpen)}
+                      className="w-full flex items-center justify-between text-3xl md:text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
+                    >
+                      <span>{t('nav.collection')}</span>
+                      <ChevronDown
+                        className={`w-6 h-6 transition-transform duration-500 ease-out ${
+                          isCollectionsOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+
+                    {/* Collections List - Smooth height animation */}
+                    <div
+                      className={`overflow-hidden transition-all duration-500 ease-out ${
+                        isCollectionsOpen ? 'max-h-[60vh] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'
+                      }`}
+                    >
+                      <div className="pl-4 space-y-2 border-l-2 border-neutral-200">
+                        {collections.map((col) => (
+                          <button
+                            key={col.id}
+                            onClick={() => handleSelectCollection(col)}
+                            className="w-full flex items-center gap-4 py-2.5 hover:opacity-70 transition-all text-left group"
+                          >
+                            {col.image_url && (
+                              <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-100">
+                                <img
+                                  src={col.image_url}
+                                  alt={getLoc(col.name)}
+                                  loading="lazy"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                              </div>
+                            )}
+                            <span className="text-base font-medium text-neutral-700 group-hover:text-neutral-900">
+                              {getLoc(col.name)}
+                            </span>
+                          </button>
+                        ))}
+                        {collections.length === 0 && (
+                          <p className="text-sm text-neutral-400 py-2">Nenhuma coleção disponível</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleNav('about')}
+                    className="block w-full text-3xl md:text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
+                  >
+                    Sobre Nós
+                  </button>
+                </div>
+              </div>
+
               {/* Menu Footer */}
-              <div className="pt-10 border-t border-neutral-100">
+              <div className="pt-10 border-t border-neutral-100 flex-shrink-0 mt-auto">
                 <div className="flex flex-wrap gap-4">
                   <button
                     onClick={() => {

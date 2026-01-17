@@ -12,13 +12,13 @@ export function ReviewStep({ checkout }: { checkout: CheckoutState }) {
           <ShieldCheck className="w-12 h-12" />
         </div>
         <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4">Finalização Segura</h3>
-        <p className="text-sm text-neutral-400 max-w-md mx-auto mb-12 leading-relaxed">
+        <p className="text-sm text-neutral-600 max-w-md mx-auto mb-12 leading-relaxed">
           Seu pedido passará por uma análise de segurança automática e será despachado em até 24h úteis.
         </p>
         <div className="flex gap-4 w-full max-w-sm px-4">
           <button
             onClick={() => setStep(2)}
-            className="flex-1 px-8 py-6 border border-neutral-200 rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-neutral-50 transition-all"
+            className="flex-1 px-8 py-6 border border-neutral-200 rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-neutral-50 transition-all"
           >
             Editar
           </button>

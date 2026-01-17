@@ -15,6 +15,7 @@ export interface ProductVariant {
   variant_images: string[];
   attributes?: Record<string, any>;
   is_active: boolean;
+  face_swap_enabled?: boolean;
   cost_price?: number;
   weight_g?: number;
   dimensions?: ProductDimensions;

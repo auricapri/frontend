@@ -139,11 +139,24 @@ export function useOrderProcessing(params: {
           finalAmount,
         });
 
-        trackingService.trackPurchase(
-          orderData.id,
-          finalAmount,
-          cartItems.map((i) => ({ product_id: i.product_id, variant_id: i.variant_id, quantity: i.quantity, price: i.price }))
-        );
+        const trackPurchaseWithRetry = async (attempts = 3) => {
+          for (let i = 0; i < attempts; i++) {
+            try {
+              trackingService.trackPurchase(
+                orderData.id,
+                finalAmount,
+                cartItems.map((item) => ({ product_id: item.product_id, variant_id: item.variant_id, quantity: item.quantity, price: item.price }))
+              );
+              return;
+            } catch {
+              if (i < attempts - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+              }
+            }
+          }
+          logger.warn('Failed to track purchase after retries', { orderId: orderData.id });
+        };
+        trackPurchaseWithRetry();
 
         const fullOrder: Order = {
           ...orderData,
