@@ -22,6 +22,8 @@ export type AppView =
   | 'reset-password'
   | 'shared-wishlist'
   | 'order-review'
+  | 'privacy'
+  | 'terms'
   | '404';
 
 export function useAppState(params: {
@@ -78,6 +80,8 @@ export function useAppState(params: {
     if (pathname.startsWith('/wishlist/')) return 'shared-wishlist';
     if (pathname.startsWith('/product')) return 'product';
     if (pathname.startsWith('/collection')) return 'collection';
+    if (pathname === '/privacy') return 'privacy';
+    if (pathname === '/terms') return 'terms';
     if (pathname === '/') return 'home';
     return '404';
   }, []);
@@ -298,6 +302,8 @@ export function useAppState(params: {
             about: '/about',
             'reset-password': '/reset-password',
             delivery: '/admin/delivery',
+            privacy: '/privacy',
+            terms: '/terms',
           };
           path = (routes as any)[view] || '/';
         }
