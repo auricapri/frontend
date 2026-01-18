@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprovante Fiscal - AURICAPRI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #000;
+            background: #fff;
+            padding: 40px 20px;
+        }
+        
+        .receipt-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border: 2px solid #000;
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            background: #000;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .company-name {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .company-subtitle {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .company-cnpj {
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            color: #666;
+        }
+        
+        .order-info {
+            background: #f9f9f9;
+            border: 1px dashed #000;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 11px;
+        }
+        
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info-label {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #000;
+        }
+        
+        .info-value {
+            font-weight: 700;
+            color: #000;
+        }
+        
+        .payment-badge {
+            background: #000;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 3px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #22c55e;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .divider {
+            border-top: 1px dashed #000;
+            margin: 25px 0;
+        }
+        
+        .section-title {
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            color: #000;
+            margin-bottom: 15px;
+        }
+        
+        .items-list {
+            margin-bottom: 25px;
+        }
+        
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .item-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .item-info {
+            flex: 1;
+            padding-right: 15px;
+        }
+        
+        .item-name {
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .item-details {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .item-price {
+            font-weight: 700;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        
+        .totals {
+            margin-bottom: 25px;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 11px;
+        }
+        
+        .total-row.discount {
+            color: #22c55e;
+            font-weight: 700;
+        }
+        
+        .total-row.final {
+            border-top: 2px solid #000;
+            padding-top: 15px;
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: 900;
+        }
+        
+        .total-label {
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+        
+        .barcode-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+        }
+        
+        .barcode {
+            font-family: monospace;
+            font-size: 24px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        
+        .footer {
+            text-align: center;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            color: #666;
+            line-height: 1.6;
+            margin-top: 30px;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            .receipt-container {
+                border: none;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="header">
+            <div class="logo">A</div>
+            <div class="company-name">AURICAPRI</div>
+            <div class="company-subtitle">Luxury Global Retail</div>
+            <div class="company-cnpj">CNPJ: 00.000.000/0001-99</div>
+        </div>
+        
+        <div class="order-info">
+            <div class="info-row">
+                <span class="info-label">ID DO PEDIDO</span>
+                <span class="info-value">{{ORDER_ID}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">DATA EMISSÃO</span>
+                <span class="info-value">{{FORMATTED_DATE}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">MÉTODO</span>
+                <span class="payment-badge">{{PAYMENT_METHOD}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">STATUS</span>
+                <span class="status-badge">✓ Confirmado</span>
+            </div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="section-title">Detalhamento</div>
+        <div class="items-list">
+            {{ITEMS_HTML}}
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="totals">
+            <div class="total-row">
+                <span class="total-label">Subtotal</span>
+                <span>{{SUBTOTAL}}</span>
+            </div>
+            {{DISCOUNT_HTML}}
+            <div class="total-row">
+                <span class="total-label">Frete / Envio</span>
+                <span>GRÁTIS</span>
+            </div>
+            <div class="total-row final">
+                <span class="total-label">Total Pago</span>
+                <span>{{TOTAL}}</span>
+            </div>
+        </div>
+        
+        {{TRACKING_SECTION}}
+        
+        <div class="barcode-section">
+            <div class="barcode">||||| |||| || |||||| |||| ||||</div>
+        </div>
+        
+        <div class="footer">
+            Este documento possui valor fiscal para fins de garantia.<br/>
+            Auricapri Global Inc.
+        </div>
+    </div>
+</body>
+</html>
+

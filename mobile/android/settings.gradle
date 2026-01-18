@@ -1,0 +1,21 @@
+rootProject.name = 'Auricapri'
+
+include ':app'
+includeBuild('../node_modules/@react-native/gradle-plugin')
+
+// Manual linking for react-native-safe-area-context
+include ':react-native-safe-area-context'
+project(':react-native-safe-area-context').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-safe-area-context/android')
+
+// Manual linking for react-native-svg
+include ':react-native-svg'
+project(':react-native-svg').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-svg/android')
+
+// Manual linking for react-native-fs
+include ':react-native-fs'
+project(':react-native-fs').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-fs/android')
+
+// Manual linking for @react-native-async-storage/async-storage
+include ':react-native-async-storage_async-storage'
+project(':react-native-async-storage_async-storage').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-async-storage/async-storage/android')
+

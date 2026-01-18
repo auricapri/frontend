@@ -1,0 +1,79 @@
+# Regras do Projeto Auricapri
+
+## Validação Obrigatória (Build e Lint)
+
+**CRÍTICO**: Antes de considerar qualquer tarefa como completa, você DEVE:
+
+1. **Sempre executar build e lint** no(s) projeto(s) modificado(s)
+2. **Nunca entregar código com erros** de build, lint ou type-check
+3. **Corrigir todos os erros** antes de finalizar a tarefa
+
+### Regras por Projeto
+
+#### Frontend (auricapri)
+- **Build**: `cd auricapri && npm run build` - DEVE passar sem erros
+- **Type Check**: `cd auricapri && npx tsc --noEmit` - DEVE passar sem erros
+- Se houver erros, corrigir antes de finalizar
+
+#### Backend
+- **Build**: `cd backend && npm run build` - DEVE passar sem erros
+- **Type Check**: `cd backend && npm run type-check` - DEVE passar sem erros
+- Se houver erros, corrigir antes de finalizar
+
+#### Mobile
+- **Lint**: `cd mobile && npm run lint` - DEVE passar sem erros
+- **Type Check**: `cd mobile && npx tsc --noEmit` - DEVE passar sem erros
+- Se houver erros, corrigir antes de finalizar
+
+### Comandos de Validação Disponíveis
+
+Use os comandos do Cursor em `.cursor/commands/`:
+- `validate-all` - Valida todos os projetos
+- `validate-frontend` - Valida apenas o frontend
+- `validate-backend` - Valida apenas o backend
+- `validate-mobile` - Valida apenas o mobile
+
+### Fluxo de Trabalho
+
+1. Implementar a funcionalidade
+2. Executar build e lint no(s) projeto(s) afetado(s)
+3. Se houver erros, corrigir imediatamente
+4. Re-executar validação até não haver erros
+5. Apenas então considerar a tarefa completa
+
+## Versionamento Automático
+
+### Regras de Versionamento
+
+- Sempre atualizar a versão ao modificar arquivos de código fonte
+- Use o comando `npm run version:update` após fazer mudanças em arquivos
+- Para atualizar todas as versões de uma vez: `node scripts/update-version.js --all`
+- Versão segue formato timestamp curto: YYYYMMDD-HHMM (ex: 20250115-1430)
+
+### Aplicações
+
+- **Backend**: Versão retornada em todas as respostas JSON da API no campo `version` (não lido pela página, apenas para consulta)
+- **Frontend (auricapri)**: Versão exibida no rodapé da aplicação
+- **Mobile**: Versão exibida no rodapé da aplicação
+
+### Comandos Disponíveis
+
+- `npm run version:update` - Atualiza versão da aplicação atual
+- `npm run version:watch` - Inicia file watcher para atualizar versão automaticamente quando arquivos são modificados
+- `node scripts/update-version.js --all` - Atualiza versões de todas as aplicações
+
+### File Watcher
+
+O file watcher monitora automaticamente mudanças em:
+- `backend/src/**` → atualiza `backend/VERSION`
+- `auricapri/src/**` → atualiza `auricapri/VERSION`
+- `mobile/src/**` → atualiza `mobile/VERSION`
+
+O watcher ignora arquivos de build, node_modules, .git e outros arquivos temporários.
+
+### Importante
+
+- Versão é atualizada automaticamente quando o file watcher está rodando
+- Em desenvolvimento, execute `npm run version:watch` em um terminal separado
+- Versão ajuda a identificar se problemas são causados por cache ou erros reais
+- Backend sempre retorna versão nas respostas JSON, mas frontend/mobile não leem esse campo

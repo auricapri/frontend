@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server"
+      ],
+      "env": {
+        "SERENA_PROJECT_CONFIG": "/Users/marcuslirio/Desktop/auricapri/.serena/project.yml",
+        "SERENA_WORKSPACE_ROOT": "/Users/marcuslirio/Desktop/auricapri",
+        "PATH": "/Users/marcuslirio/.local/bin:${PATH}"
+      }
+    }
+  }
+}

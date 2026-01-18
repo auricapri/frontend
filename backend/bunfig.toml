@@ -1,0 +1,6 @@
+[install]
+auto = true
+production = false
+
+[test]
+timeout = 30000

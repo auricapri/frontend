@@ -1,0 +1,88 @@
+# Configuração do Projeto Serena para Auricapri
+# Serena é um toolkit de código que fornece capacidades de recuperação semântica e edição
+
+name: auricapri
+workspace_root: /Users/marcuslirio/Desktop/auricapri
+
+# Projetos dentro do workspace
+projects:
+  - name: backend
+    root: backend
+    language_servers:
+      - typescript
+    # Arquivos e diretórios a incluir
+    include_patterns:
+      - "**/*.ts"
+      - "**/*.js"
+    # Arquivos e diretórios a excluir
+    exclude_patterns:
+      - "node_modules/**"
+      - "dist/**"
+      - "**/*.test.ts"
+      - "**/*.spec.ts"
+      - "logs/**"
+      - ".git/**"
+
+  - name: frontend
+    root: auricapri
+    language_servers:
+      - typescript
+    include_patterns:
+      - "**/*.ts"
+      - "**/*.tsx"
+      - "**/*.js"
+      - "**/*.jsx"
+    exclude_patterns:
+      - "node_modules/**"
+      - "dist/**"
+      - "**/*.test.ts"
+      - "**/*.spec.ts"
+      - "test-results/**"
+      - "playwright-report/**"
+      - ".git/**"
+
+  - name: mobile
+    root: mobile
+    language_servers:
+      - typescript
+    include_patterns:
+      - "**/*.ts"
+      - "**/*.tsx"
+      - "**/*.js"
+      - "**/*.jsx"
+    exclude_patterns:
+      - "node_modules/**"
+      - "dist/**"
+      - "**/*.test.ts"
+      - "**/*.spec.ts"
+      - ".git/**"
+
+# Padrões globais de exclusão
+exclude_patterns:
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/.git/**"
+  - "**/logs/**"
+  - "**/test-results/**"
+  - "**/playwright-report/**"
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+  - "**/package-lock.json"
+  - "**/yarn.lock"
+  - "**/pnpm-lock.yaml"
+
+# Configurações de contexto
+context:
+  # Tamanho máximo de contexto (em tokens)
+  max_context_size: 100000
+  # Incluir comentários e documentação
+  include_comments: true
+  # Incluir imports
+  include_imports: true
+
+# Configurações de busca semântica
+semantic_search:
+  # Profundidade máxima de busca
+  max_depth: 10
+  # Incluir referências cruzadas entre projetos
+  cross_project_references: true

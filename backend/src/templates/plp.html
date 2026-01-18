@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento de Postagem (PLP) - AURICAPRI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #000;
+            background: #fff;
+            padding: 20px;
+        }
+        
+        .plp-container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 3px solid #000;
+            padding: 30px;
+            background: #fff;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #000;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 8px;
+        }
+        
+        .header .subtitle {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 15px;
+        }
+        
+        .header .carrier {
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-box {
+            border: 2px solid #000;
+            padding: 15px;
+            background: #fff;
+        }
+        
+        .box-title {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
+        }
+        
+        .box-content {
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.8;
+        }
+        
+        .items-section {
+            margin-top: 25px;
+            border-top: 2px solid #000;
+            padding-top: 15px;
+        }
+        
+        .items-title {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        
+        thead {
+            background: #000;
+            color: #fff;
+        }
+        
+        th {
+            padding: 10px;
+            text-align: left;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 10px;
+        }
+        
+        th:nth-child(2),
+        th:nth-child(3) {
+            text-align: center;
+        }
+        
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        td:nth-child(2),
+        td:nth-child(3) {
+            text-align: center;
+        }
+        
+        .barcode-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px dashed #000;
+            background: #f9f9f9;
+        }
+        
+        .barcode {
+            font-family: monospace;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        
+        .barcode-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+        
+        .footer {
+            text-align: center;
+            font-size: 9px;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            .plp-container {
+                border: 2px solid #000;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="plp-container">
+        <div class="header">
+            <h1>DOCUMENTO DE POSTAGEM (PLP)</h1>
+            <div class="subtitle">AUTORIZAÇÃO DE ENVIO V19.0.4</div>
+            <div class="carrier">{{CARRIER}}</div>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="box-title">Remetente</div>
+                <div class="box-content">
+                    {{SENDER_NAME}}<br/>
+                    CNPJ: {{SENDER_DOC}}<br/>
+                    {{SENDER_ADDRESS}}
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <div class="box-title">Destinatário</div>
+                <div class="box-content">
+                    {{RECIPIENT_STREET}}{{RECIPIENT_NUMBER}}<br/>
+                    {{RECIPIENT_NEIGHBORHOOD}} - {{RECIPIENT_CITY}}/{{RECIPIENT_STATE}}<br/>
+                    CEP: {{RECIPIENT_CEP}}
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="box-title">Dados Logísticos</div>
+                <div class="box-content">
+                    PESO BRUTO: {{TOTAL_WEIGHT}}g<br/>
+                    DIMENSÕES: {{DIMENSIONS}}<br/>
+                    VOLUME: 1/1
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <div class="box-title">Dados do Pedido</div>
+                <div class="box-content">
+                    ID: #{{ORDER_ID}}<br/>
+                    DATA: {{DATE}}<br/>
+                    VALOR DECLARADO: R$ {{DECLARED_VALUE}}
+                </div>
+            </div>
+        </div>
+        
+        <div class="items-section">
+            <div class="items-title">Conteúdo da Embalagem</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Qtd</th>
+                        <th>Valor Unit.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ITEMS_HTML}}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="barcode-section">
+            <div class="barcode">||||| |||| || |||||| |||| ||||</div>
+            <div class="barcode-label">{{PLP_SEQUENCE}}</div>
+        </div>
+        
+        <div class="footer">
+            Este documento deve ser anexado externamente à embalagem.<br/>
+            Gerado via Auricapri ERP.
+        </div>
+    </div>
+</body>
+</html>
+

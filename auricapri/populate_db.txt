@@ -1,0 +1,39 @@
+
+-- ==============================================================================
+-- SCRIPT DE MIGRAÇÃO: PROGRAMA DE FIDELIDADE (LOYALTY PROGRAM)
+-- Execute este script no SQL Editor do Supabase para atualizar suas tabelas.
+-- ==============================================================================
+
+-- 1. Atualizar a tabela de configurações da loja (store_config)
+-- Adiciona a coluna que armazena as regras de Cashback, XP e Níveis.
+ALTER TABLE public.store_config 
+ADD COLUMN IF NOT EXISTS loyalty_program jsonb DEFAULT '{
+  "enabled": true, 
+  "cashback_percentage": 1, 
+  "xp_per_currency_unit": 10,
+  "levels": [
+    {"level": 1, "xp_required": 0, "reward_coupon_value": 0, "reward_description": "Iniciante"},
+    {"level": 2, "xp_required": 1000, "reward_coupon_value": 50, "reward_description": "Bronze"},
+    {"level": 3, "xp_required": 5000, "reward_coupon_value": 150, "reward_description": "Silver"},
+    {"level": 4, "xp_required": 15000, "reward_coupon_value": 500, "reward_description": "Gold VIP"}
+  ]
+}'::jsonb;
+
+-- 2. Atualizar a tabela de perfis de usuário (profiles)
+-- Adiciona a coluna para rastrear o progresso individual (XP, Saldo Cashback).
+ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS loyalty jsonb DEFAULT '{
+  "current_xp": 0,
+  "current_level": 1,
+  "cashback_balance": 0,
+  "pending_reward_coupon": null
+}'::jsonb;
+
+-- 3. Verificação de Segurança para Tabela de Cupons
+-- Garante que a coluna product_ids existe para cupons de produtos específicos.
+ALTER TABLE public.coupons 
+ADD COLUMN IF NOT EXISTS product_ids text[] DEFAULT '{}'::text[];
+
+-- 4. Comentários para documentação (Opcional)
+COMMENT ON COLUMN public.store_config.loyalty_program IS 'Configurações globais do programa de fidelidade';
+COMMENT ON COLUMN public.profiles.loyalty IS 'Estado atual de fidelidade do usuário (XP e Nível)';
