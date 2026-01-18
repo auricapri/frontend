@@ -8,7 +8,8 @@ interface TermsPageProps {
 }
 
 export function TermsPage({ config, locale, onBack }: TermsPageProps) {
-  const content = config.terms_of_service?.[locale] || config.terms_of_service?.en || '';
+  const rawContent = config.terms_of_service?.[locale] || config.terms_of_service?.en || '';
+  const content = rawContent.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
 
   return (
     <div className="min-h-screen bg-white">
