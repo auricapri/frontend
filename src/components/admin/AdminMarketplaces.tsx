@@ -3,9 +3,10 @@ import {
   ArrowLeft, Plus, Search, Package, ShoppingCart, MessageCircle,
   BarChart3, Settings, RefreshCw, Check, X, AlertCircle, Loader2,
   ExternalLink, Upload, Image, Edit3, Trash2, Eye, TrendingUp,
-  Star, Clock, Tag, ChevronRight, Filter, MoreVertical, Copy
+  Star, Clock, Tag, ChevronRight, Filter, MoreVertical, Copy,
+  Calculator, DollarSign, Percent, Info, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
-import { marketplaceApi } from '../../api/marketplace.api';
+import { marketplaceApi, type FeeCalculation, type MinimumPriceCalculation } from '../../api/marketplace.api';
 import { ProductsApi } from '../../api/products.api';
 import type { MarketplaceConfig } from '../../types/marketplace';
 import type { Product } from '../../types';
@@ -1135,8 +1136,10 @@ const ImportProductModal: React.FC<{
   const [formData, setFormData] = useState({
     price: 0,
     description: '',
+    costPrice: 0,
   });
   const [allProductsCache, setAllProductsCache] = useState<Product[]>([]);
+  const [feeData, setFeeData] = useState<FeeCalculation | null>(null);
 
   // Load products on mount
   useEffect(() => {
@@ -1149,6 +1152,7 @@ const ImportProductModal: React.FC<{
         const mapped = all.slice(0, 20).map((p: Product) => {
           const totalStock = p.variants?.reduce((sum, v) => sum + (v.stock_quantity || 0), 0) || 0;
           const price = p.variants?.[0]?.retail_price || 0;
+          const costPrice = p.variants?.[0]?.cost_price || price * 0.4;
           const images = p.base_images?.length ? p.base_images : (p.default_image_url ? [p.default_image_url] : []);
           const description = p.description?.pt || p.description?.en || '';
           return {
@@ -1156,6 +1160,7 @@ const ImportProductModal: React.FC<{
             name: p.name?.pt || p.name?.en || 'Produto sem nome',
             description,
             price,
+            costPrice,
             stock: totalStock,
             images,
             variants: p.variants,
@@ -1195,6 +1200,7 @@ const ImportProductModal: React.FC<{
       const mapped = filtered.slice(0, 20).map((p: Product) => {
         const totalStock = p.variants?.reduce((sum, v) => sum + (v.stock_quantity || 0), 0) || 0;
         const price = p.variants?.[0]?.retail_price || 0;
+        const costPrice = p.variants?.[0]?.cost_price || price * 0.4;
         const images = p.base_images?.length ? p.base_images : (p.default_image_url ? [p.default_image_url] : []);
         const description = p.description?.pt || p.description?.en || '';
 
@@ -1203,6 +1209,7 @@ const ImportProductModal: React.FC<{
           name: p.name?.pt || p.name?.en || 'Produto sem nome',
           description,
           price,
+          costPrice,
           stock: totalStock,
           images,
           variants: p.variants,
@@ -1284,7 +1291,11 @@ const ImportProductModal: React.FC<{
                     key={product.id}
                     onClick={() => {
                       setSelectedProduct(product);
-                      setFormData({ price: product.price, description: product.description || '' });
+                      setFormData({
+                        price: product.price,
+                        description: product.description || '',
+                        costPrice: product.costPrice || product.price * 0.4,
+                      });
                     }}
                     className="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-neutral-400 transition-colors"
                   >
@@ -1307,10 +1318,10 @@ const ImportProductModal: React.FC<{
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-8">
-              {/* Preview */}
-              <div>
-                <h3 className="font-bold mb-4">Preview no {brand.name}</h3>
+            <div className="grid grid-cols-2 gap-6">
+              {/* Left Column - Preview and Info */}
+              <div className="space-y-4">
+                <h3 className="font-bold">Preview no {brand.name}</h3>
                 <div className="border rounded-xl overflow-hidden">
                   <div className="aspect-square bg-neutral-100 flex items-center justify-center">
                     {selectedProduct.images?.[0] ? (
@@ -1325,47 +1336,31 @@ const ImportProductModal: React.FC<{
                       R$ {formData.price.toFixed(2)}
                     </p>
                     <p className="text-sm text-green-600 mt-1">Frete grátis</p>
+                    {feeData && (
+                      <div className="mt-2 text-xs text-neutral-500">
+                        Lucro estimado: <span className={feeData.net_revenue - formData.costPrice > 0 ? 'text-green-600' : 'text-red-600'}>
+                          R$ {(feeData.net_revenue - formData.costPrice).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              {/* Form */}
-              <div className="space-y-4">
-                <h3 className="font-bold mb-4">Configurar Produto</h3>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Preço no {brand.name}
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">R$</span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                      className="w-full pl-10 pr-4 py-3 border rounded-xl"
-                    />
+                {/* Variants info */}
+                {selectedProduct.variants && selectedProduct.variants.length > 1 && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <p className="text-sm text-blue-700">
+                      <strong>📦 {selectedProduct.variants.length} variantes</strong> serão publicadas como variações no {brand.name}.
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      Tamanhos: {selectedProduct.variants.map((v: any) => v.size).filter(Boolean).join(', ') || 'Único'}
+                    </p>
                   </div>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Preço original: R$ {selectedProduct.price.toFixed(2)}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Descrição</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Descrição do produto no marketplace..."
-                    rows={6}
-                    className="w-full px-4 py-3 border rounded-xl resize-none"
-                  />
-                </div>
+                )}
 
                 <div className="bg-neutral-50 rounded-xl p-4">
                   <p className="text-sm text-neutral-600">
-                    <strong>Estoque:</strong> {selectedProduct.stock} unidades
+                    <strong>Estoque total:</strong> {selectedProduct.stock} unidades
                   </p>
                   <p className="text-xs text-neutral-500 mt-1">
                     O estoque é sincronizado automaticamente do site.
@@ -1373,11 +1368,39 @@ const ImportProductModal: React.FC<{
                 </div>
 
                 <button
-                  onClick={() => setSelectedProduct(null)}
+                  onClick={() => {
+                    setSelectedProduct(null);
+                    setFeeData(null);
+                  }}
                   className="w-full py-2 border rounded-xl hover:bg-neutral-50"
                 >
                   ← Escolher outro produto
                 </button>
+              </div>
+
+              {/* Right Column - Form with Calculator and Description */}
+              <div className="space-y-4">
+                <h3 className="font-bold">Configurar Produto</h3>
+
+                {/* Pricing Calculator */}
+                <PricingCalculator
+                  brand={brand}
+                  costPrice={formData.costPrice}
+                  configId={configId}
+                  initialPrice={formData.price}
+                  onPriceChange={(price, data) => {
+                    setFormData({ ...formData, price });
+                    if (data) setFeeData(data);
+                  }}
+                />
+
+                {/* Description Editor */}
+                <DescriptionEditor
+                  brand={brand}
+                  value={formData.description}
+                  originalDescription={selectedProduct.description}
+                  onChange={(description) => setFormData({ ...formData, description })}
+                />
               </div>
             </div>
           )}
@@ -1647,6 +1670,347 @@ const ConnectModal: React.FC<{
           </button>
         </div>
       </div>
+    </div>
+  );
+};
+
+// ============================================
+// PRICING CALCULATOR COMPONENT
+// ============================================
+
+interface PricingCalculatorProps {
+  brand: typeof MARKETPLACE_BRANDS[MarketplaceId];
+  costPrice: number;
+  categoryId?: string;
+  configId?: string;
+  initialPrice?: number;
+  onPriceChange: (price: number, feeData?: FeeCalculation) => void;
+}
+
+const PricingCalculator: React.FC<PricingCalculatorProps> = ({
+  brand,
+  costPrice,
+  categoryId = 'MLB1430', // Default to clothing category
+  configId,
+  initialPrice,
+  onPriceChange,
+}) => {
+  const [price, setPrice] = useState(initialPrice || costPrice * 2); // Default 100% markup
+  const [targetMargin, setTargetMargin] = useState(30);
+  const [feeData, setFeeData] = useState<FeeCalculation | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<'price' | 'margin'>('price');
+
+  // Calculate fees when price changes
+  useEffect(() => {
+    const calculateFees = async () => {
+      if (!price || price <= 0) return;
+      setIsLoading(true);
+      try {
+        const result = await marketplaceApi.calculateFees(price, categoryId, 'gold_special', configId);
+        setFeeData(result);
+        onPriceChange(price, result);
+      } catch (err) {
+        logger.error('Failed to calculate fees', err);
+        // Use default 11% if API fails
+        const defaultCommission = 11;
+        const estimatedFees = price * (defaultCommission / 100);
+        const defaultFeeData: FeeCalculation = {
+          category_id: categoryId,
+          listing_type: 'gold_special',
+          listing_fee: 0,
+          sales_commission_percent: defaultCommission,
+          estimated_fees: estimatedFees,
+          net_revenue: price - estimatedFees,
+        };
+        setFeeData(defaultFeeData);
+        onPriceChange(price, defaultFeeData);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const debounce = setTimeout(calculateFees, 500);
+    return () => clearTimeout(debounce);
+  }, [price, categoryId, configId]);
+
+  // Calculate price from target margin
+  const calculateFromMargin = async () => {
+    const targetNetRevenue = costPrice * (1 + targetMargin / 100);
+    setIsLoading(true);
+    try {
+      const result = await marketplaceApi.calculateMinimumPrice(targetNetRevenue, categoryId, 'gold_special', configId);
+      setPrice(result.minimum_price);
+    } catch (err) {
+      logger.error('Failed to calculate minimum price', err);
+      // Fallback calculation with default 11% commission
+      const defaultCommission = 11;
+      const minPrice = targetNetRevenue / (1 - defaultCommission / 100);
+      setPrice(Math.ceil(minPrice * 100) / 100);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const profit = feeData ? feeData.net_revenue - costPrice : price - costPrice - (price * 0.11);
+  const profitMargin = costPrice > 0 ? ((profit / costPrice) * 100).toFixed(1) : '0';
+  const isPositiveMargin = profit > 0;
+
+  return (
+    <div className="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-xl p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Calculator className="w-5 h-5" style={{ color: brand.accentColor }} />
+          <h4 className="font-bold text-sm">Calculadora de Preço</h4>
+        </div>
+        {isLoading && <Loader2 className="w-4 h-4 animate-spin text-neutral-400" />}
+      </div>
+
+      {/* Mode Toggle */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setMode('price')}
+          className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
+            mode === 'price'
+              ? `${brand.bgColor} ${brand.textColor}`
+              : 'bg-white border hover:bg-neutral-50'
+          }`}
+        >
+          Definir Preço
+        </button>
+        <button
+          onClick={() => setMode('margin')}
+          className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
+            mode === 'margin'
+              ? `${brand.bgColor} ${brand.textColor}`
+              : 'bg-white border hover:bg-neutral-50'
+          }`}
+        >
+          Definir Margem
+        </button>
+      </div>
+
+      {mode === 'price' ? (
+        <div>
+          <label className="block text-xs font-medium text-neutral-600 mb-1">
+            Preço de Venda
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">R$</span>
+            <input
+              type="number"
+              step="0.01"
+              value={price}
+              onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+              className="w-full pl-10 pr-4 py-2.5 border rounded-lg text-lg font-bold"
+            />
+          </div>
+        </div>
+      ) : (
+        <div>
+          <label className="block text-xs font-medium text-neutral-600 mb-1">
+            Margem Desejada (%)
+          </label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <input
+                type="number"
+                step="1"
+                value={targetMargin}
+                onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 0)}
+                className="w-full px-4 py-2.5 border rounded-lg text-lg font-bold"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">%</span>
+            </div>
+            <button
+              onClick={calculateFromMargin}
+              disabled={isLoading}
+              className={`px-4 py-2.5 rounded-lg font-medium ${brand.bgColor} ${brand.textColor}`}
+            >
+              Calcular
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Fee Breakdown */}
+      <div className="bg-white rounded-lg p-3 space-y-2 text-sm">
+        <div className="flex justify-between text-neutral-600">
+          <span>Custo do Produto</span>
+          <span className="font-medium">R$ {costPrice.toFixed(2)}</span>
+        </div>
+
+        <div className="flex justify-between text-neutral-600">
+          <span className="flex items-center gap-1">
+            Preço de Venda
+            <Info className="w-3 h-3 text-neutral-400" />
+          </span>
+          <span className="font-bold text-lg">R$ {price.toFixed(2)}</span>
+        </div>
+
+        <div className="border-t pt-2 mt-2">
+          <div className="flex justify-between text-neutral-500">
+            <span className="flex items-center gap-1">
+              <Percent className="w-3 h-3" />
+              Comissão ML ({feeData?.sales_commission_percent || 11}%)
+            </span>
+            <span className="text-red-500">- R$ {feeData?.estimated_fees.toFixed(2) || (price * 0.11).toFixed(2)}</span>
+          </div>
+
+          {feeData?.listing_fee && feeData.listing_fee > 0 && (
+            <div className="flex justify-between text-neutral-500">
+              <span>Taxa de anúncio</span>
+              <span className="text-red-500">- R$ {feeData.listing_fee.toFixed(2)}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="border-t pt-2 mt-2">
+          <div className="flex justify-between">
+            <span className="text-neutral-600">Receita Líquida</span>
+            <span className="font-medium">R$ {feeData?.net_revenue.toFixed(2) || (price * 0.89).toFixed(2)}</span>
+          </div>
+
+          <div className={`flex justify-between mt-1 font-bold ${isPositiveMargin ? 'text-green-600' : 'text-red-600'}`}>
+            <span className="flex items-center gap-1">
+              {isPositiveMargin ? (
+                <ArrowUpRight className="w-4 h-4" />
+              ) : (
+                <ArrowDownRight className="w-4 h-4" />
+              )}
+              Lucro
+            </span>
+            <span>
+              R$ {profit.toFixed(2)} ({profitMargin}%)
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Warning for low margin */}
+      {profit < costPrice * 0.1 && (
+        <div className="flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-yellow-700">
+            Margem baixa! Considere aumentar o preço para garantir lucro após taxas.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================
+// MARKETPLACE DESCRIPTION EDITOR
+// ============================================
+
+interface DescriptionEditorProps {
+  brand: typeof MARKETPLACE_BRANDS[MarketplaceId];
+  value: string;
+  originalDescription?: string;
+  productMetrics?: {
+    sales?: number;
+    views?: number;
+    rating?: number;
+  };
+  onChange: (value: string) => void;
+}
+
+const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
+  brand,
+  value,
+  originalDescription,
+  productMetrics,
+  onChange,
+}) => {
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Template placeholders
+  const insertMetrics = () => {
+    const metricsText = `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 MÉTRICAS DO PRODUTO
+${productMetrics?.sales ? `✅ ${productMetrics.sales}+ vendidos` : '✅ Produto mais vendido'}
+${productMetrics?.views ? `👁️ ${productMetrics.views}+ visualizações` : '👁️ Alta visibilidade'}
+${productMetrics?.rating ? `⭐ ${productMetrics.rating}/5 avaliação` : '⭐ Alta satisfação'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+    onChange(value + metricsText);
+  };
+
+  const insertEmojiBullets = () => {
+    const bullets = `
+
+✓ Qualidade premium
+✓ Frete grátis
+✓ Garantia de 30 dias
+✓ Entrega rápida
+`;
+    onChange(value + bullets);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium">
+          Descrição para {brand.name}
+        </label>
+        <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={() => setShowPreview(!showPreview)}
+            className="px-2 py-1 text-xs bg-neutral-100 hover:bg-neutral-200 rounded"
+          >
+            {showPreview ? 'Editar' : 'Preview'}
+          </button>
+        </div>
+      </div>
+
+      {showPreview ? (
+        <div className="bg-neutral-50 border rounded-xl p-4 min-h-[200px] whitespace-pre-wrap text-sm">
+          {value || 'Sem descrição'}
+        </div>
+      ) : (
+        <>
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Descrição personalizada para o marketplace..."
+            rows={8}
+            className="w-full px-4 py-3 border rounded-xl resize-none text-sm"
+          />
+
+          {/* Quick Insert Buttons */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onChange(originalDescription || '')}
+              className="px-3 py-1.5 text-xs bg-neutral-100 hover:bg-neutral-200 rounded-lg"
+            >
+              📋 Usar descrição original
+            </button>
+            <button
+              type="button"
+              onClick={insertMetrics}
+              className="px-3 py-1.5 text-xs bg-neutral-100 hover:bg-neutral-200 rounded-lg"
+            >
+              📊 Inserir métricas
+            </button>
+            <button
+              type="button"
+              onClick={insertEmojiBullets}
+              className="px-3 py-1.5 text-xs bg-neutral-100 hover:bg-neutral-200 rounded-lg"
+            >
+              ✓ Inserir bullets
+            </button>
+          </div>
+        </>
+      )}
+
+      <p className="text-xs text-neutral-500">
+        Dica: Use emojis e formatação para destacar seu anúncio no {brand.name}.
+      </p>
     </div>
   );
 };
