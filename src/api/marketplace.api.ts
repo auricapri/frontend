@@ -84,10 +84,23 @@ export class MarketplaceApi {
 
   /**
    * Get OAuth authorization URL for a config.
+   * @param configId - The config ID
+   * @param redirectUri - The redirect URI for OAuth callback
+   * @param codeChallenge - PKCE code_challenge (SHA256 hash of code_verifier, base64url encoded)
+   * @param codeVerifier - PKCE code_verifier (will be stored in state for token exchange)
    */
-  async getAuthUrl(configId: string, redirectUri: string): Promise<{ url: string }> {
+  async getAuthUrl(
+    configId: string,
+    redirectUri: string,
+    codeChallenge?: string,
+    codeVerifier?: string
+  ): Promise<{ url: string }> {
+    const params = new URLSearchParams({ redirect_uri: redirectUri });
+    if (codeChallenge) params.set('code_challenge', codeChallenge);
+    if (codeVerifier) params.set('code_verifier', codeVerifier);
+
     return apiClient.get<{ url: string }>(
-      `${BASE_PATH}/configs/${configId}/auth-url?redirect_uri=${encodeURIComponent(redirectUri)}`
+      `${BASE_PATH}/configs/${configId}/auth-url?${params.toString()}`
     );
   }
 
