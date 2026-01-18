@@ -262,6 +262,241 @@ export class MarketplaceApi {
     if (since) params.set('since', since.toISOString());
     return apiClient.get<LogStats>(`${BASE_PATH}/logs/stats?${params.toString()}`);
   }
+
+  // ============================================
+  // ORDERS
+  // ============================================
+
+  /**
+   * Get orders from marketplace.
+   */
+  async getOrders(configId: string, params?: {
+    status?: string;
+    since?: Date;
+    until?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ orders: MarketplaceOrder[] }> {
+    const searchParams = new URLSearchParams({ config_id: configId });
+    if (params?.status) searchParams.set('status', params.status);
+    if (params?.since) searchParams.set('since', params.since.toISOString());
+    if (params?.until) searchParams.set('until', params.until.toISOString());
+    if (params?.limit) searchParams.set('limit', String(params.limit));
+    if (params?.offset) searchParams.set('offset', String(params.offset));
+
+    return apiClient.get<{ orders: MarketplaceOrder[] }>(`${BASE_PATH}/orders?${searchParams.toString()}`);
+  }
+
+  /**
+   * Get a specific order.
+   */
+  async getOrder(configId: string, orderId: string): Promise<MarketplaceOrder> {
+    return apiClient.get<MarketplaceOrder>(`${BASE_PATH}/orders/${orderId}?config_id=${configId}`);
+  }
+
+  /**
+   * Sync orders from marketplace.
+   */
+  async syncOrders(configId: string, since?: Date): Promise<{ synced: number; orders: MarketplaceOrder[] }> {
+    return apiClient.post<{ synced: number; orders: MarketplaceOrder[] }>(`${BASE_PATH}/orders/sync`, {
+      config_id: configId,
+      since: since?.toISOString(),
+    });
+  }
+
+  // ============================================
+  // QUESTIONS
+  // ============================================
+
+  /**
+   * Get questions from marketplace.
+   */
+  async getQuestions(configId: string, params?: {
+    status?: 'UNANSWERED' | 'ANSWERED';
+    item_id?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ questions: MarketplaceQuestion[] }> {
+    const searchParams = new URLSearchParams({ config_id: configId });
+    if (params?.status) searchParams.set('status', params.status);
+    if (params?.item_id) searchParams.set('item_id', params.item_id);
+    if (params?.limit) searchParams.set('limit', String(params.limit));
+    if (params?.offset) searchParams.set('offset', String(params.offset));
+
+    return apiClient.get<{ questions: MarketplaceQuestion[] }>(`${BASE_PATH}/questions?${searchParams.toString()}`);
+  }
+
+  /**
+   * Answer a question.
+   */
+  async answerQuestion(configId: string, questionId: string, answer: string): Promise<{ status: string; message: string }> {
+    return apiClient.post<{ status: string; message: string }>(`${BASE_PATH}/questions/${questionId}/answer`, {
+      config_id: configId,
+      answer,
+    });
+  }
+
+  // ============================================
+  // SHIPPING
+  // ============================================
+
+  /**
+   * Get shipment details.
+   */
+  async getShipment(configId: string, shipmentId: string): Promise<MarketplaceShipment> {
+    return apiClient.get<MarketplaceShipment>(`${BASE_PATH}/shipping/${shipmentId}?config_id=${configId}`);
+  }
+
+  /**
+   * Update shipment tracking.
+   */
+  async updateShipmentTracking(
+    configId: string,
+    shipmentId: string,
+    trackingNumber: string,
+    carrier?: string
+  ): Promise<{ status: string; message: string }> {
+    return apiClient.put<{ status: string; message: string }>(`${BASE_PATH}/shipping/${shipmentId}/tracking`, {
+      config_id: configId,
+      tracking_number: trackingNumber,
+      carrier,
+    });
+  }
+
+  /**
+   * Get shipping label URL.
+   */
+  getShippingLabelUrl(configId: string, shipmentId: string): string {
+    return `${BASE_PATH}/shipping/${shipmentId}/label?config_id=${configId}`;
+  }
+
+  // ============================================
+  // METRICS
+  // ============================================
+
+  /**
+   * Get sales metrics.
+   */
+  async getSalesMetrics(configId: string, period?: 'day' | 'week' | 'month'): Promise<SalesMetrics> {
+    const params = new URLSearchParams({ config_id: configId });
+    if (period) params.set('period', period);
+    return apiClient.get<SalesMetrics>(`${BASE_PATH}/metrics/sales?${params.toString()}`);
+  }
+
+  /**
+   * Get visits metrics.
+   */
+  async getVisitsMetrics(configId: string, productId?: string, period?: 'day' | 'week' | 'month'): Promise<VisitMetrics> {
+    const params = new URLSearchParams({ config_id: configId });
+    if (productId) params.set('product_id', productId);
+    if (period) params.set('period', period);
+    return apiClient.get<VisitMetrics>(`${BASE_PATH}/metrics/visits?${params.toString()}`);
+  }
+
+  /**
+   * Get seller reputation.
+   */
+  async getReputation(configId: string): Promise<ReputationMetrics> {
+    return apiClient.get<ReputationMetrics>(`${BASE_PATH}/metrics/reputation?config_id=${configId}`);
+  }
+
+  /**
+   * Get full metrics (sales, visits, reputation).
+   */
+  async getFullMetrics(configId: string): Promise<FullMetrics> {
+    return apiClient.get<FullMetrics>(`${BASE_PATH}/metrics/full?config_id=${configId}`);
+  }
+}
+
+// ============================================
+// ADDITIONAL TYPES
+// ============================================
+
+export interface MarketplaceOrder {
+  id: number;
+  status: string;
+  date_created: string;
+  date_closed?: string;
+  buyer: {
+    id: number;
+    nickname: string;
+    email?: string;
+  };
+  order_items: Array<{
+    item: { id: string; title: string; seller_sku?: string };
+    quantity: number;
+    unit_price: number;
+  }>;
+  shipping: { id: number; status: string };
+  total_amount: number;
+  fee_amount?: number;
+}
+
+export interface MarketplaceQuestion {
+  id: number;
+  item_id: string;
+  text: string;
+  status: string;
+  date_created: string;
+  from: { id: number; nickname: string };
+  answer?: {
+    text: string;
+    date_created: string;
+  };
+}
+
+export interface MarketplaceShipment {
+  id: number;
+  status: string;
+  tracking_number?: string;
+  tracking_method?: string;
+  status_history?: Array<{
+    status: string;
+    date: string;
+    message?: string;
+  }>;
+  receiver_address?: {
+    city: { name: string };
+    state: { name: string };
+    zip_code: string;
+    street_name: string;
+    street_number: string;
+  };
+}
+
+export interface SalesMetrics {
+  period: string;
+  total_orders: number;
+  total_revenue: number;
+  total_fees: number;
+  total_units: number;
+  average_order_value: number;
+  since: string;
+  until: string;
+}
+
+export interface VisitMetrics {
+  period: string;
+  total_visits: number;
+  items: Array<{ item_id: string; visits: number }>;
+  since: string;
+  until: string;
+}
+
+export interface ReputationMetrics {
+  level: string;
+  sales: number;
+  rating: number;
+}
+
+export interface FullMetrics {
+  reputation: ReputationMetrics;
+  sales: {
+    day: SalesMetrics;
+    week: SalesMetrics;
+    month: SalesMetrics;
+  };
+  visits: VisitMetrics;
 }
 
 // Singleton instance

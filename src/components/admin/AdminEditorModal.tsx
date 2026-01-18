@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   X, Save, Plus, Trash2, ImageIcon, Sliders, Upload, Loader2,
   Eye, Layout, Check, Calculator, TrendingUp, Scale, Ruler, DollarSign,
-  Monitor, Package, Link, ArrowDown, FileText, Landmark, Truck,
+  Monitor, Package, Link, ArrowDown, FileText, Landmark, Truck, MousePointer2,
   // Category icons
   Shirt, Watch, Gem, Glasses, ShoppingBag, Crown, Sparkles, Heart,
   Footprints, Gift, Flower2, Ribbon, type LucideIcon
@@ -33,6 +33,7 @@ import { ProductDetail } from '../product';
 import { Hero } from '../shared';
 import { CollectionDetail } from '../product';
 import { PricingApi } from '../../api/pricing.api';
+import { HotspotsEditor } from './HotspotsEditor';
 
 type AdminEditableData = Product | Category | Collection | Asset | SizeGuide | Supplier;
 
@@ -79,7 +80,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
 }) => {
   const [uploading, setUploading] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
-  const [productSubTab, setProductSubTab] = useState<'identity' | 'pricing'>('identity');
+  const [productSubTab, setProductSubTab] = useState<'identity' | 'pricing' | 'hotspots'>('identity');
   const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null);
   
   // Matrix State
@@ -505,7 +506,8 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                 <div className="flex gap-4 border-b border-neutral-100 pb-2 overflow-x-auto no-scrollbar">
                   {[
                     { id: 'identity', label: 'Identidade & Variantes', icon: Layout },
-                    { id: 'pricing', label: 'Matriz de Precificação', icon: TrendingUp }
+                    { id: 'pricing', label: 'Matriz de Precificação', icon: TrendingUp },
+                    { id: 'hotspots', label: 'Hotspots', icon: MousePointer2 }
                   ].map(tab => (
                     <button
                       key={tab.id}
@@ -1072,6 +1074,14 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                           </div>
                       )}
                    </div>
+                )}
+
+                {productSubTab === 'hotspots' && (
+                  <HotspotsEditor
+                    product={productData}
+                    products={products}
+                    locale={locale}
+                  />
                 )}
               </div>
                 );
