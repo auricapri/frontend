@@ -43,7 +43,11 @@ export default defineConfig(({ mode }) => {
           '@/context': path.resolve(__dirname, 'src/context'),
           '@/utils': path.resolve(__dirname, 'src/utils'),
           '@/types': path.resolve(__dirname, 'src/types'),
-        }
+          // Force consistent React resolution
+          'react': path.resolve(__dirname, 'node_modules/react'),
+          'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+        },
+        dedupe: ['react', 'react-dom'],
       },
       build: {
         target: 'esnext',
@@ -55,7 +59,15 @@ export default defineConfig(({ mode }) => {
           output: {
             manualChunks: (id) => {
               if (id.includes('node_modules')) {
-                if (id.includes('react') || id.includes('react-dom')) {
+                // React and all React-dependent libraries together
+                if (id.includes('react') ||
+                    id.includes('react-dom') ||
+                    id.includes('zustand') ||
+                    id.includes('use-sync-external-store') ||
+                    id.includes('@dnd-kit') ||
+                    id.includes('reactflow') ||
+                    id.includes('@reactflow') ||
+                    id.includes('@tanstack/react-query')) {
                   return 'vendor-react';
                 }
                 if (id.includes('lucide-react')) {
@@ -66,7 +78,7 @@ export default defineConfig(({ mode }) => {
                 }
                 return 'vendor-other';
               }
-              
+
               if (id.includes('/pages/')) {
                 if (id.includes('HomePage') || id.includes('ProductPage') || id.includes('CollectionPage')) {
                   return 'pages-main';
@@ -79,19 +91,19 @@ export default defineConfig(({ mode }) => {
                 }
                 return 'pages-other';
               }
-              
+
               if (id.includes('/components/admin/')) {
                 return 'components-admin';
               }
-              
+
               if (id.includes('/components/checkout/')) {
                 return 'components-checkout';
               }
-              
+
               if (id.includes('/components/product/')) {
                 return 'components-product';
               }
-              
+
               if (id.includes('/services/')) {
                 return 'services';
               }
