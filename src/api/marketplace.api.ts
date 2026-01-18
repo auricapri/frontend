@@ -419,6 +419,73 @@ export class MarketplaceApi {
   async getFullMetrics(configId: string): Promise<FullMetrics> {
     return apiClient.get<FullMetrics>(`${BASE_PATH}/metrics/full?config_id=${configId}`);
   }
+
+  // ============================================
+  // FEES (Mercado Livre)
+  // ============================================
+
+  /**
+   * Get category fees from ML.
+   */
+  async getCategoryFees(
+    categoryId: string,
+    listingType = 'gold_special',
+    configId?: string
+  ): Promise<CategoryFees> {
+    const params = new URLSearchParams({ listing_type: listingType });
+    if (configId) params.set('config_id', configId);
+    return apiClient.get<CategoryFees>(`${BASE_PATH}/fees/categories/${categoryId}?${params.toString()}`);
+  }
+
+  /**
+   * Calculate fees for a given price.
+   */
+  async calculateFees(
+    price: number,
+    categoryId: string,
+    listingType = 'gold_special',
+    configId?: string
+  ): Promise<FeeCalculation> {
+    return apiClient.post<FeeCalculation>(`${BASE_PATH}/fees/calculate`, {
+      price,
+      category_id: categoryId,
+      listing_type: listingType,
+      config_id: configId,
+    });
+  }
+
+  /**
+   * Calculate minimum price for target net revenue.
+   */
+  async calculateMinimumPrice(
+    targetNetRevenue: number,
+    categoryId: string,
+    listingType = 'gold_special',
+    configId?: string
+  ): Promise<MinimumPriceCalculation> {
+    return apiClient.post<MinimumPriceCalculation>(`${BASE_PATH}/fees/minimum-price`, {
+      target_net_revenue: targetNetRevenue,
+      category_id: categoryId,
+      listing_type: listingType,
+      config_id: configId,
+    });
+  }
+
+  /**
+   * Get all listing types from ML.
+   */
+  async getListingTypes(): Promise<ListingType[]> {
+    return apiClient.get<ListingType[]>(`${BASE_PATH}/fees/listing-types`);
+  }
+
+  /**
+   * Refresh fees cache.
+   */
+  async refreshFees(configId?: string): Promise<{ message: string; updated: number; errors: number }> {
+    return apiClient.post<{ message: string; updated: number; errors: number }>(`${BASE_PATH}/fees/refresh`, {
+      config_id: configId,
+    });
+  }
 }
 
 // ============================================
@@ -510,6 +577,56 @@ export interface FullMetrics {
     month: SalesMetrics;
   };
   visits: VisitMetrics;
+}
+
+// ============================================
+// FEES TYPES
+// ============================================
+
+export interface CategoryFees {
+  id: string;
+  provider_code: string;
+  category_id: string;
+  category_name: string | null;
+  listing_type: string;
+  listing_fee: number;
+  sales_commission_percent: number;
+  variation_commission_percent: number | null;
+  updated_at: string;
+  created_at: string;
+}
+
+export interface FeeCalculation {
+  category_id: string;
+  category_name?: string | null;
+  listing_type: string;
+  listing_fee: number;
+  sales_commission_percent: number;
+  estimated_fees: number;
+  net_revenue: number;
+}
+
+export interface MinimumPriceCalculation {
+  minimum_price: number;
+  target_net_revenue: number;
+  category_id: string;
+  category_name?: string | null;
+  listing_type: string;
+  sales_commission_percent: number;
+  listing_fee: number;
+  estimated_fees: number;
+  net_revenue: number;
+}
+
+export interface ListingType {
+  id: string;
+  name: string;
+  site_id: string;
+  configuration: {
+    listing_exposure: string;
+    requires_picture: boolean;
+    max_stock_per_item: number;
+  };
 }
 
 // Singleton instance
