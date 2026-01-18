@@ -125,6 +125,27 @@ const AdminMarketplaces: React.FC<AdminMarketplacesProps> = ({ locale }) => {
   const [configs, setConfigs] = useState<MarketplaceConfig[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; visible: boolean }>({
+    message: '',
+    type: 'success',
+    visible: false,
+  });
+
+  // Detect OAuth redirect and show feedback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const oauthStatus = params.get('oauth');
+    const errorMessage = params.get('message');
+
+    if (oauthStatus === 'success') {
+      setToast({ message: 'Marketplace conectado com sucesso!', type: 'success', visible: true });
+      // Clean URL params
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (oauthStatus === 'error') {
+      setToast({ message: `Erro ao conectar: ${decodeURIComponent(errorMessage || 'Erro desconhecido')}`, type: 'error', visible: true });
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -322,6 +343,28 @@ const AdminMarketplaces: React.FC<AdminMarketplacesProps> = ({ locale }) => {
           );
         })}
       </div>
+
+      {/* OAuth Toast Notification */}
+      {toast.visible && (
+        <div className={`fixed bottom-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-300 ${
+          toast.type === 'success'
+            ? 'bg-green-500 text-white'
+            : 'bg-red-500 text-white'
+        }`}>
+          {toast.type === 'success' ? (
+            <Check className="w-5 h-5" />
+          ) : (
+            <AlertCircle className="w-5 h-5" />
+          )}
+          <span className="font-medium">{toast.message}</span>
+          <button
+            onClick={() => setToast({ ...toast, visible: false })}
+            className="ml-2 hover:opacity-80"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
