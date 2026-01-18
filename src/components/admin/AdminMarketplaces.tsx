@@ -91,6 +91,20 @@ const MARKETPLACE_BRANDS = {
     description: 'Global B2B marketplace',
     available: false,
   },
+  'tiktok-shop': {
+    id: 'tiktok_shop',
+    name: 'TikTok Shop',
+    shortName: 'TT',
+    logo: 'https://sf-tb-sg.ibytedtos.com/obj/eden-sg/uhtyvueh7nulogpoguhm/tiktok-icon2.png',
+    bgGradient: 'from-black to-gray-900',
+    bgColor: 'bg-black',
+    textColor: 'text-white',
+    accentColor: '#FF0050',
+    hoverBg: 'hover:bg-gray-50',
+    borderColor: 'border-black',
+    description: 'Venda direto no TikTok para milhoes de usuarios',
+    available: true,
+  },
 };
 
 type MarketplaceId = keyof typeof MARKETPLACE_BRANDS;
@@ -140,14 +154,23 @@ const AdminMarketplaces: React.FC<AdminMarketplacesProps> = ({ locale }) => {
     }
   };
 
-  // Helper to find provider by brand code
+  // Helper to find provider by brand code (uses brand.id which matches provider.code in database)
   const getProviderByCode = (code: string) => providers.find(p => p.code === code);
 
   // Helper to find config for a brand
-  const getConfigForBrand = (brandId: string) => {
-    const provider = getProviderByCode(brandId);
+  const getConfigForBrand = (brandKey: string) => {
+    const brand = MARKETPLACE_BRANDS[brandKey as MarketplaceId];
+    if (!brand) return undefined;
+    const provider = getProviderByCode(brand.id);
     if (!provider) return undefined;
     return configs.find(c => c.provider_id === provider.id);
+  };
+
+  // Helper to get provider for a brand
+  const getProviderForBrand = (brandKey: string) => {
+    const brand = MARKETPLACE_BRANDS[brandKey as MarketplaceId];
+    if (!brand) return undefined;
+    return getProviderByCode(brand.id);
   };
 
   const handleSelectMarketplace = (id: MarketplaceId) => {
@@ -170,8 +193,15 @@ const AdminMarketplaces: React.FC<AdminMarketplacesProps> = ({ locale }) => {
 
   if (view === 'marketplace' && selectedMarketplace) {
     const brand = MARKETPLACE_BRANDS[selectedMarketplace];
-    const provider = getProviderByCode(selectedMarketplace);
+    const provider = getProviderForBrand(selectedMarketplace);
     const config = getConfigForBrand(selectedMarketplace);
+
+    // Safety check - return to grid if brand not found
+    if (!brand) {
+      setView('grid');
+      setSelectedMarketplace(null);
+      return null;
+    }
 
     return (
       <MarketplaceView
@@ -197,14 +227,14 @@ const AdminMarketplaces: React.FC<AdminMarketplacesProps> = ({ locale }) => {
 
       {/* Marketplace Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Object.values(MARKETPLACE_BRANDS).map((brand) => {
-          const config = getConfigForBrand(brand.id);
+        {Object.entries(MARKETPLACE_BRANDS).map(([brandKey, brand]) => {
+          const config = getConfigForBrand(brandKey);
           const isConnected = config?.status === 'connected';
 
           return (
             <div
-              key={brand.id}
-              onClick={() => brand.available && handleSelectMarketplace(brand.id as MarketplaceId)}
+              key={brandKey}
+              onClick={() => brand.available && handleSelectMarketplace(brandKey as MarketplaceId)}
               className={`
                 relative overflow-hidden rounded-2xl border-2 transition-all duration-300
                 ${brand.available
@@ -1440,7 +1470,7 @@ const ConnectModal: React.FC<{
   onSuccess: () => void;
 }> = ({ brand, providerId, onClose, onSuccess }) => {
   const [step, setStep] = useState<'credentials' | 'authorize'>('credentials');
-  const [credentials, setCredentials] = useState({ app_id: '', client_secret: '' });
+  const [credentials, setCredentials] = useState({ client_id: '', client_secret: '' });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -1497,12 +1527,12 @@ const ConnectModal: React.FC<{
 
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">App ID</label>
+            <label className="block text-sm font-medium mb-1">Client ID (App ID)</label>
             <input
               type="text"
-              value={credentials.app_id}
-              onChange={(e) => setCredentials({ ...credentials, app_id: e.target.value })}
-              placeholder="Seu App ID do Mercado Livre"
+              value={credentials.client_id}
+              onChange={(e) => setCredentials({ ...credentials, client_id: e.target.value })}
+              placeholder="Seu Client ID do Mercado Livre"
               className="w-full px-4 py-3 border rounded-xl"
             />
           </div>
@@ -1537,7 +1567,7 @@ const ConnectModal: React.FC<{
           </button>
           <button
             onClick={handleSave}
-            disabled={isSaving || !credentials.app_id || !credentials.client_secret}
+            disabled={isSaving || !credentials.client_id || !credentials.client_secret}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium ${brand.bgColor} ${brand.textColor} disabled:opacity-50`}
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
