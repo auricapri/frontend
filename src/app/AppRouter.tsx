@@ -7,6 +7,8 @@ import { DeliveryLoginPage } from '../pages/DeliveryLoginPage';
 import { AboutUs } from '../components/shared';
 import { type Order, type StoreConfig } from '../types';
 import { AppLayout } from './AppLayout';
+import { PrivacyPolicyPage } from '../pages/PrivacyPolicyPage';
+import { TermsPage } from '../pages/TermsPage';
 
 const AdminDashboard = React.lazy(() => import('../components/admin/AdminDashboard'));
 const AdminDelivery = React.lazy(() => import('../components/admin/AdminDelivery'));
@@ -116,6 +118,14 @@ export function AppRouter(props: {
 
   if (app.currentView === 'about') {
     return <AboutUs config={storeConfig} locale={app.locale} onBack={() => app.onNavigate('home')} />;
+  }
+
+  if (app.currentView === 'privacy') {
+    return <PrivacyPolicyPage config={storeConfig} locale={app.locale} onBack={() => app.onNavigate('home')} />;
+  }
+
+  if (app.currentView === 'terms') {
+    return <TermsPage config={storeConfig} locale={app.locale} onBack={() => app.onNavigate('home')} />;
   }
 
   if (app.currentView === 'shared-wishlist') {
