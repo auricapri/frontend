@@ -6,3 +6,4 @@ export * from './asset';
 export * from './asset-links';
 export * from './dimensions';
 export * from './pricing';
+export * from './hotspot';

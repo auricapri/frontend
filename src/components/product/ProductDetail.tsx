@@ -31,6 +31,8 @@ import { formatCurrency } from '../../utils/currency';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
 import { OptimizedImage } from '../ui';
 import { productReviewsApi } from '../../api/instances';
+import { useImageHotspots } from '../../hooks/useImageHotspots';
+import { ImageHotspots } from './ImageHotspots';
 
 // Cache de reviews por produto (TTL 5 min)
 const reviewsCache = new Map<string, { reviews: ProductReview[]; timestamp: number }>();
@@ -92,6 +94,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     }
     return String(obj);
   };
+
+  // Load hotspots for this product
+  const { hotspots } = useImageHotspots(product.id);
 
   // Filter variants for atacado mode (stock >= 10)
   const variants = useMemo(() => {
@@ -590,16 +595,24 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   className="relative aspect-[3/4] bg-white overflow-hidden cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2"
                   onClick={() => { setZoomImgIndex(idx); setIsZoomOpen(true); }}
                 >
-                  <OptimizedImage
-                    src={imgData.url}
-                    alt={`${getLoc(product.name)} view ${idx + 1}`}
-                    className="w-full h-full transition-transform duration-[1.5s] ease-out group-hover:scale-110"
-                    size={idx < 2 ? 'large' : 'medium'}
-                    priority={idx < 2}
-                    objectFit="contain"
-                    useSrcSet
-                    srcSetSizes={['medium', 'large', 'xlarge']}
-                  />
+                  <ImageHotspots
+                    imageUrl={imgData.url}
+                    hotspots={hotspots}
+                    locale={locale}
+                    onAddToCart={onAddToCart}
+                    onNavigateToProduct={onSelectProduct}
+                  >
+                    <OptimizedImage
+                      src={imgData.url}
+                      alt={`${getLoc(product.name)} view ${idx + 1}`}
+                      className="w-full h-full transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+                      size={idx < 2 ? 'large' : 'medium'}
+                      priority={idx < 2}
+                      objectFit="contain"
+                      useSrcSet
+                      srcSetSizes={['medium', 'large', 'xlarge']}
+                    />
+                  </ImageHotspots>
                   <div className="absolute bottom-10 right-10 p-5 bg-white/90 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">
                     <Maximize2 className="w-6 h-6" />
                   </div>
@@ -646,14 +659,22 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     className="flex-none w-full h-full snap-center relative overflow-hidden focus:outline-2 focus:outline-black focus:outline-offset-2"
                     onClick={() => { setZoomImgIndex(idx); setIsZoomOpen(true); }}
                   >
-                    <OptimizedImage
-                      src={imgData.url}
-                      alt={`${getLoc(product.name)} - ${getLoc(activeVariant?.color_name || {})} - Vista ${idx + 1}`}
-                      className="w-full h-full"
-                      size="medium"
-                      priority={idx === 0}
-                      objectFit="contain"
-                    />
+                    <ImageHotspots
+                      imageUrl={imgData.url}
+                      hotspots={hotspots}
+                      locale={locale}
+                      onAddToCart={onAddToCart}
+                      onNavigateToProduct={onSelectProduct}
+                    >
+                      <OptimizedImage
+                        src={imgData.url}
+                        alt={`${getLoc(product.name)} - ${getLoc(activeVariant?.color_name || {})} - Vista ${idx + 1}`}
+                        className="w-full h-full"
+                        size="medium"
+                        priority={idx === 0}
+                        objectFit="contain"
+                      />
+                    </ImageHotspots>
                     {isActiveVariantImage && (
                       <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-full">
                         {getLoc(activeVariant.color_name)}

@@ -1,7 +1,9 @@
 import React from 'react';
 import { Maximize2, ScanFace } from 'lucide-react';
 import { OptimizedImage } from '../../ui';
-import { type Product } from '../../../types';
+import { type Product, type ProductImageHotspot, type CartItem } from '../../../types';
+import { ImageHotspots } from '../ImageHotspots';
+import { Locale } from '../../../i18n';
 
 export type GalleryImageData = {
   url: string;
@@ -27,6 +29,11 @@ export function ImageGallery(props: {
   mobileActiveIdx: number;
   showFaceSwap?: boolean;
   onFaceSwapClick?: () => void;
+  // Hotspots props
+  hotspots?: ProductImageHotspot[];
+  onAddToCart?: (item: CartItem) => void;
+  onNavigateToProduct?: (product: Product) => void;
+  locale?: Locale;
 }) {
   const {
     product,
@@ -41,6 +48,10 @@ export function ImageGallery(props: {
     mobileActiveIdx,
     showFaceSwap,
     onFaceSwapClick,
+    hotspots = [],
+    onAddToCart,
+    onNavigateToProduct,
+    locale = 'pt',
   } = props;
 
   return (
@@ -72,16 +83,24 @@ export function ImageGallery(props: {
                 setIsZoomOpen(true);
               }}
             >
-              <OptimizedImage
-                src={imgData.url}
-                alt={`${getLoc(product.name)} view ${idx + 1}`}
-                className="w-full h-full transition-transform duration-[1.5s] ease-out group-hover:scale-110"
-                size={idx < 2 ? 'large' : 'medium'}
-                priority={idx < 2}
-                objectFit="contain"
-                useSrcSet
-                srcSetSizes={['medium', 'large', 'xlarge']}
-              />
+              <ImageHotspots
+                imageUrl={imgData.url}
+                hotspots={hotspots}
+                locale={locale}
+                onAddToCart={onAddToCart || (() => {})}
+                onNavigateToProduct={onNavigateToProduct}
+              >
+                <OptimizedImage
+                  src={imgData.url}
+                  alt={`${getLoc(product.name)} view ${idx + 1}`}
+                  className="w-full h-full transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+                  size={idx < 2 ? 'large' : 'medium'}
+                  priority={idx < 2}
+                  objectFit="contain"
+                  useSrcSet
+                  srcSetSizes={['medium', 'large', 'xlarge']}
+                />
+              </ImageHotspots>
               <div className="absolute bottom-10 right-10 p-5 bg-white/90 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">
                 <Maximize2 className="w-6 h-6" />
               </div>
@@ -133,14 +152,22 @@ export function ImageGallery(props: {
                   setIsZoomOpen(true);
                 }}
               >
-                <OptimizedImage
-                  src={imgData.url}
-                  alt={`${getLoc(product.name)} - ${getLoc(activeVariantColorName || {})} - Vista ${idx + 1}`}
-                  className="w-full h-full"
-                  size="medium"
-                  priority={idx === 0}
-                  objectFit="contain"
-                />
+                <ImageHotspots
+                  imageUrl={imgData.url}
+                  hotspots={hotspots}
+                  locale={locale}
+                  onAddToCart={onAddToCart || (() => {})}
+                  onNavigateToProduct={onNavigateToProduct}
+                >
+                  <OptimizedImage
+                    src={imgData.url}
+                    alt={`${getLoc(product.name)} - ${getLoc(activeVariantColorName || {})} - Vista ${idx + 1}`}
+                    className="w-full h-full"
+                    size="medium"
+                    priority={idx === 0}
+                    objectFit="contain"
+                  />
+                </ImageHotspots>
                 {isActiveVariantImage && (
                   <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-full">
                     {getLoc(activeVariantColorName)}
