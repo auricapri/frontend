@@ -15,6 +15,29 @@ import { Locale } from '../../i18n';
 
 const productsApi = new ProductsApi();
 
+// PKCE (Proof Key for Code Exchange) utilities
+function generateCodeVerifier(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+  let verifier = '';
+  const array = new Uint8Array(64);
+  crypto.getRandomValues(array);
+  for (let i = 0; i < 64; i++) {
+    verifier += chars[array[i] % chars.length];
+  }
+  return verifier;
+}
+
+async function generateCodeChallenge(verifier: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  // Base64URL encode (without padding)
+  return btoa(String.fromCharCode(...new Uint8Array(hash)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
 interface AdminMarketplacesProps {
   locale: string;
 }
@@ -1536,6 +1559,10 @@ const ConnectModal: React.FC<{
         sync_interval_minutes: 30,
       });
 
+      // Generate PKCE code_verifier and code_challenge
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+
       // Get OAuth URL and redirect
       // Remove /api do final se existir, pois o endpoint já inclui /api
       let backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -1543,7 +1570,9 @@ const ConnectModal: React.FC<{
         backendUrl = backendUrl.slice(0, -4);
       }
       const redirectUri = `${backendUrl}/api/marketplace/oauth/callback`;
-      const { url } = await marketplaceApi.getAuthUrl(config.id, redirectUri);
+
+      // Pass PKCE params to backend
+      const { url } = await marketplaceApi.getAuthUrl(config.id, redirectUri, codeChallenge, codeVerifier);
 
       window.location.href = url;
     } catch (err) {
