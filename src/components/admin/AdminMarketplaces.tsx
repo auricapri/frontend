@@ -22,7 +22,7 @@ interface AdminMarketplacesProps {
 // Marketplace brand configurations
 const MARKETPLACE_BRANDS = {
   'mercado-livre': {
-    id: 'mercado-livre',
+    id: 'mercado_livre',
     name: 'Mercado Livre',
     shortName: 'ML',
     logo: 'https://http2.mlstatic.com/frontend-assets/ml-web-navigation/ui-navigation/6.6.73/mercadolibre/logo_large_25years@2x.png',
