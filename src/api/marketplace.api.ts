@@ -486,6 +486,82 @@ export class MarketplaceApi {
       config_id: configId,
     });
   }
+
+  // ============================================
+  // IMPORT FROM MARKETPLACE (ML → Local)
+  // ============================================
+
+  /**
+   * Get products from seller's marketplace account.
+   */
+  async getMarketplaceProducts(
+    configId: string,
+    params?: {
+      status?: 'active' | 'paused' | 'closed';
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<MarketplaceProductsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.status) searchParams.set('status', params.status);
+    if (params?.limit) searchParams.set('limit', String(params.limit));
+    if (params?.offset) searchParams.set('offset', String(params.offset));
+
+    const query = searchParams.toString();
+    return apiClient.get<MarketplaceProductsResponse>(
+      `${BASE_PATH}/configs/${configId}/products${query ? `?${query}` : ''}`
+    );
+  }
+
+  /**
+   * Get full details of a product from marketplace.
+   */
+  async getMarketplaceProductDetails(
+    configId: string,
+    externalProductId: string
+  ): Promise<MLProductFull> {
+    return apiClient.get<MLProductFull>(
+      `${BASE_PATH}/configs/${configId}/products/${externalProductId}`
+    );
+  }
+
+  /**
+   * Download image from marketplace.
+   */
+  async downloadMarketplaceImage(
+    configId: string,
+    imageUrl: string
+  ): Promise<{ data: string; content_type: string; size: number }> {
+    return apiClient.post<{ data: string; content_type: string; size: number }>(
+      `${BASE_PATH}/import/download-image`,
+      { config_id: configId, image_url: imageUrl }
+    );
+  }
+
+  /**
+   * Link marketplace product to existing local product.
+   */
+  async linkMarketplaceProduct(
+    configId: string,
+    externalProductId: string,
+    localProductId: string,
+    options?: {
+      variant_prices?: Array<{
+        external_variation_id: number;
+        local_variant_id: string;
+        marketplace_price: number;
+      }>;
+      download_images?: boolean;
+    }
+  ): Promise<LinkProductResponse> {
+    return apiClient.post<LinkProductResponse>(`${BASE_PATH}/import/link-product`, {
+      config_id: configId,
+      external_product_id: externalProductId,
+      local_product_id: localProductId,
+      variant_prices: options?.variant_prices,
+      download_images: options?.download_images ?? true,
+    });
+  }
 }
 
 // ============================================
@@ -627,6 +703,101 @@ export interface ListingType {
     requires_picture: boolean;
     max_stock_per_item: number;
   };
+}
+
+// ============================================
+// IMPORT TYPES
+// ============================================
+
+export interface MLProductBasic {
+  id: string;
+  title: string;
+  price: number;
+  thumbnail: string;
+  status: 'active' | 'paused' | 'closed';
+  available_quantity: number;
+  sold_quantity: number;
+  variations?: Array<{
+    id: number;
+    price: number;
+    available_quantity: number;
+    attribute_combinations: Array<{ id: string; name: string; value_name: string }>;
+  }>;
+}
+
+export interface MLProductFull {
+  id: string;
+  site_id: string;
+  title: string;
+  price: number;
+  base_price: number;
+  currency_id: string;
+  available_quantity: number;
+  sold_quantity: number;
+  listing_type_id: string;
+  condition: 'new' | 'used' | 'refurbished';
+  permalink: string;
+  status: 'active' | 'paused' | 'closed';
+  category_id: string;
+  description_text?: string;
+  pictures: Array<{
+    id: string;
+    url: string;
+    secure_url: string;
+    size: string;
+    max_size: string;
+  }>;
+  attributes: Array<{
+    id: string;
+    name: string;
+    value_id: string | null;
+    value_name: string;
+  }>;
+  variations: Array<{
+    id: number;
+    price: number;
+    available_quantity: number;
+    sold_quantity: number;
+    picture_ids: string[];
+    attribute_combinations: Array<{
+      id: string;
+      name: string;
+      value_id: string | null;
+      value_name: string;
+    }>;
+    seller_custom_field?: string;
+  }>;
+  sale_terms: Array<{
+    id: string;
+    name: string;
+    value_name: string;
+  }>;
+  shipping: {
+    mode: string;
+    free_shipping: boolean;
+    local_pick_up: boolean;
+  };
+  seller_id: number;
+  date_created: string;
+  last_updated: string;
+}
+
+export interface MarketplaceProductsResponse {
+  products: MLProductBasic[];
+  total: number;
+  offset: number;
+  limit: number;
+}
+
+export interface LinkProductResponse {
+  mapping: MarketplaceProductMapping;
+  variant_mappings: MarketplaceProductMapping[];
+  external_product: MLProductFull;
+  downloaded_images: Array<{
+    url: string;
+    data: string;
+    content_type: string;
+  }>;
 }
 
 // Singleton instance
