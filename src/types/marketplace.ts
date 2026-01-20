@@ -120,6 +120,7 @@ export interface MappingInput {
   external_product_id?: string | null;
   external_sku?: string | null;
   external_url?: string | null;
+  marketplace_price?: number | null;
 }
 
 // ============================================
