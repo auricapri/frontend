@@ -6,7 +6,13 @@ import {
   Star, Clock, Tag, ChevronRight, Filter, MoreVertical, Copy,
   Calculator, DollarSign, Percent, Info, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
-import { marketplaceApi, type FeeCalculation, type MinimumPriceCalculation } from '../../api/marketplace.api';
+import {
+  marketplaceApi,
+  type FeeCalculation,
+  type MinimumPriceCalculation,
+  type MLProductBasic,
+  type MLProductFull,
+} from '../../api/marketplace.api';
 import { ProductsApi } from '../../api/products.api';
 import type { MarketplaceConfig } from '../../types/marketplace';
 import type { Product } from '../../types';
@@ -418,6 +424,7 @@ const MarketplaceView: React.FC<MarketplaceViewProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<MarketplaceTab>('products');
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showImportFromMLModal, setShowImportFromMLModal] = useState(false);
   const [showConnectModal, setShowConnectModal] = useState(!config || config.status !== 'connected');
 
   const isConnected = config?.status === 'connected';
@@ -459,6 +466,14 @@ const MarketplaceView: React.FC<MarketplaceViewProps> = ({
             <div className="flex items-center gap-3">
               {isConnected && (
                 <>
+                  <button
+                    onClick={() => setShowImportFromMLModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg text-sm font-medium hover:bg-white/30 transition-colors"
+                    style={{ color: 'white' }}
+                  >
+                    <ArrowDownRight className="w-4 h-4" />
+                    Importar do {brand.shortName}
+                  </button>
                   <button
                     onClick={() => setShowImportModal(true)}
                     className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow"
@@ -529,6 +544,18 @@ const MarketplaceView: React.FC<MarketplaceViewProps> = ({
           onSuccess={() => {
             setShowImportModal(false);
             // Refresh products
+          }}
+        />
+      )}
+
+      {showImportFromMLModal && (
+        <ImportFromMarketplaceModal
+          brand={brand}
+          configId={config?.id}
+          onClose={() => setShowImportFromMLModal(false)}
+          onSuccess={() => {
+            setShowImportFromMLModal(false);
+            onConfigUpdate();
           }}
         />
       )}
@@ -708,10 +735,15 @@ const ProductsTab: React.FC<{
               </h4>
               <div className="flex items-center justify-between">
                 <span className="text-lg font-bold" style={{ color: brand.accentColor }}>
-                  {formatCurrency(product.marketplace_price || product.product?.price || 0, locale as Locale)}
+                  {formatCurrency(
+                    product.marketplace_price ||
+                    product.product?.variants?.[0]?.retail_price ||
+                    0,
+                    locale as Locale
+                  )}
                 </span>
                 <span className="text-xs text-neutral-500">
-                  Estoque: {product.product?.stock || 0}
+                  Estoque: {product.product?.variants?.reduce((sum: number, v: any) => sum + (v.stock_quantity || 0), 0) || 0}
                 </span>
               </div>
             </div>
@@ -1122,6 +1154,44 @@ const SettingsTab: React.FC<{
 // IMPORT PRODUCT MODAL
 // ============================================
 
+interface VariantPrice {
+  variantId: string;
+  variantLabel: string;
+  costPrice: number;
+  retailPrice: number;
+  marketplacePrice: number;
+  // Campos para visualização rica
+  image: string | null;
+  stock: number;
+  sku: string;
+  colorHex: string | null;
+  size: string | null;
+  colorName: string | null;
+  // Campos de cálculo
+  marginPercent: number;
+  estimatedProfit: number;
+  commissionPercent: number;
+}
+
+// Função para calcular precificação por variante
+const calculateVariantPricing = (
+  costPrice: number,
+  marketplacePrice: number,
+  commissionPercent: number = 11 // Default ML
+) => {
+  const commission = marketplacePrice * (commissionPercent / 100);
+  const netRevenue = marketplacePrice - commission;
+  const profit = netRevenue - costPrice;
+  const marginPercent = costPrice > 0 ? ((profit / costPrice) * 100) : 0;
+
+  return {
+    commission,
+    netRevenue,
+    profit,
+    marginPercent,
+  };
+};
+
 const ImportProductModal: React.FC<{
   brand: typeof MARKETPLACE_BRANDS[MarketplaceId];
   configId?: string;
@@ -1140,6 +1210,8 @@ const ImportProductModal: React.FC<{
   });
   const [allProductsCache, setAllProductsCache] = useState<Product[]>([]);
   const [feeData, setFeeData] = useState<FeeCalculation | null>(null);
+  const [variantPrices, setVariantPrices] = useState<VariantPrice[]>([]);
+  const [showVariantPricing, setShowVariantPricing] = useState(false);
 
   // Load products on mount
   useEffect(() => {
@@ -1149,21 +1221,19 @@ const ImportProductModal: React.FC<{
         const all = await productsApi.getAll();
         setAllProductsCache(all);
         // Show first 20 products initially
+        // NOTA: Produtos NÃO têm preço - preços vêm das variantes
         const mapped = all.slice(0, 20).map((p: Product) => {
           const totalStock = p.variants?.reduce((sum, v) => sum + (v.stock_quantity || 0), 0) || 0;
-          const price = p.variants?.[0]?.retail_price || 0;
-          const costPrice = p.variants?.[0]?.cost_price || price * 0.4;
           const images = p.base_images?.length ? p.base_images : (p.default_image_url ? [p.default_image_url] : []);
           const description = p.description?.pt || p.description?.en || '';
           return {
             id: p.id,
             name: p.name?.pt || p.name?.en || 'Produto sem nome',
             description,
-            price,
-            costPrice,
             stock: totalStock,
             images,
-            variants: p.variants,
+            variants: p.variants || [],
+            // Preços vêm APENAS das variantes, não do produto
           };
         });
         setProducts(mapped);
@@ -1197,10 +1267,9 @@ const ImportProductModal: React.FC<{
         : allProducts;
 
       // Map to the format expected by the modal
+      // NOTA: Produtos NÃO têm preço - preços vêm das variantes
       const mapped = filtered.slice(0, 20).map((p: Product) => {
         const totalStock = p.variants?.reduce((sum, v) => sum + (v.stock_quantity || 0), 0) || 0;
-        const price = p.variants?.[0]?.retail_price || 0;
-        const costPrice = p.variants?.[0]?.cost_price || price * 0.4;
         const images = p.base_images?.length ? p.base_images : (p.default_image_url ? [p.default_image_url] : []);
         const description = p.description?.pt || p.description?.en || '';
 
@@ -1208,11 +1277,10 @@ const ImportProductModal: React.FC<{
           id: p.id,
           name: p.name?.pt || p.name?.en || 'Produto sem nome',
           description,
-          price,
-          costPrice,
           stock: totalStock,
           images,
-          variants: p.variants,
+          variants: p.variants || [],
+          // Preços vêm APENAS das variantes, não do produto
         };
       });
 
@@ -1228,11 +1296,25 @@ const ImportProductModal: React.FC<{
     if (!selectedProduct || !configId) return;
     setIsSaving(true);
     try {
+      // Create main product mapping
       await marketplaceApi.createMapping({
         config_id: configId,
         product_id: selectedProduct.id,
         marketplace_price: formData.price || selectedProduct.price,
       });
+
+      // If variant pricing is enabled, create individual variant mappings
+      if (showVariantPricing && variantPrices.length > 0) {
+        for (const vp of variantPrices) {
+          await marketplaceApi.createMapping({
+            config_id: configId,
+            product_id: selectedProduct.id,
+            variant_id: vp.variantId,
+            marketplace_price: vp.marketplacePrice,
+          });
+        }
+      }
+
       onSuccess();
     } catch (err) {
       logger.error('Failed to import product', err);
@@ -1286,35 +1368,81 @@ const ImportProductModal: React.FC<{
 
               {/* Results */}
               <div className="grid grid-cols-2 gap-4">
-                {products.map((product) => (
-                  <div
-                    key={product.id}
-                    onClick={() => {
-                      setSelectedProduct(product);
-                      setFormData({
-                        price: product.price,
-                        description: product.description || '',
-                        costPrice: product.costPrice || product.price * 0.4,
-                      });
-                    }}
-                    className="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-neutral-400 transition-colors"
-                  >
-                    <div className="w-20 h-20 bg-neutral-100 rounded-lg flex items-center justify-center">
-                      {product.images?.[0] ? (
-                        <img src={product.images[0]} alt="" className="w-full h-full object-cover rounded-lg" />
-                      ) : (
-                        <Image className="w-8 h-8 text-neutral-300" />
-                      )}
+                {products.map((product) => {
+                  // Preços vêm das variantes, não do produto
+                  const firstVariant = product.variants?.[0];
+                  const displayPrice = firstVariant?.retail_price || 0;
+                  const variantCount = product.variants?.length || 0;
+
+                  return (
+                    <div
+                      key={product.id}
+                      onClick={() => {
+                        setSelectedProduct(product);
+
+                        // Pegar preço da primeira variante como sugestão
+                        const firstV = product.variants?.[0];
+                        const suggestedPrice = firstV?.retail_price || 0;
+                        const suggestedCostPrice = firstV?.cost_price || suggestedPrice * 0.4;
+                        const defaultCommission = 11; // Default ML
+
+                        setFormData({
+                          price: suggestedPrice,
+                          description: product.description || '',
+                          costPrice: suggestedCostPrice,
+                        });
+
+                        // Inicializar variantPrices SEMPRE (mesmo com 1 variante)
+                        const prices = (product.variants || []).map((v: any) => {
+                          const vCostPrice = v.cost_price || suggestedCostPrice;
+                          const vMarketplacePrice = v.retail_price || suggestedPrice;
+                          const calc = calculateVariantPricing(vCostPrice, vMarketplacePrice, defaultCommission);
+
+                          return {
+                            variantId: v.id,
+                            variantLabel: [v.size, v.color_name?.pt].filter(Boolean).join(' / ') || v.sku || 'Variante',
+                            costPrice: vCostPrice,
+                            retailPrice: v.retail_price || 0,
+                            marketplacePrice: vMarketplacePrice,
+                            image: v.variant_images?.[0] || product.images?.[0] || null,
+                            stock: v.stock_quantity || 0,
+                            sku: v.sku || '',
+                            colorHex: v.color_hex || null,
+                            size: v.size || null,
+                            colorName: v.color_name?.pt || null,
+                            // Campos de cálculo
+                            marginPercent: calc.marginPercent,
+                            estimatedProfit: calc.profit,
+                            commissionPercent: defaultCommission,
+                          };
+                        });
+                        setVariantPrices(prices);
+                        setShowVariantPricing(true);
+                      }}
+                      className="flex gap-4 p-4 border rounded-xl cursor-pointer hover:border-neutral-400 transition-colors"
+                    >
+                      <div className="w-20 h-20 bg-neutral-100 rounded-lg flex items-center justify-center">
+                        {product.images?.[0] ? (
+                          <img src={product.images[0]} alt="" className="w-full h-full object-cover rounded-lg" />
+                        ) : (
+                          <Image className="w-8 h-8 text-neutral-300" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium mb-1">{product.name}</h4>
+                        <p className="text-lg font-bold" style={{ color: brand.accentColor }}>
+                          R$ {displayPrice.toFixed(2)}
+                          {variantCount > 1 && (
+                            <span className="text-xs font-normal text-neutral-500 ml-1">
+                              ({variantCount} variantes)
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-xs text-neutral-500">Estoque: {product.stock}</p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium mb-1">{product.name}</h4>
-                      <p className="text-lg font-bold" style={{ color: brand.accentColor }}>
-                        R$ {product.price.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-neutral-500">Estoque: {product.stock}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ) : (
@@ -1346,26 +1474,169 @@ const ImportProductModal: React.FC<{
                   </div>
                 </div>
 
-                {/* Variants info */}
-                {selectedProduct.variants && selectedProduct.variants.length > 1 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <p className="text-sm text-blue-700">
-                      <strong>📦 {selectedProduct.variants.length} variantes</strong> serão publicadas como variações no {brand.name}.
-                    </p>
-                    <p className="text-xs text-blue-600 mt-1">
-                      Tamanhos: {selectedProduct.variants.map((v: any) => v.size).filter(Boolean).join(', ') || 'Único'}
-                    </p>
+                {/* Variant Cards - Precificação por Variante */}
+                {variantPrices.length > 0 && (
+                  <div className="space-y-3">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-bold text-neutral-700">
+                        📦 {variantPrices.length} variante{variantPrices.length > 1 ? 's' : ''} para publicar
+                      </p>
+                      <button
+                        onClick={() => setShowVariantPricing(!showVariantPricing)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                          showVariantPricing
+                            ? 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'
+                            : `${brand.bgColor} ${brand.textColor}`
+                        }`}
+                      >
+                        {showVariantPricing ? 'Ocultar Detalhes' : 'Ver Detalhes'}
+                      </button>
+                    </div>
+
+                    {/* Variant Cards List */}
+                    {showVariantPricing && (
+                      <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+                        {variantPrices.map((vp, index) => {
+                          // Recalcular margem/lucro com base no preço atual
+                          const calc = calculateVariantPricing(vp.costPrice, vp.marketplacePrice, vp.commissionPercent);
+
+                          return (
+                            <div
+                              key={vp.variantId}
+                              className="p-3 bg-white border border-neutral-200 rounded-xl hover:border-neutral-300 transition-colors"
+                            >
+                              <div className="flex items-start gap-3">
+                                {/* Thumbnail da Variante */}
+                                <div className="w-16 h-16 bg-neutral-100 rounded-lg flex-shrink-0 overflow-hidden">
+                                  {vp.image ? (
+                                    <img
+                                      src={vp.image}
+                                      alt={vp.variantLabel}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <Image className="w-6 h-6 text-neutral-300" />
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Info da Variante */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    {vp.colorHex && (
+                                      <div
+                                        className="w-4 h-4 rounded-full border border-neutral-300 flex-shrink-0"
+                                        style={{ backgroundColor: vp.colorHex }}
+                                        title={vp.colorName || 'Cor'}
+                                      />
+                                    )}
+                                    <span className="font-medium text-sm">{vp.variantLabel}</span>
+                                    <span className={`text-xs px-1.5 py-0.5 rounded ${vp.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                      {vp.stock} un.
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-3 text-xs text-neutral-500 mt-1">
+                                    <span>SKU: {vp.sku || '—'}</span>
+                                    <span>Custo: R$ {vp.costPrice.toFixed(2)}</span>
+                                  </div>
+                                </div>
+
+                                {/* Input de Preço ML */}
+                                <div className="flex-shrink-0 text-right">
+                                  <label className="text-xs text-neutral-500 block mb-1">Preço ML</label>
+                                  <div className="relative w-28">
+                                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-neutral-400">R$</span>
+                                    <input
+                                      type="number"
+                                      value={vp.marketplacePrice}
+                                      onChange={(e) => {
+                                        const newPrice = parseFloat(e.target.value) || 0;
+                                        const newCalc = calculateVariantPricing(vp.costPrice, newPrice, vp.commissionPercent);
+                                        const updated = [...variantPrices];
+                                        updated[index] = {
+                                          ...updated[index],
+                                          marketplacePrice: newPrice,
+                                          marginPercent: newCalc.marginPercent,
+                                          estimatedProfit: newCalc.profit,
+                                        };
+                                        setVariantPrices(updated);
+                                      }}
+                                      className="w-full pl-7 pr-2 py-2 border border-neutral-200 rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                      step="0.01"
+                                      min="0"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Cálculo de Margem e Lucro */}
+                              <div className="mt-2 pt-2 border-t border-neutral-100 flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-4">
+                                  <span className="text-neutral-500">
+                                    Taxa ML: <span className="text-neutral-700">{vp.commissionPercent}%</span>
+                                  </span>
+                                  <span className={`font-medium ${calc.marginPercent >= 30 ? 'text-green-600' : calc.marginPercent >= 15 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                    Margem: {calc.marginPercent.toFixed(1)}%
+                                  </span>
+                                </div>
+                                <span className={`font-bold ${calc.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  Lucro: R$ {calc.profit.toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Ações Rápidas e Resumo */}
+                    <div className="flex items-center justify-between pt-2 border-t border-neutral-200">
+                      <div className="text-xs text-neutral-500">
+                        <span>Total: <strong>{variantPrices.reduce((sum, v) => sum + v.stock, 0)}</strong> un.</span>
+                        <span className="mx-2">|</span>
+                        <span>
+                          Lucro médio:{' '}
+                          <strong className={variantPrices.reduce((sum, vp) => sum + calculateVariantPricing(vp.costPrice, vp.marketplacePrice, vp.commissionPercent).profit, 0) / variantPrices.length >= 0 ? 'text-green-600' : 'text-red-600'}>
+                            R$ {(variantPrices.reduce((sum, vp) => sum + calculateVariantPricing(vp.costPrice, vp.marketplacePrice, vp.commissionPercent).profit, 0) / variantPrices.length).toFixed(2)}
+                          </strong>
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const defaultCommission = 11;
+                          const updated = variantPrices.map(vp => {
+                            const calc = calculateVariantPricing(vp.costPrice, formData.price, defaultCommission);
+                            return {
+                              ...vp,
+                              marketplacePrice: formData.price,
+                              marginPercent: calc.marginPercent,
+                              estimatedProfit: calc.profit,
+                            };
+                          });
+                          setVariantPrices(updated);
+                        }}
+                        className="text-xs font-medium hover:underline"
+                        style={{ color: brand.accentColor }}
+                      >
+                        Aplicar R$ {formData.price.toFixed(2)} a todas
+                      </button>
+                    </div>
                   </div>
                 )}
 
-                <div className="bg-neutral-50 rounded-xl p-4">
-                  <p className="text-sm text-neutral-600">
-                    <strong>Estoque total:</strong> {selectedProduct.stock} unidades
-                  </p>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    O estoque é sincronizado automaticamente do site.
-                  </p>
-                </div>
+                {/* Fallback: produto sem variantes */}
+                {variantPrices.length === 0 && (
+                  <div className="bg-neutral-50 rounded-xl p-4">
+                    <p className="text-sm text-neutral-600">
+                      <strong>Estoque:</strong> {selectedProduct.stock} unidades
+                    </p>
+                    <p className="text-xs text-neutral-500 mt-1">
+                      O estoque é sincronizado automaticamente do site.
+                    </p>
+                  </div>
+                )}
 
                 <button
                   onClick={() => {
@@ -1438,11 +1709,15 @@ const ProductEditModal: React.FC<{
   onClose: () => void;
   onSave: (data: any) => Promise<void>;
 }> = ({ brand, product, locale, onClose, onSave }) => {
+  const [activeTab, setActiveTab] = useState<'info' | 'images'>('info');
   const [formData, setFormData] = useState({
-    price: product.marketplace_price || product.product?.price || 0,
+    price: product.marketplace_price || product.product?.variants?.[0]?.retail_price || 0,
     description: product.description || '',
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [images, setImages] = useState<string[]>(product.product?.images || []);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -1458,9 +1733,40 @@ const ProductEditModal: React.FC<{
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    try {
+      // Create a FormData object and upload to Supabase Storage
+      // For now, create a local preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImages([...images, previewUrl]);
+      // TODO: Implement actual upload to Supabase Storage
+      // const { data, error } = await supabase.storage.from('product-images').upload(`products/${product.product?.id}/${Date.now()}-${file.name}`, file);
+    } catch (err) {
+      logger.error('Failed to upload image', err);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
+    setImages(newImages);
+  };
+
+  const handleReorderImages = (fromIndex: number, toIndex: number) => {
+    const newImages = [...images];
+    const [movedImage] = newImages.splice(fromIndex, 1);
+    newImages.splice(toIndex, 0, movedImage);
+    setImages(newImages);
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className={`px-6 py-4 bg-gradient-to-r ${brand.bgGradient} flex items-center justify-between`}>
           <h2 className={`text-lg font-bold ${brand.textColor}`}>Editar Produto</h2>
@@ -1469,64 +1775,193 @@ const ProductEditModal: React.FC<{
           </button>
         </div>
 
+        {/* Tabs */}
+        <div className="border-b flex">
+          <button
+            onClick={() => setActiveTab('info')}
+            className={`flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'info'
+                ? 'border-black text-black'
+                : 'border-transparent text-neutral-500 hover:text-neutral-700'
+            }`}
+          >
+            <Edit3 className="w-4 h-4" />
+            Informações
+          </button>
+          <button
+            onClick={() => setActiveTab('images')}
+            className={`flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'images'
+                ? 'border-black text-black'
+                : 'border-transparent text-neutral-500 hover:text-neutral-700'
+            }`}
+          >
+            <Image className="w-4 h-4" />
+            Imagens ({images.length})
+          </button>
+        </div>
+
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-2 gap-8">
-            {/* Preview */}
-            <div>
-              <h3 className="font-bold mb-4 flex items-center gap-2">
-                <Eye className="w-4 h-4" />
-                Preview
-              </h3>
-              <div className="border rounded-xl overflow-hidden">
-                <div className="aspect-square bg-neutral-100 flex items-center justify-center">
-                  {product.product?.images?.[0] ? (
-                    <img src={product.product.images[0]} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <Image className="w-16 h-16 text-neutral-300" />
-                  )}
+          {activeTab === 'info' && (
+            <div className="grid grid-cols-2 gap-8">
+              {/* Preview */}
+              <div>
+                <h3 className="font-bold mb-4 flex items-center gap-2">
+                  <Eye className="w-4 h-4" />
+                  Preview
+                </h3>
+                <div className="border rounded-xl overflow-hidden">
+                  <div className="aspect-square bg-neutral-100 flex items-center justify-center">
+                    {images[0] ? (
+                      <img src={images[0]} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Image className="w-16 h-16 text-neutral-300" />
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h4 className="font-medium mb-2">{product.product?.name}</h4>
+                    <p className="text-2xl font-bold" style={{ color: brand.accentColor }}>
+                      {formatCurrency(formData.price, locale as Locale)}
+                    </p>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <h4 className="font-medium mb-2">{product.product?.name}</h4>
-                  <p className="text-2xl font-bold" style={{ color: brand.accentColor }}>
-                    {formatCurrency(formData.price, locale as Locale)}
+              </div>
+
+              {/* Form */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Preço</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">R$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                      className="w-full pl-10 pr-4 py-3 border rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Descrição</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={8}
+                    className="w-full px-4 py-3 border rounded-xl resize-none"
+                  />
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                  <p className="text-sm text-yellow-700">
+                    <strong>Estoque:</strong> {product.product?.variants?.reduce((sum: number, v: any) => sum + (v.stock_quantity || 0), 0) || 0} unidades (gerenciado no site)
                   </p>
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Form */}
-            <div className="space-y-4">
+          {activeTab === 'images' && (
+            <div className="space-y-6">
+              {/* Image Grid */}
               <div>
-                <label className="block text-sm font-medium mb-1">Preço</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">R$</span>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold">Imagens do Produto</h3>
                   <input
-                    type="number"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                    className="w-full pl-10 pr-4 py-3 border rounded-xl"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
                   />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingImage}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${brand.bgColor} ${brand.textColor}`}
+                  >
+                    {isUploadingImage ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                    Adicionar Imagem
+                  </button>
                 </div>
+
+                {images.length === 0 ? (
+                  <div className="border-2 border-dashed border-neutral-200 rounded-xl p-12 text-center">
+                    <Image className="w-12 h-12 mx-auto mb-4 text-neutral-300" />
+                    <p className="text-neutral-500 mb-4">Nenhuma imagem adicionada</p>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Adicionar primeira imagem
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-4 gap-4">
+                    {images.map((image, index) => (
+                      <div
+                        key={index}
+                        className="relative group aspect-square bg-neutral-100 rounded-xl overflow-hidden"
+                      >
+                        <img src={image} alt="" className="w-full h-full object-cover" />
+
+                        {/* Main image badge */}
+                        {index === 0 && (
+                          <div className="absolute top-2 left-2 px-2 py-1 bg-black text-white text-xs font-medium rounded">
+                            Principal
+                          </div>
+                        )}
+
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          {index > 0 && (
+                            <button
+                              onClick={() => handleReorderImages(index, 0)}
+                              className="p-2 bg-white rounded-lg hover:bg-neutral-100 transition-colors"
+                              title="Tornar principal"
+                            >
+                              <Star className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleRemoveImage(index)}
+                            className="p-2 bg-white rounded-lg hover:bg-red-50 text-red-600 transition-colors"
+                            title="Remover"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Add more images button */}
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="aspect-square border-2 border-dashed border-neutral-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-neutral-400 transition-colors"
+                    >
+                      <Plus className="w-6 h-6 text-neutral-400" />
+                      <span className="text-xs text-neutral-500">Adicionar</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Descrição</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={8}
-                  className="w-full px-4 py-3 border rounded-xl resize-none"
-                />
-              </div>
-
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                <p className="text-sm text-yellow-700">
-                  <strong>Estoque:</strong> {product.product?.stock || 0} unidades (gerenciado no site)
-                </p>
+              {/* Tips */}
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <h4 className="text-sm font-bold text-blue-700 mb-2">Dicas para imagens no {brand.name}:</h4>
+                <ul className="text-xs text-blue-600 space-y-1">
+                  <li>• Use imagens de alta qualidade (mínimo 500x500px)</li>
+                  <li>• Fundo branco ou claro é preferido</li>
+                  <li>• A primeira imagem é a principal (thumbnail)</li>
+                  <li>• Adicione até 10 imagens por produto</li>
+                </ul>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -1559,9 +1994,32 @@ const ConnectModal: React.FC<{
   onSuccess: () => void;
 }> = ({ brand, providerId, onClose, onSuccess }) => {
   const [step, setStep] = useState<'credentials' | 'authorize'>('credentials');
-  const [credentials, setCredentials] = useState({ client_id: '', client_secret: '' });
+  const [credentials, setCredentials] = useState<Record<string, string>>({});
+  const [provider, setProvider] = useState<MarketplaceProvider | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load provider details to get required fields
+  useEffect(() => {
+    const loadProvider = async () => {
+      if (!providerId) return;
+      try {
+        const providerData = await marketplaceApi.getProvider(providerId);
+        setProvider(providerData);
+
+        // Initialize credentials with empty values for all required fields
+        const initialCredentials: Record<string, string> = {};
+        providerData.required_fields.fields.forEach(field => {
+          initialCredentials[field.key] = '';
+        });
+        setCredentials(initialCredentials);
+      } catch (err) {
+        logger.error('Failed to load provider', err);
+        setError('Falha ao carregar informações do provider.');
+      }
+    };
+    loadProvider();
+  }, [providerId]);
 
   const handleSave = async () => {
     if (!providerId) {
@@ -1621,39 +2079,45 @@ const ConnectModal: React.FC<{
         </div>
 
         <div className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Client ID (App ID)</label>
-            <input
-              type="text"
-              value={credentials.client_id}
-              onChange={(e) => setCredentials({ ...credentials, client_id: e.target.value })}
-              placeholder="Seu Client ID do Mercado Livre"
-              className="w-full px-4 py-3 border rounded-xl"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Client Secret</label>
-            <input
-              type="password"
-              value={credentials.client_secret}
-              onChange={(e) => setCredentials({ ...credentials, client_secret: e.target.value })}
-              placeholder="Seu Client Secret"
-              className="w-full px-4 py-3 border rounded-xl"
-            />
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-              <p className="text-sm text-red-700">{error}</p>
+          {!provider ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
             </div>
-          )}
+          ) : (
+            <>
+              {provider.required_fields.fields.map(field => (
+                <div key={field.key}>
+                  <label className="block text-sm font-medium mb-1">
+                    {field.label}
+                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                  </label>
+                  <input
+                    type={field.type === 'password' ? 'password' : 'text'}
+                    value={credentials[field.key] || ''}
+                    onChange={(e) => setCredentials({ ...credentials, [field.key]: e.target.value })}
+                    placeholder={field.help || field.label}
+                    className="w-full px-4 py-3 border rounded-xl"
+                    required={field.required}
+                  />
+                  {field.help && (
+                    <p className="text-xs text-neutral-500 mt-1">{field.help}</p>
+                  )}
+                </div>
+              ))}
 
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <p className="text-sm text-blue-700">
-              Após salvar, você será redirecionado para o {brand.name} para autorizar o acesso.
-            </p>
-          </div>
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <p className="text-sm text-blue-700">
+                  Após salvar, você será redirecionado para o {brand.name} para autorizar o acesso.
+                </p>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="px-6 py-4 border-t flex gap-3">
@@ -1662,7 +2126,13 @@ const ConnectModal: React.FC<{
           </button>
           <button
             onClick={handleSave}
-            disabled={isSaving || !credentials.client_id || !credentials.client_secret}
+            disabled={
+              isSaving ||
+              !provider ||
+              provider.required_fields.fields.some(field =>
+                field.required && !credentials[field.key]?.trim()
+              )
+            }
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium ${brand.bgColor} ${brand.textColor} disabled:opacity-50`}
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
@@ -2011,6 +2481,525 @@ ${productMetrics?.rating ? `⭐ ${productMetrics.rating}/5 avaliação` : '⭐ A
       <p className="text-xs text-neutral-500">
         Dica: Use emojis e formatação para destacar seu anúncio no {brand.name}.
       </p>
+    </div>
+  );
+};
+
+// ============================================
+// IMPORT FROM MARKETPLACE MODAL (ML → Local)
+// ============================================
+
+const ImportFromMarketplaceModal: React.FC<{
+  brand: typeof MARKETPLACE_BRANDS[MarketplaceId];
+  configId?: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}> = ({ brand, configId, onClose, onSuccess }) => {
+  const [mlProducts, setMlProducts] = useState<MLProductBasic[]>([]);
+  const [selectedMLProduct, setSelectedMLProduct] = useState<MLProductFull | null>(null);
+  const [localProducts, setLocalProducts] = useState<Product[]>([]);
+  const [selectedLocalProduct, setSelectedLocalProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+  const [pagination, setPagination] = useState({ total: 0, offset: 0, limit: 20 });
+  const [step, setStep] = useState<'select-ml' | 'select-local' | 'configure'>('select-ml');
+  const [variantPrices, setVariantPrices] = useState<Array<{
+    external_variation_id: number;
+    local_variant_id: string;
+    marketplace_price: number;
+    label: string;
+  }>>([]);
+  const [downloadImages, setDownloadImages] = useState(true);
+
+  // Load ML products on mount
+  useEffect(() => {
+    if (configId) {
+      loadMLProducts();
+    }
+  }, [configId]);
+
+  // Load local products for selection
+  useEffect(() => {
+    loadLocalProducts();
+  }, []);
+
+  const loadMLProducts = async (offset = 0) => {
+    if (!configId) return;
+    setIsLoading(true);
+    try {
+      const response = await marketplaceApi.getMarketplaceProducts(configId, {
+        status: 'active',
+        limit: 20,
+        offset,
+      });
+      setMlProducts(response.products);
+      setPagination({ total: response.total, offset: response.offset, limit: response.limit });
+    } catch (err) {
+      logger.error('Failed to load ML products', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadLocalProducts = async () => {
+    try {
+      const all = await productsApi.getAll();
+      setLocalProducts(all);
+    } catch (err) {
+      logger.error('Failed to load local products', err);
+    }
+  };
+
+  const handleSelectMLProduct = async (product: MLProductBasic) => {
+    if (!configId) return;
+    setIsLoadingDetails(true);
+    try {
+      const details = await marketplaceApi.getMarketplaceProductDetails(configId, product.id);
+      setSelectedMLProduct(details);
+
+      // Initialize variant prices from ML product variations
+      if (details.variations && details.variations.length > 0) {
+        const prices = details.variations.map(v => {
+          const attrs = v.attribute_combinations.map(a => a.value_name).join(' / ');
+          return {
+            external_variation_id: v.id,
+            local_variant_id: '',
+            marketplace_price: v.price,
+            label: attrs || `Variação ${v.id}`,
+          };
+        });
+        setVariantPrices(prices);
+      }
+
+      setStep('select-local');
+    } catch (err) {
+      logger.error('Failed to load ML product details', err);
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
+
+  const handleSelectLocalProduct = (product: Product) => {
+    setSelectedLocalProduct(product);
+
+    // Try to auto-match variants by name/attributes
+    if (selectedMLProduct?.variations && product.variants) {
+      const updatedPrices = variantPrices.map(vp => {
+        // Try to find matching local variant by size or other attributes
+        const mlAttrs = selectedMLProduct.variations
+          .find(v => v.id === vp.external_variation_id)
+          ?.attribute_combinations.map(a => a.value_name.toLowerCase()) || [];
+
+        const matchingVariant = product.variants?.find(lv => {
+          const lvSize = lv.size?.toLowerCase() || '';
+          const lvColor = lv.color_name?.pt?.toLowerCase() || '';
+          return mlAttrs.some(attr => attr.includes(lvSize) || attr.includes(lvColor) || lvSize.includes(attr) || lvColor.includes(attr));
+        });
+
+        return {
+          ...vp,
+          local_variant_id: matchingVariant?.id || '',
+        };
+      });
+      setVariantPrices(updatedPrices);
+    }
+
+    setStep('configure');
+  };
+
+  const handleLink = async () => {
+    if (!configId || !selectedMLProduct || !selectedLocalProduct) return;
+    setIsSaving(true);
+    try {
+      // Prepare variant prices mapping
+      const validVariantPrices = variantPrices
+        .filter(vp => vp.local_variant_id)
+        .map(vp => ({
+          external_variation_id: vp.external_variation_id,
+          local_variant_id: vp.local_variant_id,
+          marketplace_price: vp.marketplace_price,
+        }));
+
+      await marketplaceApi.linkMarketplaceProduct(
+        configId,
+        selectedMLProduct.id,
+        selectedLocalProduct.id,
+        {
+          variant_prices: validVariantPrices.length > 0 ? validVariantPrices : undefined,
+          download_images: downloadImages,
+        }
+      );
+      onSuccess();
+    } catch (err) {
+      logger.error('Failed to link product', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const filteredMLProducts = mlProducts.filter(p =>
+    p.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredLocalProducts = localProducts.filter(p => {
+    const name = p.name?.pt || p.name?.en || '';
+    return name.toLowerCase().includes(localSearchTerm.toLowerCase());
+  });
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className={`px-6 py-4 bg-gradient-to-r ${brand.bgGradient} flex items-center justify-between`}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1.5">
+              <img src={brand.logo} alt={brand.name} className="max-w-full max-h-full object-contain" />
+            </div>
+            <div>
+              <h2 className={`text-lg font-bold ${brand.textColor}`}>
+                Importar do {brand.name}
+              </h2>
+              <p className={`text-xs ${brand.textColor} opacity-80`}>
+                Vincular produto do {brand.name} ao catálogo local
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className={`p-2 rounded-lg bg-white/20 hover:bg-white/30 ${brand.textColor}`}>
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Steps indicator */}
+        <div className="px-6 py-3 bg-neutral-50 border-b flex items-center gap-4">
+          <div className={`flex items-center gap-2 ${step === 'select-ml' ? 'text-black font-medium' : 'text-neutral-400'}`}>
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 'select-ml' ? 'bg-black text-white' : 'bg-neutral-200'}`}>1</div>
+            Selecionar do {brand.shortName}
+          </div>
+          <ChevronRight className="w-4 h-4 text-neutral-300" />
+          <div className={`flex items-center gap-2 ${step === 'select-local' ? 'text-black font-medium' : 'text-neutral-400'}`}>
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 'select-local' ? 'bg-black text-white' : 'bg-neutral-200'}`}>2</div>
+            Vincular ao Local
+          </div>
+          <ChevronRight className="w-4 h-4 text-neutral-300" />
+          <div className={`flex items-center gap-2 ${step === 'configure' ? 'text-black font-medium' : 'text-neutral-400'}`}>
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 'configure' ? 'bg-black text-white' : 'bg-neutral-200'}`}>3</div>
+            Configurar
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6">
+          {/* Step 1: Select ML Product */}
+          {step === 'select-ml' && (
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder={`Buscar produtos no ${brand.name}...`}
+                    className="w-full pl-10 pr-4 py-3 border rounded-xl"
+                  />
+                </div>
+                <button
+                  onClick={() => loadMLProducts(0)}
+                  disabled={isLoading}
+                  className="px-4 py-3 border rounded-xl hover:bg-neutral-50"
+                >
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
+                </button>
+              </div>
+
+              {isLoading ? (
+                <div className="flex items-center justify-center h-64">
+                  <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {filteredMLProducts.map((product) => (
+                    <div
+                      key={product.id}
+                      onClick={() => handleSelectMLProduct(product)}
+                      className="border rounded-xl overflow-hidden cursor-pointer hover:border-neutral-400 transition-colors"
+                    >
+                      <div className="aspect-square bg-neutral-100">
+                        {product.thumbnail ? (
+                          <img src={product.thumbnail} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Image className="w-12 h-12 text-neutral-300" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        <h4 className="font-medium text-sm mb-1 line-clamp-2">{product.title}</h4>
+                        <p className="text-lg font-bold" style={{ color: brand.accentColor }}>
+                          {formatCurrency(product.price, 'pt')}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                            product.status === 'active' ? 'bg-green-100 text-green-700' :
+                            product.status === 'paused' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {product.status === 'active' ? 'Ativo' : product.status === 'paused' ? 'Pausado' : 'Fechado'}
+                          </span>
+                          {product.variations && product.variations.length > 0 && (
+                            <span className="text-xs text-neutral-500">
+                              {product.variations.length} variações
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Pagination */}
+              {pagination.total > pagination.limit && (
+                <div className="flex items-center justify-center gap-2 pt-4">
+                  <button
+                    onClick={() => loadMLProducts(Math.max(0, pagination.offset - pagination.limit))}
+                    disabled={pagination.offset === 0 || isLoading}
+                    className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                  >
+                    Anterior
+                  </button>
+                  <span className="text-sm text-neutral-500">
+                    {pagination.offset + 1} - {Math.min(pagination.offset + pagination.limit, pagination.total)} de {pagination.total}
+                  </span>
+                  <button
+                    onClick={() => loadMLProducts(pagination.offset + pagination.limit)}
+                    disabled={pagination.offset + pagination.limit >= pagination.total || isLoading}
+                    className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                  >
+                    Próximo
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 2: Select Local Product */}
+          {step === 'select-local' && selectedMLProduct && (
+            <div className="grid grid-cols-2 gap-6">
+              {/* ML Product Preview */}
+              <div className="space-y-4">
+                <h3 className="font-bold">Produto do {brand.name}</h3>
+                <div className="border rounded-xl overflow-hidden">
+                  <div className="aspect-video bg-neutral-100">
+                    {selectedMLProduct.pictures?.[0] ? (
+                      <img src={selectedMLProduct.pictures[0].secure_url || selectedMLProduct.pictures[0].url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Image className="w-12 h-12 text-neutral-300" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <h4 className="font-medium">{selectedMLProduct.title}</h4>
+                    <p className="text-xl font-bold" style={{ color: brand.accentColor }}>
+                      {formatCurrency(selectedMLProduct.price, 'pt')}
+                    </p>
+                    {selectedMLProduct.variations.length > 0 && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+                        <p className="font-medium text-blue-700">{selectedMLProduct.variations.length} variações</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {selectedMLProduct.variations.slice(0, 5).map((v, i) => (
+                            <span key={i} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                              {v.attribute_combinations.map(a => a.value_name).join(' / ')}
+                            </span>
+                          ))}
+                          {selectedMLProduct.variations.length > 5 && (
+                            <span className="text-xs text-blue-600">+{selectedMLProduct.variations.length - 5} mais</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedMLProduct(null);
+                    setStep('select-ml');
+                  }}
+                  className="w-full py-2 border rounded-xl hover:bg-neutral-50"
+                >
+                  ← Escolher outro produto
+                </button>
+              </div>
+
+              {/* Local Products Selection */}
+              <div className="space-y-4">
+                <h3 className="font-bold">Vincular ao Produto Local</h3>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                  <input
+                    type="text"
+                    value={localSearchTerm}
+                    onChange={(e) => setLocalSearchTerm(e.target.value)}
+                    placeholder="Buscar no catálogo local..."
+                    className="w-full pl-10 pr-4 py-3 border rounded-xl"
+                  />
+                </div>
+                <div className="max-h-[400px] overflow-y-auto space-y-2">
+                  {filteredLocalProducts.slice(0, 20).map((product) => (
+                    <div
+                      key={product.id}
+                      onClick={() => handleSelectLocalProduct(product)}
+                      className="flex gap-3 p-3 border rounded-xl cursor-pointer hover:border-neutral-400 transition-colors"
+                    >
+                      <div className="w-16 h-16 bg-neutral-100 rounded-lg flex-shrink-0">
+                        {product.base_images?.[0] || product.default_image_url ? (
+                          <img src={product.base_images?.[0] || product.default_image_url} alt="" className="w-full h-full object-cover rounded-lg" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Image className="w-6 h-6 text-neutral-300" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate">{product.name?.pt || product.name?.en || 'Produto'}</h4>
+                        <p className="text-sm font-bold">{formatCurrency(product.variants?.[0]?.retail_price || 0, 'pt')}</p>
+                        {product.variants && product.variants.length > 1 && (
+                          <span className="text-xs text-neutral-500">{product.variants.length} variantes</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Configure */}
+          {step === 'configure' && selectedMLProduct && selectedLocalProduct && (
+            <div className="space-y-6">
+              {/* Summary */}
+              <div className="grid grid-cols-2 gap-6">
+                <div className="border rounded-xl p-4">
+                  <p className="text-xs text-neutral-500 uppercase tracking-wide mb-2">{brand.name}</p>
+                  <div className="flex gap-3">
+                    <div className="w-16 h-16 bg-neutral-100 rounded-lg">
+                      {selectedMLProduct.pictures?.[0] && (
+                        <img src={selectedMLProduct.pictures[0].secure_url} alt="" className="w-full h-full object-cover rounded-lg" />
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">{selectedMLProduct.title}</h4>
+                      <p className="text-lg font-bold" style={{ color: brand.accentColor }}>{formatCurrency(selectedMLProduct.price, 'pt')}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="border rounded-xl p-4">
+                  <p className="text-xs text-neutral-500 uppercase tracking-wide mb-2">Produto Local</p>
+                  <div className="flex gap-3">
+                    <div className="w-16 h-16 bg-neutral-100 rounded-lg">
+                      {(selectedLocalProduct.base_images?.[0] || selectedLocalProduct.default_image_url) && (
+                        <img src={selectedLocalProduct.base_images?.[0] || selectedLocalProduct.default_image_url} alt="" className="w-full h-full object-cover rounded-lg" />
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">{selectedLocalProduct.name?.pt || selectedLocalProduct.name?.en}</h4>
+                      <p className="text-lg font-bold">{formatCurrency(selectedLocalProduct.variants?.[0]?.retail_price || 0, 'pt')}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Variant Mapping */}
+              {variantPrices.length > 0 && selectedLocalProduct.variants && selectedLocalProduct.variants.length > 0 && (
+                <div className="border rounded-xl p-4">
+                  <h4 className="font-bold mb-4">Mapeamento de Variações</h4>
+                  <div className="space-y-3">
+                    {variantPrices.map((vp, index) => (
+                      <div key={vp.external_variation_id} className="flex items-center gap-4 p-3 bg-neutral-50 rounded-lg">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{vp.label}</p>
+                          <p className="text-xs text-neutral-500">Preço ML: {formatCurrency(vp.marketplace_price, 'pt')}</p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-neutral-400" />
+                        <div className="flex-1">
+                          <select
+                            value={vp.local_variant_id}
+                            onChange={(e) => {
+                              const updated = [...variantPrices];
+                              updated[index].local_variant_id = e.target.value;
+                              setVariantPrices(updated);
+                            }}
+                            className="w-full px-3 py-2 border rounded-lg text-sm"
+                          >
+                            <option value="">Selecionar variante...</option>
+                            {selectedLocalProduct.variants?.map((lv) => (
+                              <option key={lv.id} value={lv.id}>
+                                {lv.size || lv.color_name?.pt || lv.sku || 'Variante'}
+                                {lv.size && lv.color_name?.pt ? ` (${lv.size} / ${lv.color_name?.pt})` : ''}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Options */}
+              <div className="border rounded-xl p-4 space-y-3">
+                <h4 className="font-bold">Opções</h4>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={downloadImages}
+                    onChange={(e) => setDownloadImages(e.target.checked)}
+                    className="w-4 h-4 rounded"
+                  />
+                  <span className="text-sm">Baixar imagens do {brand.name} para o Supabase Storage</span>
+                </label>
+              </div>
+
+              <button
+                onClick={() => {
+                  setSelectedLocalProduct(null);
+                  setStep('select-local');
+                }}
+                className="w-full py-2 border rounded-xl hover:bg-neutral-50"
+              >
+                ← Escolher outro produto local
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t flex justify-end gap-3">
+          <button onClick={onClose} className="px-6 py-2.5 border rounded-xl hover:bg-neutral-50">
+            Cancelar
+          </button>
+          {step === 'configure' && selectedMLProduct && selectedLocalProduct && (
+            <button
+              onClick={handleLink}
+              disabled={isSaving}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium ${brand.bgColor} ${brand.textColor}`}
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              Vincular Produto
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Loading overlay for details */}
+      {isLoadingDetails && (
+        <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
+        </div>
+      )}
     </div>
   );
 };
