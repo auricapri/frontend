@@ -30,9 +30,9 @@ import { Supplier } from '../../types/suppliers';
 import { Gender } from '../../constants/enums';
 import { supabase } from '../../utils/supabase';
 import { formatCurrency } from '../../utils/currency';
-import { ProductDetail } from '../product';
+import ProductDetail from '../product/ProductDetail';
 import { Hero } from '../shared';
-import { CollectionDetail } from '../product';
+import CollectionDetail from '../product/CollectionDetail';
 import { PricingApi } from '../../api/pricing.api';
 import { HotspotsEditor } from './HotspotsEditor';
 
