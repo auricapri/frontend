@@ -259,7 +259,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
             )}
 
             {!selectedSavedCardId && (
-              <div className="space-y-8 bg-neutral-50/50 p-8 rounded-[2.5rem] border border-neutral-100">
+              <div className="space-y-6 md:space-y-8 bg-neutral-50/50 p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-[2.5rem] border border-neutral-100">
                 {/* Preview do Cartão */}
                 <CreditCardPreview
                   cardNumber={cardNumber}
@@ -268,11 +268,11 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
                   cardCvc={cardCvc}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Número do Cartão</label>
+                    <label className="text-[10px] md:text-xs font-black uppercase tracking-wide md:tracking-widest text-neutral-600">Número do Cartão</label>
                     <input
-                      className="w-full p-6 bg-neutral-900 text-white border border-neutral-800 rounded-2xl outline-none font-mono tracking-widest focus:border-neutral-600 focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
+                      className="w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none font-mono text-sm md:text-base tracking-wide md:tracking-widest focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
                       placeholder="0000 0000 0000 0000"
                       value={cardNumber}
                       onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
@@ -280,19 +280,19 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Nome no Cartão</label>
+                    <label className="text-[10px] md:text-xs font-black uppercase tracking-wide md:tracking-widest text-neutral-600">Nome no Cartão</label>
                     <input
-                      className="w-full p-6 bg-neutral-900 text-white border border-neutral-800 rounded-2xl outline-none font-black uppercase focus:border-neutral-600 focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
+                      className="w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none text-sm md:text-base font-black uppercase focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
                       placeholder="NOME COMO IMPRESSO"
                       value={cardName}
                       onChange={(e) => setCardName(e.target.value.toUpperCase())}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-6 md:col-span-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 md:col-span-2">
                     <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Validade</label>
+                      <label className="text-[10px] md:text-xs font-black uppercase tracking-wide md:tracking-widest text-neutral-600">Validade</label>
                       <input
-                        className="w-full p-6 bg-neutral-900 text-white border border-neutral-800 rounded-2xl outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
+                        className="w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none text-sm md:text-base focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
                         placeholder="MM/YY"
                         value={cardExpiry}
                         onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
@@ -300,9 +300,9 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">CVC</label>
+                      <label className="text-[10px] md:text-xs font-black uppercase tracking-wide md:tracking-widest text-neutral-600">CVC</label>
                       <input
-                        className="w-full p-6 bg-neutral-900 text-white border border-neutral-800 rounded-2xl outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
+                        className="w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none text-sm md:text-base focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
                         placeholder="123"
                         type="password"
                         value={cardCvc}
@@ -315,15 +315,15 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
 
                 {currentUser && (
                   <div
-                    className="flex items-center gap-4 p-5 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-all cursor-pointer"
+                    className="flex items-center gap-3 p-3 md:p-4 bg-neutral-900 border border-neutral-800 rounded-xl md:rounded-2xl hover:border-neutral-600 transition-all cursor-pointer"
                     onClick={() => setSaveCardForFuture(!saveCardForFuture)}
                   >
-                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${saveCardForFuture ? 'bg-white border-white' : 'border-neutral-500'}`}>
+                    <div className={`w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${saveCardForFuture ? 'bg-white border-white' : 'border-neutral-500'}`}>
                       {saveCardForFuture && <Check className="w-3 h-3 text-black" />}
                     </div>
-                    <div>
-                      <span className="text-xs font-black uppercase tracking-wider block text-white">Salvar Cartão</span>
-                      <span className="text-xs text-neutral-600 block mt-0.5">Armazenamento seguro criptografado para compras futuras.</span>
+                    <div className="flex-1">
+                      <span className="text-[11px] md:text-xs font-bold uppercase tracking-wide md:tracking-wider block text-white">Salvar Cartão</span>
+                      <span className="text-[10px] md:text-xs text-neutral-600 block mt-0.5 leading-snug">Armazenamento seguro criptografado para compras futuras.</span>
                     </div>
                   </div>
                 )}
@@ -380,7 +380,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
               )}
 
               {!selectedSavedCardId2 && (
-                <div className="space-y-8 bg-neutral-50/50 p-8 rounded-[2.5rem] border border-neutral-100">
+                <div className="space-y-6 md:space-y-8 bg-neutral-50/50 p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-[2.5rem] border border-neutral-100">
                   {/* Preview do Cartão 2 */}
                   <CreditCardPreview
                     cardNumber={cardNumber2}
@@ -389,11 +389,11 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
                     cardCvc={cardCvc2}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Número do Cartão</label>
+                      <label className="text-[10px] md:text-xs font-black uppercase tracking-wide md:tracking-widest text-neutral-600">Número do Cartão</label>
                       <input
-                        className="w-full p-6 bg-neutral-900 text-white border border-neutral-800 rounded-2xl outline-none font-mono tracking-widest focus:border-neutral-600 focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
+                        className="w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none font-mono text-sm md:text-base tracking-wide md:tracking-widest focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
                         placeholder="0000 0000 0000 0000"
                         value={cardNumber2}
                         onChange={(e) => setCardNumber2(formatCardNumber(e.target.value))}
@@ -401,19 +401,19 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Nome no Cartão</label>
+                      <label className="text-[10px] md:text-xs font-black uppercase tracking-wide md:tracking-widest text-neutral-600">Nome no Cartão</label>
                       <input
-                        className="w-full p-6 bg-neutral-900 text-white border border-neutral-800 rounded-2xl outline-none font-black uppercase focus:border-neutral-600 focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
+                        className="w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none text-sm md:text-base font-black uppercase focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
                         placeholder="NOME COMO IMPRESSO"
                         value={cardName2}
                         onChange={(e) => setCardName2(e.target.value.toUpperCase())}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-6 md:col-span-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 md:col-span-2">
                       <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Validade</label>
+                        <label className="text-[10px] md:text-xs font-black uppercase tracking-wide md:tracking-widest text-neutral-600">Validade</label>
                         <input
-                          className="w-full p-6 bg-neutral-900 text-white border border-neutral-800 rounded-2xl outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
+                          className="w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none text-sm md:text-base focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
                           placeholder="MM/YY"
                           value={cardExpiry2}
                           onChange={(e) => setCardExpiry2(formatExpiry(e.target.value))}
@@ -421,9 +421,9 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-widest text-neutral-600">CVC</label>
+                        <label className="text-[10px] md:text-xs font-black uppercase tracking-wide md:tracking-widest text-neutral-600">CVC</label>
                         <input
-                          className="w-full p-6 bg-neutral-900 text-white border border-neutral-800 rounded-2xl outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
+                          className="w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none text-sm md:text-base focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all"
                           placeholder="123"
                           type="password"
                           value={cardCvc2}

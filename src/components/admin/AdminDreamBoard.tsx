@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Loader2, Settings2, Trash2 } from 'lucide-react';
 import { DreamApi } from '../../api/dream.api';
-import { DreamBoard, DreamCard, Category, Asset, Collection, Product } from '../../types';
+import { Category, Asset, Collection, Product } from '../../types';
+import { DreamBoard, DreamCard } from '../../types/dream';
 import { Locale } from '../../i18n';
 import BoardCanvas from './dream-board/BoardCanvas';
 import ColumnConfig from './dream-board/ColumnConfig';

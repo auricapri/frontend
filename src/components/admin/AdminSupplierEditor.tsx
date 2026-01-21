@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, Save, Upload, Image as ImageIcon, Loader2, MapPin, Instagram, Facebook, Globe, Phone, Mail, Building2, User, FileText, Truck, Package, DollarSign } from 'lucide-react';
-import { Supplier, AddressData } from '../../types';
+import { AddressData } from '../../types';
+import { Supplier } from '../../types/suppliers';
 import { supabase } from '../../utils/supabase';
 import { MapPicker } from '../checkout/MapPicker';
 import { getCurrencySymbol } from '../../utils/currency';

@@ -1,12 +1,15 @@
 import React, { Suspense, useState } from 'react';
 import { MessageCircle, X, Loader2 } from 'lucide-react';
-import { Navbar, Footer } from '../components/layout';
-import { Hero, LoyaltyBanner } from '../components/shared';
-import { ProductGrid, CollectionDetail } from '../components/product';
-import { CartDrawer, WishlistDrawer, CouponsDrawer } from '../components/cart';
-import { AuthDrawer } from '../components/auth';
-import { ChatDrawer } from '../components/chat';
-import { Toast } from '../components/ui';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
+import Hero from '../components/shared/Hero';
+import LoyaltyBanner from '../components/shared/LoyaltyBanner';
+import CartDrawer from '../components/cart/CartDrawer';
+import WishlistDrawer from '../components/cart/WishlistDrawer';
+import CouponsDrawer from '../components/cart/CouponsDrawer';
+import AuthDrawer from '../components/auth/AuthDrawer';
+import Toast from '../components/ui/Toast';
+import { LoadingFallback } from '../components/ui/LoadingFallback';
 import { TestBanner } from '../components/common/TestBanner';
 import { filterProductsForMode } from '../utils/product';
 import { trackingService } from '../services/tracking.service';
@@ -14,19 +17,16 @@ import { ChatProduct } from '../api/ai-chat.api';
 import { Gender } from '../constants/enums';
 import { UserMode, type Category, type Collection, type Coupon, type Order, type Product, type SizeGuide, type StoreConfig, type UserProfile } from '../types';
 
+// Lazy load páginas e componentes pesados para melhor performance
+const ProductGrid = React.lazy(() => import('../components/product/ProductGrid'));
+const CollectionDetail = React.lazy(() => import('../components/product/CollectionDetail'));
 const ProductDetail = React.lazy(() => import('../components/product/ProductDetail'));
 const CheckoutView = React.lazy(() => import('../components/checkout/CheckoutViewV2'));
 const OrderResultOverlay = React.lazy(() => import('../components/orders/OrderResultOverlay'));
-const OrderReviewPage = React.lazy(() => import('../pages/OrderReviewPage'));
+const OrderReviewPage = React.lazy(() => import('../pages/OrderReviewPage').then(m => ({ default: m.OrderReviewPage })));
 const NewArrivalsPage = React.lazy(() => import('../pages/NewArrivalsPage'));
-
-function LoadingFallback() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
-    </div>
-  );
-}
+const SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').then(m => ({ default: m.SearchResultsPage })));
+const ChatDrawer = React.lazy(() => import('../components/chat/ChatDrawer').then(m => ({ default: m.ChatDrawer })));
 
 export function AppLayout(props: {
   app: {
@@ -36,7 +36,7 @@ export function AppLayout(props: {
     userMode: UserMode;
     setUserMode: React.Dispatch<React.SetStateAction<UserMode>>;
 
-    currentView: 'home' | 'product' | 'collection' | 'checkout' | 'order-review' | 'new-arrivals';
+    currentView: 'home' | 'product' | 'collection' | 'checkout' | 'order-review' | 'new-arrivals' | 'search-results';
     isScrolled: boolean;
     mainRef: React.RefObject<HTMLElement>;
     handleScroll: () => void;
@@ -129,7 +129,7 @@ export function AppLayout(props: {
         onToggleMode={() => app.setUserMode((prev) => (prev === UserMode.VAREJO ? UserMode.ATACADO : UserMode.VAREJO))}
         onNavigate={app.onNavigate}
         isScrolled={app.currentView === 'home' && app.isScrolled}
-        isProductView={app.currentView === 'product' || app.currentView === 'checkout' || app.currentView === 'collection' || app.currentView === 'new-arrivals'}
+        isProductView={app.currentView === 'product' || app.currentView === 'checkout' || app.currentView === 'collection' || app.currentView === 'new-arrivals' || app.currentView === 'search-results'}
         onBack={() => app.onNavigate('home', 'collection')}
         isLoggedIn={!!app.currentUser}
         t={app.t}
@@ -154,28 +154,30 @@ export function AppLayout(props: {
         {app.currentView === 'home' && (
           <div className="min-h-full flex flex-col">
             <Hero onNavigate={app.onNavigate as any} t={app.t} banners={app.banners} locale={app.locale} isLoading={app.isLoading} />
-            <ProductGrid
-              products={app.products}
-              categories={app.categories}
-              collections={app.collections}
-              coupons={app.coupons}
-              userMode={app.userMode}
-              onSelectProduct={(p) => {
-                app.setActiveProduct(p);
-                app.onNavigate('product', undefined, p);
-              }}
-              onSelectCollection={(c) => {
-                app.setActiveCollection(c);
-                app.onNavigate('collection');
-              }}
-              wishlistIds={app.wishlistIds}
-              onToggleWishlist={app.handleToggleWishlist}
-              onAddToCart={app.addToCart}
-              t={app.t}
-              locale={app.locale}
-              isLoading={app.isLoading}
-              selectedGender={selectedGender}
-            />
+            <Suspense fallback={<LoadingFallback />}>
+              <ProductGrid
+                products={app.products}
+                categories={app.categories}
+                collections={app.collections}
+                coupons={app.coupons}
+                userMode={app.userMode}
+                onSelectProduct={(p) => {
+                  app.setActiveProduct(p);
+                  app.onNavigate('product', undefined, p);
+                }}
+                onSelectCollection={(c) => {
+                  app.setActiveCollection(c);
+                  app.onNavigate('collection');
+                }}
+                wishlistIds={app.wishlistIds}
+                onToggleWishlist={app.handleToggleWishlist}
+                onAddToCart={app.addToCart}
+                t={app.t}
+                locale={app.locale}
+                isLoading={app.isLoading}
+                selectedGender={selectedGender}
+              />
+            </Suspense>
             <Footer
               t={app.t}
               currentLocale={app.locale}
@@ -209,48 +211,70 @@ export function AppLayout(props: {
         )}
 
         {app.currentView === 'product' && app.activeProduct && (
-          <Suspense fallback={<LoadingFallback />}>
-            <ProductDetail
-              product={app.activeProduct}
-              coupons={app.coupons}
-              userMode={app.userMode}
-              onAddToCart={app.addToCart}
-              onBack={() => app.onNavigate('home', 'collection')}
-              isWishlisted={app.wishlistIds.includes(app.activeProduct.id)}
-              onToggleWishlist={() => app.handleToggleWishlist(app.activeProduct!.id)}
+          <>
+            <Suspense fallback={<LoadingFallback />}>
+              <ProductDetail
+                product={app.activeProduct}
+                coupons={app.coupons}
+                userMode={app.userMode}
+                onAddToCart={app.addToCart}
+                onBack={() => app.onNavigate('home', 'collection')}
+                isWishlisted={app.wishlistIds.includes(app.activeProduct.id)}
+                onToggleWishlist={() => app.handleToggleWishlist(app.activeProduct!.id)}
+                t={app.t}
+                locale={app.locale}
+                currentUser={app.currentUser}
+                userOrders={app.userOrders}
+                onShowToast={app.showToast}
+                sizeGuides={app.sizeGuides}
+                products={app.products}
+                categories={app.categories}
+                onSelectProduct={(p) => {
+                  app.setActiveProduct(p);
+                  app.onNavigate('product', undefined, p);
+                }}
+                wishlistIds={app.wishlistIds}
+                onToggleWishlistProduct={app.handleToggleWishlist}
+              />
+            </Suspense>
+            <Footer
               t={app.t}
-              locale={app.locale}
-              currentUser={app.currentUser}
-              userOrders={app.userOrders}
-              onShowToast={app.showToast}
-              sizeGuides={app.sizeGuides}
-              products={app.products}
-              categories={app.categories}
-              onSelectProduct={(p) => {
-                app.setActiveProduct(p);
-                app.onNavigate('product', undefined, p);
-              }}
-              wishlistIds={app.wishlistIds}
-              onToggleWishlistProduct={app.handleToggleWishlist}
+              currentLocale={app.locale}
+              onChangeLocale={app.setLocale}
+              storeConfig={app.storeConfig}
+              onOpenLegal={app.setLegalView}
+              onNavigate={app.onNavigate}
             />
-          </Suspense>
+          </>
         )}
 
         {app.currentView === 'collection' && app.activeCollection && (
-          <CollectionDetail
-            collection={app.activeCollection}
-            products={app.products}
-            categories={app.categories}
-            userMode={app.userMode}
-            onSelectProduct={(p) => {
-              app.setActiveProduct(p);
-              app.onNavigate('product', undefined, p);
-            }}
-            wishlistIds={app.wishlistIds}
-            onToggleWishlist={app.handleToggleWishlist}
-            onBack={() => app.onNavigate('home', 'collection')}
-            locale={app.locale}
-          />
+          <>
+            <Suspense fallback={<LoadingFallback />}>
+              <CollectionDetail
+                collection={app.activeCollection}
+                products={app.products}
+                categories={app.categories}
+                userMode={app.userMode}
+                onSelectProduct={(p) => {
+                  app.setActiveProduct(p);
+                  app.onNavigate('product', undefined, p);
+                }}
+                wishlistIds={app.wishlistIds}
+                onToggleWishlist={app.handleToggleWishlist}
+                onBack={() => app.onNavigate('home', 'collection')}
+                locale={app.locale}
+              />
+            </Suspense>
+            <Footer
+              t={app.t}
+              currentLocale={app.locale}
+              onChangeLocale={app.setLocale}
+              storeConfig={app.storeConfig}
+              onOpenLegal={app.setLegalView}
+              onNavigate={app.onNavigate}
+            />
+          </>
         )}
 
         {app.currentView === 'checkout' && (
@@ -298,6 +322,35 @@ export function AppLayout(props: {
               onNavigate={app.onNavigate}
             />
           </Suspense>
+        )}
+
+        {app.currentView === 'search-results' && app.searchSlug && (
+          <>
+            <Suspense fallback={<LoadingFallback />}>
+              <SearchResultsPage
+                products={app.products}
+                searchSlug={app.searchSlug}
+                locale={app.locale}
+                t={app.t}
+                userMode={app.userMode}
+                onSelectProduct={(p) => {
+                  app.setActiveProduct(p);
+                  app.onNavigate('product', undefined, p);
+                }}
+                wishlistIds={app.wishlistIds}
+                onToggleWishlist={app.handleToggleWishlist}
+                onBack={() => app.onNavigate('home')}
+              />
+            </Suspense>
+            <Footer
+              t={app.t}
+              currentLocale={app.locale}
+              onChangeLocale={app.setLocale}
+              storeConfig={app.storeConfig}
+              onOpenLegal={app.setLegalView}
+              onNavigate={app.onNavigate}
+            />
+          </>
         )}
       </main>
 
@@ -411,14 +464,16 @@ export function AppLayout(props: {
 
       <CouponsDrawer isOpen={app.isCouponsOpen} onClose={() => app.setIsCouponsOpen(false)} t={app.t} />
 
-      <ChatDrawer
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        onSelectProduct={handleChatSelectProduct}
-        onAddToCart={app.addToCart}
-        locale={app.locale}
-        userId={app.currentUser?.id}
-      />
+      <Suspense fallback={null}>
+        <ChatDrawer
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          onSelectProduct={handleChatSelectProduct}
+          onAddToCart={app.addToCart}
+          locale={app.locale}
+          userId={app.currentUser?.id}
+        />
+      </Suspense>
     </div>
   );
 }

@@ -25,7 +25,8 @@ const CATEGORY_ICONS: { name: string; icon: LucideIcon; label: string }[] = [
   { name: 'Ribbon', icon: Ribbon, label: 'Laços' },
 ];
 import { Locale } from '../../i18n';
-import { ProductVariant, Category, PricingScenario, Collection, Product, GlobalFinancialSettings, UserMode, Asset, SizeGuide, Supplier } from '../../types';
+import { ProductVariant, Category, PricingScenario, Collection, Product, GlobalFinancialSettings, UserMode, Asset, SizeGuide } from '../../types';
+import { Supplier } from '../../types/suppliers';
 import { Gender } from '../../constants/enums';
 import { supabase } from '../../utils/supabase';
 import { formatCurrency } from '../../utils/currency';

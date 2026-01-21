@@ -189,15 +189,20 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   // Helper to calculate discounted price
   const getDisplayPrice = (product: Product, originalPrice: number) => {
     const activeCoupon = coupons.find(c => c.product_ids?.includes(product.id));
-    if (!activeCoupon) return { original: originalPrice, final: originalPrice, hasDiscount: false };
+    if (!activeCoupon) return { original: originalPrice, final: originalPrice, hasDiscount: false, discountDisplay: '' };
 
     let final = originalPrice;
+    let discountDisplay = '';
+
     if (activeCoupon.discount_type === 'percentage') {
         final = originalPrice * (1 - activeCoupon.discount_value / 100);
+        discountDisplay = `${activeCoupon.discount_value}%`;
     } else {
         final = Math.max(0, originalPrice - activeCoupon.discount_value);
+        discountDisplay = `R$${activeCoupon.discount_value}`;
     }
-    return { original: originalPrice, final, hasDiscount: true, code: activeCoupon.code };
+
+    return { original: originalPrice, final, hasDiscount: true, code: activeCoupon.code, discountDisplay };
   };
 
   // Count active filters for badge
@@ -319,8 +324,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       )}
 
       {/* Main Content Area - Desktop Sidebar + Products */}
-      <div className="px-6 md:px-12">
-        <div className="flex gap-8">
+      <div className="">
+        <div className="flex">
           {/* Desktop: Sidebar */}
           {!isMobile && (
             <FilterSidebar
@@ -348,7 +353,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           {/* Product Grid */}
           <div className="flex-1 min-w-0">
             {/* Results Count */}
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex items-center justify-between px-6 md:px-12">
               <p className="text-[11px] text-neutral-500 uppercase tracking-wider font-medium">
                 {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? 'produto' : 'produtos'}
               </p>
@@ -363,48 +368,51 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             </div>
 
             {currentProducts.length === 0 && !isLoading ? (
-              <div className="py-20 text-center flex flex-col items-center">
+              <div className="py-20 text-center flex flex-col items-center px-6">
                 <p className="text-[10px] font-black uppercase tracking-widest text-neutral-300">{t('grid.noItems')}</p>
               </div>
             ) : (
-              <div className={`grid gap-x-4 gap-y-6 ${
+              <div className={`grid ${
                 isFiltersOpen && !isMobile
-                  ? 'grid-cols-2 lg:grid-cols-3'
+                  ? 'grid-cols-3'
                   : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
               }`}>
                 {!isLoading && currentProducts.map(p => {
                     const mainVariant = p.variants?.[0];
                     const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
-                    const { original, final, hasDiscount, code } = getDisplayPrice(p, rawPrice);
+                    const { original, final, hasDiscount, code, discountDisplay } = getDisplayPrice(p, rawPrice);
                     const displayImg = p.default_image_url || p.base_images[0];
                     const isWishlisted = wishlistIds.includes(p.id);
                     const colors = getProductColors(p);
                     const hasMultipleVariants = (p.variants?.length || 0) > 1;
 
                     return (
-                      <div key={p.id} onClick={() => onSelectProduct(p)} className="cursor-pointer group flex flex-col relative animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        <div className="relative aspect-[3/4] overflow-hidden bg-neutral-50 mb-3 shadow-sm border border-neutral-100 rounded-2xl md:rounded-3xl">
-                          <img src={displayImg} alt={getLoc(p.name)} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                      <div key={p.id} onClick={() => onSelectProduct(p)} className="cursor-pointer group flex flex-col relative border border-neutral-200 hover:border-neutral-300 transition-colors">
+                        <div className="relative aspect-square overflow-hidden bg-neutral-50">
+                          <img src={displayImg} alt={getLoc(p.name)} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
 
+                          {/* Discount Badge - Domino Style */}
                           {hasDiscount && (
-                              <div className="absolute top-3 left-3 bg-black text-white px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg z-10">
-                                  <Tag className="w-2.5 h-2.5" />
-                                  <span className="text-[8px] font-black uppercase tracking-widest">{code}</span>
+                            <div className="absolute top-2 left-2 flex items-center shadow-lg z-10 rounded overflow-hidden">
+                              <div className="bg-white text-black px-2 py-1 flex items-center">
+                                <span className="text-[11px] font-black tracking-tight">{discountDisplay}</span>
                               </div>
+                              <div className="bg-black text-white px-2 py-1">
+                                <span className="text-[11px] font-black tracking-tight">OFF</span>
+                              </div>
+                            </div>
                           )}
 
-                          {/* Action Buttons */}
-                          <div className="absolute top-3 right-3 flex flex-col gap-2">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id); }}
-                              aria-label="Toggle wishlist"
-                              className={`p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm transition-all transform hover:scale-110 active:scale-90 ${isWishlisted ? 'text-red-500' : 'text-neutral-400 hover:text-neutral-900'}`}
-                            >
-                              <Heart className="w-4 h-4" fill={isWishlisted ? "currentColor" : "none"} />
-                            </button>
-                          </div>
+                          {/* Wishlist Button */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id); }}
+                            aria-label="Toggle wishlist"
+                            className={`absolute top-2 right-2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm transition-all ${isWishlisted ? 'text-red-500' : 'text-neutral-400 hover:text-neutral-900'}`}
+                          >
+                            <Heart className="w-3.5 h-3.5" fill={isWishlisted ? "currentColor" : "none"} />
+                          </button>
 
-                          {/* Quick Add Button */}
+                          {/* Quick Add Button with Text Animation */}
                           {onAddToCart && (
                             <button
                               onClick={(e) => {
@@ -412,7 +420,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                                 if (hasMultipleVariants) {
                                   setQuickAddProduct(p);
                                 } else if (mainVariant) {
-                                  // Add directly if only one variant
                                   onAddToCart({
                                     variant_id: mainVariant.id,
                                     product_id: p.id,
@@ -428,49 +435,51 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                                   });
                                 }
                               }}
-                              aria-label="Adicionar ao carrinho"
-                              className="absolute bottom-3 right-3 p-2.5 bg-black text-white rounded-full shadow-lg transition-all transform hover:scale-110 active:scale-90 opacity-0 group-hover:opacity-100"
+                              aria-label={t('product.addToCart')}
+                              className="absolute bottom-2 right-2 flex items-center gap-2 bg-black text-white rounded-full shadow-lg transition-all duration-300 ease-out opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 overflow-hidden whitespace-nowrap p-2.5 group-hover:pr-4 hover:scale-105 active:scale-95"
                             >
-                              <ShoppingBag className="w-4 h-4" />
+                              <ShoppingBag className="w-4 h-4 flex-shrink-0" />
+                              <span className="text-[11px] font-medium uppercase tracking-wider max-w-0 group-hover:max-w-[200px] transition-all duration-300 ease-out opacity-0 group-hover:opacity-100">
+                                {t('product.addToCart')}
+                              </span>
                             </button>
                           )}
                         </div>
 
                         {/* Product Info */}
-                        <div className="space-y-1.5">
-                          {/* Color Swatches - Above title */}
+                        <div className="p-3 space-y-1">
+                          <h3 className="text-[11px] font-medium text-neutral-900 leading-tight truncate">{getLoc(p.name)}</h3>
+
+                          {/* Price */}
+                          <div className="flex items-center gap-2">
+                            {hasDiscount && (
+                              <span className="text-[10px] text-neutral-400 line-through">
+                                {formatCurrency(original, locale)}
+                              </span>
+                            )}
+                            <span className={`text-[12px] font-semibold ${hasDiscount ? 'text-red-600' : 'text-neutral-900'}`}>
+                              {formatCurrency(final, locale)}
+                            </span>
+                          </div>
+
+                          {/* Color Swatches - At bottom */}
                           {colors.length > 0 && (
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-0.5 pt-0.5">
                               {colors.slice(0, 5).map((color) => (
                                 <div
                                   key={color.hex}
-                                  className="w-3.5 h-3.5 rounded-full border border-neutral-200 shadow-sm"
+                                  className="w-2 h-2 rounded-full border border-neutral-300"
                                   style={{ backgroundColor: color.hex }}
                                   title={getLoc(color.name)}
                                 />
                               ))}
                               {colors.length > 5 && (
-                                <span className="text-[9px] text-neutral-400 font-medium ml-0.5">
+                                <span className="text-[8px] text-neutral-500 font-medium ml-0.5">
                                   +{colors.length - 5}
                                 </span>
                               )}
                             </div>
                           )}
-                          <div className="flex justify-between items-start gap-2">
-                            <div className="flex flex-col min-w-0 flex-1">
-                              <h3 className="text-[11px] font-bold uppercase tracking-wider text-neutral-900 leading-tight truncate">{getLoc(p.name)}</h3>
-                              <p className="text-[10px] text-neutral-400 font-medium uppercase tracking-wider truncate">{getLoc(categories.find(c => c.id === p.category_id)?.name)}</p>
-                            </div>
-                            <div className="flex flex-col items-end flex-shrink-0">
-                              {hasDiscount && (
-                                  <span className="text-[10px] font-bold text-neutral-400 line-through decoration-red-400">{formatCurrency(original, locale)}</span>
-                              )}
-                              <span className={`text-[12px] font-black tracking-tight ${hasDiscount ? 'text-red-500' : 'text-neutral-900'}`}>
-                                  {formatCurrency(final, locale)}
-                              </span>
-                            </div>
-                          </div>
-
                         </div>
                       </div>
                     );

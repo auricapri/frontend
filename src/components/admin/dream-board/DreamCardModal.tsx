@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Trash2, GitBranch, Sparkles, ExternalLink, Loader2, ImagePlus, Clock, AlertTriangle, RotateCcw, Download, ChevronDown } from 'lucide-react';
 import { Node, Edge } from 'reactflow';
-import { DreamCard, Category, Collection, Asset, LocalizedText, Product } from '../../../types';
+import { Category, Collection, Asset, LocalizedText, Product } from '../../../types';
+import { DreamCard } from '../../../types/dream';
 import { Locale } from '../../../i18n';
 import { DreamApi } from '../../../api/dream.api';
 import DiagramEditor from './DiagramEditor';

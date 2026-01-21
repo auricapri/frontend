@@ -109,11 +109,11 @@ export function CreditCardPreview({
 
   return (
     <div
-      className="perspective-1000 cursor-pointer mb-6"
+      className="perspective-1000 cursor-pointer mb-4 md:mb-6"
       onClick={() => setFlipped(!flipped)}
     >
       <div
-        className={`relative w-full max-w-[380px] mx-auto aspect-[1.586/1] transition-transform duration-700 transform-style-3d ${
+        className={`relative w-full max-w-[280px] sm:max-w-[340px] md:max-w-[380px] mx-auto aspect-[1.586/1] transition-transform duration-700 transform-style-3d ${
           flipped ? 'rotate-y-180' : ''
         }`}
         style={{
@@ -123,7 +123,7 @@ export function CreditCardPreview({
       >
         {/* Frente do cartão */}
         <div
-          className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${color} p-6 flex flex-col justify-between shadow-2xl backface-hidden`}
+          className={`absolute inset-0 rounded-2xl md:rounded-3xl bg-gradient-to-br ${color} p-4 md:p-6 flex flex-col justify-between shadow-2xl backface-hidden`}
           style={{ backfaceVisibility: 'hidden' }}
         >
           {/* Topo */}
@@ -147,25 +147,25 @@ export function CreditCardPreview({
 
           {/* Número do cartão */}
           <div className="space-y-4">
-            <div className="text-xl md:text-2xl font-mono text-white tracking-[0.2em] drop-shadow-lg">
+            <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-mono text-white tracking-[0.15em] md:tracking-[0.2em] drop-shadow-lg">
               {displayNumber}
             </div>
 
             {/* Nome e Validade */}
             <div className="flex items-end justify-between">
               <div>
-                <span className="text-[8px] uppercase tracking-widest text-white/40 block mb-1">
+                <span className="text-[7px] md:text-[8px] uppercase tracking-widest text-white/40 block mb-1">
                   Titular do Cartão
                 </span>
-                <span className="text-sm font-bold text-white uppercase tracking-wider">
+                <span className="text-xs md:text-sm font-bold text-white uppercase tracking-wider">
                   {displayName}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-[8px] uppercase tracking-widest text-white/40 block mb-1">
+                <span className="text-[7px] md:text-[8px] uppercase tracking-widest text-white/40 block mb-1">
                   Validade
                 </span>
-                <span className="text-sm font-mono text-white tracking-wider">
+                <span className="text-xs md:text-sm font-mono text-white tracking-wider">
                   {displayExpiry}
                 </span>
               </div>
@@ -175,7 +175,7 @@ export function CreditCardPreview({
 
         {/* Verso do cartão */}
         <div
-          className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${color} flex flex-col shadow-2xl`}
+          className={`absolute inset-0 rounded-2xl md:rounded-3xl bg-gradient-to-br ${color} flex flex-col shadow-2xl`}
           style={{
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)'

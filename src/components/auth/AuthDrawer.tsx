@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { X, Loader2, ShoppingBag, Mail, ArrowLeft, Check } from 'lucide-react';
 import { UserProfile as UserType } from '../../types';
 import { Locale } from '../../i18n';
 import { supabase } from '../../utils/supabase';
-import UserProfileView from './UserProfileView';
+import { LoadingFallback } from '../ui/LoadingFallback';
+
+const UserProfileView = React.lazy(() => import('./UserProfileView'));
 
 interface AuthDrawerProps {
   isOpen: boolean;
@@ -161,14 +163,16 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
         <div className="flex-1 overflow-hidden bg-white">
            {user ? (
              <div className="h-full flex flex-col">
-                <UserProfileView 
-                  user={user} 
-                  t={t} 
-                  locale={locale} 
-                  onUpdate={onLogin}
-                  onLogout={() => { onLogout(); onClose(); }}
-                  storeConfig={storeConfig}
-                />
+                <Suspense fallback={<LoadingFallback size="sm" message="Carregando perfil..." />}>
+                  <UserProfileView
+                    user={user}
+                    t={t}
+                    locale={locale}
+                    onUpdate={onLogin}
+                    onLogout={() => { onLogout(); onClose(); }}
+                    storeConfig={storeConfig}
+                  />
+                </Suspense>
              </div>
            ) : forgotPasswordMode ? (
              /* FORGOT PASSWORD MODE */

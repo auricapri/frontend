@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { UserProfile } from '../types';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { UserProfile, Order } from '../types';
 import { supabase } from '../utils/supabase';
 import { UsersApi } from '../api/users.api';
 import { AuthApi } from '../api/auth.api';
@@ -9,6 +9,8 @@ import { logger } from '../utils/logger';
 export const useAuth = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userOrders, setUserOrders] = useState<Order[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const usersApi = new UsersApi();
   const authApi = new AuthApi();
   const cartApi = useRef(new CartApi()).current;
@@ -59,6 +61,8 @@ export const useAuth = () => {
   }, []);
 
   useEffect(() => {
+    let isInitialLoad = true;
+
     const fetchProfile = async (user: { id: string; email?: string | null; user_metadata?: Record<string, any> }) => {
       try {
         const profile = await usersApi.getProfile(user.id);
@@ -79,26 +83,33 @@ export const useAuth = () => {
       }
     };
 
+    // Buscar sessão inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         fetchProfile(session.user as any);
       } else {
         setIsLoading(false);
       }
+      // Marca como carregado após processar sessão inicial
+      isInitialLoad = false;
     });
 
+    // Subscription só reage a mudanças APÓS o load inicial
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      // Evitar fetch duplicado durante o load inicial
+      if (isInitialLoad) return;
+
       if (session) {
         const userId = session.user.id;
         const previousUserId = previousUserIdRef.current;
-        
+
         // Se o usuário acabou de fazer login (mudou de null para um userId)
         if (!previousUserId && userId) {
           // Tentar fazer merge do carrinho anônimo com o carrinho do usuário
           try {
             const STORAGE_KEY = 'auricapri_cart_session_id';
             const sessionId = localStorage.getItem(STORAGE_KEY);
-            
+
             if (sessionId) {
               await cartApi.mergeCart(sessionId);
               // Limpar sessionId após merge bem-sucedido
@@ -111,7 +122,7 @@ export const useAuth = () => {
             // Não bloquear o login se o merge falhar
           }
         }
-        
+
         previousUserIdRef.current = userId;
         fetchProfile(session.user as any);
       } else {
@@ -123,6 +134,34 @@ export const useAuth = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserOrders = useCallback(async () => {
+    if (!currentUser) {
+      setUserOrders([]);
+      return;
+    }
+
+    setIsLoadingOrders(true);
+    try {
+      const { OrdersApi } = await import('../api/orders.api');
+      const ordersApi = new OrdersApi();
+      const orders = await ordersApi.getByUserId(currentUser.id);
+      setUserOrders(orders);
+    } catch (error) {
+      logger.error('Error fetching user orders', error, { context: 'useAuth' });
+      setUserOrders([]);
+    } finally {
+      setIsLoadingOrders(false);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchUserOrders();
+    } else {
+      setUserOrders([]);
+    }
+  }, [currentUser, fetchUserOrders]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -168,6 +207,9 @@ export const useAuth = () => {
   return {
     currentUser,
     isLoading,
+    userOrders,
+    isLoadingOrders,
+    refreshOrders: fetchUserOrders,
     signIn,
     signUp,
     signOut

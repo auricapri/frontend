@@ -115,7 +115,14 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
           </div>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5">
+          <div
+            className="flex-1 overflow-y-auto overscroll-contain px-5 py-5"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain',
+              touchAction: 'pan-y pinch-zoom'
+            }}
+          >
             {children}
           </div>
 

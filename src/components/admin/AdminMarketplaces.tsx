@@ -1994,9 +1994,32 @@ const ConnectModal: React.FC<{
   onSuccess: () => void;
 }> = ({ brand, providerId, onClose, onSuccess }) => {
   const [step, setStep] = useState<'credentials' | 'authorize'>('credentials');
-  const [credentials, setCredentials] = useState({ client_id: '', client_secret: '' });
+  const [credentials, setCredentials] = useState<Record<string, string>>({});
+  const [provider, setProvider] = useState<MarketplaceProvider | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load provider details to get required fields
+  useEffect(() => {
+    const loadProvider = async () => {
+      if (!providerId) return;
+      try {
+        const providerData = await marketplaceApi.getProvider(providerId);
+        setProvider(providerData);
+
+        // Initialize credentials with empty values for all required fields
+        const initialCredentials: Record<string, string> = {};
+        providerData.required_fields.fields.forEach(field => {
+          initialCredentials[field.key] = '';
+        });
+        setCredentials(initialCredentials);
+      } catch (err) {
+        logger.error('Failed to load provider', err);
+        setError('Falha ao carregar informações do provider.');
+      }
+    };
+    loadProvider();
+  }, [providerId]);
 
   const handleSave = async () => {
     if (!providerId) {
@@ -2056,39 +2079,45 @@ const ConnectModal: React.FC<{
         </div>
 
         <div className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Client ID (App ID)</label>
-            <input
-              type="text"
-              value={credentials.client_id}
-              onChange={(e) => setCredentials({ ...credentials, client_id: e.target.value })}
-              placeholder="Seu Client ID do Mercado Livre"
-              className="w-full px-4 py-3 border rounded-xl"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Client Secret</label>
-            <input
-              type="password"
-              value={credentials.client_secret}
-              onChange={(e) => setCredentials({ ...credentials, client_secret: e.target.value })}
-              placeholder="Seu Client Secret"
-              className="w-full px-4 py-3 border rounded-xl"
-            />
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-              <p className="text-sm text-red-700">{error}</p>
+          {!provider ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
             </div>
-          )}
+          ) : (
+            <>
+              {provider.required_fields.fields.map(field => (
+                <div key={field.key}>
+                  <label className="block text-sm font-medium mb-1">
+                    {field.label}
+                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                  </label>
+                  <input
+                    type={field.type === 'password' ? 'password' : 'text'}
+                    value={credentials[field.key] || ''}
+                    onChange={(e) => setCredentials({ ...credentials, [field.key]: e.target.value })}
+                    placeholder={field.help || field.label}
+                    className="w-full px-4 py-3 border rounded-xl"
+                    required={field.required}
+                  />
+                  {field.help && (
+                    <p className="text-xs text-neutral-500 mt-1">{field.help}</p>
+                  )}
+                </div>
+              ))}
 
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <p className="text-sm text-blue-700">
-              Após salvar, você será redirecionado para o {brand.name} para autorizar o acesso.
-            </p>
-          </div>
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <p className="text-sm text-blue-700">
+                  Após salvar, você será redirecionado para o {brand.name} para autorizar o acesso.
+                </p>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="px-6 py-4 border-t flex gap-3">
@@ -2097,7 +2126,13 @@ const ConnectModal: React.FC<{
           </button>
           <button
             onClick={handleSave}
-            disabled={isSaving || !credentials.client_id || !credentials.client_secret}
+            disabled={
+              isSaving ||
+              !provider ||
+              provider.required_fields.fields.some(field =>
+                field.required && !credentials[field.key]?.trim()
+              )
+            }
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium ${brand.bgColor} ${brand.textColor} disabled:opacity-50`}
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}

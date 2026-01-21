@@ -1,27 +1,21 @@
 import React, { Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
-import { NotFoundPage } from '../pages/NotFoundPage';
-import { ResetPasswordPage } from '../pages/ResetPasswordPage';
-import { AdminLoginPage } from '../pages/AdminLoginPage';
-import { DeliveryLoginPage } from '../pages/DeliveryLoginPage';
-import { AboutUs } from '../components/shared';
 import { type Order, type StoreConfig } from '../types';
 import { AppLayout } from './AppLayout';
-import { PrivacyPolicyPage } from '../pages/PrivacyPolicyPage';
-import { TermsPage } from '../pages/TermsPage';
+import { LoadingFallback } from '../components/ui';
 
+// Lazy load páginas para melhor performance
+const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+const ResetPasswordPage = React.lazy(() => import('../pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const AdminLoginPage = React.lazy(() => import('../pages/AdminLoginPage').then(m => ({ default: m.AdminLoginPage })));
+const DeliveryLoginPage = React.lazy(() => import('../pages/DeliveryLoginPage').then(m => ({ default: m.DeliveryLoginPage })));
+const PrivacyPolicyPage = React.lazy(() => import('../pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })));
+const TermsPage = React.lazy(() => import('../pages/TermsPage').then(m => ({ default: m.TermsPage })));
+const AboutUs = React.lazy(() => import('../components/shared/AboutUs'));
 const AdminDashboard = React.lazy(() => import('../components/admin/AdminDashboard'));
 const AdminDelivery = React.lazy(() => import('../components/admin/AdminDelivery'));
 const OrderReceipt = React.lazy(() => import('../components/orders/OrderReceipt'));
 const SharedWishlistPage = React.lazy(() => import('../pages/SharedWishlistPage'));
-
-function LoadingFallback() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
-    </div>
-  );
-}
+const SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').then(m => ({ default: m.SearchResultsPage })));
 
 export function AppRouter(props: {
   app: any;
@@ -35,23 +29,33 @@ export function AppRouter(props: {
   const { app, storeConfig, lastSuccessOrder, userOrders, onExitAdmin, onSignOut, onSetCurrentView } = props;
 
   if (app.currentView === '404') {
-    return <NotFoundPage locale={app.locale} onNavigate={app.onNavigate} t={app.t} />;
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <NotFoundPage locale={app.locale} onNavigate={app.onNavigate} t={app.t} />
+      </Suspense>
+    );
   }
 
   if (app.currentView === 'reset-password') {
-    return <ResetPasswordPage locale={app.locale} onNavigate={app.onNavigate} t={app.t} />;
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <ResetPasswordPage locale={app.locale} onNavigate={app.onNavigate} t={app.t} />
+      </Suspense>
+    );
   }
 
   if (app.currentView === 'admin-login') {
     return (
-      <AdminLoginPage
-        onLoginSuccess={() => {
-          onSetCurrentView('admin');
-          window.history.pushState({ view: 'admin' }, '', '/admin');
-        }}
-        t={app.t}
-        locale={app.locale}
-      />
+      <Suspense fallback={<LoadingFallback />}>
+        <AdminLoginPage
+          onLoginSuccess={() => {
+            onSetCurrentView('admin');
+            window.history.pushState({ view: 'admin' }, '', '/admin');
+          }}
+          t={app.t}
+          locale={app.locale}
+        />
+      </Suspense>
     );
   }
 
@@ -65,14 +69,16 @@ export function AppRouter(props: {
 
   if (app.currentView === 'delivery-login') {
     return (
-      <DeliveryLoginPage
-        onLoginSuccess={() => {
-          onSetCurrentView('delivery');
-          window.history.pushState({ view: 'delivery' }, '', '/admin/delivery');
-        }}
-        t={app.t}
-        locale={app.locale}
-      />
+      <Suspense fallback={<LoadingFallback />}>
+        <DeliveryLoginPage
+          onLoginSuccess={() => {
+            onSetCurrentView('delivery');
+            window.history.pushState({ view: 'delivery' }, '', '/admin/delivery');
+          }}
+          t={app.t}
+          locale={app.locale}
+        />
+      </Suspense>
     );
   }
 
@@ -117,15 +123,27 @@ export function AppRouter(props: {
   }
 
   if (app.currentView === 'about') {
-    return <AboutUs config={storeConfig} locale={app.locale} onBack={() => app.onNavigate('home')} />;
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <AboutUs config={storeConfig} locale={app.locale} onBack={() => app.onNavigate('home')} />
+      </Suspense>
+    );
   }
 
   if (app.currentView === 'privacy') {
-    return <PrivacyPolicyPage config={storeConfig} locale={app.locale} onBack={() => app.onNavigate('home')} />;
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <PrivacyPolicyPage config={storeConfig} locale={app.locale} onBack={() => app.onNavigate('home')} />
+      </Suspense>
+    );
   }
 
   if (app.currentView === 'terms') {
-    return <TermsPage config={storeConfig} locale={app.locale} onBack={() => app.onNavigate('home')} />;
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <TermsPage config={storeConfig} locale={app.locale} onBack={() => app.onNavigate('home')} />
+      </Suspense>
+    );
   }
 
   if (app.currentView === 'shared-wishlist') {

@@ -6,6 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Auricapri</title>
     <link rel="icon" type="image/png" href="/logo.png" />
+
+    <!-- Preconnect para fontes Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Fonte Inter para o splash e aplicação -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' crossorigin="anonymous" />
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js' crossorigin="anonymous"></script>
     <script>
@@ -51,10 +59,11 @@
       .scrollbar-track-transparent::-webkit-scrollbar-track { background: transparent; }
       
       /* Smooth scrolling for anchor links */
-      html { 
+      html {
         scroll-behavior: smooth;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       }
 
       /* High-end transitions */
@@ -79,6 +88,8 @@
         100% { opacity: 1; letter-spacing: 0.6em; transform: scale(1); filter: blur(0); }
       }
       .splash-logo {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-weight: 300;
         animation: logo-reveal 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
       #splash-screen {
@@ -216,6 +227,19 @@
         }
       }
     </style>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      // Wait for user consent
+      gtag('consent', 'default', {
+        'analytics_storage': 'denied'
+      });
+    </script>
   </head>
   <body class="bg-white text-gray-900 antialiased overflow-hidden">
     <script>

@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { Plus, AlertTriangle, Trash2, CheckSquare, Square, Store } from 'lucide-react';
-import { Product, Supplier } from '../../types';
+import { Product } from '../../types';
+import { Supplier } from '../../types/suppliers';
 import { Locale } from '../../i18n';
 
 interface AdminInventoryProps {

@@ -26,25 +26,29 @@ import {
 } from '../../types';
 import { OrderStatus } from '../../constants/enums';
 
-import AdminHealth from './AdminHealth';
-import AdminInventory from './AdminInventory';
-import AdminOrders from './AdminOrders';
-import AdminTaxonomy from './AdminTaxonomy';
-import AdminMarketing from './AdminMarketing';
-import AdminAssets from './AdminAssets';
-import AdminCoupons from './AdminCoupons';
-import AdminUsers from './AdminUsers';
-import AdminSystem from './AdminSystem';
-import AdminAboutUs from './AdminAboutUs';
-import AdminGuides from './AdminGuides';
-import AdminEditorModal from './AdminEditorModal';
-import AdminCouponEditor from './AdminCouponEditor';
-import AdminDreamBoard from './AdminDreamBoard';
-import AdminSuppliers from './AdminSuppliers';
-import AdminSupplierEditor from './AdminSupplierEditor';
-import AdminDelivery from './AdminDelivery';
-import AdminCampaignEditor from './AdminCampaignEditor';
-import AdminMarketplaces from './AdminMarketplaces';
+// Lazy load admin tabs para melhor performance
+const AdminHealth = React.lazy(() => import('./AdminHealth'));
+const AdminInventory = React.lazy(() => import('./AdminInventory'));
+const AdminOrders = React.lazy(() => import('./AdminOrders'));
+const AdminTaxonomy = React.lazy(() => import('./AdminTaxonomy'));
+const AdminMarketing = React.lazy(() => import('./AdminMarketing'));
+const AdminAssets = React.lazy(() => import('./AdminAssets'));
+const AdminCoupons = React.lazy(() => import('./AdminCoupons'));
+const AdminUsers = React.lazy(() => import('./AdminUsers'));
+const AdminSystem = React.lazy(() => import('./AdminSystem'));
+const AdminAboutUs = React.lazy(() => import('./AdminAboutUs'));
+const AdminGuides = React.lazy(() => import('./AdminGuides'));
+const AdminDreamBoard = React.lazy(() => import('./AdminDreamBoard'));
+const AdminSuppliers = React.lazy(() => import('./AdminSuppliers'));
+const AdminDelivery = React.lazy(() => import('./AdminDelivery'));
+const AdminMarketplaces = React.lazy(() => import('./AdminMarketplaces'));
+
+// Modals/Editors podem ser lazy loaded também
+const AdminEditorModal = React.lazy(() => import('./AdminEditorModal'));
+const AdminCouponEditor = React.lazy(() => import('./AdminCouponEditor'));
+const AdminSupplierEditor = React.lazy(() => import('./AdminSupplierEditor'));
+const AdminCampaignEditor = React.lazy(() => import('./AdminCampaignEditor'));
+
 import { Campaign } from '../../api/marketing.api';
 
 interface AdminDashboardProps {
@@ -558,7 +562,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
             </div>
          ) : (
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 md:p-12 min-h-0">
-               {activeTab === 'health' && (
+               <React.Suspense fallback={
+                  <div className="flex items-center justify-center min-h-[400px]">
+                     <Loader2 className="w-8 h-8 animate-spin text-gray-600" />
+                  </div>
+               }>
+                  {activeTab === 'health' && (
                  <AdminHealth 
                    products={products} 
                    assets={assets} 
@@ -700,104 +709,113 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                )}
                {activeTab === 'users' && <AdminUsers users={users} />}
                {activeTab === 'system' && (
-                  <AdminSystem 
-                    config={config} 
-                    onChange={setConfig} 
-                    onSave={handleSystemSave} 
-                    isLoading={false} 
-                    editLocale={editLocale} 
-                    onLocaleChange={setEditLocale} 
+                  <AdminSystem
+                    config={config}
+                    onChange={setConfig}
+                    onSave={handleSystemSave}
+                    isLoading={false}
+                    editLocale={editLocale}
+                    onLocaleChange={setEditLocale}
                   />
                )}
+               </React.Suspense>
             </div>
          )}
       </main>
 
       {/* Modals */}
       {editingItem && (
-         <AdminEditorModal 
-           item={{ ...editingItem, editLocale: editLocale }} 
-           categories={categories} 
-           collections={collections} 
-           products={products} 
-           assets={assets} 
-           sizeGuides={sizeGuides}
-           suppliers={suppliers}
-           globalConfig={config.financial_settings}
-           onClose={() => setEditingItem(null)} 
-           onSave={handleSaveItem} 
-           onUpdateData={(newData) => setEditingItem({ ...editingItem, data: newData })}
-           onLocaleChange={setEditLocale} 
-           onCloneLocale={() => {}}
-           onDelete={(_id) => requestDeleteTaxonomy()}
-           t={t}
-           locale={locale}
-         />
+         <React.Suspense fallback={<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>}>
+            <AdminEditorModal
+              item={{ ...editingItem, editLocale: editLocale }}
+              categories={categories}
+              collections={collections}
+              products={products}
+              assets={assets}
+              sizeGuides={sizeGuides}
+              suppliers={suppliers}
+              globalConfig={config.financial_settings}
+              onClose={() => setEditingItem(null)}
+              onSave={handleSaveItem}
+              onUpdateData={(newData) => setEditingItem({ ...editingItem, data: newData })}
+              onLocaleChange={setEditLocale}
+              onCloneLocale={() => {}}
+              onDelete={(_id) => requestDeleteTaxonomy()}
+              t={t}
+              locale={locale}
+            />
+         </React.Suspense>
       )}
       
       {editingCoupon && (
-         <AdminCouponEditor 
-           coupon={editingCoupon} 
-           products={products} 
-           financials={config.financial_settings || {} as GlobalFinancialSettings}
-           onClose={() => setEditingCoupon(null)} 
-           onSave={handleSaveCoupon} 
-           onDelete={handleDeleteCoupon}
-           locale={locale} 
-         />
+         <React.Suspense fallback={<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>}>
+            <AdminCouponEditor
+              coupon={editingCoupon}
+              products={products}
+              financials={config.financial_settings || {} as GlobalFinancialSettings}
+              onClose={() => setEditingCoupon(null)}
+              onSave={handleSaveCoupon}
+              onDelete={handleDeleteCoupon}
+              locale={locale}
+            />
+         </React.Suspense>
       )}
 
       {showSupplierEditor && (
-         <AdminSupplierEditor
-           supplier={editingSupplier}
-           onClose={() => {
-             setShowSupplierEditor(false);
-             setEditingSupplier(null);
-           }}
-           onSave={async (supplierData) => {
-             try {
-               if (editingSupplier?.id) {
-                 await suppliersApi.update(editingSupplier.id, supplierData);
-               } else {
-                 await suppliersApi.create(supplierData);
-               }
-               await fetchData();
-               setShowSupplierEditor(false);
-               setEditingSupplier(null);
-             } catch (error: unknown) {
-               console.error('[AdminDashboard] Error saving supplier:', error);
-               throw error;
-             }
-           }}
-         />
+         <React.Suspense fallback={<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>}>
+            <AdminSupplierEditor
+              supplier={editingSupplier}
+              onClose={() => {
+                setShowSupplierEditor(false);
+                setEditingSupplier(null);
+              }}
+              onSave={async (supplierData) => {
+                try {
+                  if (editingSupplier?.id) {
+                    await suppliersApi.update(editingSupplier.id, supplierData);
+                  } else {
+                    await suppliersApi.create(supplierData);
+                  }
+                  await fetchData();
+                  setShowSupplierEditor(false);
+                  setEditingSupplier(null);
+                } catch (error: unknown) {
+                  console.error('[AdminDashboard] Error saving supplier:', error);
+                  throw error;
+                }
+              }}
+            />
+         </React.Suspense>
       )}
 
       {showCampaignEditor && (
-        <AdminCampaignEditor
-          campaign={editingCampaign}
-          onClose={() => {
-            setShowCampaignEditor(false);
-            setEditingCampaign(null);
-          }}
-          onSave={async (campaignData) => {
-            await handleSaveCampaign(campaignData);
-            // After saving, we need to refresh the campaigns in AdminMarketing.
-            // Since AdminMarketing is a child and has its own state, 
-            // the easiest way is to let the user see the update after save.
-            // If AdminMarketing was using props for campaigns, fetchData would work.
-            // But since it fetches on tab switch, we might need a refresh prop.
-          }}
-          onDelete={async (id) => {
-            try {
-              await marketingApi.deleteCampaign(id);
-              fetchData();
-            } catch (error: unknown) {
-              const message = error instanceof Error ? error.message : 'Erro ao excluir campanha';
-              alert(message);
-              throw error;
-            }
-          }}
-        />
+         <React.Suspense fallback={<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>}>
+            <AdminCampaignEditor
+              campaign={editingCampaign}
+              onClose={() => {
+                setShowCampaignEditor(false);
+                setEditingCampaign(null);
+              }}
+              onSave={async (campaignData) => {
+                await handleSaveCampaign(campaignData);
+                // After saving, we need to refresh the campaigns in AdminMarketing.
+                // Since AdminMarketing is a child and has its own state,
+                // the easiest way is to let the user see the update after save.
+                // If AdminMarketing was using props for campaigns, fetchData would work.
+                // But since it fetches on tab switch, we might need a refresh prop.
+              }}
+              onDelete={async (id) => {
+                try {
+                  await marketingApi.deleteCampaign(id);
+                  fetchData();
+                } catch (error: unknown) {
+                  const message = error instanceof Error ? error.message : 'Erro ao excluir campanha';
+                  alert(message);
+                  throw error;
+                }
+              }}
+            />
+         </React.Suspense>
       )}
 
       {/* Delete Confirmation Modal */}

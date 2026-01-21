@@ -9,12 +9,33 @@ export const translations = {
       featured: 'Featured',
       accessories: 'Accessories',
       editorial: 'Editorial',
-      myAccount: 'Account',
+      myAccount: 'My Account',
+      myOrders: 'My Orders',
       coupons: 'Offers',
       wishlist: 'Wishlist',
+      logout: 'Logout',
+      loginRegister: 'Login / Register',
       retail: 'Retail',
       wholesale: 'Wholesale',
       back: 'Back'
+    },
+    search: {
+      title: 'Search',
+      placeholder: 'Type to search products...',
+      emptyState: 'Type something to search',
+      noResults: 'No results found',
+      tryDifferent: 'Try searching with different words',
+      resultSingular: 'product found',
+      resultPlural: 'products found',
+      resultsTitle: 'Results',
+      sortRelevance: 'Relevance',
+      sortPriceAsc: 'Lowest Price',
+      sortPriceDesc: 'Highest Price',
+      sortNameAsc: 'Name (A-Z)',
+      priceRange: 'Price',
+      minPrice: 'Min',
+      maxPrice: 'Max',
+      clearFilters: 'Clear filters'
     },
     hero: {
       subtitle: 'Summer 2025',
@@ -44,7 +65,9 @@ export const translations = {
       filtersApplied: '{count} products found',
       swipeToExpand: 'Swipe up to expand filters',
       showFilters: 'Show Filters',
-      hideFilters: 'Hide Filters'
+      hideFilters: 'Hide Filters',
+      previousPage: 'Previous page',
+      nextPage: 'Next page'
     },
     product: {
       color: 'Color',
@@ -127,6 +150,38 @@ export const translations = {
       male: 'Men',
       unisex: 'Unisex'
     },
+    seo: {
+      site: {
+        title: 'Auricapri | Women\'s Fashion Online',
+        description: 'Women\'s fashion with fast delivery. Dresses, sets, blouses and more. Interest-free installments.',
+        keywords: 'women\'s fashion, women\'s clothing online, dresses, women\'s sets, clothing store',
+      },
+      home: {
+        title: 'Auricapri | Women\'s Fashion - Fast Delivery',
+        description: 'Discover quality women\'s fashion: dresses, sets, blouses and accessories. Fast delivery. Interest-free installments.',
+        keywords: 'women\'s fashion, fast delivery women\'s clothing, online dresses, women\'s clothing store',
+      },
+      product: {
+        titleTemplate: '{productName} | Auricapri',
+        descriptionTemplate: '{productName}. Fast delivery. Interest-free installments. {category}.',
+        keywords: 'buy {category} online, women\'s {category}, women\'s fashion',
+      },
+      collection: {
+        titleTemplate: '{collectionName} | Auricapri Women\'s Fashion',
+        descriptionTemplate: '{collectionName} Collection. Selected pieces with fast delivery. Interest-free installments.',
+        keywords: '{collectionName} collection, women\'s fashion {season}, trendy clothes',
+      },
+      checkout: {
+        title: 'Checkout | Auricapri',
+        description: 'Complete your purchase securely. Interest-free installments and fast delivery.',
+        keywords: 'checkout, secure payment',
+      },
+      account: {
+        title: 'My Account | Auricapri',
+        description: 'Manage your orders, data and purchase history.',
+        keywords: 'my account, orders, purchase history',
+      },
+    },
     footer: {
       tagline: 'Timeless elegance for the global woman. V16 Production Edition.',
       shop: 'Shop',
@@ -145,12 +200,33 @@ export const translations = {
       featured: 'Destaques',
       accessories: 'Acessórios',
       editorial: 'Editorial',
-      myAccount: 'Conta',
+      myAccount: 'Minha Conta',
+      myOrders: 'Meus Pedidos',
       coupons: 'Ofertas',
-      wishlist: 'Favoritos',
+      wishlist: 'Lista de Desejos',
+      logout: 'Sair',
+      loginRegister: 'Entrar / Cadastrar',
       retail: 'Varejo',
       wholesale: 'Atacado',
       back: 'Voltar'
+    },
+    search: {
+      title: 'Buscar',
+      placeholder: 'Digite para buscar produtos...',
+      emptyState: 'Digite algo para buscar',
+      noResults: 'Nenhum resultado encontrado',
+      tryDifferent: 'Tente buscar com outras palavras',
+      resultSingular: 'produto encontrado',
+      resultPlural: 'produtos encontrados',
+      resultsTitle: 'Resultados',
+      sortRelevance: 'Relevância',
+      sortPriceAsc: 'Menor Preço',
+      sortPriceDesc: 'Maior Preço',
+      sortNameAsc: 'Nome (A-Z)',
+      priceRange: 'Preço',
+      minPrice: 'Mín',
+      maxPrice: 'Máx',
+      clearFilters: 'Limpar filtros'
     },
     hero: {
       subtitle: 'Verão 2025',
@@ -180,7 +256,9 @@ export const translations = {
       filtersApplied: '{count} produtos encontrados',
       swipeToExpand: 'Deslize para expandir filtros',
       showFilters: 'Exibir Filtros',
-      hideFilters: 'Ocultar Filtros'
+      hideFilters: 'Ocultar Filtros',
+      previousPage: 'Página anterior',
+      nextPage: 'Próxima página'
     },
     product: {
       color: 'Cor',
@@ -263,6 +341,38 @@ export const translations = {
       male: 'Masculino',
       unisex: 'Unissex'
     },
+    seo: {
+      site: {
+        title: 'Auricapri | Moda Feminina Online',
+        description: 'Moda feminina com entrega rápida. Vestidos, conjuntos, blusas e mais. Parcelamento sem juros.',
+        keywords: 'moda feminina, roupas femininas online, vestidos, conjuntos femininos, loja de roupas',
+      },
+      home: {
+        title: 'Auricapri | Moda Feminina - Entrega Rápida SP',
+        description: 'Descubra moda feminina de qualidade: vestidos, conjuntos, blusas e acessórios. Entrega rápida São Paulo. Parcelamento sem juros.',
+        keywords: 'moda feminina, roupas femininas entrega rápida, vestidos online, loja roupa feminina São Paulo',
+      },
+      product: {
+        titleTemplate: '{productName} | Auricapri',
+        descriptionTemplate: '{productName}. Entrega rápida. Parcelamento sem juros. {category}.',
+        keywords: 'comprar {category} online, {category} feminino, moda feminina',
+      },
+      collection: {
+        titleTemplate: '{collectionName} | Auricapri Moda Feminina',
+        descriptionTemplate: 'Coleção {collectionName}. Peças selecionadas com entrega rápida. Parcelamento sem juros.',
+        keywords: 'coleção {collectionName}, moda feminina {season}, roupas tendência',
+      },
+      checkout: {
+        title: 'Finalizar Compra | Auricapri',
+        description: 'Complete sua compra com segurança. Parcelamento sem juros e entrega rápida.',
+        keywords: 'finalizar compra, checkout seguro',
+      },
+      account: {
+        title: 'Minha Conta | Auricapri',
+        description: 'Gerencie seus pedidos, dados e histórico de compras.',
+        keywords: 'minha conta, pedidos, histórico compras',
+      },
+    },
     footer: {
       tagline: 'Elegância atemporal. Edição de Produção V16.',
       shop: 'Loja',
@@ -281,12 +391,33 @@ export const translations = {
       featured: 'Destacados',
       accessories: 'Accesorios',
       editorial: 'Editorial',
-      myAccount: 'Cuenta',
+      myAccount: 'Mi Cuenta',
+      myOrders: 'Mis Pedidos',
       coupons: 'Ofertas',
-      wishlist: 'Favoritos',
+      wishlist: 'Lista de Deseos',
+      logout: 'Salir',
+      loginRegister: 'Entrar / Registrarse',
       retail: 'Minorista',
       wholesale: 'Mayorista',
       back: 'Volver'
+    },
+    search: {
+      title: 'Buscar',
+      placeholder: 'Escribe para buscar productos...',
+      emptyState: 'Escribe algo para buscar',
+      noResults: 'No se encontraron resultados',
+      tryDifferent: 'Intenta buscar con otras palabras',
+      resultSingular: 'producto encontrado',
+      resultPlural: 'productos encontrados',
+      resultsTitle: 'Resultados',
+      sortRelevance: 'Relevancia',
+      sortPriceAsc: 'Precio Más Bajo',
+      sortPriceDesc: 'Precio Más Alto',
+      sortNameAsc: 'Nombre (A-Z)',
+      priceRange: 'Precio',
+      minPrice: 'Mín',
+      maxPrice: 'Máx',
+      clearFilters: 'Borrar filtros'
     },
     hero: {
       subtitle: 'Verano 2025',
@@ -399,6 +530,38 @@ export const translations = {
       male: 'Masculino',
       unisex: 'Unisex'
     },
+    seo: {
+      site: {
+        title: 'Auricapri | Moda Femenina Online',
+        description: 'Moda femenina con entrega rápida. Vestidos, conjuntos, blusas y más. Pago a plazos sin intereses.',
+        keywords: 'moda femenina, ropa femenina online, vestidos, conjuntos femeninos, tienda de ropa',
+      },
+      home: {
+        title: 'Auricapri | Moda Femenina - Entrega Rápida',
+        description: 'Descubre moda femenina de calidad: vestidos, conjuntos, blusas y accesorios. Entrega rápida. Pago a plazos sin intereses.',
+        keywords: 'moda femenina, ropa femenina entrega rápida, vestidos online, tienda ropa femenina',
+      },
+      product: {
+        titleTemplate: '{productName} | Auricapri',
+        descriptionTemplate: '{productName}. Entrega rápida. Pago a plazos sin intereses. {category}.',
+        keywords: 'comprar {category} online, {category} femenino, moda femenina',
+      },
+      collection: {
+        titleTemplate: '{collectionName} | Auricapri Moda Femenina',
+        descriptionTemplate: 'Colección {collectionName}. Piezas seleccionadas con entrega rápida. Pago a plazos sin intereses.',
+        keywords: 'colección {collectionName}, moda femenina {season}, ropa tendencia',
+      },
+      checkout: {
+        title: 'Finalizar Compra | Auricapri',
+        description: 'Complete su compra de forma segura. Pago a plazos sin intereses y entrega rápida.',
+        keywords: 'finalizar compra, pago seguro',
+      },
+      account: {
+        title: 'Mi Cuenta | Auricapri',
+        description: 'Gestiona tus pedidos, datos e historial de compras.',
+        keywords: 'mi cuenta, pedidos, historial de compras',
+      },
+    },
     footer: {
       tagline: 'Elegancia atemporal. Edición V16.',
       shop: 'Tienda',
@@ -417,12 +580,33 @@ export const translations = {
       featured: 'En Vedette',
       accessories: 'Accessoires',
       editorial: 'Éditorial',
-      myAccount: 'Compte',
+      myAccount: 'Mon Compte',
+      myOrders: 'Mes Commandes',
       coupons: 'Offres',
-      wishlist: 'Favoris',
+      wishlist: 'Liste de Souhaits',
+      logout: 'Déconnexion',
+      loginRegister: 'Se Connecter / S\'inscrire',
       retail: 'Détail',
       wholesale: 'Gros',
       back: 'Retour'
+    },
+    search: {
+      title: 'Rechercher',
+      placeholder: 'Tapez pour rechercher des produits...',
+      emptyState: 'Tapez quelque chose pour rechercher',
+      noResults: 'Aucun résultat trouvé',
+      tryDifferent: 'Essayez de rechercher avec d\'autres mots',
+      resultSingular: 'produit trouvé',
+      resultPlural: 'produits trouvés',
+      resultsTitle: 'Résultats',
+      sortRelevance: 'Pertinence',
+      sortPriceAsc: 'Prix le Plus Bas',
+      sortPriceDesc: 'Prix le Plus Élevé',
+      sortNameAsc: 'Nom (A-Z)',
+      priceRange: 'Prix',
+      minPrice: 'Min',
+      maxPrice: 'Max',
+      clearFilters: 'Effacer les filtres'
     },
     hero: {
       subtitle: 'Été 2025',
@@ -534,6 +718,38 @@ export const translations = {
       female: 'Femme',
       male: 'Homme',
       unisex: 'Unisexe'
+    },
+    seo: {
+      site: {
+        title: 'Auricapri | Mode Féminine En Ligne',
+        description: 'Mode féminine avec livraison rapide. Robes, ensembles, blouses et plus. Paiement échelonné sans intérêts.',
+        keywords: 'mode féminine, vêtements féminins en ligne, robes, ensembles féminins, magasin de vêtements',
+      },
+      home: {
+        title: 'Auricapri | Mode Féminine - Livraison Rapide',
+        description: 'Découvrez la mode féminine de qualité : robes, ensembles, blouses et accessoires. Livraison rapide. Paiement échelonné sans intérêts.',
+        keywords: 'mode féminine, vêtements féminins livraison rapide, robes en ligne, magasin vêtements féminins',
+      },
+      product: {
+        titleTemplate: '{productName} | Auricapri',
+        descriptionTemplate: '{productName}. Livraison rapide. Paiement échelonné sans intérêts. {category}.',
+        keywords: 'acheter {category} en ligne, {category} féminin, mode féminine',
+      },
+      collection: {
+        titleTemplate: '{collectionName} | Auricapri Mode Féminine',
+        descriptionTemplate: 'Collection {collectionName}. Pièces sélectionnées avec livraison rapide. Paiement échelonné sans intérêts.',
+        keywords: 'collection {collectionName}, mode féminine {season}, vêtements tendance',
+      },
+      checkout: {
+        title: 'Finaliser l\'Achat | Auricapri',
+        description: 'Complétez votre achat en toute sécurité. Paiement échelonné sans intérêts et livraison rapide.',
+        keywords: 'finaliser achat, paiement sécurisé',
+      },
+      account: {
+        title: 'Mon Compte | Auricapri',
+        description: 'Gérez vos commandes, données et historique d\'achats.',
+        keywords: 'mon compte, commandes, historique achats',
+      },
     },
     footer: {
       tagline: 'Élégance intemporelle. Édition V16.',

@@ -2,7 +2,8 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { MessageCircle, GitBranch, Sparkles, Image as ImageIcon } from 'lucide-react';
-import { DreamCard, Category, LocalizedText } from '../../../types';
+import { Category, LocalizedText } from '../../../types';
+import { DreamCard } from '../../../types/dream';
 import { Locale } from '../../../i18n';
 
 interface DreamCardComponentProps {

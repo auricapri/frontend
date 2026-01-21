@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger';
+import ReactGA from 'react-ga4';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 const PIXEL_URL = `${API_BASE_URL}/tracking/pixel.gif`;
@@ -127,6 +128,25 @@ export class TrackingService {
   private geoInFlight = false;
   private lastEventHash: string | null = null;
   private lastEventTs = 0;
+  private ga4Initialized = false;
+
+  constructor() {
+    // Initialize GA4 if Measurement ID is provided
+    const gaId = import.meta.env.VITE_GA4_MEASUREMENT_ID;
+    if (gaId && typeof gaId === 'string' && gaId.trim().length > 0) {
+      try {
+        ReactGA.initialize(gaId, {
+          gtagOptions: { send_page_view: false }, // We'll manually track page views
+        });
+        this.ga4Initialized = true;
+        logger.info('GA4 initialized with ID:', gaId);
+      } catch (error) {
+        logger.error('GA4 initialization failed:', error);
+      }
+    } else {
+      logger.warn('GA4 Measurement ID not found in environment variables');
+    }
+  }
 
   getConsent(): ConsentState {
     const raw = localStorage.getItem('tracking_consent');
@@ -148,6 +168,19 @@ export class TrackingService {
 
   setConsent(consent: ConsentState): void {
     localStorage.setItem('tracking_consent', JSON.stringify(consent));
+
+    // Update GA4 consent if initialized
+    if (this.ga4Initialized) {
+      try {
+        if (typeof gtag !== 'undefined') {
+          gtag('consent', 'update', {
+            analytics_storage: consent.analytics ? 'granted' : 'denied',
+          });
+        }
+      } catch (error) {
+        logger.warn('GA4 consent update failed:', error);
+      }
+    }
   }
 
   enqueueEvent(payload: Record<string, unknown>): void {
@@ -345,7 +378,22 @@ export class TrackingService {
   trackPageView(path: string, metadata?: Record<string, unknown>): void {
     if (this.lastTrackedPath === path) return;
     this.lastTrackedPath = path;
+
+    // Send to custom tracking (existing behavior)
     void this.trackEvent({ event: 'page_view', metadata: { path, ...(metadata ?? {}) } });
+
+    // Send to GA4 if initialized and consent given
+    if (this.ga4Initialized && this.getConsent().analytics) {
+      try {
+        ReactGA.send({
+          hitType: 'pageview',
+          page: path,
+          title: document.title,
+        });
+      } catch (error) {
+        logger.warn('GA4 pageview failed:', error);
+      }
+    }
   }
 
   // Desabilitado para reduzir requisições ao Supabase
@@ -373,7 +421,27 @@ export class TrackingService {
   }
 
   trackPurchase(orderId: string, total: number, items: Array<{ product_id: string; variant_id: string; quantity: number; price: number }>): void {
+    // Send to custom tracking (existing behavior)
     void this.trackEvent({ event: 'purchase', metadata: { orderId, total, items }, preferBeacon: true });
+
+    // Send to GA4 Enhanced Ecommerce if initialized and consent given
+    if (this.ga4Initialized && this.getConsent().analytics) {
+      try {
+        ReactGA.event('purchase', {
+          transaction_id: orderId,
+          value: total,
+          currency: 'BRL',
+          items: items.map((item) => ({
+            item_id: item.variant_id,
+            item_name: item.product_id,
+            price: item.price,
+            quantity: item.quantity,
+          })),
+        });
+      } catch (error) {
+        logger.warn('GA4 purchase event failed:', error);
+      }
+    }
   }
 }
 

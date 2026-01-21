@@ -3,6 +3,7 @@ import { MessageCircle } from 'lucide-react';
 import { Hero } from '../components/shared';
 import { ProductGrid } from '../components/product';
 import { Footer } from '../components/layout';
+import { SEOHead, websiteSchema } from '../components/seo';
 import { Product, Category, Collection, Banner, Coupon, UserMode } from '../types';
 import { Locale } from '../i18n';
 import { StoreConfig } from '../types';
@@ -48,6 +49,13 @@ export const HomePage: React.FC<HomePageProps> = ({
 }) => {
   return (
     <div className="min-h-full flex flex-col">
+      <SEOHead
+        title={t('seo.home.title')}
+        description={t('seo.home.description')}
+        keywords={t('seo.home.keywords')}
+        type="website"
+        schema={websiteSchema}
+      />
       <Hero 
         onNavigate={onNavigate as any} 
         t={t} 

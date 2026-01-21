@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, Store, Star, Trash2, Edit, MapPin, Phone, Mail, Globe } from 'lucide-react';
-import { Supplier } from '../../types';
+import { Supplier } from '../../types/suppliers';
 
 interface AdminSuppliersProps {
   suppliers: Supplier[];

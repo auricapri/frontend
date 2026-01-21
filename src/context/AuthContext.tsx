@@ -1,10 +1,13 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { UserProfile } from '../types';
+import { UserProfile, Order } from '../types';
 import { useAuth } from '../hooks/useAuth';
 
 interface AuthContextType {
   currentUser: UserProfile | null;
   isLoading: boolean;
+  userOrders: Order[];
+  isLoadingOrders: boolean;
+  refreshOrders: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<{ success: boolean; error?: string }>;
