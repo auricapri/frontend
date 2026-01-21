@@ -17,7 +17,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
-import { DreamBoard, DreamCard, Category, Asset, Collection, Product } from '../../../types';
+import { Category, Asset, Collection, Product } from '../../../types';
+import { DreamBoard, DreamCard } from '../../../types/dream';
 import { Locale } from '../../../i18n';
 import DreamCardComponent from './DreamCard';
 import DreamCardModal from './DreamCardModal';

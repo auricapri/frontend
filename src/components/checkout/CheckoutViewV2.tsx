@@ -1,13 +1,16 @@
 import React from 'react';
-import { ArrowLeft, CreditCard, MapPin, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, CreditCard, MapPin, ShieldCheck, Loader2 } from 'lucide-react';
 import { type AddressData, type CartItem, type InternalLogisticsInfo, type StoreConfig, type UserMode, type UserProfile } from '../../types';
 import { type Locale } from '../../i18n';
 import { type PaymentMethod } from '../../constants/enums';
 import { useCheckoutState } from './hooks/useCheckoutState';
-import { AddressStep } from './steps/AddressStep';
-import { PaymentStep } from './steps/PaymentStep';
-import { ReviewStep } from './steps/ReviewStep';
-import { CheckoutSidebar } from './CheckoutSidebar';
+
+// Lazy load checkout steps para melhor performance
+// AddressStep carrega mapas (Leaflet ~300KB), PaymentStep carrega Stripe (~200KB)
+const AddressStep = React.lazy(() => import('./steps/AddressStep').then(m => ({ default: m.AddressStep })));
+const PaymentStep = React.lazy(() => import('./steps/PaymentStep').then(m => ({ default: m.PaymentStep })));
+const ReviewStep = React.lazy(() => import('./steps/ReviewStep').then(m => ({ default: m.ReviewStep })));
+const CheckoutSidebar = React.lazy(() => import('./CheckoutSidebar').then(m => ({ default: m.CheckoutSidebar })));
 
 interface CheckoutViewProps {
   items: CartItem[];
@@ -75,12 +78,24 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
           <div className="lg:col-span-7 space-y-16">
-            {checkout.step === 1 && <AddressStep checkout={checkout} />}
-            {checkout.step === 2 && <PaymentStep checkout={checkout} />}
-            {checkout.step === 3 && <ReviewStep checkout={checkout} />}
+            <React.Suspense fallback={
+              <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 animate-spin text-gray-600" />
+              </div>
+            }>
+              {checkout.step === 1 && <AddressStep checkout={checkout} />}
+              {checkout.step === 2 && <PaymentStep checkout={checkout} />}
+              {checkout.step === 3 && <ReviewStep checkout={checkout} />}
+            </React.Suspense>
           </div>
 
-          <CheckoutSidebar checkout={checkout} />
+          <React.Suspense fallback={
+            <div className="lg:col-span-5 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+            </div>
+          }>
+            <CheckoutSidebar checkout={checkout} />
+          </React.Suspense>
         </div>
       </div>
     </div>

@@ -59,30 +59,84 @@ export default defineConfig(({ mode }) => {
           output: {
             manualChunks: (id) => {
               if (id.includes('node_modules')) {
-                // React and all React-dependent libraries together
+                // Separate ReactFlow (heavy ~450KB) for Dream Board
+                if (id.includes('reactflow') || id.includes('@reactflow')) {
+                  return 'vendor-reactflow';
+                }
+
+                // Separate Stripe for checkout payment step
+                if (id.includes('@stripe') || id.includes('stripe')) {
+                  return 'vendor-stripe';
+                }
+
+                // Separate Leaflet for checkout address step (maps)
+                if (id.includes('leaflet')) {
+                  return 'vendor-leaflet';
+                }
+
+                // React core and related state management
                 if (id.includes('react') ||
                     id.includes('react-dom') ||
                     id.includes('zustand') ||
                     id.includes('use-sync-external-store') ||
-                    id.includes('@dnd-kit') ||
-                    id.includes('reactflow') ||
-                    id.includes('@reactflow') ||
                     id.includes('@tanstack/react-query')) {
                   return 'vendor-react';
                 }
+
+                // UI libraries
                 if (id.includes('lucide-react')) {
                   return 'vendor-lucide';
                 }
+                if (id.includes('@dnd-kit')) {
+                  return 'vendor-dnd';
+                }
+
+                // Backend/API
                 if (id.includes('@supabase')) {
                   return 'vendor-supabase';
                 }
+
                 return 'vendor-other';
               }
 
-              if (id.includes('/pages/')) {
-                if (id.includes('HomePage') || id.includes('ProductPage') || id.includes('CollectionPage')) {
-                  return 'pages-main';
+              // Admin Dashboard - separate chunk per major tab
+              if (id.includes('/components/admin/')) {
+                if (id.includes('AdminDreamBoard') || id.includes('dream-board')) {
+                  return 'admin-dreamboard';
                 }
+                if (id.includes('AdminDashboard')) {
+                  return 'admin-dashboard';
+                }
+                return 'admin-other';
+              }
+
+              // Checkout - separate chunk per step
+              if (id.includes('/components/checkout/')) {
+                if (id.includes('AddressStep') || id.includes('MapPicker')) {
+                  return 'checkout-address';
+                }
+                if (id.includes('PaymentStep') || id.includes('PaymentForm')) {
+                  return 'checkout-payment';
+                }
+                return 'checkout-other';
+              }
+
+              // Product components
+              if (id.includes('/components/product/')) {
+                if (id.includes('ProductGrid')) {
+                  return 'product-grid';
+                }
+                if (id.includes('ProductDetail')) {
+                  return 'product-detail';
+                }
+                if (id.includes('CollectionDetail')) {
+                  return 'product-collection';
+                }
+                return 'product-other';
+              }
+
+              // Pages
+              if (id.includes('/pages/')) {
                 if (id.includes('AdminPage') || id.includes('admin')) {
                   return 'pages-admin';
                 }
@@ -92,18 +146,7 @@ export default defineConfig(({ mode }) => {
                 return 'pages-other';
               }
 
-              if (id.includes('/components/admin/')) {
-                return 'components-admin';
-              }
-
-              if (id.includes('/components/checkout/')) {
-                return 'components-checkout';
-              }
-
-              if (id.includes('/components/product/')) {
-                return 'components-product';
-              }
-
+              // Services
               if (id.includes('/services/')) {
                 return 'services';
               }

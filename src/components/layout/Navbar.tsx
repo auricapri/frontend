@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { ShoppingBag, Menu, X, Heart, ArrowLeft, Ticket, User, ChevronDown } from 'lucide-react';
-import { UserMode, Collection } from '../../types';
+import { ShoppingBag, Menu, X, Heart, ArrowLeft, Ticket, User, ChevronDown, Search } from 'lucide-react';
+import { UserMode, Collection, UserProfile, Product, Category } from '../../types';
 import { Gender } from '../../constants/enums';
 import { Locale } from '../../i18n';
 import { createGetLoc } from '../../utils/localization';
+import { searchProducts } from '../../utils/productFilters';
+import { calculatePrice } from '../../utils/product';
+import { slugify } from '../../utils/urlUtils';
 
 interface NavbarProps {
   cartCount: number;
@@ -12,6 +15,7 @@ interface NavbarProps {
   onOpenWishlist: () => void;
   onOpenCoupons: () => void;
   onOpenAuth: () => void;
+  onLogout?: () => void;
   userMode: UserMode;
   onToggleMode: () => void;
   onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals', target?: string) => void;
@@ -19,6 +23,7 @@ interface NavbarProps {
   isProductView?: boolean;
   onBack?: () => void;
   isLoggedIn: boolean;
+  currentUser?: UserProfile | null;
   t: (key: string) => any;
   currentLocale: Locale;
   onChangeLocale: (locale: Locale) => void;
@@ -27,6 +32,11 @@ interface NavbarProps {
   onSelectCollection?: (collection: Collection) => void;
   selectedGender?: Gender;
   onGenderChange?: (gender: Gender) => void;
+  products?: Product[];
+  categories?: Category[];
+  onSelectProduct?: (product: Product) => void;
+  wishlistIds?: string[];
+  onToggleWishlist?: (productId: string) => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -36,6 +46,7 @@ const Navbar: React.FC<NavbarProps> = ({
   onOpenWishlist,
   onOpenCoupons,
   onOpenAuth,
+  onLogout,
   userMode,
   onToggleMode,
   onNavigate,
@@ -43,6 +54,7 @@ const Navbar: React.FC<NavbarProps> = ({
   isProductView,
   onBack,
   isLoggedIn,
+  currentUser,
   t,
   currentLocale,
   onChangeLocale: _onChangeLocale,
@@ -50,10 +62,17 @@ const Navbar: React.FC<NavbarProps> = ({
   collections = [],
   onSelectCollection,
   selectedGender = Gender.FEMALE,
-  onGenderChange
+  onGenderChange,
+  products = [],
+  categories = [],
+  onSelectProduct,
+  wishlistIds = [],
+  onToggleWishlist
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCollectionsOpen, setIsCollectionsOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const getLoc = React.useMemo(() => createGetLoc(currentLocale), [currentLocale]);
 
@@ -77,9 +96,22 @@ const Navbar: React.FC<NavbarProps> = ({
     setIsMenuOpen(false);
   };
 
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    }
+    setIsMenuOpen(false);
+  };
+
+  // Filter products based on search
+  const searchedProducts = React.useMemo(() => {
+    if (!searchQuery || !products) return [];
+    return searchProducts(searchQuery, products, currentLocale).slice(0, 5);
+  }, [searchQuery, products, currentLocale]);
+
   return (
     <>
-      <nav 
+      <nav
         className={`fixed ${topOffset} left-0 w-full z-50 transition-all duration-700 select-none will-change-transform
           ${isSolid ? 'h-16 md:h-20' : 'h-20 md:h-24'}
         `}
@@ -132,16 +164,28 @@ const Navbar: React.FC<NavbarProps> = ({
 
             {/* Right Col: Actions */}
             <div className="flex-1 flex items-center justify-end">
-                <div className="flex items-center space-x-1 sm:space-x-4 md:space-x-2">
-                    <button 
-                      onClick={onOpenAuth} 
+                <div className="flex items-center space-x-1 sm:space-x-3 md:space-x-2">
+                    <button
+                      onClick={() => setIsSearchOpen(true)}
                       className="p-2 -mr-2 hover:opacity-50 transition-all active:scale-90"
-                      aria-label="Account"
+                      aria-label="Search"
                     >
-                        <User className={`w-5 h-5 ${isLoggedIn ? 'fill-current' : ''}`} strokeWidth={1.2} />
+                        <Search className="w-5 h-5" strokeWidth={1.2} />
                     </button>
-                    
-                    <button 
+
+                    {/* User Account */}
+                    <button
+                      onClick={onOpenAuth}
+                      className="p-2 hover:opacity-50 transition-all active:scale-90"
+                      aria-label={isLoggedIn ? 'Account' : 'Login'}
+                    >
+                        <User
+                          className={`w-5 h-5 ${isLoggedIn ? 'fill-current' : ''}`}
+                          strokeWidth={1.2}
+                        />
+                    </button>
+
+                    <button
                       onClick={onOpenWishlist} 
                       className="p-2 relative hover:opacity-50 transition-all active:scale-90"
                       aria-label="Wishlist"
@@ -170,6 +214,122 @@ const Navbar: React.FC<NavbarProps> = ({
             </div>
         </div>
       </nav>
+
+      {/* Search Bar - Slides down from navbar */}
+      <div
+        className={`fixed ${topOffset} left-0 w-full z-40 transition-all duration-700 ease-out overflow-hidden
+          ${isSearchOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
+        `}
+        style={{ top: isSolid ? '64px' : '80px', marginTop: showTestBanner ? '48px' : '0' }}
+      >
+        <div className={`border-b shadow-lg transition-all duration-700 ease-out
+          ${isSolid
+            ? 'bg-white/90 backdrop-blur-xl border-neutral-100'
+            : 'bg-white/0 backdrop-blur-0 border-transparent'
+          }`}
+        >
+          <div className="max-w-[1920px] mx-auto px-6 md:px-12 py-4">
+            {/* Search Input Container */}
+            <div className="flex items-center gap-2">
+              {/* Input with icons */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" strokeWidth={1.5} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchQuery.trim()) {
+                      const slug = slugify(searchQuery);
+                      onNavigate('search-results' as any, slug);
+                      setIsSearchOpen(false);
+                    }
+                  }}
+                  placeholder="Digite para buscar produtos..."
+                  className="w-full pl-10 pr-10 py-3 border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-400 transition-colors text-sm"
+                  autoFocus
+                />
+                <button
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    setSearchQuery('');
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:opacity-50 transition-opacity"
+                >
+                  <X className="w-4 h-4 text-neutral-400" />
+                </button>
+              </div>
+
+              {/* Search Button */}
+              <button
+                onClick={() => {
+                  if (searchQuery.trim()) {
+                    const slug = slugify(searchQuery);
+                    onNavigate('search-results' as any, slug);
+                    setIsSearchOpen(false);
+                  }
+                }}
+                disabled={!searchQuery.trim()}
+                className="px-6 py-3 bg-black text-white rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm font-medium whitespace-nowrap flex items-center gap-2"
+              >
+                <Search className="w-4 h-4" strokeWidth={2} />
+                Buscar
+              </button>
+            </div>
+
+            {/* Search Results */}
+            {searchQuery && (
+              <div className="mt-4">
+                {searchedProducts.length > 0 ? (
+                  <div className="space-y-2">
+                    {searchedProducts.map((product) => {
+                      const mainVariant = product.variants?.[0];
+                      const price = mainVariant ? calculatePrice(mainVariant, userMode, product) : 0;
+                      const displayImg = product.default_image_url || product.base_images?.[0];
+
+                      return (
+                        <button
+                          key={product.id}
+                          onClick={() => {
+                            if (onSelectProduct) {
+                              onSelectProduct(product);
+                              setIsSearchOpen(false);
+                              setSearchQuery('');
+                            }
+                          }}
+                          className="w-full flex items-center gap-3 p-2 hover:bg-neutral-50 rounded-lg transition-colors text-left"
+                        >
+                          {displayImg && (
+                            <div className="w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-neutral-100">
+                              <img
+                                src={displayImg}
+                                alt={getLoc(product.name)}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-neutral-900 truncate">
+                              {getLoc(product.name)}
+                            </p>
+                            <p className="text-xs text-neutral-500">
+                              {price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-neutral-400 text-center py-4">
+                    Nenhum resultado encontrado
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Fullscreen Overlay Menu */}
       {isMenuOpen && (
@@ -296,8 +456,81 @@ const Navbar: React.FC<NavbarProps> = ({
                 </div>
               </div>
 
+              {/* Profile Section */}
+              <div className="pt-6 pb-4 border-t border-neutral-100 flex-shrink-0 mt-auto">
+                {isLoggedIn && currentUser ? (
+                  <div className="space-y-4">
+                    {/* User Info */}
+                    <div className="flex items-center gap-3 px-2">
+                      <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center font-bold text-lg">
+                        {currentUser.full_name?.charAt(0).toUpperCase() || 'U'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm truncate">{currentUser.full_name || 'Usuário'}</div>
+                        <div className="text-xs text-neutral-500 truncate">{currentUser.email}</div>
+                      </div>
+                    </div>
+
+                    {/* Profile Actions */}
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          // Navigate to account page
+                        }}
+                        className="w-full flex items-center gap-3 px-2 py-2.5 text-sm hover:bg-neutral-50 rounded-lg transition-colors"
+                      >
+                        <User className="w-4 h-4" strokeWidth={1.5} />
+                        <span>{t('nav.myAccount')}</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          // Navigate to orders
+                        }}
+                        className="w-full flex items-center gap-3 px-2 py-2.5 text-sm hover:bg-neutral-50 rounded-lg transition-colors"
+                      >
+                        <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
+                        <span>{t('nav.myOrders')}</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          // Navigate to wishlist
+                        }}
+                        className="w-full flex items-center gap-3 px-2 py-2.5 text-sm hover:bg-neutral-50 rounded-lg transition-colors"
+                      >
+                        <Heart className="w-4 h-4" strokeWidth={1.5} />
+                        <span>{t('nav.wishlist')}</span>
+                      </button>
+
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-2 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
+                        <span>{t('nav.logout')}</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onOpenAuth();
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white rounded-xl hover:bg-neutral-800 transition-all active:scale-95"
+                  >
+                    <User className="w-5 h-5" strokeWidth={1.5} />
+                    <span className="font-medium">{t('nav.loginRegister')}</span>
+                  </button>
+                )}
+              </div>
+
               {/* Menu Footer */}
-              <div className="pt-10 border-t border-neutral-100 flex-shrink-0 mt-auto">
+              <div className="pt-10 border-t border-neutral-100 flex-shrink-0">
                 <div className="flex flex-wrap gap-4">
                   <button
                     onClick={() => {

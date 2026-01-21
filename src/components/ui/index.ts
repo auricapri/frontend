@@ -4,4 +4,6 @@ export { Modal } from './Modal';
 export { Drawer } from './Drawer';
 export { default as Toast } from './Toast';
 export { default as OptimizedImage } from './OptimizedImage';
+export { LoadingFallback } from './LoadingFallback';
+export { LoadingSpinner } from './LoadingSpinner';
 

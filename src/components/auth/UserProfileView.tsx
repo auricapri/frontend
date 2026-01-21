@@ -1,14 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
-import { 
-  User, 
-  Package, 
-  Ticket, 
-  ChevronRight, 
-  Copy, 
-  Check, 
-  Loader2, 
-  Phone, 
+import React, { useState, useEffect, Suspense } from 'react';
+import {
+  User,
+  Package,
+  Ticket,
+  ChevronRight,
+  Copy,
+  Check,
+  Loader2,
+  Phone,
   ShoppingBag,
   ArrowLeft,
   X,
@@ -22,8 +22,10 @@ import {
 import { UserProfile, Order } from '../../types';
 import { Locale } from '../../i18n';
 import { supabase } from '../../utils/supabase';
-import { OrderReceipt } from '../orders';
+import { LoadingFallback } from '../ui/LoadingFallback';
 import { formatCurrency } from '../../utils/currency';
+
+const OrderReceipt = React.lazy(() => import('../orders/OrderReceipt'));
 
 import { maskPhone, maskCPF } from '../../utils/masks';
 
@@ -145,12 +147,14 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({ user, t, locale, onUp
   if (viewingReceiptOrder) {
       return (
           <div className="fixed inset-0 z-[200] bg-white overflow-y-auto">
-              <OrderReceipt 
-                  order={viewingReceiptOrder} 
-                  onBack={() => setViewingReceiptOrder(null)} 
-                  t={t} 
-                  locale={locale} 
-              />
+              <Suspense fallback={<LoadingFallback size="sm" message="Carregando pedido..." />}>
+                <OrderReceipt
+                    order={viewingReceiptOrder}
+                    onBack={() => setViewingReceiptOrder(null)}
+                    t={t}
+                    locale={locale}
+                />
+              </Suspense>
           </div>
       );
   }

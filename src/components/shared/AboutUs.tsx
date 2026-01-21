@@ -15,12 +15,12 @@ const AboutUs: React.FC<AboutUsProps> = ({ config, locale, onBack }) => {
   const image = config.about_us_image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop';
 
   return (
-    <div className="w-full min-h-screen bg-white text-neutral-900">
-      
+    <div className="w-full h-screen overflow-y-auto bg-white text-neutral-900">
+
       {/* Header / Nav Area */}
       <div className="fixed top-0 left-0 w-full z-50 p-6 md:p-12 mix-blend-difference text-white pointer-events-none">
-        <button 
-          onClick={onBack} 
+        <button
+          onClick={onBack}
           className="pointer-events-auto flex items-center gap-3 group"
         >
           <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />

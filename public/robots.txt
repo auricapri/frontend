@@ -1,0 +1,19 @@
+# Allow all search engines
+User-agent: *
+Allow: /
+
+# Disallow admin and sensitive areas
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /checkout
+Disallow: /receipt
+Disallow: /api/
+
+# Allow product images
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.png$
+Allow: /*.webp$
+
+# Sitemap location
+Sitemap: https://auricapri.com/sitemap.xml

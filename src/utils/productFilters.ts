@@ -1,5 +1,6 @@
 import { Product, UserMode } from '../types';
 import { calculatePrice } from './product';
+import { Locale } from '../i18n';
 
 export interface PriceRange {
   min: number;
@@ -273,10 +274,39 @@ export function sortProducts(
 
 function getMinProductPrice(product: Product, userMode: UserMode): number {
   if (!product.variants || product.variants.length === 0) return Infinity;
-  
+
   const prices = product.variants
     .map(variant => calculatePrice(variant, userMode, product))
     .filter(price => price > 0);
-  
+
   return prices.length > 0 ? Math.min(...prices) : Infinity;
+}
+
+export function searchProducts(
+  query: string,
+  products: Product[],
+  locale: Locale = 'pt'
+): Product[] {
+  const normalizedQuery = query.toLowerCase().trim();
+  if (!normalizedQuery) return products;
+
+  return products.filter(product => {
+    const getLoc = (obj: any): string => {
+      if (!obj) return '';
+      if (typeof obj === 'string') return obj.toLowerCase();
+      if (typeof obj === 'object') {
+        return (obj[locale] || obj['pt'] || obj['en'] || '').toLowerCase();
+      }
+      return String(obj).toLowerCase();
+    };
+
+    // Search in product name
+    if (getLoc(product.name).includes(normalizedQuery)) return true;
+    // Search in description
+    if (getLoc(product.description).includes(normalizedQuery)) return true;
+    // Search in category
+    if (product.category && getLoc(product.category.name).includes(normalizedQuery)) return true;
+
+    return false;
+  });
 }

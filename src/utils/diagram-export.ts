@@ -1,6 +1,6 @@
 import html2canvas from 'html2canvas';
 import { Node, Edge, getNodesBounds } from 'reactflow';
-import { DiagramData } from '../types';
+import { DiagramData } from '../types/diagram';
 
 function sanitizeFileName(name: string): string {
   return name

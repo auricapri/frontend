@@ -32,7 +32,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
 
   return (
     <div className="lg:col-span-5">
-      <div className="bg-neutral-50 rounded-[3rem] p-10 md:p-12 sticky top-32 border border-neutral-100 shadow-sm">
+      <div className="bg-neutral-50 rounded-[3rem] p-4 md:p-8 lg:p-12 lg:sticky lg:top-32 border border-neutral-100 shadow-sm">
         <div className="flex items-center gap-4 mb-10 border-b border-neutral-100 pb-6">
           <ShoppingBag className="w-5 h-5 text-neutral-600" />
           <h4 className="text-xs font-black uppercase tracking-[0.4em]">Sua Sacola</h4>
@@ -90,14 +90,14 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
           </div>
 
           {itemsWithCoupon.length > 0 && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-4">
-              <div className="flex items-start gap-2">
-                <Info className="w-3 h-3 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-emerald-800 uppercase tracking-wide">
-                    {itemsWithCoupon.length} {itemsWithCoupon.length === 1 ? 'item já possui' : 'itens já possuem'} cupom aplicado
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-2 md:p-3 mb-3 md:mb-4">
+              <div className="flex items-center md:items-start gap-2">
+                <Info className="w-3 h-3 text-emerald-600 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-[10px] md:text-xs font-bold text-emerald-800 uppercase tracking-wide">
+                    {itemsWithCoupon.length} {itemsWithCoupon.length === 1 ? 'item já possui' : 'itens já possuem'} cupom
                   </p>
-                  <p className="text-xs text-emerald-600 mt-0.5">
+                  <p className="hidden md:block text-xs text-emerald-600 mt-0.5">
                     Novos cupons serão aplicados apenas nos outros {itemsWithoutCoupon.length} {itemsWithoutCoupon.length === 1 ? 'item' : 'itens'}.
                   </p>
                 </div>
@@ -124,20 +124,20 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="flex gap-2">
+              <div className="flex flex-col md:flex-row gap-2">
                 <input
                   type="text"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
                   placeholder="DIGITE O CUPOM"
-                  className="flex-1 p-4 bg-white border border-neutral-200 rounded-xl text-xs font-black uppercase tracking-widest outline-none focus:border-black transition-all placeholder:text-neutral-300"
+                  className="w-full md:flex-1 p-3 md:p-4 bg-white border border-neutral-200 rounded-xl text-xs font-black uppercase tracking-widest outline-none focus:border-black transition-all placeholder:text-neutral-300"
                   disabled={itemsWithoutCoupon.length === 0}
                 />
                 <button
                   onClick={handleApplyCoupon}
                   disabled={couponLoading || !couponCode.trim() || itemsWithoutCoupon.length === 0}
-                  className="px-6 py-4 bg-black text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                  className="w-full md:w-auto px-6 py-3 md:py-4 bg-black text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
                   {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Aplicar'}
                 </button>
@@ -147,9 +147,6 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
                   <AlertCircle className="w-3 h-3" />
                   <span className="text-xs font-bold">{couponError}</span>
                 </div>
-              )}
-              {itemsWithoutCoupon.length === 0 && (
-                <p className="text-xs text-neutral-600 text-center">Todos os itens já possuem cupom aplicado</p>
               )}
             </div>
           )}

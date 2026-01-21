@@ -2,16 +2,15 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { calculatePrice } from '../utils/product';
 import { trackingService } from '../services/tracking.service';
 import { useStoreData } from '../hooks/useStoreData';
-import { useAuth } from '../hooks/useAuth';
+import { useAuthContext } from '../context/AuthContext';
 import { useWishlist } from '../hooks/useWishlist';
-import { OrdersApi } from '../api/orders.api';
-import { type CartItem, type Order } from '../types';
+import { type CartItem } from '../types';
 import { useAppState } from './hooks/useAppState';
 import { useOrderProcessing } from './hooks/useOrderProcessing';
 import { AppProviders } from './AppProviders';
 import { AppRouter } from './AppRouter';
 
-export function AppRoot() {
+function AppRootContent() {
   const {
     products,
     categories,
@@ -25,7 +24,7 @@ export function AppRoot() {
     refetch: refetchStoreData,
   } = useStoreData();
 
-  const { currentUser, isLoading: isAuthLoading, signOut } = useAuth();
+  const { currentUser, isLoading: isAuthLoading, userOrders, signOut } = useAuthContext();
   const { wishlistIds, toggleWishlist } = useWishlist(currentUser?.id);
 
   const appState = useAppState({
@@ -58,26 +57,7 @@ export function AppRoot() {
     }
   }, [cartItems]);
 
-  const [userOrders, setUserOrders] = useState<Order[]>([]);
-
   // Page view tracking removed - centralized in useAppState.ts to avoid duplicate calls
-
-  useEffect(() => {
-    const fetchUserOrders = async () => {
-      if (!currentUser?.id) {
-        setUserOrders([]);
-        return;
-      }
-      try {
-        const ordersApi = new OrdersApi();
-        const orders = await ordersApi.getByUserId(currentUser.id);
-        setUserOrders(orders || []);
-      } catch {
-        setUserOrders([]);
-      }
-    };
-    fetchUserOrders();
-  }, [currentUser?.id]);
 
   const orderProcessing = useOrderProcessing({
     cartItems,
@@ -232,16 +212,22 @@ export function AppRoot() {
   };
 
   return (
+    <AppRouter
+      app={app}
+      storeConfig={storeConfig}
+      lastSuccessOrder={orderProcessing.lastSuccessOrder}
+      userOrders={userOrders}
+      onExitAdmin={appState.exitAdmin}
+      onSignOut={signOut}
+      onSetCurrentView={appState.setCurrentView}
+    />
+  );
+}
+
+export function AppRoot() {
+  return (
     <AppProviders>
-      <AppRouter
-        app={app}
-        storeConfig={storeConfig}
-        lastSuccessOrder={orderProcessing.lastSuccessOrder}
-        userOrders={userOrders}
-        onExitAdmin={appState.exitAdmin}
-        onSignOut={signOut}
-        onSetCurrentView={appState.setCurrentView}
-      />
+      <AppRootContent />
     </AppProviders>
   );
 }

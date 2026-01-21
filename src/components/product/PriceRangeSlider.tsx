@@ -101,7 +101,7 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
   const maxPercentage = getPercentage(localMax);
 
   return (
-    <div className="w-full">
+    <div className="w-full touch-none select-none">
       <div className="flex justify-between items-center mb-4">
         <div className="flex flex-col">
           <span className="text-[8px] uppercase tracking-widest font-bold text-neutral-400 mb-1">
@@ -114,19 +114,19 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
           </span>
         </div>
       </div>
-      
+
       <div
         ref={sliderRef}
-        className="relative h-2 bg-neutral-100 rounded-full cursor-pointer"
+        className="relative h-3 bg-neutral-100 rounded-full cursor-pointer touch-none"
         onMouseDown={(e) => {
           if (e.target === sliderRef.current) {
             const rect = sliderRef.current.getBoundingClientRect();
             const percentage = ((e.clientX - rect.left) / rect.width) * 100;
             const value = Math.round(getValueFromPercentage(percentage) / 10) * 10;
-            
+
             const distToMin = Math.abs(value - localMin);
             const distToMax = Math.abs(value - localMax);
-            
+
             if (distToMin < distToMax) {
               const newMin = Math.max(min, Math.min(value, localMax - 10));
               setLocalMin(newMin);
@@ -140,7 +140,7 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
         }}
       >
         <div
-          className="absolute h-2 bg-neutral-900 rounded-full transition-all"
+          className="absolute h-3 bg-neutral-900 rounded-full transition-all top-0"
           style={{
             left: `${minPercentage}%`,
             width: `${maxPercentage - minPercentage}%`
@@ -149,34 +149,40 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
         
         <button
           type="button"
-          className={`absolute w-4 h-4 bg-neutral-900 border-2 border-white rounded-full shadow-md transform -translate-x-1/2 -translate-y-1 transition-all touch-none ${
-            isDragging === 'min' ? 'scale-110 z-10' : 'hover:scale-105'
+          className={`absolute w-5 h-5 bg-neutral-900 border-2 border-white rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2 transition-all touch-none ${
+            isDragging === 'min' ? 'scale-125 z-10' : 'hover:scale-105 active:scale-110'
           }`}
           style={{ left: `${minPercentage}%`, top: '50%' }}
           onMouseDown={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             handleMouseDown('min');
           }}
           onTouchStart={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             handleTouchStart('min');
           }}
+          aria-label="Preço mínimo"
         />
-        
+
         <button
           type="button"
-          className={`absolute w-4 h-4 bg-neutral-900 border-2 border-white rounded-full shadow-md transform -translate-x-1/2 -translate-y-1 transition-all touch-none ${
-            isDragging === 'max' ? 'scale-110 z-10' : 'hover:scale-105'
+          className={`absolute w-5 h-5 bg-neutral-900 border-2 border-white rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2 transition-all touch-none ${
+            isDragging === 'max' ? 'scale-125 z-10' : 'hover:scale-105 active:scale-110'
           }`}
           style={{ left: `${maxPercentage}%`, top: '50%' }}
           onMouseDown={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             handleMouseDown('max');
           }}
           onTouchStart={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             handleTouchStart('max');
           }}
+          aria-label="Preço máximo"
         />
       </div>
     </div>

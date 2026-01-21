@@ -24,6 +24,7 @@ export type AppView =
   | 'order-review'
   | 'privacy'
   | 'terms'
+  | 'search-results'
   | '404';
 
 export function useAppState(params: {
@@ -59,6 +60,11 @@ export function useAppState(params: {
     return match ? match[1] : null;
   }, []);
 
+  const extractSearchSlug = useCallback((pathname: string): string | null => {
+    const match = pathname.match(/^\/search\/(.+)$/);
+    return match ? match[1] : null;
+  }, []);
+
   const getProductSlug = useCallback((product: Product, currentLocale: Locale): string => {
     if (!product.slug) return product.id;
     if (typeof product.slug === 'string') return product.slug;
@@ -78,6 +84,7 @@ export function useAppState(params: {
     if (pathname === '/reset-password') return 'reset-password';
     if (pathname.startsWith('/order-review/')) return 'order-review';
     if (pathname.startsWith('/wishlist/')) return 'shared-wishlist';
+    if (pathname.startsWith('/search/')) return 'search-results';
     if (pathname.startsWith('/product')) return 'product';
     if (pathname.startsWith('/collection')) return 'collection';
     if (pathname === '/privacy') return 'privacy';
@@ -96,6 +103,10 @@ export function useAppState(params: {
 
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
   const [activeCollection, setActiveCollection] = useState<Collection | null>(null);
+  const [searchSlug, setSearchSlug] = useState<string>(() => {
+    const slug = extractSearchSlug(window.location.pathname);
+    return slug || '';
+  });
   const [isScrolled, setIsScrolled] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
@@ -129,11 +140,18 @@ export function useAppState(params: {
           loadProductFromSlug(slug);
         }
       }
+
+      if (view === 'search-results') {
+        const slug = extractSearchSlug(window.location.pathname);
+        if (slug) {
+          setSearchSlug(slug);
+        }
+      }
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [extractProductSlug, getViewFromPath, loadProductFromSlug]);
+  }, [extractProductSlug, extractSearchSlug, getViewFromPath, loadProductFromSlug]);
 
   // Single page view tracking on mount - removed duplicate popstate listener
   useEffect(() => {
@@ -287,9 +305,13 @@ export function useAppState(params: {
         if (view === 'product' && product) {
           const slug = getProductSlug(product, locale);
           path = `/product/${slug}`;
+        } else if (view === 'search-results' && targetSection) {
+          // targetSection is the search slug for search-results
+          setSearchSlug(targetSection);
+          path = `/search/${targetSection}`;
         } else {
           const routes: Record<
-            Exclude<typeof view, '404' | 'product' | 'collection' | 'receipt' | 'about' | 'reset-password' | 'new-arrivals'> | 'product' | 'collection' | 'receipt' | 'about' | 'reset-password' | 'new-arrivals',
+            Exclude<typeof view, '404' | 'product' | 'collection' | 'receipt' | 'about' | 'reset-password' | 'new-arrivals' | 'search-results'> | 'product' | 'collection' | 'receipt' | 'about' | 'reset-password' | 'new-arrivals' | 'search-results',
             string
           > = {
             home: '/',
@@ -304,6 +326,7 @@ export function useAppState(params: {
             delivery: '/admin/delivery',
             privacy: '/privacy',
             terms: '/terms',
+            'search-results': '/search',
           };
           path = (routes as any)[view] || '/';
         }
@@ -319,6 +342,7 @@ export function useAppState(params: {
         if (!targetSection) {
           setActiveProduct(null);
           setActiveCollection(null);
+          setSearchSlug('');
         }
       }
 
@@ -429,6 +453,8 @@ export function useAppState(params: {
     setActiveProduct,
     activeCollection,
     setActiveCollection,
+    searchSlug,
+    setSearchSlug,
     mainRef,
     isScrolled,
     handleScroll,

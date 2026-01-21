@@ -9,7 +9,8 @@ import { ReportProblemModal } from '../delivery/ReportProblemModal';
 import { RateSupplierModal } from '../delivery/RateSupplierModal';
 import { DeliveryHistoryPanel } from '../delivery/DeliveryHistoryPanel';
 import { DeliveryNotificationsPanel } from '../delivery/DeliveryNotificationsPanel';
-import { Order, Supplier } from '../../types';
+import { Order } from '../../types';
+import { Supplier } from '../../types/suppliers';
 
 interface AdminDeliveryProps {
   orders?: Order[];
