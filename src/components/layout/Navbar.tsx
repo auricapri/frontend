@@ -440,8 +440,8 @@ const Navbar: React.FC<NavbarProps> = ({
 
                     {/* Collections List - Smooth height animation */}
                     <div
-                      className={`overflow-hidden transition-all duration-500 ease-out ${
-                        isCollectionsOpen ? 'max-h-[60vh] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'
+                      className={`overflow-visible transition-all duration-500 ease-out ${
+                        isCollectionsOpen ? 'max-h-[5000px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'
                       }`}
                     >
                       <div className="pl-4 space-y-2 border-l-2 border-neutral-200">
@@ -483,8 +483,8 @@ const Navbar: React.FC<NavbarProps> = ({
               </div>
 
               {/* Profile Section */}
-              <div className="pt-6 pb-4 border-t border-neutral-100 flex-shrink-0 mt-auto">
-                {isLoggedIn && currentUser ? (
+              {isLoggedIn && currentUser && (
+                <div className="pt-6 pb-4 border-t border-neutral-100 flex-shrink-0 mt-auto">
                   <div className="space-y-4">
                     {/* User Info */}
                     <div className="flex items-center gap-3 px-2">
@@ -541,19 +541,8 @@ const Navbar: React.FC<NavbarProps> = ({
                       </button>
                     </div>
                   </div>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      onOpenAuth();
-                    }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white rounded-xl hover:bg-neutral-800 transition-all active:scale-95"
-                  >
-                    <User className="w-5 h-5" strokeWidth={1.5} />
-                    <span className="font-medium">{t('nav.loginRegister')}</span>
-                  </button>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Menu Footer */}
               <div className="pt-10 border-t border-neutral-100 flex-shrink-0">
