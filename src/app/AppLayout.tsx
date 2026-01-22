@@ -149,7 +149,7 @@ export function AppLayout(props: {
         id="main-scroll-container"
         ref={app.mainRef}
         onScroll={app.handleScroll}
-        className={`h-full w-full overflow-y-auto overflow-x-hidden no-scrollbar antialiased relative ${app.currentView === 'home' ? 'pt-0' : 'pt-28 md:pt-24'}`}
+        className={`h-full w-full overflow-y-auto overflow-x-hidden no-scrollbar antialiased relative ${(app.currentView === 'home' || app.currentView === 'search-results') ? 'pt-0' : 'pt-28 md:pt-24'}`}
       >
         {app.currentView === 'home' && (
           <div className="min-h-full flex flex-col">
