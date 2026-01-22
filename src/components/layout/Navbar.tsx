@@ -135,7 +135,7 @@ const Navbar: React.FC<NavbarProps> = ({
           <div className="flex-none flex items-center justify-center">
             <div
               onClick={() => handleNav('home')}
-              className="text-2xl font-bold tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2"
+              className="text-2xl font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2"
             >
               {storeName}
             </div>
@@ -241,7 +241,7 @@ const Navbar: React.FC<NavbarProps> = ({
           <div className="flex-none text-center">
             <div
               onClick={() => handleNav('home')}
-              className="text-4xl font-bold tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2"
+              className="text-4xl font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2"
             >
               {storeName}
             </div>
