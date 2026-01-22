@@ -113,114 +113,199 @@ const Navbar: React.FC<NavbarProps> = ({
     <>
       <nav
         className={`fixed ${topOffset} left-0 w-full z-50 transition-all duration-700 select-none will-change-transform
-          ${isSolid ? 'h-16 md:h-20' : 'h-20 md:h-24'}
+          ${isSolid ? 'h-24 md:h-20' : 'h-28 md:h-24'}
         `}
         style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
         {/* Background Layer - Smooth Opacity Fade */}
-        <div 
+        <div
           className={`absolute inset-0 transition-all duration-700 ease-out border-b
-            ${isSolid 
-              ? 'bg-white/90 backdrop-blur-xl opacity-100 border-neutral-100' 
+            ${isSolid
+              ? 'bg-white/90 backdrop-blur-xl opacity-100 border-neutral-100'
               : 'bg-white/0 backdrop-blur-0 opacity-0 border-transparent'}
           `}
           style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
         />
 
-        {/* Content Container */}
-        <div className={`relative w-full h-full max-w-[1920px] mx-auto px-6 md:px-12 flex items-center justify-between transition-colors duration-500
+        {/* Mobile Layout: 2 Linhas */}
+        <div className={`md:hidden relative w-full h-full flex flex-col transition-colors duration-500
           ${isSolid ? 'text-black' : 'text-white'}
         `}>
-            
-            {/* Left Col: Menu/Back */}
-            <div className="flex-1 flex items-center justify-start">
-                {isProductView ? (
-                    <button 
-                      onClick={onBack} 
-                      className="group flex items-center gap-3 py-2 -ml-2 hover:opacity-50 transition-all active:scale-95"
-                    >
-                        <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" strokeWidth={1.5} />
-                        <span className="hidden sm:inline text-[9px] font-black uppercase tracking-[0.3em]">{t('nav.back')}</span>
-                    </button>
-                ) : (
-                    <button 
-                      onClick={() => setIsMenuOpen(true)} 
-                      className="p-2 -ml-2 hover:opacity-50 transition-all active:scale-90"
-                    >
-                        <Menu className="w-6 h-6" strokeWidth={1.2} />
-                    </button>
+          {/* Linha 1: Título */}
+          <div className="flex-none flex items-center justify-center">
+            <div
+              onClick={() => handleNav('home')}
+              className="text-2xl font-bold tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2"
+            >
+              {storeName}
+            </div>
+          </div>
+
+          {/* Linha 2: Ícones */}
+          <div className="flex-1 w-full px-6 flex items-center justify-between">
+            {/* Left: Menu/Back */}
+            <div className="flex items-center">
+              {isProductView ? (
+                <button
+                  onClick={onBack}
+                  className="group flex items-center gap-3 py-2 -ml-2 hover:opacity-50 transition-all active:scale-95"
+                >
+                  <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" strokeWidth={1.5} />
+                  <span className="hidden sm:inline text-[9px] font-black uppercase tracking-[0.3em]">{t('nav.back')}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsMenuOpen(true)}
+                  className="p-2 -ml-2 hover:opacity-50 transition-all active:scale-90"
+                >
+                  <Menu className="w-6 h-6" strokeWidth={1.2} />
+                </button>
+              )}
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 -mr-2 hover:opacity-50 transition-all active:scale-90"
+                aria-label="Search"
+              >
+                <Search className="w-5 h-5" strokeWidth={1.2} />
+              </button>
+
+              <button
+                onClick={onOpenAuth}
+                className="p-2 hover:opacity-50 transition-all active:scale-90"
+                aria-label={isLoggedIn ? 'Account' : 'Login'}
+              >
+                <User
+                  className={`w-5 h-5 ${isLoggedIn ? 'fill-current' : ''}`}
+                  strokeWidth={1.2}
+                />
+              </button>
+
+              <button
+                onClick={onOpenWishlist}
+                className="p-2 relative hover:opacity-50 transition-all active:scale-90"
+                aria-label="Wishlist"
+              >
+                <Heart className="w-5 h-5" strokeWidth={1.2} fill={wishlistCount > 0 ? "currentColor" : "none"} />
+                {wishlistCount > 0 && (
+                  <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                 )}
+              </button>
+
+              <button
+                onClick={onOpenCart}
+                className="p-2 relative hover:opacity-50 transition-all active:scale-90"
+                aria-label="Cart"
+              >
+                <ShoppingBag className="w-5 h-5" strokeWidth={1.2} />
+                {cartCount > 0 && (
+                  <span className={`absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full text-[8px] font-black flex items-center justify-center
+                    ${isSolid ? 'bg-black text-white' : 'bg-white text-black'}
+                  `}>
+                    {cartCount}
+                  </span>
+                )}
+              </button>
             </div>
+          </div>
+        </div>
 
-            {/* Center Col: Brand */}
-            <div className="flex-none text-center">
-                 <div 
-                   onClick={() => handleNav('home')} 
-                   className="text-lg md:text-2xl font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95"
-                 >
-                    {storeName}
-                </div>
+        {/* Desktop Layout: 3 Colunas (Atual) */}
+        <div className={`hidden md:flex relative w-full h-full max-w-[1920px] mx-auto px-12 items-center justify-between transition-colors duration-500
+          ${isSolid ? 'text-black' : 'text-white'}
+        `}>
+          {/* Left Col: Menu/Back */}
+          <div className="flex-1 flex items-center justify-start">
+            {isProductView ? (
+              <button
+                onClick={onBack}
+                className="group flex items-center gap-3 py-2 -ml-2 hover:opacity-50 transition-all active:scale-95"
+              >
+                <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" strokeWidth={1.5} />
+                <span className="hidden sm:inline text-[9px] font-black uppercase tracking-[0.3em]">{t('nav.back')}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsMenuOpen(true)}
+                className="p-2 -ml-2 hover:opacity-50 transition-all active:scale-90"
+              >
+                <Menu className="w-6 h-6" strokeWidth={1.2} />
+              </button>
+            )}
+          </div>
+
+          {/* Center Col: Brand */}
+          <div className="flex-none text-center">
+            <div
+              onClick={() => handleNav('home')}
+              className="text-4xl font-bold tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2"
+            >
+              {storeName}
             </div>
+          </div>
 
-            {/* Right Col: Actions */}
-            <div className="flex-1 flex items-center justify-end">
-                <div className="flex items-center space-x-1 sm:space-x-3 md:space-x-2">
-                    <button
-                      onClick={() => setIsSearchOpen(true)}
-                      className="p-2 -mr-2 hover:opacity-50 transition-all active:scale-90"
-                      aria-label="Search"
-                    >
-                        <Search className="w-5 h-5" strokeWidth={1.2} />
-                    </button>
+          {/* Right Col: Actions */}
+          <div className="flex-1 flex items-center justify-end">
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 -mr-2 hover:opacity-50 transition-all active:scale-90"
+                aria-label="Search"
+              >
+                <Search className="w-5 h-5" strokeWidth={1.2} />
+              </button>
 
-                    {/* User Account */}
-                    <button
-                      onClick={onOpenAuth}
-                      className="p-2 hover:opacity-50 transition-all active:scale-90"
-                      aria-label={isLoggedIn ? 'Account' : 'Login'}
-                    >
-                        <User
-                          className={`w-5 h-5 ${isLoggedIn ? 'fill-current' : ''}`}
-                          strokeWidth={1.2}
-                        />
-                    </button>
+              <button
+                onClick={onOpenAuth}
+                className="p-2 hover:opacity-50 transition-all active:scale-90"
+                aria-label={isLoggedIn ? 'Account' : 'Login'}
+              >
+                <User
+                  className={`w-5 h-5 ${isLoggedIn ? 'fill-current' : ''}`}
+                  strokeWidth={1.2}
+                />
+              </button>
 
-                    <button
-                      onClick={onOpenWishlist} 
-                      className="p-2 relative hover:opacity-50 transition-all active:scale-90"
-                      aria-label="Wishlist"
-                    >
-                        <Heart className="w-5 h-5" strokeWidth={1.2} fill={wishlistCount > 0 ? "currentColor" : "none"} />
-                        {wishlistCount > 0 && (
-                            <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-                        )}
-                    </button>
+              <button
+                onClick={onOpenWishlist}
+                className="p-2 relative hover:opacity-50 transition-all active:scale-90"
+                aria-label="Wishlist"
+              >
+                <Heart className="w-5 h-5" strokeWidth={1.2} fill={wishlistCount > 0 ? "currentColor" : "none"} />
+                {wishlistCount > 0 && (
+                  <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                )}
+              </button>
 
-                    <button 
-                      onClick={onOpenCart} 
-                      className="p-2 relative hover:opacity-50 transition-all active:scale-90"
-                      aria-label="Cart"
-                    >
-                        <ShoppingBag className="w-5 h-5" strokeWidth={1.2} />
-                        {cartCount > 0 && (
-                            <span className={`absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full text-[8px] font-black flex items-center justify-center
-                              ${isSolid ? 'bg-black text-white' : 'bg-white text-black'}
-                            `}>
-                                {cartCount}
-                            </span>
-                        )}
-                    </button>
-                </div>
+              <button
+                onClick={onOpenCart}
+                className="p-2 relative hover:opacity-50 transition-all active:scale-90"
+                aria-label="Cart"
+              >
+                <ShoppingBag className="w-5 h-5" strokeWidth={1.2} />
+                {cartCount > 0 && (
+                  <span className={`absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full text-[8px] font-black flex items-center justify-center
+                    ${isSolid ? 'bg-black text-white' : 'bg-white text-black'}
+                  `}>
+                    {cartCount}
+                  </span>
+                )}
+              </button>
             </div>
+          </div>
         </div>
       </nav>
 
       {/* Search Bar - Slides down from navbar */}
       <div
-        className={`fixed ${topOffset} left-0 w-full z-40 transition-all duration-700 ease-out overflow-hidden
+        className={`fixed left-0 w-full z-40 transition-all duration-700 ease-out overflow-hidden
           ${isSearchOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
+          ${isSolid ? 'top-24 md:top-20' : 'top-28 md:top-24'}
         `}
-        style={{ top: isSolid ? '64px' : '80px', marginTop: showTestBanner ? '48px' : '0' }}
+        style={{ marginTop: showTestBanner ? '48px' : '0' }}
       >
         <div className={`border-b shadow-lg transition-all duration-700 ease-out
           ${isSolid
