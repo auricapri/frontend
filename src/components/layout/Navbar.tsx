@@ -4,8 +4,6 @@ import { UserMode, Collection, UserProfile, Product, Category } from '../../type
 import { Gender } from '../../constants/enums';
 import { Locale } from '../../i18n';
 import { createGetLoc } from '../../utils/localization';
-import { searchProducts } from '../../utils/productFilters';
-import { calculatePrice } from '../../utils/product';
 import { slugify } from '../../utils/urlUtils';
 
 interface NavbarProps {
@@ -102,12 +100,6 @@ const Navbar: React.FC<NavbarProps> = ({
     }
     setIsMenuOpen(false);
   };
-
-  // Filter products based on search
-  const searchedProducts = React.useMemo(() => {
-    if (!searchQuery || !products) return [];
-    return searchProducts(searchQuery, products, currentLocale).slice(0, 5);
-  }, [searchQuery, products, currentLocale]);
 
   return (
     <>
@@ -361,57 +353,6 @@ const Navbar: React.FC<NavbarProps> = ({
                 Buscar
               </button>
             </div>
-
-            {/* Search Results */}
-            {searchQuery && (
-              <div className="mt-4">
-                {searchedProducts.length > 0 ? (
-                  <div className="space-y-2">
-                    {searchedProducts.map((product) => {
-                      const mainVariant = product.variants?.[0];
-                      const price = mainVariant ? calculatePrice(mainVariant, userMode, product) : 0;
-                      const displayImg = product.default_image_url || product.base_images?.[0];
-
-                      return (
-                        <button
-                          key={product.id}
-                          onClick={() => {
-                            if (onSelectProduct) {
-                              onSelectProduct(product);
-                              setIsSearchOpen(false);
-                              setSearchQuery('');
-                            }
-                          }}
-                          className="w-full flex items-center gap-3 p-2 hover:bg-neutral-50 rounded-lg transition-colors text-left"
-                        >
-                          {displayImg && (
-                            <div className="w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-neutral-100">
-                              <img
-                                src={displayImg}
-                                alt={getLoc(product.name)}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-neutral-900 truncate">
-                              {getLoc(product.name)}
-                            </p>
-                            <p className="text-xs text-neutral-500">
-                              {price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                            </p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-sm text-neutral-400 text-center py-4">
-                    Nenhum resultado encontrado
-                  </p>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </div>

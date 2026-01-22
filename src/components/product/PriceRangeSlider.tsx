@@ -101,7 +101,7 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
   const maxPercentage = getPercentage(localMax);
 
   return (
-    <div className="w-full touch-none select-none">
+    <div className="w-full touch-none select-none px-6">
       <div className="flex justify-between items-center mb-4">
         <div className="flex flex-col">
           <span className="text-[8px] uppercase tracking-widest font-bold text-neutral-400 mb-1">
@@ -149,7 +149,7 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
         
         <button
           type="button"
-          className={`absolute w-5 h-5 bg-neutral-900 border-2 border-white rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2 transition-all touch-none ${
+          className={`absolute w-6 h-6 bg-neutral-900 border-2 border-white rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2 transition-all touch-none ${
             isDragging === 'min' ? 'scale-125 z-10' : 'hover:scale-105 active:scale-110'
           }`}
           style={{ left: `${minPercentage}%`, top: '50%' }}
@@ -168,7 +168,7 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
 
         <button
           type="button"
-          className={`absolute w-5 h-5 bg-neutral-900 border-2 border-white rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2 transition-all touch-none ${
+          className={`absolute w-6 h-6 bg-neutral-900 border-2 border-white rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2 transition-all touch-none ${
             isDragging === 'max' ? 'scale-125 z-10' : 'hover:scale-105 active:scale-110'
           }`}
           style={{ left: `${maxPercentage}%`, top: '50%' }}
