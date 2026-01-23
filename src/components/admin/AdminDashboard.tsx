@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Users, Settings, LogOut,
   BarChart3, Tag, Layers, Image as ImageIcon, Ticket, Archive, BookOpen, Ruler, Lightbulb,
-  AlertTriangle, X, Loader2, Store, Truck, ShoppingBag, ChevronDown
+  AlertTriangle, X, Loader2, Store, Truck, ShoppingBag, ChevronDown, DollarSign
 } from 'lucide-react';
 // Supabase is only used for auth.signOut() which is safe
 import {
@@ -42,6 +42,7 @@ const AdminDreamBoard = React.lazy(() => import('./AdminDreamBoard'));
 const AdminSuppliers = React.lazy(() => import('./AdminSuppliers'));
 const AdminDelivery = React.lazy(() => import('./AdminDelivery'));
 const AdminMarketplaces = React.lazy(() => import('./AdminMarketplaces'));
+const FinancialDashboard = React.lazy(() => import('./FinancialDashboard'));
 
 // Modals/Editors podem ser lazy loaded também
 const AdminEditorModal = React.lazy(() => import('./AdminEditorModal'));
@@ -497,6 +498,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                 {expandedCategories.has('vendas') && (
                   <div className="space-y-1">
                     {[
+                      { id: 'financial', icon: DollarSign, label: 'Financeiro' },
                       { id: 'marketplaces', icon: ShoppingBag, label: 'Marketplaces' },
                       { id: 'marketing', icon: ImageIcon, label: 'Marketing' },
                       { id: 'coupons', icon: Ticket, label: 'Cupons' },
@@ -634,6 +636,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                )}
                {activeTab === 'marketplaces' && (
                  <AdminMarketplaces locale={locale} />
+               )}
+               {activeTab === 'financial' && (
+                 <FinancialDashboard />
                )}
                {activeTab === 'taxonomy' && (
                   <AdminTaxonomy 
