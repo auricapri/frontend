@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { PaymentMethod } from '../../../constants/enums';
 import { UserMode, type AddressData, type CartItem, type InternalLogisticsInfo, type StoreConfig, type UserMode as UserModeType, type UserProfile } from '../../../types';
+import type { PixData, BoletoData } from '../../../types/payment.types';
 
 export function usePaymentProcessing(params: {
   items: CartItem[];
@@ -33,10 +34,14 @@ export function usePaymentProcessing(params: {
     cardToken?: string,
     phone?: string
   ) => void;
+  pixData?: PixData | null;
+  boletoData?: BoletoData | null;
 }): {
   pixCopied: boolean;
   handleCopyPix: () => void;
   handleCompleteOrder: () => void;
+  pixData: PixData | null;
+  boletoData: BoletoData | null;
 } {
   const {
     items,
@@ -54,18 +59,22 @@ export function usePaymentProcessing(params: {
     bestInternalShipping,
     selectedShippingOption,
     onComplete,
+    pixData = null,
+    boletoData = null,
   } = params;
 
   const [pixCopied, setPixCopied] = useState(false);
 
   const pixKey = useMemo(() => storeConfig?.pix_key || '', [storeConfig?.pix_key]);
 
+  // handleCopyPix agora usa qrCodePayload do Asaas se disponível
   const handleCopyPix = useCallback(() => {
-    if (!pixKey) return;
-    navigator.clipboard.writeText(pixKey);
+    const payload = pixData?.qrCodePayload || pixKey;
+    if (!payload) return;
+    navigator.clipboard.writeText(payload);
     setPixCopied(true);
     setTimeout(() => setPixCopied(false), 2000);
-  }, [pixKey]);
+  }, [pixData?.qrCodePayload, pixKey]);
 
   const handleCompleteOrder = useCallback(() => {
     if (userMode === UserMode.ATACADO) {
@@ -117,5 +126,5 @@ export function usePaymentProcessing(params: {
     userMode,
   ]);
 
-  return { pixCopied, handleCopyPix, handleCompleteOrder };
+  return { pixCopied, handleCopyPix, handleCompleteOrder, pixData, boletoData };
 }

@@ -7,6 +7,7 @@ export interface UserProfile {
   full_name: string;
   email: string;
   phone?: string;
+  cpf?: string;
   affiliate_code?: string;
   avatar_url?: string;
   role: 'admin' | 'customer' | 'editor' | 'affiliate';

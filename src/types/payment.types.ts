@@ -156,3 +156,19 @@ export interface SplitCardState {
   card1Options: InstallmentOption[];
   card2Options: InstallmentOption[];
 }
+
+// ==================== PIX/Boleto Data Types ====================
+
+export interface PixData {
+  qrCodeImage: string;
+  qrCodePayload: string;
+  expiresAt: Date;
+  paymentId: string;
+}
+
+export interface BoletoData {
+  barCode: string;
+  bankSlipUrl: string;
+  dueDate: Date;
+  paymentId: string;
+}

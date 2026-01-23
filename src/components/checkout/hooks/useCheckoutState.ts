@@ -3,11 +3,13 @@ import { PaymentMethod } from '../../../constants/enums';
 import { Locale } from '../../../i18n';
 import { CouponsApi } from '../../../api/coupons.api';
 import { PaymentsApi } from '../../../api/payments.api';
+import { OrdersApi } from '../../../api/orders.api';
+import { UsersApi } from '../../../api/users.api';
 import { formatCurrency } from '../../../utils/currency';
 import { MAPBOX_TOKEN, getMapboxStyle } from '../../../utils/mapbox';
 import { maskCep, maskCPF, maskCreditCard, maskExpiryDate, maskPhone, normalizeCepDigits, unmask } from '../../../utils/masks';
 import { LogisticsService } from '../../../services/logistics.service';
-import type { InstallmentOption } from '../../../types/payment.types';
+import type { InstallmentOption, PixData, BoletoData } from '../../../types/payment.types';
 import {
   AddressData,
   type CartItem,
@@ -46,6 +48,8 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const logisticsService = useMemo(() => new LogisticsService(), []);
   const couponsApi = useMemo(() => new CouponsApi(), []);
   const paymentsApi = useMemo(() => new PaymentsApi(), []);
+  const ordersApi = useMemo(() => new OrdersApi(), []);
+  const usersApi = useMemo(() => new UsersApi(), []);
 
   const [step, setStep] = useState(1);
   const [cep, setCep] = useState('');
@@ -60,8 +64,15 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const [num, setNum] = useState('');
   const [complement, setComplement] = useState('');
   const [phone, setPhone] = useState('');
-  const [cpf, setCpf] = useState('');
+  const [cpf, setCpf] = useState(currentUser?.cpf || '');
   const [cepError, setCepError] = useState<string | null>(null);
+
+  // Atualizar CPF quando currentUser mudar (ex: após login)
+  useEffect(() => {
+    if (currentUser?.cpf && !cpf) {
+      setCpf(currentUser.cpf);
+    }
+  }, [currentUser?.cpf]);
   const [manualCepError, setManualCepError] = useState<string | null>(null);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const [addressLoaded, setAddressLoaded] = useState(false);
@@ -86,6 +97,19 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const [card2Installments, setCard2Installments] = useState(1);
   const [card2InstallmentCode, setCard2InstallmentCode] = useState('INST_1');
   const [card2Options, setCard2Options] = useState<InstallmentOption[]>([]);
+
+  // PIX payment states
+  const [pixData, setPixData] = useState<PixData | null>(null);
+  const [pixLoading, setPixLoading] = useState(false);
+  const [pixError, setPixError] = useState<string | null>(null);
+
+  // Boleto payment states
+  const [boletoData, setBoletoData] = useState<BoletoData | null>(null);
+  const [boletoLoading, setBoletoLoading] = useState(false);
+  const [boletoError, setBoletoError] = useState<string | null>(null);
+
+  // General payment processing state
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
 
   const [selectedSavedCardId, setSelectedSavedCardId] = useState<string | null>(null);
   const [selectedSavedCardId2, setSelectedSavedCardId2] = useState<string | null>(null);
@@ -290,6 +314,226 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const handleCard2AmountChange = useCallback((amount: number) => {
     setCard2Amount(Math.round(amount * 100) / 100);
   }, []);
+
+  // Create PIX charge - returns true if successful, false otherwise
+  const createPixCharge = useCallback(async (orderId: string, customerInfo: {
+    name: string;
+    email: string;
+    cpfCnpj: string;
+    phone: string;
+    postalCode: string;
+    addressNumber: string;
+    addressComplement?: string;
+  }): Promise<boolean> => {
+    setPixLoading(true);
+    setPixError(null);
+    try {
+      console.log('[PIX] Criando cobrança para ordem:', orderId);
+      const response = await paymentsApi.processPayment({
+        orderId,
+        method: 'pix',
+        customerInfo
+      });
+      console.log('[PIX] Resposta do backend:', response);
+
+      if (response.qrCodeImage && response.qrCodePayload && response.expiresAt) {
+        setPixData({
+          qrCodeImage: response.qrCodeImage,
+          qrCodePayload: response.qrCodePayload,
+          expiresAt: new Date(response.expiresAt),
+          paymentId: response.paymentId
+        });
+        console.log('[PIX] pixData setado com sucesso');
+        return true;
+      } else {
+        console.error('[PIX] Resposta incompleta:', {
+          hasQrCodeImage: !!response.qrCodeImage,
+          hasQrCodePayload: !!response.qrCodePayload,
+          hasExpiresAt: !!response.expiresAt
+        });
+        setPixError('QR Code não foi gerado corretamente. Tente novamente.');
+        return false;
+      }
+    } catch (error) {
+      console.error('[PIX] Erro ao criar cobrança:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Erro ao gerar PIX';
+      setPixError(errorMsg);
+      return false;
+    } finally {
+      setPixLoading(false);
+    }
+  }, [paymentsApi]);
+
+  // Create Boleto charge
+  const createBoletoCharge = useCallback(async (orderId: string, customerInfo: {
+    name: string;
+    email: string;
+    cpfCnpj: string;
+    phone: string;
+    postalCode: string;
+    addressNumber: string;
+    addressComplement?: string;
+  }) => {
+    setBoletoLoading(true);
+    setBoletoError(null);
+    try {
+      const response = await paymentsApi.processPayment({
+        orderId,
+        method: 'boleto',
+        customerInfo
+      });
+      if (response.barCode && response.bankSlipUrl && response.dueDate) {
+        setBoletoData({
+          barCode: response.barCode,
+          bankSlipUrl: response.bankSlipUrl,
+          dueDate: new Date(response.dueDate),
+          paymentId: response.paymentId
+        });
+      }
+      return response;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Erro ao gerar boleto';
+      setBoletoError(errorMsg);
+      throw error;
+    } finally {
+      setBoletoLoading(false);
+    }
+  }, [paymentsApi]);
+
+  // Reset payment data
+  const resetPaymentData = useCallback(() => {
+    setPixData(null);
+    setPixError(null);
+    setBoletoData(null);
+    setBoletoError(null);
+  }, []);
+
+  // Complete order flow: create order then process payment
+  const completeOrderWithPayment = useCallback(async () => {
+    if (!address || !phone) {
+      throw new Error('Endereço e telefone são obrigatórios');
+    }
+
+    // Validate CPF for Asaas (usa CPF do perfil se disponível)
+    const cpfValue = currentUser?.cpf || cpf;
+    const cleanCpf = cpfValue.replace(/\D/g, '');
+    if (!cleanCpf || cleanCpf.length !== 11) {
+      const errorMsg = 'CPF é obrigatório para processar o pagamento';
+      if (paymentMethod === PaymentMethod.PIX) {
+        setPixError(errorMsg);
+      } else if (paymentMethod === PaymentMethod.BOLETO) {
+        setBoletoError(errorMsg);
+      }
+      throw new Error(errorMsg);
+    }
+
+    setPaymentProcessing(true);
+    resetPaymentData();
+
+    try {
+      // Get shipping info
+      const shippingToUse = userMode === UserMode.ATACADO && shipping.selectedShippingOption
+        ? {
+            selected_carrier: shipping.selectedShippingOption.provider,
+            method: shipping.selectedShippingOption.method,
+            real_cost: shipping.selectedShippingOption.real_cost,
+            estimated_days: shipping.selectedShippingOption.estimated_days,
+            display_price_was: shipping.selectedShippingOption.display_price_was,
+            display_days_was: shipping.selectedShippingOption.display_days_was,
+          }
+        : shipping.bestInternalShipping;
+
+      if (!shippingToUse) {
+        throw new Error('Informações de frete não disponíveis');
+      }
+
+      const finalAddress = { ...address, numero: num, complemento: complement };
+
+      // 1. Create order first
+      const order = await ordersApi.create({
+        items: items,
+        addressData: finalAddress,
+        logisticsInfo: shippingToUse,
+        paymentMethod,
+        subtotal: subtotal,
+        finalAmount: finalTotal,
+      });
+
+      // Salvar CPF no perfil se usuário não tem CPF salvo
+      const cpfToUse = currentUser?.cpf || cpf;
+      if (!currentUser?.cpf && cpf) {
+        try {
+          await usersApi.updateProfile({ cpf: cpf.replace(/\D/g, '') });
+        } catch {
+          // Silencioso - não bloquear checkout se falhar salvar CPF
+          console.warn('Falha ao salvar CPF no perfil');
+        }
+      }
+
+      // 2. Build customer info for payment
+      const customerInfo = {
+        name: currentUser?.full_name || currentUser?.name || '',
+        email: currentUser?.email || '',
+        cpfCnpj: cpfToUse.replace(/\D/g, ''),
+        phone: phone.replace(/\D/g, ''),
+        postalCode: address.cep?.replace(/\D/g, '') || '',
+        addressNumber: num,
+        addressComplement: complement || undefined,
+      };
+
+      // 3. Process payment based on method
+      if (paymentMethod === PaymentMethod.PIX) {
+        const pixSuccess = await createPixCharge(order.id, customerInfo);
+        // Go back to payment step to show QR code only if PIX was created successfully
+        if (pixSuccess) {
+          setStep(2);
+        }
+        // If failed, user stays on step 3 to see the error
+      } else if (paymentMethod === PaymentMethod.BOLETO) {
+        await createBoletoCharge(order.id, customerInfo);
+        // Go back to payment step to show boleto
+        setStep(2);
+      } else if (paymentMethod === PaymentMethod.CREDIT_CARD) {
+        // For credit card, we need card data
+        // This will be handled by the original onComplete flow
+        onComplete(finalAddress, shippingToUse, paymentMethod, finalTotal, saveCardForFuture, undefined, phone);
+      }
+
+      return order;
+    } catch (error) {
+      console.error('Error completing order:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Erro ao processar pedido';
+      if (paymentMethod === PaymentMethod.PIX) {
+        setPixError(errorMsg);
+      } else if (paymentMethod === PaymentMethod.BOLETO) {
+        setBoletoError(errorMsg);
+      }
+      throw error;
+    } finally {
+      setPaymentProcessing(false);
+    }
+  }, [
+    address,
+    phone,
+    userMode,
+    shipping.selectedShippingOption,
+    shipping.bestInternalShipping,
+    num,
+    complement,
+    items,
+    paymentMethod,
+    subtotal,
+    finalTotal,
+    currentUser,
+    cpf,
+    ordersApi,
+    usersApi,
+    createPixCharge,
+    createBoletoCharge,
+    onComplete,
+    saveCardForFuture,
+    resetPaymentData,
+  ]);
 
   // Validation for split cards
   const splitCardsValid = useMemo(() => {
@@ -754,11 +998,17 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
       }
     }
 
+    // Validar bairro obrigatório (backend exige min 1 char)
+    if (!manualAddress.neighborhood || manualAddress.neighborhood.trim() === '') {
+      setManualCepError('Bairro é obrigatório');
+      return;
+    }
+
     const formattedCep = finalCep ? maskCep(finalCep) : '';
 
     setAddress({
       logradouro: manualAddress.street,
-      bairro: manualAddress.neighborhood || '',
+      bairro: manualAddress.neighborhood,
       localidade: manualAddress.city,
       uf: manualAddress.state,
       cep: formattedCep || undefined,
@@ -798,7 +1048,12 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
         if (!res.ok) throw new Error('CEP lookup failed');
         const data = await res.json();
         if (data.erro) throw new Error('CEP not found');
-        setAddress(data);
+        // Garantir que bairro nunca seja vazio (backend exige min 1 char)
+        const bairro = data.bairro && data.bairro.trim() ? data.bairro : 'Centro';
+        setAddress({
+          ...data,
+          bairro: bairro
+        });
         setIsManualAddress(false);
         shipping.calculateLogistics(cleaned);
       } catch {
@@ -806,9 +1061,11 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
           const resFallback = await fetch(`https://cep.awesomeapi.com.br/json/${cleaned}`);
           if (!resFallback.ok) throw new Error('Fallback failed');
           const dataFallback = await resFallback.json();
+          // Garantir que bairro nunca seja vazio (backend exige min 1 char)
+          const bairro = dataFallback.district || dataFallback.address_name || 'Centro';
           setAddress({
             logradouro: dataFallback.address || '',
-            bairro: dataFallback.district || '',
+            bairro: bairro,
             localidade: dataFallback.city || '',
             uf: dataFallback.state || '',
           });
@@ -840,6 +1097,8 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     bestInternalShipping: shipping.bestInternalShipping,
     selectedShippingOption: shipping.selectedShippingOption,
     onComplete,
+    pixData,
+    boletoData,
   });
 
   return {
@@ -945,6 +1204,19 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     handleSelectCard2Installments,
     handleApplyCoupon,
     handleRemoveCoupon,
+    // PIX/Boleto states and functions
+    pixData,
+    pixLoading,
+    pixError,
+    boletoData,
+    boletoLoading,
+    boletoError,
+    paymentProcessing,
+    setPaymentProcessing,
+    createPixCharge,
+    createBoletoCharge,
+    resetPaymentData,
+    completeOrderWithPayment,
     getLoc,
     mapContainerRef,
     pickerContainerRef,
