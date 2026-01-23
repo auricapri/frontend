@@ -256,140 +256,75 @@ export const MapPicker: React.FC<MapPickerProps> = ({
 
   return (
     <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-500">
-      <div className="bg-white w-full max-w-5xl rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-[85vh] md:h-[70vh]">
-        <div className="w-full md:w-1/2 relative bg-neutral-100 flex items-center justify-center">
-          <div ref={pickerContainerRef} className="w-full h-full" />
-          <div className="absolute top-8 left-8 right-8 z-10">
-            <div className="relative group">
-              <input
-                className="w-full p-6 pr-16 bg-white border-none rounded-2xl shadow-2xl text-xs font-black uppercase tracking-widest outline-none placeholder:text-neutral-300"
-                placeholder="Busque sua rua e cidade..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handlePickerSearch()}
-              />
-              <button
-                onClick={handlePickerSearch}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black text-white rounded-xl hover:scale-105 transition-all"
-              >
-                {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-              </button>
-            </div>
-            {searchResults.length > 0 && (
-              <div className="mt-2 bg-white rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-top-2">
-                {searchResults.map((res, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSelectSearchResult(res)}
-                    className="w-full p-4 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors"
-                  >
-                    <p className="text-[10px] font-black uppercase tracking-widest">{res.text}</p>
-                    <p className="text-[9px] text-neutral-400 truncate">{res.place_name}</p>
-                  </button>
-                ))}
-              </div>
-            )}
+      <div className="bg-white w-full max-w-4xl rounded-[3rem] overflow-hidden shadow-2xl h-[85vh] md:h-[70vh] relative">
+        {/* Botão de Fechar */}
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 z-20 p-4 bg-white rounded-full hover:bg-neutral-100 transition-all shadow-lg"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Mapa */}
+        <div ref={pickerContainerRef} className="w-full h-full" />
+
+        {/* Input de Busca sobre o Mapa */}
+        <div className="absolute top-6 left-6 right-20 z-10">
+          <div className="relative group">
+            <input
+              className="w-full p-6 pr-16 bg-white border-none rounded-2xl shadow-2xl text-xs font-black uppercase tracking-widest outline-none placeholder:text-neutral-300"
+              placeholder="Busque sua rua e cidade..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handlePickerSearch()}
+            />
+            <button
+              onClick={handlePickerSearch}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black text-white rounded-xl hover:scale-105 transition-all"
+            >
+              {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            </button>
           </div>
+
+          {/* Resultados da Busca */}
+          {searchResults.length > 0 && (
+            <div className="mt-2 bg-white rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-top-2 max-h-80 overflow-y-auto">
+              {searchResults.map((res, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSelectSearchResult(res)}
+                  className="w-full p-4 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors"
+                >
+                  <p className="text-[10px] font-black uppercase tracking-widest">{res.text}</p>
+                  <p className="text-[9px] text-neutral-400 truncate">{res.place_name}</p>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-        
-        <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-between overflow-y-auto no-scrollbar">
-          <div className="space-y-12">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-black uppercase italic tracking-tighter leading-none mb-2">
-                  Localizador
-                </h2>
-                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                  Confirme os detalhes do endereço
-                </p>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-4 bg-neutral-50 rounded-full hover:bg-neutral-100 transition-all"
-              >
-                <X className="w-5 h-5" />
-              </button>
+
+        {/* Botão de Confirmação na parte inferior */}
+        {(manualAddress.street && manualAddress.city) && (
+          <div className="absolute bottom-6 left-6 right-6 z-10">
+            <div className="bg-white rounded-2xl shadow-2xl p-4 mb-4">
+              <p className="text-[8px] font-black uppercase tracking-widest text-neutral-400 mb-1">Endereço Selecionado:</p>
+              <p className="text-xs font-black uppercase">
+                {manualAddress.street}
+                {manualAddress.neighborhood && `, ${manualAddress.neighborhood}`}
+                {manualAddress.city && `, ${manualAddress.city}`}
+                {manualAddress.state && `/${manualAddress.state}`}
+                {manualAddress.cep && ` - ${manualAddress.cep}`}
+              </p>
             </div>
-            
-            <div className="space-y-8">
-              <div className="space-y-2">
-                <label className="text-[8px] font-black uppercase tracking-widest text-neutral-400">
-                  Rua / Logradouro
-                </label>
-                <input
-                  className="w-full p-5 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-black uppercase outline-none focus:border-black transition-all"
-                  value={manualAddress.street}
-                  onChange={e => setManualAddress({...manualAddress, street: e.target.value})}
-                  placeholder="NOME DA RUA"
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[8px] font-black uppercase tracking-widest text-neutral-400">
-                    Bairro
-                  </label>
-                  <input
-                    className="w-full p-5 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
-                    value={manualAddress.neighborhood}
-                    onChange={e => setManualAddress({...manualAddress, neighborhood: e.target.value})}
-                    placeholder="BAIRRO"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[8px] font-black uppercase tracking-widest text-neutral-400">
-                    Cidade
-                  </label>
-                  <input
-                    className="w-full p-5 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
-                    value={manualAddress.city}
-                    onChange={e => setManualAddress({...manualAddress, city: e.target.value})}
-                    placeholder="CIDADE"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[8px] font-black uppercase tracking-widest text-neutral-400">
-                    Estado
-                  </label>
-                  <input
-                    className="w-full p-5 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
-                    value={manualAddress.state}
-                    onChange={e => setManualAddress({...manualAddress, state: e.target.value.toUpperCase()})}
-                    placeholder="UF"
-                    maxLength={2}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[8px] font-black uppercase tracking-widest text-neutral-400">
-                    CEP
-                  </label>
-                  <input
-                    className="w-full p-5 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
-                    value={manualAddress.cep}
-                    onChange={e => {
-                      const value = e.target.value.replace(/\D/g, '');
-                      const formatted = value.replace(/(\d{5})(\d{3})/, '$1-$2');
-                      setManualAddress({...manualAddress, cep: formatted});
-                    }}
-                    placeholder="00000-000"
-                    maxLength={9}
-                  />
-                </div>
-              </div>
-            </div>
+            <button
+              onClick={confirmManualAddress}
+              disabled={!manualAddress.street || !manualAddress.city}
+              className="w-full py-6 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95 disabled:opacity-20 transition-all"
+            >
+              <Check className="w-4 h-4" /> Confirmar Localização
+            </button>
           </div>
-          
-          <button
-            onClick={confirmManualAddress}
-            disabled={!manualAddress.street || !manualAddress.city || !manualAddress.neighborhood}
-            className="w-full py-8 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 mt-12 hover:scale-[1.02] active:scale-95 disabled:opacity-20 transition-all"
-          >
-            <Check className="w-4 h-4" /> Confirmar Localização
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );
