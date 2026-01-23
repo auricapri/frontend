@@ -381,7 +381,6 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
 
     try {
       const pricingApi = new PricingApi();
-      const payloadFinancial: GlobalFinancialSettings | undefined = (global as any).financialConfig || undefined;
 
       const response = await pricingApi.calculateMatrix({
         variants,
@@ -394,7 +393,7 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
           ads_cac_target: activeScenario.ads_cac_target,
         },
         hasFreeShipping: productData.has_free_shipping,
-        financialSettings: payloadFinancial,
+        financialSettings: _globalConfig,
       });
 
       setSimulationResults(response.results);
