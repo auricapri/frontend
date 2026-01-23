@@ -79,5 +79,43 @@ export class PaymentsApi {
   async update(id: string, updates: Partial<Payment>): Promise<Payment> {
     return apiClient.put<Payment>(`/payments/${id}`, updates);
   }
+
+  // ==================== Financial (Admin Only) ====================
+
+  /**
+   * Busca saldo da conta Asaas (admin only)
+   */
+  async getBalance(): Promise<{
+    provider: string;
+    balance: number;
+    pendingBalance: number;
+    totalBalance: number;
+    currency: string;
+    lastUpdate: string;
+  }> {
+    return apiClient.get('/payments/balance');
+  }
+
+  /**
+   * Busca transações da conta Asaas (admin only)
+   */
+  async getTransactions(params?: {
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+  }): Promise<{
+    provider: string;
+    transactions: Array<{
+      id: string;
+      type: string;
+      value: number;
+      netValue: number;
+      date: string;
+      description: string;
+    }>;
+    total: number;
+  }> {
+    return apiClient.get('/payments/transactions', { params });
+  }
 }
 

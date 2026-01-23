@@ -562,6 +562,50 @@ export class MarketplaceApi {
       download_images: options?.download_images ?? true,
     });
   }
+
+  // ============================================
+  // FINANCIAL (Admin Only)
+  // ============================================
+
+  /**
+   * Get Mercado Livre account balance.
+   */
+  async getMercadoLivreBalance(): Promise<{
+    provider: string;
+    balance: number;
+    pending: number;
+    total: number;
+    currency: string;
+    lastUpdate: string;
+  }> {
+    return apiClient.get(`${BASE_PATH}/mercado-livre/balance`);
+  }
+
+  /**
+   * Get Mercado Livre sales summary.
+   */
+  async getMercadoLivreSales(days: number = 30): Promise<{
+    totalOrders: number;
+    totalRevenue: number;
+    totalFees: number;
+    netRevenue: number;
+  }> {
+    return apiClient.get(`${BASE_PATH}/mercado-livre/sales`, { params: { days } });
+  }
+
+  /**
+   * Get TikTok Shop account balance.
+   */
+  async getTikTokShopBalance(): Promise<{
+    provider: string;
+    balance: number;
+    pending: number;
+    total: number;
+    currency: string;
+    lastUpdate: string;
+  }> {
+    return apiClient.get(`${BASE_PATH}/tiktok-shop/balance`);
+  }
 }
 
 // ============================================
