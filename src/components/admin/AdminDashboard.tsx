@@ -196,6 +196,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
     }
   };
 
+  // Função para gerar slug a partir do nome
+  const generateSlug = (name: string | { pt?: string; en?: string } | undefined): string => {
+    const text = typeof name === 'string'
+      ? name
+      : (name?.pt || name?.en || '');
+
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^a-z0-9]+/g, '-') // Substitui caracteres especiais por hífen
+      .replace(/^-+|-+$/g, '') // Remove hífens do início e fim
+      .substring(0, 100) // Limita tamanho
+      || `produto-${Date.now()}`; // Fallback se vazio
+  };
+
   const handleSaveItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem) return;
@@ -209,18 +225,33 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       delete payload._associatedProductIds; // Virtual field - computed client-side only
 
       if (type === 'product') {
+        // Gerar slug automaticamente se não existir
+        if (!payload.slug || payload.slug.trim() === '') {
+          payload.slug = generateSlug(payload.name);
+        }
+
         if (data.id) {
           await productsApi.update(data.id, { ...payload, variants });
         } else {
           await productsApi.create({ ...payload, variants });
         }
       } else if (type === 'collection') {
+        // Gerar slug automaticamente se não existir
+        if (!payload.slug || payload.slug.trim() === '') {
+          payload.slug = generateSlug(payload.name);
+        }
+
         if (data.id) {
           await collectionsApi.update(data.id, payload);
         } else {
           await collectionsApi.create(payload);
         }
       } else if (type === 'category') {
+        // Gerar slug automaticamente se não existir
+        if (!payload.slug || payload.slug.trim() === '') {
+          payload.slug = generateSlug(payload.name);
+        }
+
         if (data.id) {
           await storeApi.updateCategory(data.id, payload);
         } else {
