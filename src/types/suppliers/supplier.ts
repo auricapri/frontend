@@ -21,6 +21,8 @@ export interface Supplier {
   minimum_wholesale_value?: number | null;
   website?: string | null;
   notes?: string | null;
+  categories?: string[] | null;
+  material_rating?: number | null;
   average_rating: number;
   total_reviews: number;
   is_active: boolean;
