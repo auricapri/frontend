@@ -1,11 +1,12 @@
 import React from 'react';
-import { Check, CheckCircle2, ChevronRight, Copy, CreditCard, CreditCard as CardIcon, FileText, Lock, QrCode } from 'lucide-react';
+import { Check, CheckCircle2, ChevronRight, Copy, CreditCard, CreditCard as CardIcon, FileText, Lock, QrCode, Loader2, ExternalLink } from 'lucide-react';
 import { PaymentMethod } from '../../../constants/enums';
 import { formatCurrency } from '../../../utils/currency';
 import { type CheckoutState } from '../hooks/useCheckoutState';
 import { InstallmentSelector } from '../InstallmentSelector';
 import { SplitCardAmount } from '../SplitCardAmount';
 import { CreditCardPreview } from '../CreditCardPreview';
+import { PixCountdown } from '../PixCountdown';
 
 export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
   const {
@@ -63,6 +64,13 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
     handleSelectCard1Installments,
     handleSelectCard2Installments,
     splitCardsValid,
+    // PIX/Boleto states
+    pixData,
+    pixLoading,
+    pixError,
+    boletoData,
+    boletoLoading,
+    boletoError,
   } = checkout;
 
   return (
@@ -443,48 +451,138 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
       {paymentMethod === PaymentMethod.PIX && (
         <div className="bg-neutral-900 text-white rounded-[3rem] p-10 md:p-16 flex flex-col items-center text-center space-y-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="p-6 bg-white rounded-[2.5rem] shadow-inner">
-            <QrCode className="w-40 h-40 text-black" />
+            {pixLoading ? (
+              <div className="w-40 h-40 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-black animate-spin" />
+              </div>
+            ) : pixData?.qrCodeImage ? (
+              <img
+                src={`data:image/png;base64,${pixData.qrCodeImage}`}
+                alt="QR Code PIX"
+                className="w-40 h-40"
+              />
+            ) : (
+              <QrCode className="w-40 h-40 text-black" />
+            )}
           </div>
+
+          {/* Countdown de expiração */}
+          {pixData?.expiresAt && (
+            <PixCountdown expiresAt={pixData.expiresAt} />
+          )}
+
+          {pixError && (
+            <div className="bg-red-500/20 border border-red-500/50 rounded-2xl px-6 py-3">
+              <span className="text-red-400 text-sm">{pixError}</span>
+            </div>
+          )}
+
           <div className="space-y-3">
-            <h4 className="text-xl font-black uppercase italic tracking-tighter">Escanear QR Code</h4>
+            <h4 className="text-xl font-black uppercase italic tracking-tighter">
+              {pixData ? 'Escaneie o QR Code' : 'QR Code será gerado ao confirmar'}
+            </h4>
             <p className="text-xs text-white/40 max-w-xs mx-auto leading-relaxed">
-              Abra o app do seu banco e aponte a câmera. O pagamento é processado instantaneamente.
+              {pixData
+                ? 'Abra o app do seu banco e aponte a câmera. O pagamento é processado instantaneamente.'
+                : 'O QR Code com validade de 10 minutos será exibido após confirmar o pedido.'}
             </p>
           </div>
-          <button
-            onClick={payment.handleCopyPix}
-            className="flex items-center gap-4 px-10 py-5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group"
-          >
-            <Copy className="w-4 h-4 text-white/60 group-hover:text-white" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em]">{payment.pixCopied ? 'Copiado!' : 'Copiar Chave PIX'}</span>
-          </button>
+
+          {pixData && (
+            <button
+              onClick={payment.handleCopyPix}
+              className="flex items-center gap-4 px-10 py-5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group"
+            >
+              <Copy className="w-4 h-4 text-white/60 group-hover:text-white" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+                {payment.pixCopied ? 'Copiado!' : 'Copiar Código PIX'}
+              </span>
+            </button>
+          )}
         </div>
       )}
 
       {paymentMethod === PaymentMethod.BOLETO && (
         <div className="bg-neutral-900 text-white rounded-[3rem] p-10 md:p-16 flex flex-col items-center text-center space-y-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="p-6 bg-white rounded-[2.5rem] shadow-inner">
-            <FileText className="w-40 h-40 text-black" />
+            {boletoLoading ? (
+              <div className="w-40 h-40 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-black animate-spin" />
+              </div>
+            ) : (
+              <FileText className="w-40 h-40 text-black" />
+            )}
           </div>
+
+          {boletoError && (
+            <div className="bg-red-500/20 border border-red-500/50 rounded-2xl px-6 py-3">
+              <span className="text-red-400 text-sm">{boletoError}</span>
+            </div>
+          )}
+
           <div className="space-y-3">
-            <h4 className="text-xl font-black uppercase italic tracking-tighter">Boleto Bancário</h4>
+            <h4 className="text-xl font-black uppercase italic tracking-tighter">
+              {boletoData ? 'Boleto Gerado' : 'Boleto Bancário'}
+            </h4>
             <p className="text-xs text-white/40 max-w-xs mx-auto leading-relaxed">
-              O boleto será gerado após a confirmação do pedido. Você terá 3 dias úteis para efetuar o pagamento.
+              {boletoData
+                ? `Vencimento: ${boletoData.dueDate.toLocaleDateString('pt-BR')}`
+                : 'O boleto será gerado após a confirmação do pedido. Você terá 3 dias úteis para efetuar o pagamento.'}
             </p>
           </div>
+
           <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/10 space-y-4 w-full max-w-md">
             <div className="flex items-center justify-between">
               <span className="text-xs font-black uppercase tracking-wider text-white/60">Valor do boleto</span>
               <span className="text-lg font-black">{formatCurrency(finalTotal, locale)}</span>
             </div>
-            <div className="flex items-center gap-3 text-[10px] text-white/40">
-              <div className="w-2 h-2 rounded-full bg-white/40" />
-              <span>O boleto será enviado por e-mail e ficará disponível na área do pedido</span>
-            </div>
-            <div className="flex items-center gap-3 text-[10px] text-white/40">
-              <div className="w-2 h-2 rounded-full bg-white/40" />
-              <span>Após o pagamento, a confirmação pode levar até 3 dias úteis</span>
-            </div>
+
+            {boletoData ? (
+              <>
+                {/* Linha digitável */}
+                <div className="space-y-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-white/60 block">Linha Digitável</span>
+                  <div className="bg-white/5 p-4 rounded-xl">
+                    <p className="font-mono text-xs break-all text-white/80">{boletoData.barCode}</p>
+                  </div>
+                </div>
+
+                {/* Botões de ação */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(boletoData.barCode);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl transition-all"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">Copiar</span>
+                  </button>
+                  {boletoData.bankSlipUrl && (
+                    <a
+                      href={boletoData.bankSlipUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl transition-all"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span className="text-[10px] font-black uppercase tracking-wider">Abrir PDF</span>
+                    </a>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 text-[10px] text-white/40">
+                  <div className="w-2 h-2 rounded-full bg-white/40" />
+                  <span>O boleto será enviado por e-mail e ficará disponível na área do pedido</span>
+                </div>
+                <div className="flex items-center gap-3 text-[10px] text-white/40">
+                  <div className="w-2 h-2 rounded-full bg-white/40" />
+                  <span>Após o pagamento, a confirmação pode levar até 3 dias úteis</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

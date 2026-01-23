@@ -11,7 +11,7 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 4
+      "actualWorkers": 1
     },
     "preserveOutput": "always",
     "reporter": [
@@ -39,7 +39,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 4
+          "actualWorkers": 1
         },
         "id": "chromium",
         "name": "chromium",
@@ -55,14 +55,14 @@
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
         ],
-        "timeout": 30000
+        "timeout": 180000
       },
       {
         "outputDir": "/Users/marcuslirio/Desktop/auricapri/auricapri/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 4
+          "actualWorkers": 1
         },
         "id": "webkit",
         "name": "webkit",
@@ -78,7 +78,7 @@
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
         ],
-        "timeout": 30000
+        "timeout": 180000
       }
     ],
     "shard": null,
@@ -91,224 +91,282 @@
   },
   "suites": [
     {
-      "title": "auth.spec.ts",
-      "file": "auth.spec.ts",
+      "title": "pix-checkout.spec.ts",
+      "file": "pix-checkout.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Authentication",
-          "file": "auth.spec.ts",
+          "title": "PIX Checkout Flow",
+          "file": "pix-checkout.spec.ts",
           "line": 2,
           "column": 6,
           "specs": [
             {
-              "title": "should open auth drawer",
+              "title": "Complete PIX checkout flow with QR code generation",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "location": {
-                        "file": "/Users/marcuslirio/Desktop/auricapri/auricapri/tests/auth.spec.ts",
-                        "line": 21,
-                        "column": 12
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "skipped",
-                      "duration": 2882,
+                      "status": "passed",
+                      "duration": 51415,
                       "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-01-14T23:18:48.837Z",
-                      "annotations": [
+                      "stdout": [
                         {
-                          "type": "skip",
-                          "location": {
-                            "file": "/Users/marcuslirio/Desktop/auricapri/auricapri/tests/auth.spec.ts",
-                            "line": 21,
-                            "column": 12
-                          }
+                          "text": "Step 1: Going to homepage...\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m200\u001b[39m http://localhost:3000/src/api/orders.api.ts\n"
+                        },
+                        {
+                          "text": "Login buttons found: \u001b[33m2\u001b[39m\n"
+                        },
+                        {
+                          "text": "Found visible login button at index: \u001b[33m1\u001b[39m\n"
+                        },
+                        {
+                          "text": "Clicking auth button...\n"
+                        },
+                        {
+                          "text": "Screenshot 00: Auth drawer opened\n"
+                        },
+                        {
+                          "text": "Email input visible: \u001b[33mtrue\u001b[39m Password visible: \u001b[33mtrue\u001b[39m\n"
+                        },
+                        {
+                          "text": "Filling login form...\n"
+                        },
+                        {
+                          "text": "Submit button visible: \u001b[33mtrue\u001b[39m\n"
+                        },
+                        {
+                          "text": "Clicked login submit button\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m200\u001b[39m http://localhost:3002/api/orders\n"
+                        },
+                        {
+                          "text": "Screenshot 01: After login\n"
+                        },
+                        {
+                          "text": "Step 2: Scrolling to products...\n"
+                        },
+                        {
+                          "text": "Screenshot 02: Products section\n"
+                        },
+                        {
+                          "text": "Product cards found: \u001b[33m1\u001b[39m\n"
+                        },
+                        {
+                          "text": "Clicking first product card...\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m200\u001b[39m http://localhost:3000/src/api/payments.api.ts\n"
+                        },
+                        {
+                          "text": "Screenshot 03: Product detail page\n"
+                        },
+                        {
+                          "text": "Size buttons found: \u001b[33m2\u001b[39m\n"
+                        },
+                        {
+                          "text": "Clicking size: M\n"
+                        },
+                        {
+                          "text": "Screenshot 04: Size selected\n"
+                        },
+                        {
+                          "text": "Add to cart buttons found: \u001b[33m1\u001b[39m\n"
+                        },
+                        {
+                          "text": "Add to cart button enabled: \u001b[33mtrue\u001b[39m\n"
+                        },
+                        {
+                          "text": "Clicking add to cart...\n"
+                        },
+                        {
+                          "text": "Screenshot 05: After add to cart\n"
+                        },
+                        {
+                          "text": "Step 3: Going to checkout...\n"
+                        },
+                        {
+                          "text": "Request FAILED: https://www.google-analytics.com/g/collect?v=2&tid=G-XXXXXXXXXX&gtm=45je61m0za200&_p=1769203930756&gcs=G1-0&gcd=13l3p3l3l5l1&npa=0&dma=0&cid=33203806.1769203932&ul=en-us&sr=1280x800&frm=0&pscdl=noapi&_s=2&tag_exp=103116026~103200004~104527906~104528500~104573694~104684208~104684211~105391252~115495939~115616985~115938465~115938468~116185181~116185182~116682875~116992598~117041588&sid=1769203931&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fproduct%2Fmaxi&dt=Auricapri&en=user_engagement&_et=22272&tfd=23709 cancelled\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m304\u001b[39m http://localhost:3000/src/api/orders.api.ts\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m304\u001b[39m http://localhost:3000/src/api/payments.api.ts\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m200\u001b[39m http://localhost:3002/api/payments/installment-options/163.77\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m200\u001b[39m http://localhost:3002/api/payments/installment-options/163.77\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m200\u001b[39m http://localhost:3002/api/orders\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m200\u001b[39m http://localhost:3002/api/orders\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m200\u001b[39m http://localhost:3002/api/orders\n"
+                        },
+                        {
+                          "text": "Screenshot 06: Checkout initial state\n"
+                        },
+                        {
+                          "text": "Cart is empty: \u001b[33mfalse\u001b[39m\n"
+                        },
+                        {
+                          "text": "Step 4: Filling address...\n"
+                        },
+                        {
+                          "text": "CEP filled: 01310100\n"
+                        },
+                        {
+                          "text": "Number filled: 100\n"
+                        },
+                        {
+                          "text": "CPF filled: 12345678909\n"
+                        },
+                        {
+                          "text": "Screenshot 07: Address filled\n"
+                        },
+                        {
+                          "text": "Step 5: Clicking Confirmar e Pagar...\n"
+                        },
+                        {
+                          "text": "Confirm button enabled: \u001b[33mtrue\u001b[39m\n"
+                        },
+                        {
+                          "text": "Screenshot 08: Payment step\n"
+                        },
+                        {
+                          "text": "Step 6: Selecting PIX...\n"
+                        },
+                        {
+                          "text": "PIX selected\n"
+                        },
+                        {
+                          "text": "Screenshot 09: PIX selected\n"
+                        },
+                        {
+                          "text": "Step 7: Clicking Revisar Pedido...\n"
+                        },
+                        {
+                          "text": "Review step opened\n"
+                        },
+                        {
+                          "text": "Screenshot 10: Review step\n"
+                        },
+                        {
+                          "text": "Step 8: Clicking CONCLUIR COMPRA...\n"
+                        },
+                        {
+                          "text": "Clicking complete order button...\n"
+                        },
+                        {
+                          "text": "Button showing PROCESSANDO: \u001b[33mtrue\u001b[39m\n"
+                        },
+                        {
+                          "text": "Waiting for PIX generation...\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m201\u001b[39m http://localhost:3002/api/orders\n"
+                        },
+                        {
+                          "text": "CONSOLE: error Failed to load resource: the server responded with a status of 500 (Internal Server Error)\n"
+                        },
+                        {
+                          "text": "CONSOLE: log [PIX] Criando cobrança para ordem: 5701abc3-4382-4891-ac2a-23b6f85bbf3e\n"
+                        },
+                        {
+                          "text": "API Response: \u001b[33m200\u001b[39m http://localhost:3002/api/payments/process\n"
+                        },
+                        {
+                          "text": "CONSOLE: log [PIX] Resposta do backend: {success: true, paymentId: pay_qr1ownjp501aiwbb, status: pending, qrCodeImage: iVBORw0KGgoAAAANSUhEUgAAAcIAAAHCAQAAAABUY/ToAAADEU…yqUo+VcmnKvlUJZ/qw8jfghz4NGZHyOsAAAAASUVORK5CYII=, qrCodePayload: 00020101021226820014br.gov.bcb.pix2560pix-h.asaas.…RCIA 6009Sao Paulo61080226806062070503***6304536A}\n"
+                        },
+                        {
+                          "text": "CONSOLE: log [PIX] pixData setado com sucesso\n"
+                        },
+                        {
+                          "text": "On REVISÃO step: \u001b[33mfalse\u001b[39m\n"
+                        },
+                        {
+                          "text": "On PAGAMENTO step: \u001b[33mfalse\u001b[39m\n"
+                        },
+                        {
+                          "text": "Screenshot 11: PIX QR code page\n"
+                        },
+                        {
+                          "text": "Step 9: Verifying QR Code...\n"
+                        },
+                        {
+                          "text": "Real QR Code Image found: \u001b[33mtrue\u001b[39m\n"
+                        },
+                        {
+                          "text": "Placeholder still visible: \u001b[33mfalse\u001b[39m\n"
+                        },
+                        {
+                          "text": "QR Code src starts with: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAcIA\n"
+                        },
+                        {
+                          "text": "Copy PIX button visible: \u001b[33mtrue\u001b[39m\n"
+                        },
+                        {
+                          "text": "Countdown timer visible: \u001b[33mtrue\u001b[39m\n"
+                        },
+                        {
+                          "text": "Countdown value: 525927:00\n"
+                        },
+                        {
+                          "text": "Screenshot 12: Final state\n"
+                        },
+                        {
+                          "text": "\n=== PIX CHECKOUT TEST SUMMARY ===\n"
+                        },
+                        {
+                          "text": "Real QR Code displayed: \u001b[33mtrue\u001b[39m\n"
+                        },
+                        {
+                          "text": "Copy button visible: \u001b[33mtrue\u001b[39m\n"
+                        },
+                        {
+                          "text": "Countdown timer visible: \u001b[33mtrue\u001b[39m\n"
+                        },
+                        {
+                          "text": "Placeholder showing: \u001b[33mfalse\u001b[39m\n"
+                        },
+                        {
+                          "text": "SUCCESS: PIX checkout flow working correctly!\n"
                         }
                       ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-23T21:32:05.755Z",
+                      "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "skipped"
+                  "status": "expected"
                 }
               ],
-              "id": "d748ac400d08b85935ef-743edba00af412b68b44",
-              "file": "auth.spec.ts",
-              "line": 3,
-              "column": 3
-            },
-            {
-              "title": "should display login form",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "location": {
-                        "file": "/Users/marcuslirio/Desktop/auricapri/auricapri/tests/auth.spec.ts",
-                        "line": 46,
-                        "column": 12
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "skipped",
-                      "duration": 2887,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-01-14T23:18:48.850Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "location": {
-                            "file": "/Users/marcuslirio/Desktop/auricapri/auricapri/tests/auth.spec.ts",
-                            "line": 46,
-                            "column": 12
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d748ac400d08b85935ef-f59d996942ffc8c4898b",
-              "file": "auth.spec.ts",
-              "line": 26,
-              "column": 3
-            },
-            {
-              "title": "should open auth drawer",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "location": {
-                        "file": "/Users/marcuslirio/Desktop/auricapri/auricapri/tests/auth.spec.ts",
-                        "line": 21,
-                        "column": 12
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [
-                    {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
-                      "status": "skipped",
-                      "duration": 4228,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-01-14T23:18:48.841Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "location": {
-                            "file": "/Users/marcuslirio/Desktop/auricapri/auricapri/tests/auth.spec.ts",
-                            "line": 21,
-                            "column": 12
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d748ac400d08b85935ef-30c2b6fffebddd7d41b3",
-              "file": "auth.spec.ts",
-              "line": 3,
-              "column": 3
-            },
-            {
-              "title": "should display login form",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "location": {
-                        "file": "/Users/marcuslirio/Desktop/auricapri/auricapri/tests/auth.spec.ts",
-                        "line": 46,
-                        "column": 12
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [
-                    {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
-                      "status": "skipped",
-                      "duration": 4220,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-01-14T23:18:48.840Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "location": {
-                            "file": "/Users/marcuslirio/Desktop/auricapri/auricapri/tests/auth.spec.ts",
-                            "line": 46,
-                            "column": 12
-                          }
-                        }
-                      ],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d748ac400d08b85935ef-ed498a9fad4c1d63b41b",
-              "file": "auth.spec.ts",
-              "line": 26,
+              "id": "c3895da6542fa81f1397-2289af40f52c9315a642",
+              "file": "pix-checkout.spec.ts",
+              "line": 32,
               "column": 3
             }
           ]
@@ -318,10 +376,10 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-01-14T23:18:46.996Z",
-    "duration": 8182.768999999999,
-    "expected": 0,
-    "skipped": 4,
+    "startTime": "2026-01-23T21:32:04.196Z",
+    "duration": 56030.729,
+    "expected": 1,
+    "skipped": 0,
     "unexpected": 0,
     "flaky": 0
   }

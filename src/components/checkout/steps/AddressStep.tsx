@@ -163,18 +163,35 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
               />
             </div>
           )}
-          <div className="md:col-span-2 space-y-3">
-            <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
-              CPF <span className="text-neutral-300">(opcional para nota fiscal)</span>
-            </label>
-            <input
-              className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-mono"
-              placeholder="000.000.000-00"
-              value={cpf}
-              onChange={(e) => setCpf(maskCPF(e.target.value))}
-              maxLength={14}
-            />
-          </div>
+          {currentUser?.cpf ? (
+            <div className="md:col-span-2 space-y-3">
+              <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+                CPF
+              </label>
+              <div className="w-full p-6 bg-neutral-50 border border-green-200 rounded-2xl font-mono flex justify-between items-center">
+                <span>{maskCPF(currentUser.cpf)}</span>
+                <span className="text-xs text-neutral-400">Para alterar, acesse seu perfil</span>
+              </div>
+            </div>
+          ) : (
+            <div className="md:col-span-2 space-y-3">
+              <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+                CPF <span className="text-red-500">*</span>
+              </label>
+              <input
+                className={`w-full p-6 bg-neutral-50 border ${
+                  cpf && cpf.replace(/\D/g, '').length === 11 ? 'border-green-300' : cpf ? 'border-orange-200' : 'border-neutral-100'
+                } rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-mono`}
+                placeholder="000.000.000-00"
+                value={cpf}
+                onChange={(e) => setCpf(maskCPF(e.target.value))}
+                maxLength={14}
+              />
+              {cpf && cpf.replace(/\D/g, '').length !== 11 && (
+                <p className="text-xs text-orange-500 font-medium">CPF deve ter 11 dígitos</p>
+              )}
+            </div>
+          )}
         </div>
         <button
           onClick={() => address && setStep(2)}
@@ -182,7 +199,8 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             !address ||
             !num ||
             !shipping.bestInternalShipping ||
-            ((!currentUser?.phone || !currentUser.phone.trim()) && (!phone || phone.trim().length < 10))
+            ((!currentUser?.phone || !currentUser.phone.trim()) && (!phone || phone.trim().length < 10)) ||
+            (!currentUser?.cpf && (!cpf || cpf.replace(/\D/g, '').length !== 11))
           }
           className="w-full md:w-auto px-16 py-8 bg-black text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] transition-all disabled:opacity-20 active:scale-95"
         >

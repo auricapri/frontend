@@ -147,7 +147,12 @@ export function useShippingCalculation(params: {
             price: logisticsInfo.display_price_was,
             days: logisticsInfo.display_days_was,
           };
-          resultBestInternalShipping = logisticsInfo;
+          // For varejo (retail) users, shipping is always free (displayed as GRÁTIS)
+          // Keep display_price_was for showing the "original" price crossed out
+          resultBestInternalShipping = {
+            ...logisticsInfo,
+            real_cost: 0, // Free shipping for varejo users
+          };
         }
 
         // Atualiza estados
