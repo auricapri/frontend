@@ -10,7 +10,7 @@ export interface Supplier {
   tiktok_url?: string | null;
   guarantees_stock: boolean;
   address?: AddressData | null;
-  phone?: string | null;
+  phones?: string[] | null;
   email?: string | null;
   comments?: string | null;
   cnpj?: string | null;

@@ -24,7 +24,7 @@ const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onC
     tiktok_url: supplier?.tiktok_url || null,
     guarantees_stock: supplier?.guarantees_stock || false,
     address: supplier?.address || null,
-    phone: supplier?.phone || null,
+    phones: supplier?.phones || [],
     email: supplier?.email || null,
     comments: supplier?.comments || null,
     cnpj: supplier?.cnpj || null,
@@ -41,6 +41,7 @@ const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onC
   });
 
   const [categoryInput, setCategoryInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
 
   const [uploading, setUploading] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -83,25 +84,21 @@ const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onC
     try {
       const cleanedData = { ...formData };
 
-      // Converter address de objeto para string se necessário
-      if (cleanedData.address && typeof cleanedData.address === 'object') {
-        const addr = cleanedData.address as AddressData;
-        const parts = [];
-        if (addr.logradouro) parts.push(addr.logradouro);
-        if (addr.numero) parts.push(`nº ${addr.numero}`);
-        if (addr.bairro) parts.push(addr.bairro);
-        if (addr.localidade) parts.push(addr.localidade);
-        if (addr.uf) parts.push(addr.uf);
-        if (addr.cep) parts.push(`CEP: ${addr.cep}`);
-        (cleanedData as any).address = parts.length > 0 ? parts.join(', ') : null;
-      }
-
+      // Limpar strings vazias
       Object.keys(cleanedData).forEach(key => {
         const value = (cleanedData as any)[key];
         if (typeof value === 'string' && value.trim() === '') {
           (cleanedData as any)[key] = null;
         }
       });
+
+      // Limpar arrays vazios
+      if (cleanedData.phones && cleanedData.phones.length === 0) {
+        cleanedData.phones = null;
+      }
+      if (cleanedData.categories && cleanedData.categories.length === 0) {
+        cleanedData.categories = null;
+      }
 
       await onSave(cleanedData);
       onClose();
@@ -345,15 +342,62 @@ const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onC
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-3 block flex items-center gap-2">
-                      <Phone className="w-3 h-3" /> Telefone
+                      <Phone className="w-3 h-3" /> Telefones
                     </label>
-                    <input
-                      type="text"
-                      className="w-full p-5 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-black outline-none focus:border-black transition-all"
-                      placeholder="(00) 00000-0000"
-                      value={formData.phone || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    />
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          className="flex-1 p-3 bg-neutral-50 border border-neutral-100 rounded-xl text-sm outline-none focus:border-black transition-all"
+                          placeholder="(00) 00000-0000"
+                          value={phoneInput}
+                          onChange={(e) => setPhoneInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && phoneInput.trim()) {
+                              e.preventDefault();
+                              const newPhones = [...(formData.phones || []), phoneInput.trim()];
+                              setFormData(prev => ({ ...prev, phones: newPhones }));
+                              setPhoneInput('');
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (phoneInput.trim()) {
+                              const newPhones = [...(formData.phones || []), phoneInput.trim()];
+                              setFormData(prev => ({ ...prev, phones: newPhones }));
+                              setPhoneInput('');
+                            }
+                          }}
+                          className="px-4 py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                      {formData.phones && formData.phones.length > 0 && (
+                        <div className="space-y-2">
+                          {formData.phones.map((phone, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center justify-between px-3 py-2 bg-neutral-100 rounded-lg"
+                            >
+                              <span className="text-sm font-medium">{phone}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newPhones = formData.phones?.filter((_, i) => i !== idx);
+                                  setFormData(prev => ({ ...prev, phones: newPhones }));
+                                }}
+                                className="hover:text-red-500 transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-3 block flex items-center gap-2">
