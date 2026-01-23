@@ -230,6 +230,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
           payload.slug = generateSlug(payload.name);
         }
 
+        // Garantir que description tenha valor padrão
+        if (!payload.description) {
+          payload.description = typeof payload.name === 'object'
+            ? { pt: '', en: '' }
+            : '';
+        }
+
         if (data.id) {
           await productsApi.update(data.id, { ...payload, variants });
         } else {
@@ -241,6 +248,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
           payload.slug = generateSlug(payload.name);
         }
 
+        // Garantir que description tenha valor padrão
+        if (!payload.description) {
+          payload.description = typeof payload.name === 'object'
+            ? { pt: '', en: '' }
+            : '';
+        }
+        }
+
         if (data.id) {
           await collectionsApi.update(data.id, payload);
         } else {
@@ -250,6 +265,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
         // Gerar slug automaticamente se não existir
         if (!payload.slug || payload.slug.trim() === '') {
           payload.slug = generateSlug(payload.name);
+        }
+
+        // Garantir que description tenha valor padrão
+        if (!payload.description) {
+          payload.description = typeof payload.name === 'object'
+            ? { pt: '', en: '' }
+            : '';
         }
 
         if (data.id) {
