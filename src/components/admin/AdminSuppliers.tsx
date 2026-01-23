@@ -159,10 +159,14 @@ const AdminSuppliers: React.FC<AdminSuppliersProps> = ({
                       <span className="text-xs line-clamp-2">{formatAddress(supplier.address)}</span>
                     </div>
                   )}
-                  {supplier.phone && (
-                    <div className="flex items-center gap-2 text-neutral-600">
-                      <Phone className="w-4 h-4 flex-shrink-0" />
-                      <span className="text-xs">{supplier.phone}</span>
+                  {supplier.phones && supplier.phones.length > 0 && (
+                    <div className="flex items-start gap-2 text-neutral-600">
+                      <Phone className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <div className="flex flex-col gap-1">
+                        {supplier.phones.map((phone, idx) => (
+                          <span key={idx} className="text-xs">{phone}</span>
+                        ))}
+                      </div>
                     </div>
                   )}
                   {supplier.email && (
