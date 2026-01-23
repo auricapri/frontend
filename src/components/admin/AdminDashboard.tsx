@@ -212,6 +212,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       || `produto-${Date.now()}`; // Fallback se vazio
   };
 
+  // Função utilitária para preparar payload com slug e description padrão
+  const preparePayloadWithSlugAndDescription = (payload: Record<string, unknown>): void => {
+    // Gerar slug automaticamente se não existir
+    if (!payload.slug || (typeof payload.slug === 'string' && payload.slug.trim() === '')) {
+      payload.slug = generateSlug(payload.name as string | { pt?: string; en?: string });
+    }
+
+    // Garantir que description tenha valor padrão
+    if (!payload.description) {
+      payload.description = typeof payload.name === 'object'
+        ? { pt: '', en: '' }
+        : '';
+    }
+  };
+
   const handleSaveItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem) return;
@@ -225,55 +240,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
       delete payload._associatedProductIds; // Virtual field - computed client-side only
 
       if (type === 'product') {
-        // Gerar slug automaticamente se não existir
-        if (!payload.slug || payload.slug.trim() === '') {
-          payload.slug = generateSlug(payload.name);
-        }
-
-        // Garantir que description tenha valor padrão
-        if (!payload.description) {
-          payload.description = typeof payload.name === 'object'
-            ? { pt: '', en: '' }
-            : '';
-        }
-
+        preparePayloadWithSlugAndDescription(payload);
         if (data.id) {
           await productsApi.update(data.id, { ...payload, variants });
         } else {
           await productsApi.create({ ...payload, variants });
         }
       } else if (type === 'collection') {
-        // Gerar slug automaticamente se não existir
-        if (!payload.slug || payload.slug.trim() === '') {
-          payload.slug = generateSlug(payload.name);
-        }
-
-        // Garantir que description tenha valor padrão
-        if (!payload.description) {
-          payload.description = typeof payload.name === 'object'
-            ? { pt: '', en: '' }
-            : '';
-        }
-        }
-
+        preparePayloadWithSlugAndDescription(payload);
         if (data.id) {
           await collectionsApi.update(data.id, payload);
         } else {
           await collectionsApi.create(payload);
         }
       } else if (type === 'category') {
-        // Gerar slug automaticamente se não existir
-        if (!payload.slug || payload.slug.trim() === '') {
-          payload.slug = generateSlug(payload.name);
-        }
-
-        // Garantir que description tenha valor padrão
-        if (!payload.description) {
-          payload.description = typeof payload.name === 'object'
-            ? { pt: '', en: '' }
-            : '';
-        }
-
+        preparePayloadWithSlugAndDescription(payload);
         if (data.id) {
           await storeApi.updateCategory(data.id, payload);
         } else {
