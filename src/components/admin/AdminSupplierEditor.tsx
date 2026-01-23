@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Save, Upload, Image as ImageIcon, Loader2, MapPin, Instagram, Facebook, Globe, Phone, Mail, Building2, User, FileText, Truck, Package, DollarSign } from 'lucide-react';
+import { X, Save, Upload, Image as ImageIcon, Loader2, MapPin, Instagram, Facebook, Globe, Phone, Mail, Building2, User, FileText, Truck, Package, DollarSign, Tag, Star } from 'lucide-react';
 import { AddressData } from '../../types';
 import { Supplier } from '../../types/suppliers';
 import { supabase } from '../../utils/supabase';
@@ -35,8 +35,12 @@ const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onC
     minimum_wholesale_value: supplier?.minimum_wholesale_value || null,
     website: supplier?.website || null,
     notes: supplier?.notes || null,
+    categories: supplier?.categories || [],
+    material_rating: supplier?.material_rating || null,
     is_active: supplier?.is_active !== undefined ? supplier.is_active : true,
   });
+
+  const [categoryInput, setCategoryInput] = useState('');
 
   const [uploading, setUploading] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -78,7 +82,20 @@ const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onC
     setIsSaving(true);
     try {
       const cleanedData = { ...formData };
-      
+
+      // Converter address de objeto para string se necessário
+      if (cleanedData.address && typeof cleanedData.address === 'object') {
+        const addr = cleanedData.address as AddressData;
+        const parts = [];
+        if (addr.logradouro) parts.push(addr.logradouro);
+        if (addr.numero) parts.push(`nº ${addr.numero}`);
+        if (addr.bairro) parts.push(addr.bairro);
+        if (addr.localidade) parts.push(addr.localidade);
+        if (addr.uf) parts.push(addr.uf);
+        if (addr.cep) parts.push(`CEP: ${addr.cep}`);
+        (cleanedData as any).address = parts.length > 0 ? parts.join(', ') : null;
+      }
+
       Object.keys(cleanedData).forEach(key => {
         const value = (cleanedData as any)[key];
         if (typeof value === 'string' && value.trim() === '') {
@@ -220,6 +237,109 @@ const AdminSupplierEditor: React.FC<AdminSupplierEditorProps> = ({ supplier, onC
                     value={formData.store_name || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, store_name: e.target.value }))}
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-3 block flex items-center gap-2">
+                      <Tag className="w-3 h-3" /> Categorias do Fornecedor
+                    </label>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          className="flex-1 p-3 bg-neutral-50 border border-neutral-100 rounded-xl text-sm outline-none focus:border-black transition-all"
+                          placeholder="Ex: Roupas, Calçados, Acessórios"
+                          value={categoryInput}
+                          onChange={(e) => setCategoryInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && categoryInput.trim()) {
+                              e.preventDefault();
+                              const newCategories = [...(formData.categories || []), categoryInput.trim()];
+                              setFormData(prev => ({ ...prev, categories: newCategories }));
+                              setCategoryInput('');
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (categoryInput.trim()) {
+                              const newCategories = [...(formData.categories || []), categoryInput.trim()];
+                              setFormData(prev => ({ ...prev, categories: newCategories }));
+                              setCategoryInput('');
+                            }
+                          }}
+                          className="px-4 py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-colors"
+                        >
+                          Adicionar
+                        </button>
+                      </div>
+                      {formData.categories && formData.categories.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {formData.categories.map((cat, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-2 px-3 py-1.5 bg-neutral-100 rounded-lg text-xs font-medium"
+                            >
+                              <span>{cat}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newCategories = formData.categories?.filter((_, i) => i !== idx);
+                                  setFormData(prev => ({ ...prev, categories: newCategories }));
+                                }}
+                                className="hover:text-red-500 transition-colors"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-3 block flex items-center gap-2">
+                      <Star className="w-3 h-3" /> Nota do Material (1-5)
+                    </label>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 p-5 bg-neutral-50 border border-neutral-100 rounded-2xl">
+                        {[1, 2, 3, 4, 5].map((rating) => (
+                          <button
+                            key={rating}
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, material_rating: rating }))}
+                            className={`transition-all ${
+                              formData.material_rating && formData.material_rating >= rating
+                                ? 'text-yellow-400 scale-110'
+                                : 'text-neutral-300 hover:text-yellow-200'
+                            }`}
+                          >
+                            <Star
+                              className="w-8 h-8"
+                              fill={formData.material_rating && formData.material_rating >= rating ? 'currentColor' : 'none'}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                      {formData.material_rating && (
+                        <div className="text-center">
+                          <span className="text-sm font-black">
+                            Avaliação: {formData.material_rating}/5
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, material_rating: null }))}
+                            className="ml-3 text-xs text-red-500 hover:underline"
+                          >
+                            Limpar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">

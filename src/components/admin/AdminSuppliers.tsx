@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Store, Star, Trash2, Edit, MapPin, Phone, Mail, Globe } from 'lucide-react';
+import { Plus, Store, Star, Trash2, Edit, MapPin, Phone, Mail, Globe, Tag } from 'lucide-react';
 import { Supplier } from '../../types/suppliers';
 
 interface AdminSuppliersProps {
@@ -100,6 +100,57 @@ const AdminSuppliers: React.FC<AdminSuppliersProps> = ({
                     </div>
                   )}
                 </div>
+
+                {(supplier.categories && supplier.categories.length > 0) || supplier.material_rating ? (
+                  <div className="space-y-3 py-3 border-y border-neutral-200">
+                    {supplier.categories && supplier.categories.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Tag className="w-3 h-3 text-neutral-400" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                            Categorias
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {supplier.categories.map((cat, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-1 bg-neutral-100 rounded-md text-[10px] font-medium text-neutral-600"
+                            >
+                              {cat}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {supplier.material_rating && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Star className="w-3 h-3 text-neutral-400" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                            Nota do Material
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((rating) => (
+                            <Star
+                              key={rating}
+                              className={`w-4 h-4 ${
+                                supplier.material_rating && supplier.material_rating >= rating
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'text-neutral-300'
+                              }`}
+                            />
+                          ))}
+                          <span className="ml-2 text-xs font-bold text-neutral-600">
+                            {supplier.material_rating}/5
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
 
                 <div className="space-y-2 text-sm">
                   {supplier.address && (
