@@ -133,6 +133,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
 
     try {
       // Usa singletons de API em vez de criar novas instâncias
+      // Admin methods - no cache, direct database queries
       const [
         productsData,
         categoriesData,
@@ -147,16 +148,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
         suppliersData,
         campaignsData
       ] = await Promise.all([
-        productsApi.getAll(),
+        productsApi.getAllAdmin(),
         storeApi.getAllCategoriesAdmin(),
-        collectionsApi.getAll(),
-        bannersApi.getAll(),
-        couponsApi.getAll(),
-        assetsApi.getAll(),
+        collectionsApi.getAllAdmin(),
+        bannersApi.getAllAdmin(),
+        couponsApi.getAllAdmin(),
+        assetsApi.getAllAdmin(),
         ordersApi.getAllAdmin(),
         usersApi.getAll(),
-        storeApi.getConfig(),
-        guidesApi.getAll(),
+        storeApi.getConfigAdmin(),
+        guidesApi.getAllAdmin(),
         suppliersApi.getAll(),
         marketingApi.getCampaigns()
       ]);

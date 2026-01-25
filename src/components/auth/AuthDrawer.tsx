@@ -82,8 +82,6 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
         throw new Error('Redirect URL não configurada. Configure VITE_FRONTEND_URL no arquivo .env');
       }
 
-      console.log('OAuth redirect URL:', redirectUrl); // Debug log
-
       // Build OAuth options based on provider
       const oauthOptions: { redirectTo: string; scopes?: string } = {
         redirectTo: redirectUrl

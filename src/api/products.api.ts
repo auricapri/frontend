@@ -18,6 +18,13 @@ export class ProductsApi {
     return apiClient.get<Product[]>(`/products/all${query ? `?${query}` : ''}`);
   }
 
+  /**
+   * Admin method - no cache, returns all products directly from database
+   */
+  async getAllAdmin(): Promise<Product[]> {
+    return apiClient.get<Product[]>('/products/all');
+  }
+
   async getById(id: string): Promise<Product | null> {
     return apiClient.get<Product | null>(`/products/${id}`);
   }

@@ -6,6 +6,10 @@ export class BannersApi {
     return apiClient.get<Banner[]>('/banners');
   }
 
+  async getAllAdmin(): Promise<Banner[]> {
+    return apiClient.get<Banner[]>('/banners/admin');
+  }
+
   async create(banner: Partial<Banner>): Promise<Banner> {
     return apiClient.post<Banner>('/banners', banner);
   }

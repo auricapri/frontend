@@ -32,16 +32,6 @@ class ApiClient {
       const { supabase } = await import('../utils/supabase');
       const { data: { session }, error } = await supabase.auth.getSession();
 
-      // DEBUG: Log para diagnóstico em produção
-      if (import.meta.env.DEV || !session) {
-        console.log('[Auth Debug]', {
-          hasSession: !!session,
-          hasToken: !!session?.access_token,
-          error: error?.message,
-          expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : null
-        });
-      }
-
       if (error) {
         console.error('[Auth Error]', error);
         return null;

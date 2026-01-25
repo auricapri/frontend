@@ -8,10 +8,7 @@ import { formatCurrency } from '../../utils/currency';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
 import { useProductFilters } from '../../hooks/useProductFilters';
-import { useIsMobile } from '../../hooks/useIsMobile';
-import { FilterBottomSheet } from './FilterBottomSheet';
 import { FilterSidebar } from './FilterSidebar';
-import { FilterContent } from './FilterContent';
 import { QuickAddModal } from './QuickAddModal';
 
 // Helper to extract unique colors from product variants
@@ -67,7 +64,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [quickAddProduct, setQuickAddProduct] = useState<Product | null>(null);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [internalGender, setInternalGender] = useState<Gender>(Gender.FEMALE);
-  const isMobile = useIsMobile();
 
   // Use external gender if provided, otherwise use internal state
   const selectedGender = externalGender ?? internalGender;
@@ -295,60 +291,30 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         </div>
       </div>
 
-      {/* Mobile: Bottom Sheet */}
-      {isMobile && (
-        <FilterBottomSheet
-          isOpen={isFiltersOpen}
-          onClose={() => setIsFiltersOpen(false)}
-          hasActiveFilters={hasActiveFilters}
-          productCount={filteredAndSortedProducts.length}
-          onClear={clearFilters}
-          t={t}
-        >
-          <FilterContent
+      {/* Main Content Area - Sidebar + Products */}
+      <div className="">
+        <div className="flex">
+          {/* Sidebar - Unificado Mobile/Desktop */}
+          <FilterSidebar
+            isOpen={isFiltersOpen}
+            onClose={() => setIsFiltersOpen(false)}
             availableSizes={availableSizes}
             selectedSizes={selectedSizes}
             sizeCounts={sizeCounts}
+            toggleSize={toggleSize}
             priceBounds={priceBounds}
             priceMin={priceMin}
             priceMax={priceMax}
-            sortBy={sortBy}
-            toggleSize={toggleSize}
             setPriceRange={setPriceRange}
+            sortBy={sortBy}
             setSortBy={setSortBy}
+            onClear={clearFilters}
+            onApply={() => {}}
+            hasActiveFilters={hasActiveFilters}
+            productCount={filteredAndSortedProducts.length}
             locale={locale}
             t={t}
-            isMobile={true}
           />
-        </FilterBottomSheet>
-      )}
-
-      {/* Main Content Area - Desktop Sidebar + Products */}
-      <div className="">
-        <div className="flex">
-          {/* Desktop: Sidebar */}
-          {!isMobile && (
-            <FilterSidebar
-              isOpen={isFiltersOpen}
-              onClose={() => setIsFiltersOpen(false)}
-              availableSizes={availableSizes}
-              selectedSizes={selectedSizes}
-              sizeCounts={sizeCounts}
-              toggleSize={toggleSize}
-              priceBounds={priceBounds}
-              priceMin={priceMin}
-              priceMax={priceMax}
-              setPriceRange={setPriceRange}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              onClear={clearFilters}
-              onApply={() => {}}
-              hasActiveFilters={hasActiveFilters}
-              productCount={filteredAndSortedProducts.length}
-              locale={locale}
-              t={t}
-            />
-          )}
 
           {/* Product Grid */}
           <div className="flex-1 min-w-0">
@@ -357,7 +323,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <p className="text-[11px] text-neutral-500 uppercase tracking-wider font-medium">
                 {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? 'produto' : 'produtos'}
               </p>
-              {hasActiveFilters && !isMobile && (
+              {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
                   className="text-[11px] text-neutral-500 hover:text-neutral-900 underline underline-offset-2 transition-colors"
@@ -373,8 +339,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               </div>
             ) : (
               <div className={`grid ${
-                isFiltersOpen && !isMobile
-                  ? 'grid-cols-3'
+                isFiltersOpen
+                  ? 'grid-cols-2 md:grid-cols-3'
                   : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
               }`}>
                 {!isLoading && currentProducts.map(p => {

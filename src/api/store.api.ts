@@ -46,8 +46,22 @@ export class StoreApi {
     return apiClient.get<StoreConfig | null>('/store/config');
   }
 
+  /**
+   * Admin method - no cache, returns config directly from database
+   */
+  async getConfigAdmin(): Promise<StoreConfig | null> {
+    return apiClient.get<StoreConfig | null>('/store/config/admin');
+  }
+
   async getAllSizeGuides(): Promise<SizeGuide[]> {
     return apiClient.get<SizeGuide[]>('/store/size-guides');
+  }
+
+  /**
+   * Admin method - no cache, returns all size guides directly from database
+   */
+  async getAllSizeGuidesAdmin(): Promise<SizeGuide[]> {
+    return apiClient.get<SizeGuide[]>('/store/size-guides/admin');
   }
 
   async updateConfig(config: Partial<StoreConfig>): Promise<StoreConfig> {

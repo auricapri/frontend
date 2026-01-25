@@ -6,6 +6,13 @@ export class AssetsApi {
     return apiClient.get<Asset[]>('/assets');
   }
 
+  /**
+   * Admin method - no cache, returns all assets directly from database
+   */
+  async getAllAdmin(): Promise<Asset[]> {
+    return apiClient.get<Asset[]>('/assets/all');
+  }
+
   async getById(id: string): Promise<Asset | null> {
     return apiClient.get<Asset | null>(`/assets/${id}`);
   }

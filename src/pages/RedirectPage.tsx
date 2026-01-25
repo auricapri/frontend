@@ -53,13 +53,6 @@ const RedirectPage: React.FC<RedirectPageProps> = ({ url, onNavigate, locale: _l
 
   const handleRedirect = () => {
     if (!url) return;
-    
-    // Log the redirect attempt
-    console.log(`[Redirect] Navigating to: ${url} at ${new Date().toISOString()}`);
-    
-    // In a real app, we would send this to our backend logging service
-    // fetch('/api/logs/redirect', { method: 'POST', body: JSON.stringify({ url, timestamp: new Date() }) });
-
     setStatus('success');
     window.location.href = url;
   };
