@@ -105,7 +105,7 @@ const Navbar: React.FC<NavbarProps> = ({
     <>
       <nav
         className={`fixed ${topOffset} left-0 w-full z-50 transition-all duration-700 select-none will-change-transform
-          ${isSolid ? 'h-24 md:h-20' : 'h-28 md:h-24'}
+          ${isSolid ? 'h-24 md:h-20' : 'h-32 md:h-24'}
         `}
         style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
@@ -119,8 +119,94 @@ const Navbar: React.FC<NavbarProps> = ({
           style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
         />
 
-        {/* Layout Unificado: 3 Colunas (Mobile + Desktop) */}
-        <div className={`flex relative w-full h-full max-w-[1920px] mx-auto px-6 md:px-12 items-center justify-between transition-colors duration-500
+        {/* Mobile Layout: Stacked (Title on top, buttons below) */}
+        <div className={`md:hidden relative w-full h-full max-w-[1920px] mx-auto px-6 flex flex-col justify-center transition-colors duration-500
+          ${isSolid ? 'text-black' : 'text-white'}
+        `}>
+          {/* Row 1: Brand Name */}
+          <div className="text-center">
+            <div
+              onClick={() => handleNav('home')}
+              className="text-2xl font-light tracking-[0.3em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95"
+            >
+              {storeName}
+            </div>
+          </div>
+
+          {/* Row 2: Menu + Actions */}
+          <div className="flex items-center justify-between mt-2">
+            {/* Left: Menu/Back */}
+            <div className="flex items-center">
+              {isProductView ? (
+                <button
+                  onClick={onBack}
+                  className="group flex items-center gap-2 py-1 -ml-2 hover:opacity-50 transition-all active:scale-95"
+                >
+                  <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" strokeWidth={1.5} />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em]">{t('nav.back')}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsMenuOpen(true)}
+                  className="p-1 -ml-1 hover:opacity-50 transition-all active:scale-90"
+                >
+                  <Menu className="w-5 h-5" strokeWidth={1.2} />
+                </button>
+              )}
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="p-1.5 hover:opacity-50 transition-all active:scale-90"
+                aria-label="Search"
+              >
+                <Search className="w-5 h-5" strokeWidth={1.2} />
+              </button>
+
+              <button
+                onClick={onOpenAuth}
+                className="p-1.5 hover:opacity-50 transition-all active:scale-90"
+                aria-label={isLoggedIn ? 'Account' : 'Login'}
+              >
+                <User
+                  className={`w-5 h-5 ${isLoggedIn ? 'fill-current' : ''}`}
+                  strokeWidth={1.2}
+                />
+              </button>
+
+              <button
+                onClick={onOpenWishlist}
+                className="p-1.5 relative hover:opacity-50 transition-all active:scale-90"
+                aria-label="Wishlist"
+              >
+                <Heart className="w-5 h-5" strokeWidth={1.2} fill={wishlistCount > 0 ? "currentColor" : "none"} />
+                {wishlistCount > 0 && (
+                  <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                )}
+              </button>
+
+              <button
+                onClick={onOpenCart}
+                className="p-1.5 relative hover:opacity-50 transition-all active:scale-90"
+                aria-label="Cart"
+              >
+                <ShoppingBag className="w-5 h-5" strokeWidth={1.2} />
+                {cartCount > 0 && (
+                  <span className={`absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 rounded-full text-[7px] font-black flex items-center justify-center
+                    ${isSolid ? 'bg-black text-white' : 'bg-white text-black'}
+                  `}>
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Layout: 3 Columns */}
+        <div className={`hidden md:flex relative w-full h-full max-w-[1920px] mx-auto px-12 items-center justify-between transition-colors duration-500
           ${isSolid ? 'text-black' : 'text-white'}
         `}>
           {/* Left Col: Menu/Back */}
@@ -131,7 +217,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 className="group flex items-center gap-3 py-2 -ml-2 hover:opacity-50 transition-all active:scale-95"
               >
                 <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" strokeWidth={1.5} />
-                <span className="hidden sm:inline text-[9px] font-black uppercase tracking-[0.3em]">{t('nav.back')}</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.3em]">{t('nav.back')}</span>
               </button>
             ) : (
               <button
@@ -147,7 +233,7 @@ const Navbar: React.FC<NavbarProps> = ({
           <div className="flex-none text-center">
             <div
               onClick={() => handleNav('home')}
-              className="text-xl md:text-4xl font-light tracking-[0.3em] md:tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2"
+              className="text-4xl font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2"
             >
               {storeName}
             </div>
@@ -209,7 +295,7 @@ const Navbar: React.FC<NavbarProps> = ({
       <div
         className={`fixed left-0 w-full z-40 transition-all duration-700 ease-out overflow-hidden
           ${isSearchOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
-          ${isSolid ? 'top-24 md:top-20' : 'top-28 md:top-24'}
+          ${isSolid ? 'top-24 md:top-20' : 'top-32 md:top-24'}
         `}
         style={{ marginTop: showTestBanner ? '48px' : '0' }}
       >
