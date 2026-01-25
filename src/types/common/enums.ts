@@ -1,4 +1,8 @@
 /**
- * Re-export UserMode from @auricapri/shared
+ * Modo do usuário (Varejo ou Atacado)
+ * NOTA: Mantenha sincronizado com backend/src/shared/types/index.ts
  */
-export { UserMode } from '@auricapri/shared';
+export enum UserMode {
+  VAREJO = 'VAREJO',
+  ATACADO = 'ATACADO'
+}
