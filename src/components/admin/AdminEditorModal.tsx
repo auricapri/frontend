@@ -33,6 +33,7 @@ import { formatCurrency } from '../../utils/currency';
 import ProductDetail from '../product/ProductDetail';
 import { Hero } from '../shared';
 import CollectionDetail from '../product/CollectionDetail';
+import { RichTextEditor } from '../ui';
 import { PricingApi } from '../../api/pricing.api';
 import { HotspotsEditor } from './HotspotsEditor';
 
@@ -532,8 +533,25 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                           <input className="w-full p-8 bg-neutral-50 border border-neutral-100 rounded-[2rem] text-3xl font-black outline-none focus:bg-white focus:border-black transition-all" value={getLocVal(productData.name)} onChange={e => updateNested('name', e.target.value)} placeholder="Nome do Produto" />
                         </div>
                         <div className="space-y-4">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Descrição</label>
-                          <textarea className="w-full p-8 bg-neutral-50 border border-neutral-100 rounded-[2rem] text-sm font-medium min-h-[200px] outline-none focus:bg-white focus:border-black transition-all" value={getLocVal(productData.description)} onChange={e => updateNested('description', e.target.value)} placeholder="Descrição..." />
+                          <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Descrição ({item.editLocale})</label>
+                          <RichTextEditor
+                            mode="simple"
+                            value={getLocVal(productData.description)}
+                            onChange={(html) => updateNested('description', html)}
+                            placeholder="Descrição do produto..."
+                            minHeight="200px"
+                          />
+                        </div>
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Apresentação do Produto ({item.editLocale})</label>
+                          <p className="text-[8px] text-neutral-400 -mt-2">Adicione textos formatados, imagens e vídeos do YouTube para criar uma apresentação completa.</p>
+                          <RichTextEditor
+                            mode="full"
+                            value={getLocVal(productData.presentation)}
+                            onChange={(html) => updateNested('presentation', html)}
+                            placeholder="Apresentação completa do produto com textos, imagens e vídeos..."
+                            minHeight="400px"
+                          />
                         </div>
                         <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-4">
@@ -694,11 +712,23 @@ const AdminEditorModal: React.FC<AdminEditorModalProps> = ({
                                         <div className="flex items-center gap-4"><FileText className="w-5 h-5 text-neutral-400" /><h5 className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Composição & Cuidados</h5></div>
                                         <div className="space-y-3">
                                             <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Composição ({item.editLocale})</label>
-                                            <input className="w-full p-4 bg-neutral-50 rounded-xl text-xs font-medium border border-transparent focus:border-black outline-none transition-all" placeholder="Ex: 100% Algodão" value={getLocVal(v.composition)} onChange={e => updateVariantLocalized(idx, 'composition', e.target.value)} />
+                                            <RichTextEditor
+                                              mode="simple"
+                                              value={getLocVal(v.composition)}
+                                              onChange={(html) => updateVariantLocalized(idx, 'composition', html)}
+                                              placeholder="Ex: 100% Algodão"
+                                              minHeight="80px"
+                                            />
                                         </div>
                                         <div className="space-y-3">
                                             <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Cuidados ({item.editLocale})</label>
-                                            <textarea className="w-full p-4 bg-neutral-50 rounded-xl text-xs font-medium border border-transparent focus:border-black outline-none transition-all resize-none" placeholder="Ex: Lavar à mão..." rows={2} value={getLocVal(v.care_instructions)} onChange={e => updateVariantLocalized(idx, 'care_instructions', e.target.value)} />
+                                            <RichTextEditor
+                                              mode="simple"
+                                              value={getLocVal(v.care_instructions)}
+                                              onChange={(html) => updateVariantLocalized(idx, 'care_instructions', html)}
+                                              placeholder="Ex: Lavar à mão..."
+                                              minHeight="80px"
+                                            />
                                         </div>
                                     </div>
 

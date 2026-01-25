@@ -309,7 +309,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             sortBy={sortBy}
             setSortBy={setSortBy}
             onClear={clearFilters}
-            onApply={() => {}}
+            onApply={() => setIsFiltersOpen(false)}
             hasActiveFilters={hasActiveFilters}
             productCount={filteredAndSortedProducts.length}
             locale={locale}
@@ -378,7 +378,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                             <Heart className="w-3.5 h-3.5" fill={isWishlisted ? "currentColor" : "none"} />
                           </button>
 
-                          {/* Quick Add Button with Text Animation */}
+                          {/* Quick Add Button - Visível em mobile, animação apenas em desktop */}
                           {onAddToCart && (
                             <button
                               onClick={(e) => {
@@ -402,10 +402,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                                 }
                               }}
                               aria-label={t('product.addToCart')}
-                              className="absolute bottom-2 right-2 flex items-center gap-2 bg-black text-white rounded-full shadow-lg transition-all duration-300 ease-out opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 overflow-hidden whitespace-nowrap p-2.5 group-hover:pr-4 hover:scale-105 active:scale-95"
+                              className="absolute bottom-2 right-2 flex items-center gap-2 bg-black text-white rounded-full shadow-lg transition-all duration-300 ease-out overflow-hidden whitespace-nowrap opacity-100 translate-y-0 p-2 md:opacity-0 md:translate-y-2 md:p-2.5 md:group-hover:opacity-100 md:group-hover:translate-y-0 md:group-hover:pr-4 hover:scale-105 active:scale-95"
                             >
                               <ShoppingBag className="w-4 h-4 flex-shrink-0" />
-                              <span className="text-[11px] font-medium uppercase tracking-wider max-w-0 group-hover:max-w-[200px] transition-all duration-300 ease-out opacity-0 group-hover:opacity-100">
+                              <span className="text-[11px] font-medium uppercase tracking-wider hidden md:inline max-w-0 opacity-0 md:group-hover:max-w-[200px] md:group-hover:opacity-100 transition-all duration-300 ease-out">
                                 {t('product.addToCart')}
                               </span>
                             </button>

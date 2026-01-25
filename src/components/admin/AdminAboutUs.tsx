@@ -4,6 +4,7 @@ import { StoreConfig } from '../../types';
 import { Locale } from '../../i18n';
 import { Save, Upload, Loader2, Image as ImageIcon, BookOpen } from 'lucide-react';
 import { supabase } from '../../utils/supabase';
+import RichTextEditor from '../ui/RichTextEditor';
 
 interface AdminAboutUsProps {
   config: StoreConfig;
@@ -100,11 +101,12 @@ const AdminAboutUs: React.FC<AdminAboutUsProps> = ({ config, onChange, onSave, l
          <div className="space-y-6">
             <div className="bg-white p-8 rounded-[2.5rem] border border-neutral-100 shadow-sm h-full flex flex-col">
                 <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-6 block">Texto Institucional ({locale.toUpperCase()})</label>
-                <textarea 
-                    className="flex-1 w-full p-6 bg-neutral-50 border border-neutral-100 rounded-[2rem] text-sm font-medium leading-relaxed outline-none focus:bg-white focus:border-black transition-all resize-none"
-                    placeholder="Escreva a história da sua marca, missão e valores..."
+                <RichTextEditor
                     value={currentText}
-                    onChange={(e) => handleTextChange(e.target.value)}
+                    onChange={handleTextChange}
+                    mode="full"
+                    placeholder="Escreva a história da sua marca, missão e valores..."
+                    minHeight="400px"
                 />
             </div>
          </div>

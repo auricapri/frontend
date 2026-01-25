@@ -51,10 +51,12 @@ const AboutUs: React.FC<AboutUsProps> = ({ config, locale, onBack }) => {
               </h1>
               <div className="w-12 h-[2px] bg-black mb-12" />
               
-              <div className="prose prose-lg prose-neutral max-w-none text-neutral-600 font-medium leading-relaxed whitespace-pre-wrap">
-                {text ? text : (
+              <div className="prose prose-lg prose-neutral max-w-none text-neutral-600 font-medium leading-relaxed">
+                {text ? (
+                  <div dangerouslySetInnerHTML={{ __html: text }} />
+                ) : (
                   <p className="opacity-50">
-                    A história da marca ainda está sendo escrita. 
+                    A história da marca ainda está sendo escrita.
                     Em breve compartilharemos nossa jornada e valores com você.
                   </p>
                 )}

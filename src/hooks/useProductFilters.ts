@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Product, UserMode } from '../types';
 import {
   getAvailableSizes,
@@ -9,6 +9,7 @@ import {
   sortProducts,
   SortOption
 } from '../utils/productFilters';
+import { useDebounce } from './useDebounce';
 
 interface UseProductFiltersParams {
   products: Product[];
@@ -97,11 +98,15 @@ export function useProductFilters({
   userMode
 }: UseProductFiltersParams): UseProductFiltersReturn {
   const urlParams = parseUrlParams();
-  
+
   const [selectedSizes, setSelectedSizes] = useState<string[]>(urlParams.sizes);
   const [priceMin, setPriceMin] = useState<number | null>(urlParams.priceMin);
   const [priceMax, setPriceMax] = useState<number | null>(urlParams.priceMax);
   const [sortBy, setSortByState] = useState<SortOption>(urlParams.sort);
+
+  // Ref para evitar sync de URL no mount inicial
+  const isInitialMount = useRef(true);
+  const lastUrlUpdate = useRef<string>('');
   
   const categoryFilteredProducts = useMemo(() => {
     return products;
@@ -115,29 +120,45 @@ export function useProductFilters({
     return getPriceMinMax(categoryFilteredProducts, userMode);
   }, [categoryFilteredProducts, userMode]);
   
+  // Sincronizar estado com URL quando categoria/bounds mudam
+  // NÃO chamar updateUrlParams aqui para evitar loop
   useEffect(() => {
     const params = parseUrlParams();
     const validSizes = params.sizes.filter(size => availableSizes.includes(size));
-    
+
     let validPriceMin = params.priceMin;
     let validPriceMax = params.priceMax;
-    
+
     if (validPriceMin !== null && (validPriceMin < priceBounds.min || validPriceMin > priceBounds.max)) {
       validPriceMin = null;
     }
     if (validPriceMax !== null && (validPriceMax < priceBounds.min || validPriceMax > priceBounds.max)) {
       validPriceMax = null;
     }
-    
+
     setSelectedSizes(validSizes);
     setPriceMin(validPriceMin);
     setPriceMax(validPriceMax);
     setSortByState(params.sort);
-    
-    if (validSizes.length !== params.sizes.length || validPriceMin !== params.priceMin || validPriceMax !== params.priceMax) {
-      updateUrlParams(validSizes, validPriceMin, validPriceMax, params.sort);
-    }
   }, [activeCategory, availableSizes, priceBounds]);
+
+  // Debounced URL sync - separado para evitar loops
+  const debouncedUrlSync = useDebounce((sizes: string[], min: number | null, max: number | null, sort: SortOption) => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    const urlKey = `${sizes.join(',')}-${min}-${max}-${sort}`;
+    if (urlKey !== lastUrlUpdate.current) {
+      lastUrlUpdate.current = urlKey;
+      updateUrlParams(sizes, min, max, sort);
+    }
+  }, 300);
+
+  // Sync URL quando filtros mudam (com debounce)
+  useEffect(() => {
+    debouncedUrlSync(selectedSizes, priceMin, priceMax, sortBy);
+  }, [selectedSizes, priceMin, priceMax, sortBy, debouncedUrlSync]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -184,34 +205,29 @@ export function useProductFilters({
     return sortProducts(filteredProducts, sortBy, userMode);
   }, [filteredProducts, sortBy, userMode]);
   
+  // Funções que apenas atualizam estado - URL sync é feito pelo effect debounced
   const toggleSize = useCallback((size: string) => {
-    setSelectedSizes(prev => {
-      const newSizes = prev.includes(size)
+    setSelectedSizes(prev =>
+      prev.includes(size)
         ? prev.filter(s => s !== size)
-        : [...prev, size];
-      
-      updateUrlParams(newSizes, priceMin, priceMax, sortBy);
-      return newSizes;
-    });
-  }, [priceMin, priceMax, sortBy]);
-  
+        : [...prev, size]
+    );
+  }, []);
+
   const setPriceRange = useCallback((min: number | null, max: number | null) => {
     setPriceMin(min);
     setPriceMax(max);
-    updateUrlParams(selectedSizes, min, max, sortBy);
-  }, [selectedSizes, sortBy]);
-  
+  }, []);
+
   const setSortBy = useCallback((sort: SortOption) => {
     setSortByState(sort);
-    updateUrlParams(selectedSizes, priceMin, priceMax, sort);
-  }, [selectedSizes, priceMin, priceMax]);
-  
+  }, []);
+
   const clearFilters = useCallback(() => {
     setSelectedSizes([]);
     setPriceMin(null);
     setPriceMax(null);
     setSortByState('relevance');
-    updateUrlParams([], null, null, 'relevance');
   }, []);
   
   const hasActiveFilters = useMemo(() => {

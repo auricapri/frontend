@@ -37,23 +37,30 @@ export function HotspotPopup({
   // Calculate popup position (avoid going off screen)
   const popupStyle: React.CSSProperties = {
     position: 'absolute',
-    zIndex: 50
+    zIndex: 50,
   };
 
-  // Position popup based on hotspot location
-  if (position.x > 50) {
-    popupStyle.right = `${100 - position.x + 5}%`;
+  // Garantir distância mínima do topo (para não sobrepor o header)
+  const minTopOffset = 12; // Mínimo 12% do topo
+
+  // Position popup based on hotspot location - com margens maiores para mobile
+  if (position.x > 60) {
+    popupStyle.right = `${100 - position.x + 3}%`;
     popupStyle.left = 'auto';
-  } else {
-    popupStyle.left = `${position.x + 5}%`;
+  } else if (position.x < 40) {
+    popupStyle.left = `${position.x + 3}%`;
     popupStyle.right = 'auto';
+  } else {
+    // Centro horizontal - posicionar no centro
+    popupStyle.left = '50%';
+    popupStyle.transform = 'translateX(-50%)';
   }
 
-  if (position.y > 50) {
-    popupStyle.bottom = `${100 - position.y + 5}%`;
+  if (position.y > 60) {
+    popupStyle.bottom = `${100 - position.y + 3}%`;
     popupStyle.top = 'auto';
   } else {
-    popupStyle.top = `${position.y + 5}%`;
+    popupStyle.top = `${Math.max(position.y + 3, minTopOffset)}%`;
     popupStyle.bottom = 'auto';
   }
 
@@ -64,7 +71,7 @@ export function HotspotPopup({
     return (
       <div
         style={popupStyle}
-        className="bg-white rounded-2xl shadow-2xl overflow-hidden w-56 animate-in zoom-in-95 fade-in duration-200 p-4"
+        className="bg-white rounded-2xl shadow-2xl overflow-hidden w-48 md:w-56 max-w-[calc(100vw-2rem)] animate-in zoom-in-95 fade-in duration-200 p-4"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -97,7 +104,7 @@ export function HotspotPopup({
   return (
     <div
       style={popupStyle}
-      className="bg-white rounded-2xl shadow-2xl overflow-hidden w-64 animate-in zoom-in-95 fade-in duration-200"
+      className="bg-white rounded-2xl shadow-2xl overflow-hidden w-56 md:w-64 max-w-[calc(100vw-2rem)] animate-in zoom-in-95 fade-in duration-200"
       onClick={(e) => e.stopPropagation()}
     >
       {/* Related product label */}

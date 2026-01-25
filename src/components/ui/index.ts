@@ -7,4 +7,5 @@ export { default as OptimizedImage } from './OptimizedImage';
 export { LoadingFallback } from './LoadingFallback';
 export { LoadingSpinner } from './LoadingSpinner';
 export { LoadingModal } from './LoadingModal';
+export { default as RichTextEditor } from './RichTextEditor';
 
