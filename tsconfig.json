@@ -27,6 +27,12 @@
     "noImplicitThis": true,
     "alwaysStrict": true,
     "paths": {
+      "@auricapri/shared": [
+        "../backend/shared/types/index.ts"
+      ],
+      "@auricapri/shared/*": [
+        "../backend/shared/*"
+      ],
       "@/*": [
         "./*"
       ],

@@ -1,4 +1,4 @@
-export enum UserMode {
-  VAREJO = 'VAREJO',
-  ATACADO = 'ATACADO'
-}
+/**
+ * Re-export UserMode from @auricapri/shared
+ */
+export { UserMode } from '@auricapri/shared';

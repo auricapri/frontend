@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Clock, AlertTriangle } from 'lucide-react';
 
 interface PixCountdownProps {
@@ -9,9 +9,33 @@ interface PixCountdownProps {
 export function PixCountdown({ expiresAt, onExpired }: PixCountdownProps) {
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
+  // Garantir que expiresAt é uma Date válida
+  const validExpiresAt = useMemo(() => {
+    let date: Date;
+
+    if (expiresAt instanceof Date) {
+      date = expiresAt;
+    } else if (typeof expiresAt === 'string') {
+      date = new Date(expiresAt);
+    } else if (typeof expiresAt === 'number') {
+      date = expiresAt > 10000000000 ? new Date(expiresAt) : new Date(expiresAt * 1000);
+    } else {
+      // Fallback: 10 minutos
+      date = new Date(Date.now() + 10 * 60 * 1000);
+    }
+
+    // Se a data é inválida ou está muito no futuro (mais de 1 hora), usar fallback
+    if (isNaN(date.getTime()) || date.getTime() - Date.now() > 60 * 60 * 1000) {
+      console.warn('[PixCountdown] Data inválida ou muito distante, usando fallback de 10 min');
+      return new Date(Date.now() + 10 * 60 * 1000);
+    }
+
+    return date;
+  }, [expiresAt]);
+
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const diff = new Date(expiresAt).getTime() - Date.now();
+      const diff = validExpiresAt.getTime() - Date.now();
       return Math.max(0, Math.floor(diff / 1000));
     };
 
@@ -26,7 +50,7 @@ export function PixCountdown({ expiresAt, onExpired }: PixCountdownProps) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [expiresAt, onExpired]);
+  }, [validExpiresAt, onExpired]);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;

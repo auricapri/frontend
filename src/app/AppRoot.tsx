@@ -1,16 +1,30 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback } from 'react';
 import { calculatePrice } from '../utils/product';
 import { trackingService } from '../services/tracking.service';
 import { useStoreData } from '../hooks/useStoreData';
 import { useAuthContext } from '../context/AuthContext';
 import { useWishlist } from '../hooks/useWishlist';
-import { type CartItem } from '../types';
+import { useCartContext, CartProvider } from '../context/CartContext';
+import { type CartItem, type Product, type Category, type Collection, type Banner, type Coupon, type Asset, type SizeGuide, type StoreConfig } from '../types';
 import { useAppState } from './hooks/useAppState';
 import { useOrderProcessing } from './hooks/useOrderProcessing';
 import { AppProviders } from './AppProviders';
 import { AppRouter } from './AppRouter';
 
-function AppRootContent() {
+interface StoreDataProps {
+  products: Product[];
+  categories: Category[];
+  collections: Collection[];
+  banners: Banner[];
+  coupons: Coupon[];
+  assets: Asset[];
+  sizeGuides: SizeGuide[];
+  storeConfig: StoreConfig;
+  isLoading: boolean;
+  refetchStoreData: () => void;
+}
+
+function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
   const {
     products,
     categories,
@@ -21,11 +35,15 @@ function AppRootContent() {
     sizeGuides,
     storeConfig,
     isLoading,
-    refetch: refetchStoreData,
-  } = useStoreData();
+    refetchStoreData,
+  } = storeData;
 
   const { currentUser, isLoading: isAuthLoading, userOrders, signOut } = useAuthContext();
   const { wishlistIds, toggleWishlist } = useWishlist(currentUser?.id);
+
+  // Use CartContext - single source of truth for cart state
+  const cart = useCartContext();
+  const { cartItems, setCartItems, addToCart: cartAddToCart, updateQuantity: cartUpdateQuantity, validateStock } = cart;
 
   const appState = useAppState({
     products,
@@ -36,29 +54,6 @@ function AppRootContent() {
     onRefetchStoreData: refetchStoreData,
   });
 
-  // Cart state with localStorage persistence
-  const CART_STORAGE_KEY = 'auricapri_cart_items';
-
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(CART_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  // Persist cart to localStorage on every change
-  useEffect(() => {
-    try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
-    } catch (err) {
-      console.warn('Failed to persist cart to localStorage:', err);
-    }
-  }, [cartItems]);
-
-  // Page view tracking removed - centralized in useAppState.ts to avoid duplicate calls
-
   const orderProcessing = useOrderProcessing({
     cartItems,
     setCartItems,
@@ -67,12 +62,12 @@ function AppRootContent() {
     currentUser,
     userMode: appState.userMode,
     onRefetchStoreData: refetchStoreData,
-    onNavigate: appState.handleNavigate as any,
+    onNavigate: appState.handleNavigate as (view: string) => void,
     onShowToast: appState.showToast,
   });
 
   const handleCheckoutIntent = useCallback(() => {
-    const stockCheck = orderProcessing.validateCartStock();
+    const stockCheck = validateStock();
     if (!stockCheck.valid) {
       appState.showToast(stockCheck.error || 'Erro de validação de estoque.', 'error');
       return;
@@ -90,55 +85,26 @@ function AppRootContent() {
       cartItems.reduce((acc, item) => acc + item.quantity, 0)
     );
     appState.handleNavigate('checkout');
-  }, [appState, cartItems, currentUser, orderProcessing]);
+  }, [appState, cartItems, currentUser, validateStock]);
 
   const addToCart = useCallback(
     (cartItem: CartItem) => {
-      const product = products.find((p) => p.id === cartItem.product_id);
-      const variant = product?.variants?.find((v) => v.id === cartItem.variant_id);
-      const maxStock = variant?.stock_quantity || 0;
-
-      if (cartItem.quantity > maxStock) {
-        appState.showToast('Estoque insuficiente.', 'error');
+      const result = cartAddToCart(cartItem);
+      if (!result.success) {
+        appState.showToast(result.error || 'Erro ao adicionar ao carrinho.', 'error');
         return;
       }
-      const existingItem = cartItems.find((item) => item.variant_id === cartItem.variant_id);
-      const currentQtyInCart = existingItem ? existingItem.quantity : 0;
-      if (currentQtyInCart + cartItem.quantity > maxStock) {
-        appState.showToast(`Limite atingido!`, 'error');
-        return;
-      }
-
-      setCartItems((prev) => {
-        const existing = prev.find((item) => item.variant_id === cartItem.variant_id);
-        if (existing) {
-          return prev.map((item) => (item.variant_id === cartItem.variant_id ? { ...item, quantity: item.quantity + cartItem.quantity } : item));
-        }
-        return [...prev, cartItem];
-      });
       appState.setIsCartOpen(true);
       trackingService.trackCartAdd(cartItem.product_id, cartItem.variant_id, cartItem.quantity);
     },
-    [appState, cartItems, products]
+    [appState, cartAddToCart]
   );
 
   const handleUpdateQuantity = useCallback(
     (id: string, delta: number) => {
-      setCartItems((prev) =>
-        prev.map((item) => {
-          if (item.variant_id !== id) return item;
-          const product = products.find((p) => p.id === item.product_id);
-          const variant = product?.variants?.find((v) => v.id === item.variant_id);
-          const maxStock = variant?.stock_quantity || 0;
-          if (delta > 0 && item.quantity + delta > maxStock) {
-            appState.showToast(`Estoque máximo atingido.`, 'error');
-            return item;
-          }
-          return { ...item, quantity: Math.max(1, item.quantity + delta) };
-        })
-      );
+      cartUpdateQuantity(id, delta);
     },
-    [appState, products]
+    [cartUpdateQuantity]
   );
 
   const handleToggleWishlist = useCallback(
@@ -173,7 +139,7 @@ function AppRootContent() {
         price: calculatePrice(variant, appState.userMode, product),
         quantity: 1,
         sku: variant.sku,
-      } as any);
+      } as CartItem);
     });
 
     appState.setIsWishlistOpen(false);
@@ -224,10 +190,38 @@ function AppRootContent() {
   );
 }
 
+/**
+ * Wrapper component that provides store data and sets up CartProvider.
+ * This separation ensures CartProvider has access to products/assets
+ * before any child component tries to use useCartContext.
+ */
+function AppRootWrapper() {
+  const storeData = useStoreData();
+
+  return (
+    <CartProvider products={storeData.products} assets={storeData.assets}>
+      <AppRootContent
+        storeData={{
+          products: storeData.products,
+          categories: storeData.categories,
+          collections: storeData.collections,
+          banners: storeData.banners,
+          coupons: storeData.coupons,
+          assets: storeData.assets,
+          sizeGuides: storeData.sizeGuides,
+          storeConfig: storeData.storeConfig,
+          isLoading: storeData.isLoading,
+          refetchStoreData: storeData.refetch,
+        }}
+      />
+    </CartProvider>
+  );
+}
+
 export function AppRoot() {
   return (
     <AppProviders>
-      <AppRootContent />
+      <AppRootWrapper />
     </AppProviders>
   );
 }

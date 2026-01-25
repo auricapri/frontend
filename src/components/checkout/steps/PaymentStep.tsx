@@ -7,6 +7,7 @@ import { InstallmentSelector } from '../InstallmentSelector';
 import { SplitCardAmount } from '../SplitCardAmount';
 import { CreditCardPreview } from '../CreditCardPreview';
 import { PixCountdown } from '../PixCountdown';
+import { LoadingModal } from '../../ui/LoadingModal';
 
 export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
   const {
@@ -115,6 +116,13 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
 
   return (
     <section className="space-y-10 animate-in fade-in slide-in-from-left duration-700">
+      {/* Modal de loading durante geração do PIX/Boleto */}
+      <LoadingModal
+        isOpen={isGenerating}
+        message={pixLoading ? 'Gerando PIX' : boletoLoading ? 'Gerando Boleto' : 'Processando pagamento'}
+        subMessage="Por favor, aguarde enquanto preparamos seu pagamento"
+      />
+
       <div className="flex items-center gap-6 mb-10">
         <div className="p-4 bg-neutral-50 rounded-2xl">
           <CreditCard className="w-6 h-6" />
