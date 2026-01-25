@@ -48,10 +48,6 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
     handleSelectSavedAddress,
   } = checkout;
 
-  // Verificar se há campos obrigatórios faltando no endereço
-  const isBairroMissing = address && (!address.bairro || !address.bairro.trim());
-  const isLogradouroMissing = address && (!address.logradouro || !address.logradouro.trim());
-
   // Atualizar campo do endereço
   const updateAddressField = (field: string, value: string) => {
     if (address) {
@@ -175,43 +171,31 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 )}
               </div>
 
-              {/* Campos editáveis para dados faltantes */}
-              {(isLogradouroMissing || isBairroMissing) && (
-                <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 space-y-4 animate-in fade-in slide-in-from-top-2">
-                  <p className="text-xs font-bold uppercase tracking-widest text-orange-600 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4" />
-                    Complete os dados faltantes
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {isLogradouroMissing && (
-                      <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
-                          Rua / Logradouro <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          className="w-full p-5 bg-white border border-orange-200 rounded-2xl outline-none focus:border-black transition-all font-black"
-                          placeholder="Ex: Rua das Flores"
-                          value={address?.logradouro || ''}
-                          onChange={(e) => updateAddressField('logradouro', e.target.value)}
-                        />
-                      </div>
-                    )}
-                    {isBairroMissing && (
-                      <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
-                          Bairro <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          className="w-full p-5 bg-white border border-orange-200 rounded-2xl outline-none focus:border-black transition-all font-black"
-                          placeholder="Ex: Centro"
-                          value={address?.bairro || ''}
-                          onChange={(e) => updateAddressField('bairro', e.target.value)}
-                        />
-                      </div>
-                    )}
-                  </div>
+              {/* Campos editáveis de Rua e Bairro */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+                    Rua / Logradouro <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black"
+                    placeholder="Ex: Rua das Flores"
+                    value={address?.logradouro || ''}
+                    onChange={(e) => updateAddressField('logradouro', e.target.value)}
+                  />
                 </div>
-              )}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+                    Bairro <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black"
+                    placeholder="Ex: Centro"
+                    value={address?.bairro || ''}
+                    onChange={(e) => updateAddressField('bairro', e.target.value)}
+                  />
+                </div>
+              </div>
 
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
