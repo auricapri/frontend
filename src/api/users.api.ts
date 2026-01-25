@@ -29,9 +29,14 @@ export class UsersApi {
     return apiClient.put<UserProfile>('/users/profile', updates);
   }
 
+  async getAddresses(): Promise<SavedAddress[]> {
+    return apiClient.get<SavedAddress[]>('/users/addresses');
+  }
+
   async createAddress(address: {
     line1: string;
     line2?: string;
+    neighborhood?: string;
     city: string;
     state: string;
     postal_code: string;
@@ -43,6 +48,10 @@ export class UsersApi {
 
   async setDefaultAddress(addressId: string): Promise<void> {
     return apiClient.put<void>(`/users/addresses/${addressId}/default`, {});
+  }
+
+  async deleteAddress(addressId: string): Promise<void> {
+    return apiClient.delete<void>(`/users/addresses/${addressId}`);
   }
 
   async savePaymentMethod(_card: {

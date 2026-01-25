@@ -4,6 +4,7 @@ export interface SavedAddress {
   street_address?: string; // Usado em algumas partes do código
   line1: string;
   line2?: string;
+  neighborhood?: string; // Bairro - nova coluna estruturada
   city: string;
   state: string;
   state_province?: string; // Usado em algumas partes do código

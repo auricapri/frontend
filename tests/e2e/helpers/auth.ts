@@ -39,11 +39,24 @@ export async function createConfirmedE2EUser() {
     user_metadata: { full_name: 'E2E Usuário' },
   });
 
+  // Also create profile record to satisfy FK constraints on orders table
+  if (data.user?.id) {
+    await admin.from('profiles').upsert({
+      id: data.user.id,
+      email,
+      full_name: 'E2E Usuário',
+      role: 'customer',
+    });
+  }
+
   return { id: data.user?.id, email, password };
 }
 
 export async function loginViaAuthDrawer(page: Page, creds: { email: string; password: string }) {
-  await page.getByRole('button', { name: 'Account', exact: true }).click();
+  // O botão mostra "Login" quando não logado, e "Account" após login
+  const loginButton = page.getByRole('button', { name: 'Login', exact: true });
+  await expect(loginButton).toBeVisible({ timeout: 30000 });
+  await loginButton.click();
 
   const form = page.locator('form');
   await expect(form).toBeVisible({ timeout: 30000 });
@@ -52,6 +65,7 @@ export async function loginViaAuthDrawer(page: Page, creds: { email: string; pas
   await form.locator('input[type="password"]').fill(creds.password);
   await form.locator('button[type="submit"]').click();
 
+  // Aguardar drawer fechar
   const closeAll = page.getByRole('button', { name: 'Close drawer', exact: true });
   try {
     await expect(closeAll).toHaveCount(0, { timeout: 30000 });
@@ -61,5 +75,6 @@ export async function loginViaAuthDrawer(page: Page, creds: { email: string; pas
     }
     await expect(closeAll).toHaveCount(0, { timeout: 10000 });
   }
+  // Após login, esperar pelo botão Account (indica login bem-sucedido)
   await expect(page.getByRole('button', { name: 'Account', exact: true })).toBeVisible({ timeout: 30000 });
 }

@@ -71,7 +71,47 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
     boletoData,
     boletoLoading,
     boletoError,
+    // Order with payment
+    completeOrderWithPayment,
+    paymentProcessing,
   } = checkout;
+
+  // Handler to select PIX - generate PIX immediately
+  const handleSelectPix = async () => {
+    setPaymentMethod(PaymentMethod.PIX);
+    // Se ainda não tem QR Code, gera automaticamente
+    if (!pixData && !pixLoading) {
+      try {
+        // Pass PaymentMethod.PIX explicitly to avoid React state timing issues
+        await completeOrderWithPayment(PaymentMethod.PIX);
+      } catch (error) {
+        console.error('Erro ao gerar PIX:', error);
+        // Error is handled by the state
+      }
+    }
+  };
+
+  // Handler to select Boleto - generate Boleto immediately
+  const handleSelectBoleto = async () => {
+    setPaymentMethod(PaymentMethod.BOLETO);
+    // Se ainda não tem boleto, gera automaticamente
+    if (!boletoData && !boletoLoading) {
+      try {
+        // Pass PaymentMethod.BOLETO explicitly to avoid React state timing issues
+        await completeOrderWithPayment(PaymentMethod.BOLETO);
+      } catch (error) {
+        console.error('Erro ao gerar boleto:', error);
+        // Error is handled by the state
+      }
+    }
+  };
+
+  // PIX está pronto apenas se tiver QR Code E código copia-cola
+  const pixReady = !!(pixData?.qrCodeImage && pixData?.qrCodePayload);
+  // Boleto está pronto apenas se tiver código de barras
+  const boletoReady = !!(boletoData?.barCode);
+  // Estado de loading geral
+  const isGenerating = pixLoading || paymentProcessing || boletoLoading;
 
   return (
     <section className="space-y-10 animate-in fade-in slide-in-from-left duration-700">
@@ -101,7 +141,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
           </div>
         </button>
         <button
-          onClick={() => setPaymentMethod(PaymentMethod.PIX)}
+          onClick={handleSelectPix}
           className={`p-8 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all ${
             paymentMethod === PaymentMethod.PIX
               ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]'
@@ -115,7 +155,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
           </div>
         </button>
         <button
-          onClick={() => setPaymentMethod(PaymentMethod.BOLETO)}
+          onClick={handleSelectBoleto}
           className={`p-8 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all ${
             paymentMethod === PaymentMethod.BOLETO
               ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]'
@@ -451,23 +491,25 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
       {paymentMethod === PaymentMethod.PIX && (
         <div className="bg-neutral-900 text-white rounded-[3rem] p-10 md:p-16 flex flex-col items-center text-center space-y-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="p-6 bg-white rounded-[2.5rem] shadow-inner">
-            {pixLoading ? (
+            {isGenerating ? (
               <div className="w-40 h-40 flex items-center justify-center">
                 <Loader2 className="w-12 h-12 text-black animate-spin" />
               </div>
-            ) : pixData?.qrCodeImage ? (
+            ) : pixReady ? (
               <img
-                src={`data:image/png;base64,${pixData.qrCodeImage}`}
+                src={`data:image/png;base64,${pixData?.qrCodeImage}`}
                 alt="QR Code PIX"
                 className="w-40 h-40"
               />
             ) : (
-              <QrCode className="w-40 h-40 text-black" />
+              <div className="w-40 h-40 flex items-center justify-center">
+                <QrCode className="w-24 h-24 text-neutral-300" />
+              </div>
             )}
           </div>
 
-          {/* Countdown de expiração */}
-          {pixData?.expiresAt && (
+          {/* Countdown de expiração - só mostra se PIX está pronto */}
+          {pixReady && pixData?.expiresAt && (
             <PixCountdown expiresAt={pixData.expiresAt} />
           )}
 
@@ -479,25 +521,47 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
 
           <div className="space-y-3">
             <h4 className="text-xl font-black uppercase italic tracking-tighter">
-              {pixData ? 'Escaneie o QR Code' : 'QR Code será gerado ao confirmar'}
+              {isGenerating ? 'Gerando QR Code...' : pixReady ? 'Escaneie o QR Code' : 'Clique para gerar o PIX'}
             </h4>
             <p className="text-xs text-white/40 max-w-xs mx-auto leading-relaxed">
-              {pixData
-                ? 'Abra o app do seu banco e aponte a câmera. O pagamento é processado instantaneamente.'
-                : 'O QR Code com validade de 10 minutos será exibido após confirmar o pedido.'}
+              {isGenerating
+                ? 'Aguarde enquanto geramos seu QR Code PIX com validade de 10 minutos.'
+                : pixReady
+                  ? 'Abra o app do seu banco e aponte a câmera. O pagamento é processado instantaneamente.'
+                  : 'O QR Code PIX será gerado automaticamente.'}
             </p>
           </div>
 
-          {pixData && (
-            <button
-              onClick={payment.handleCopyPix}
-              className="flex items-center gap-4 px-10 py-5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group"
-            >
-              <Copy className="w-4 h-4 text-white/60 group-hover:text-white" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em]">
-                {payment.pixCopied ? 'Copiado!' : 'Copiar Código PIX'}
-              </span>
-            </button>
+          {pixReady && (
+            <>
+              {/* Código copia e cola */}
+              <div className="w-full max-w-md bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10">
+                <span className="text-[9px] font-black uppercase tracking-widest text-white/40 block mb-2">Código PIX (Copia e Cola)</span>
+                <div className="bg-black/30 p-3 rounded-xl">
+                  <p className="font-mono text-[10px] break-all text-white/70 leading-relaxed">
+                    {pixData?.qrCodePayload?.substring(0, 80)}...
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={payment.handleCopyPix}
+                className="flex items-center gap-4 px-10 py-5 bg-white text-black hover:bg-white/90 rounded-2xl transition-all group shadow-xl"
+              >
+                {payment.pixCopied ? (
+                  <Check className="w-5 h-5 text-green-600" />
+                ) : (
+                  <Copy className="w-5 h-5" />
+                )}
+                <span className="text-[11px] font-black uppercase tracking-[0.2em]">
+                  {payment.pixCopied ? 'Código Copiado!' : 'Copiar Código PIX'}
+                </span>
+              </button>
+
+              <div className="text-[10px] text-white/30 mt-4">
+                Pedido criado. Aguardando confirmação do pagamento.
+              </div>
+            </>
           )}
         </div>
       )}
@@ -587,25 +651,51 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
         </div>
       )}
 
-      <div className="flex gap-4 pt-12">
-        <button
-          onClick={() => setStep(1)}
-          className="px-10 py-6 border border-neutral-200 rounded-[2rem] text-xs font-black uppercase tracking-wider hover:bg-neutral-50 transition-all"
-        >
-          Voltar
-        </button>
-        <button
-          onClick={() => setStep(3)}
-          disabled={splitCards && !splitCardsValid}
-          className={`flex-1 py-8 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 transition-all ${
-            splitCards && !splitCardsValid
-              ? 'opacity-40 cursor-not-allowed'
-              : 'hover:scale-[1.02] active:scale-95'
-          }`}
-        >
-          Revisar Pedido <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
+      {/* Se PIX ou Boleto já foi gerado com sucesso, mostra botão de voltar */}
+      {(pixReady || boletoReady) ? (
+        <div className="flex gap-4 pt-12">
+          <button
+            onClick={() => setStep(1)}
+            className="flex-1 px-10 py-6 border border-neutral-200 rounded-[2rem] text-xs font-black uppercase tracking-wider hover:bg-neutral-50 transition-all"
+          >
+            Voltar ao Endereço
+          </button>
+        </div>
+      ) : (
+        <div className="flex gap-4 pt-12">
+          <button
+            onClick={() => setStep(1)}
+            disabled={isGenerating}
+            className="px-10 py-6 border border-neutral-200 rounded-[2rem] text-xs font-black uppercase tracking-wider hover:bg-neutral-50 transition-all disabled:opacity-50"
+          >
+            Voltar
+          </button>
+          {paymentMethod === PaymentMethod.CREDIT_CARD ? (
+            <button
+              onClick={() => setStep(3)}
+              disabled={splitCards && !splitCardsValid}
+              className={`flex-1 py-8 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 transition-all ${
+                splitCards && !splitCardsValid
+                  ? 'opacity-40 cursor-not-allowed'
+                  : 'hover:scale-[1.02] active:scale-95'
+              }`}
+            >
+              Revisar Pedido <ChevronRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <div className="flex-1 py-8 bg-neutral-100 text-neutral-400 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4">
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Gerando {paymentMethod === PaymentMethod.PIX ? 'PIX' : 'Boleto'}...
+                </>
+              ) : (
+                'Aguardando geração do pagamento...'
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }
