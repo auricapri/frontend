@@ -7,6 +7,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
   const {
     currentUser,
     address,
+    setAddress,
     cep,
     cepError,
     manualCepError,
@@ -34,12 +35,29 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
     setPhone,
     setSearchQuery,
     handlePickerSearch,
+    handleSearchQueryChange,
     handleSelectSearchResult,
     isSearching,
     searchResults,
     setStep,
     shipping,
+    // Saved addresses
+    userAddresses,
+    selectedAddressId,
+    loadingAddresses,
+    handleSelectSavedAddress,
   } = checkout;
+
+  // Verificar se há campos obrigatórios faltando no endereço
+  const isBairroMissing = address && (!address.bairro || !address.bairro.trim());
+  const isLogradouroMissing = address && (!address.logradouro || !address.logradouro.trim());
+
+  // Atualizar campo do endereço
+  const updateAddressField = (field: string, value: string) => {
+    if (address) {
+      setAddress({ ...address, [field]: value });
+    }
+  };
 
   return (
     <>
@@ -51,6 +69,43 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           <h3 className="text-2xl font-black uppercase italic tracking-tight text-neutral-900">Endereço de Entrega</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Saved Addresses Dropdown */}
+          {currentUser && userAddresses.length > 0 && (
+            <div className="md:col-span-2 space-y-4 animate-in fade-in slide-in-from-top-2">
+              <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+                Endereços Salvos
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedAddressId || ''}
+                  onChange={(e) => handleSelectSavedAddress(e.target.value)}
+                  disabled={loadingAddresses}
+                  className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black appearance-none cursor-pointer pr-12"
+                >
+                  <option value="">+ Novo endereço</option>
+                  {userAddresses.map((addr) => (
+                    <option key={addr.id} value={addr.id}>
+                      {addr.street_address || addr.line1}
+                      {addr.neighborhood ? `, ${addr.neighborhood}` : ''}
+                      {' - '}
+                      {addr.city}
+                      {addr.is_default ? ' (Padrão)' : ''}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
+                  {loadingAddresses ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-neutral-400" />
+                  ) : (
+                    <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="md:col-span-2 space-y-4">
             <label className="text-xs font-black uppercase tracking-widest text-neutral-600">CEP</label>
             <div className="relative">
@@ -119,6 +174,45 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                   </div>
                 )}
               </div>
+
+              {/* Campos editáveis para dados faltantes */}
+              {(isLogradouroMissing || isBairroMissing) && (
+                <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 space-y-4 animate-in fade-in slide-in-from-top-2">
+                  <p className="text-xs font-bold uppercase tracking-widest text-orange-600 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    Complete os dados faltantes
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {isLogradouroMissing && (
+                      <div className="space-y-2">
+                        <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+                          Rua / Logradouro <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          className="w-full p-5 bg-white border border-orange-200 rounded-2xl outline-none focus:border-black transition-all font-black"
+                          placeholder="Ex: Rua das Flores"
+                          value={address?.logradouro || ''}
+                          onChange={(e) => updateAddressField('logradouro', e.target.value)}
+                        />
+                      </div>
+                    )}
+                    {isBairroMissing && (
+                      <div className="space-y-2">
+                        <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+                          Bairro <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          className="w-full p-5 bg-white border border-orange-200 rounded-2xl outline-none focus:border-black transition-all font-black"
+                          placeholder="Ex: Centro"
+                          value={address?.bairro || ''}
+                          onChange={(e) => updateAddressField('bairro', e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Número</label>
@@ -168,9 +262,9 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
               <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
                 CPF
               </label>
-              <div className="w-full p-6 bg-neutral-50 border border-green-200 rounded-2xl font-mono flex justify-between items-center">
+              <div className="w-full p-6 bg-neutral-50 border border-green-200 rounded-2xl font-black flex justify-between items-center">
                 <span>{maskCPF(currentUser.cpf)}</span>
-                <span className="text-xs text-neutral-400">Para alterar, acesse seu perfil</span>
+                <span className="text-xs text-neutral-400 font-medium">Para alterar, acesse seu perfil</span>
               </div>
             </div>
           ) : (
@@ -181,7 +275,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
               <input
                 className={`w-full p-6 bg-neutral-50 border ${
                   cpf && cpf.replace(/\D/g, '').length === 11 ? 'border-green-300' : cpf ? 'border-orange-200' : 'border-neutral-100'
-                } rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-mono`}
+                } rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black`}
                 placeholder="000.000.000-00"
                 value={cpf}
                 onChange={(e) => setCpf(maskCPF(e.target.value))}
@@ -197,6 +291,8 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           onClick={() => address && setStep(2)}
           disabled={
             !address ||
+            !address.logradouro?.trim() ||
+            !address.bairro?.trim() ||
             !num ||
             !shipping.bestInternalShipping ||
             ((!currentUser?.phone || !currentUser.phone.trim()) && (!phone || phone.trim().length < 10)) ||
@@ -217,17 +313,18 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 <div className="relative group">
                   <input
                     className="w-full p-6 pr-16 bg-white border-none rounded-2xl shadow-2xl text-xs font-black uppercase tracking-widest outline-none placeholder:text-neutral-300"
-                    placeholder="Busque sua rua e cidade..."
+                    placeholder="Digite sua rua e cidade..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => handleSearchQueryChange(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handlePickerSearch()}
                   />
-                  <button
-                    onClick={handlePickerSearch}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black text-white rounded-xl hover:scale-105 transition-all"
-                  >
-                    {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                  </button>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black text-white rounded-xl">
+                    {isSearching ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Search className={`w-4 h-4 ${searchQuery.length >= 3 ? 'opacity-50' : ''}`} />
+                    )}
+                  </div>
                 </div>
                 {searchResults.length > 0 && (
                   <div className="mt-2 bg-white rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-top-2">

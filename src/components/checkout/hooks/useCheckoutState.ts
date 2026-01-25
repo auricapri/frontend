@@ -21,6 +21,7 @@ import {
   UserMode,
   type UserMode as UserModeType,
   type UserProfile,
+  type SavedAddress,
 } from '../../../types';
 import { usePaymentProcessing } from './usePaymentProcessing';
 import { useShippingCalculation } from './useShippingCalculation';
@@ -77,6 +78,11 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const [addressLoaded, setAddressLoaded] = useState(false);
   const [isManualAddress, setIsManualAddress] = useState(false);
+
+  // Saved addresses state
+  const [userAddresses, setUserAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CREDIT_CARD);
   const [splitCards, setSplitCards] = useState(false);
@@ -142,6 +148,10 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const pickerMapRef = useRef<any>(null);
   const pickerContainerRef = useRef<HTMLDivElement>(null);
   const pickerMarkerRef = useRef<any>(null);
+
+  // Refs para debounce
+  const cepDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -409,19 +419,23 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   }, []);
 
   // Complete order flow: create order then process payment
-  const completeOrderWithPayment = useCallback(async () => {
+  // overridePaymentMethod allows passing the payment method directly to avoid React state timing issues
+  const completeOrderWithPayment = useCallback(async (overridePaymentMethod?: PaymentMethod) => {
     if (!address || !phone) {
       throw new Error('Endereço e telefone são obrigatórios');
     }
+
+    // Use override payment method if provided (fixes race condition when setting state and calling immediately)
+    const effectivePaymentMethod = overridePaymentMethod ?? paymentMethod;
 
     // Validate CPF for Asaas (usa CPF do perfil se disponível)
     const cpfValue = currentUser?.cpf || cpf;
     const cleanCpf = cpfValue.replace(/\D/g, '');
     if (!cleanCpf || cleanCpf.length !== 11) {
       const errorMsg = 'CPF é obrigatório para processar o pagamento';
-      if (paymentMethod === PaymentMethod.PIX) {
+      if (effectivePaymentMethod === PaymentMethod.PIX) {
         setPixError(errorMsg);
-      } else if (paymentMethod === PaymentMethod.BOLETO) {
+      } else if (effectivePaymentMethod === PaymentMethod.BOLETO) {
         setBoletoError(errorMsg);
       }
       throw new Error(errorMsg);
@@ -454,7 +468,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
         items: items,
         addressData: finalAddress,
         logisticsInfo: shippingToUse,
-        paymentMethod,
+        paymentMethod: effectivePaymentMethod,
         subtotal: subtotal,
         finalAmount: finalTotal,
       });
@@ -482,30 +496,33 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
       };
 
       // 3. Process payment based on method
-      if (paymentMethod === PaymentMethod.PIX) {
+      if (effectivePaymentMethod === PaymentMethod.PIX) {
         const pixSuccess = await createPixCharge(order.id, customerInfo);
         // Go back to payment step to show QR code only if PIX was created successfully
-        if (pixSuccess) {
+        // and we're not already on step 2 (auto-generation case)
+        if (pixSuccess && step !== 2) {
           setStep(2);
         }
-        // If failed, user stays on step 3 to see the error
-      } else if (paymentMethod === PaymentMethod.BOLETO) {
+        // If failed, user stays on current step to see the error
+      } else if (effectivePaymentMethod === PaymentMethod.BOLETO) {
         await createBoletoCharge(order.id, customerInfo);
-        // Go back to payment step to show boleto
-        setStep(2);
-      } else if (paymentMethod === PaymentMethod.CREDIT_CARD) {
+        // Go back to payment step to show boleto (only if not already there)
+        if (step !== 2) {
+          setStep(2);
+        }
+      } else if (effectivePaymentMethod === PaymentMethod.CREDIT_CARD) {
         // For credit card, we need card data
         // This will be handled by the original onComplete flow
-        onComplete(finalAddress, shippingToUse, paymentMethod, finalTotal, saveCardForFuture, undefined, phone);
+        onComplete(finalAddress, shippingToUse, effectivePaymentMethod, finalTotal, saveCardForFuture, undefined, phone);
       }
 
       return order;
     } catch (error) {
       console.error('Error completing order:', error);
       const errorMsg = error instanceof Error ? error.message : 'Erro ao processar pedido';
-      if (paymentMethod === PaymentMethod.PIX) {
+      if (effectivePaymentMethod === PaymentMethod.PIX) {
         setPixError(errorMsg);
-      } else if (paymentMethod === PaymentMethod.BOLETO) {
+      } else if (effectivePaymentMethod === PaymentMethod.BOLETO) {
         setBoletoError(errorMsg);
       }
       throw error;
@@ -533,6 +550,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     onComplete,
     saveCardForFuture,
     resetPaymentData,
+    step,
   ]);
 
   // Validation for split cards
@@ -625,6 +643,83 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     }
   }, [currentUser?.phone, phone]);
 
+  // Load saved addresses when user is logged in
+  useEffect(() => {
+    if (currentUser?.id) {
+      setLoadingAddresses(true);
+      usersApi.getAddresses()
+        .then((addresses) => {
+          setUserAddresses(addresses || []);
+        })
+        .catch((err) => {
+          // API may not be available yet - fail silently
+          console.warn('Could not load addresses (API may not exist yet):', err.message);
+          setUserAddresses([]);
+        })
+        .finally(() => {
+          setLoadingAddresses(false);
+        });
+    }
+  }, [currentUser?.id, usersApi]);
+
+  // Handle selecting a saved address
+  const handleSelectSavedAddress = useCallback((addressId: string) => {
+    if (!addressId) {
+      // New address - reset fields
+      setSelectedAddressId(null);
+      setAddress(null);
+      setCep('');
+      setNum('');
+      setComplement('');
+      setAddressLoaded(false);
+      setHasUserEditedCep(true);
+      shipping.resetShipping();
+      return;
+    }
+
+    const selected = userAddresses.find(a => a.id === addressId);
+    if (selected) {
+      setSelectedAddressId(addressId);
+      setHasUserEditedCep(true);
+
+      // Extract number from street_address if present
+      let extractedNum = '';
+      let logradouro = selected.street_address || selected.line1 || '';
+
+      if (logradouro) {
+        const commaIndex = logradouro.lastIndexOf(',');
+        if (commaIndex > 0) {
+          const numPart = logradouro.substring(commaIndex + 1).trim();
+          if (numPart && !isNaN(Number(numPart.replace(/\D/g, '')))) {
+            extractedNum = numPart.replace(/\D/g, '');
+            logradouro = logradouro.substring(0, commaIndex).trim();
+          }
+        }
+      }
+
+      const cepValue = selected.postal_code || '';
+      const cleanedCep = cepValue.replace(/\D/g, '');
+      const formattedCep = cleanedCep.length === 8
+        ? cleanedCep.substring(0, 5) + '-' + cleanedCep.substring(5, 8)
+        : cepValue;
+
+      setAddress({
+        logradouro: logradouro,
+        bairro: selected.neighborhood || selected.line2 || '',
+        localidade: selected.city || '',
+        uf: selected.state_province || selected.state || '',
+        cep: formattedCep,
+      });
+      setCep(formattedCep);
+      if (extractedNum) setNum(extractedNum);
+      setAddressLoaded(true);
+
+      if (cleanedCep.length === 8) {
+        shipping.calculateLogistics(cleanedCep);
+      }
+    }
+  }, [userAddresses, shipping]);
+
   useEffect(() => {
     if (currentUser?.default_address && !address && !addressLoaded && !hasUserEditedCep) {
       const def = currentUser.default_address;
@@ -632,7 +727,24 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
       let logradouro = '';
       let bairro = '';
 
-      if (def.street_address) {
+      // Use neighborhood field directly if available (new structured data)
+      if (def.neighborhood) {
+        bairro = def.neighborhood;
+        logradouro = def.street_address || def.line1 || '';
+
+        // Extract number from logradouro if present
+        if (logradouro) {
+          const commaIndex = logradouro.lastIndexOf(',');
+          if (commaIndex > 0) {
+            const numPart = logradouro.substring(commaIndex + 1).trim();
+            if (numPart && !isNaN(Number(numPart.replace(/\D/g, '')))) {
+              setNum(numPart.replace(/\D/g, ''));
+              logradouro = logradouro.substring(0, commaIndex).trim();
+            }
+          }
+        }
+      } else if (def.street_address) {
+        // Legacy: parse bairro from street_address (format: "Rua X, Num - Bairro")
         const streetAddr = def.street_address;
         const parts = streetAddr.split(' - ');
 
@@ -659,15 +771,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
       }
 
       if (!logradouro || logradouro.trim() === '') {
-        if (def.street_address) {
-          const streetAddr = def.street_address;
-          if (!streetAddr.includes(' - ')) {
-            logradouro = streetAddr.split(',')[0].trim();
-          }
-        }
-        if (!logradouro || logradouro.trim() === '') {
-          logradouro = def.line1?.trim() || '';
-        }
+        logradouro = def.line1?.trim() || def.street_address?.split(',')[0]?.trim() || '';
       }
 
       const cepValue = def.postal_code || '';
@@ -684,6 +788,11 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
 
       setAddress(newAddress);
       setAddressLoaded(true);
+
+      // Also set selectedAddressId if this is the default address
+      if (def.id) {
+        setSelectedAddressId(def.id);
+      }
 
       if (cleanedCep && cleanedCep.length === 8) {
         setCep(formattedCep);
@@ -924,6 +1033,39 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     }
   };
 
+  // Função para auto-busca com debounce no modal de endereço
+  const handleSearchQueryChange = (query: string) => {
+    setSearchQuery(query);
+
+    // Limpa debounce anterior
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = null;
+    }
+
+    // Limpa resultados se query muito curta
+    if (query.trim().length < 3) {
+      setSearchResults([]);
+      return;
+    }
+
+    // Debounce de 400ms para buscar
+    searchDebounceRef.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=br&limit=5&types=address,place,locality,neighborhood`
+        );
+        const data = await res.json();
+        setSearchResults(data.features || []);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+  };
+
   const parseAndSetAddress = async (feature: MapboxFeature) => {
     const context = feature.context || [];
     const neighborhood =
@@ -941,7 +1083,8 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
 
         if (Array.isArray(data) && data.length > 0 && !data[0].erro) {
           postcode = data[0].cep || '';
-          const finalNeighborhood = neighborhood || data[0].bairro || '';
+          // Garantir que bairro nunca seja vazio (backend exige min 1 char)
+          const finalNeighborhood = neighborhood || data[0].bairro || 'Centro';
 
           setManualAddress({
             street,
@@ -953,13 +1096,16 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
           return;
         }
       } catch {
-        return;
+        // Se falhar a busca, ainda define o endereço com fallback para bairro
       }
     }
 
+    // Garantir que bairro nunca seja vazio (backend exige min 1 char)
+    const finalNeighborhood = neighborhood || 'Centro';
+
     setManualAddress({
       street,
-      neighborhood,
+      neighborhood: finalNeighborhood,
       city,
       state,
       cep: postcode ? postcode.replace(/(\d{5})(\d{3})/, '$1-$2') : '',
@@ -1020,64 +1166,75 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     shipping.calculateLogistics(finalCep);
   };
 
-  const handleCepChange = async (val: string) => {
+  const handleCepChange = (val: string) => {
     setHasUserEditedCep(true);
     const cleaned = normalizeCepDigits(val);
     const formatted = cleaned ? maskCep(cleaned) : '';
     setCep(formatted);
     setCepError(null);
 
+    // Limpa debounce anterior
+    if (cepDebounceRef.current) {
+      clearTimeout(cepDebounceRef.current);
+      cepDebounceRef.current = null;
+    }
+
+    // Só limpa o endereço se CEP estiver completamente vazio E não tiver endereço selecionado
     if (cleaned.length === 0) {
-      setAddress(null);
-      setIsManualAddress(false);
-      shipping.resetShipping();
+      // Se tem endereço selecionado, não limpa - apenas resetar CEP
+      if (!selectedAddressId && !address) {
+        setAddress(null);
+        setIsManualAddress(false);
+        shipping.resetShipping();
+      }
       return;
     }
 
+    // NÃO apagar o endereço existente enquanto usuário digita
+    // Apenas retorna sem fazer nada - aguarda CEP completo
     if (cleaned.length < 8) {
-      setAddress(null);
-      setIsManualAddress(false);
-      shipping.resetShipping();
+      // Não limpa o endereço existente - usuário pode estar editando o CEP
       return;
     }
 
+    // CEP completo: debounce de 500ms antes de buscar
     if (cleaned.length === 8) {
       setLoadingCep(true);
-      try {
-        const res = await fetch(`https://viacep.com.br/ws/${cleaned}/json/`);
-        if (!res.ok) throw new Error('CEP lookup failed');
-        const data = await res.json();
-        if (data.erro) throw new Error('CEP not found');
-        // Garantir que bairro nunca seja vazio (backend exige min 1 char)
-        const bairro = data.bairro && data.bairro.trim() ? data.bairro : 'Centro';
-        setAddress({
-          ...data,
-          bairro: bairro
-        });
-        setIsManualAddress(false);
-        shipping.calculateLogistics(cleaned);
-      } catch {
+      cepDebounceRef.current = setTimeout(async () => {
         try {
-          const resFallback = await fetch(`https://cep.awesomeapi.com.br/json/${cleaned}`);
-          if (!resFallback.ok) throw new Error('Fallback failed');
-          const dataFallback = await resFallback.json();
-          // Garantir que bairro nunca seja vazio (backend exige min 1 char)
-          const bairro = dataFallback.district || dataFallback.address_name || 'Centro';
+          const res = await fetch(`https://viacep.com.br/ws/${cleaned}/json/`);
+          if (!res.ok) throw new Error('CEP lookup failed');
+          const data = await res.json();
+          if (data.erro) throw new Error('CEP not found');
+          // Se bairro estiver vazio, deixa vazio para o usuário preencher
           setAddress({
-            logradouro: dataFallback.address || '',
-            bairro: bairro,
-            localidade: dataFallback.city || '',
-            uf: dataFallback.state || '',
+            ...data,
+            bairro: data.bairro?.trim() || ''
           });
           setIsManualAddress(false);
           shipping.calculateLogistics(cleaned);
         } catch {
-          setCepError('Falha ao carregar CEP. Use o buscador de mapa.');
-          setAddress(null);
+          try {
+            const resFallback = await fetch(`https://cep.awesomeapi.com.br/json/${cleaned}`);
+            if (!resFallback.ok) throw new Error('Fallback failed');
+            const dataFallback = await resFallback.json();
+            // Se bairro estiver vazio, deixa vazio para o usuário preencher
+            setAddress({
+              logradouro: dataFallback.address || '',
+              bairro: dataFallback.district || dataFallback.address_name || '',
+              localidade: dataFallback.city || '',
+              uf: dataFallback.state || '',
+            });
+            setIsManualAddress(false);
+            shipping.calculateLogistics(cleaned);
+          } catch {
+            setCepError('Falha ao carregar CEP. Use o buscador de mapa.');
+            setAddress(null);
+          }
+        } finally {
+          setLoadingCep(false);
         }
-      } finally {
-        setLoadingCep(false);
-      }
+      }, 500);
     }
   };
 
@@ -1225,6 +1382,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     isSearching,
     searchResults,
     handlePickerSearch,
+    handleSearchQueryChange,
     handleSelectSearchResult,
     manualAddress,
     setManualAddress,
@@ -1233,6 +1391,11 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     maskPhone,
     maskCPF,
     unmask,
+    // Saved addresses
+    userAddresses,
+    selectedAddressId,
+    loadingAddresses,
+    handleSelectSavedAddress,
   };
 }
 
