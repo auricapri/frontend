@@ -347,10 +347,38 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
       console.log('[PIX] Resposta do backend:', response);
 
       if (response.qrCodeImage && response.qrCodePayload && response.expiresAt) {
+        // Parse de data mais robusto - lida com diferentes formatos
+        let expiresAtDate: Date;
+        const expiresAtValue = response.expiresAt;
+
+        if (typeof expiresAtValue === 'string') {
+          // Se for string ISO, converter diretamente
+          expiresAtDate = new Date(expiresAtValue);
+        } else if (typeof expiresAtValue === 'number') {
+          // Se for timestamp em ms ou segundos
+          expiresAtDate = expiresAtValue > 10000000000
+            ? new Date(expiresAtValue)  // Já em ms
+            : new Date(expiresAtValue * 1000); // Em segundos, converter para ms
+        } else if (expiresAtValue instanceof Date) {
+          expiresAtDate = expiresAtValue;
+        } else {
+          // Fallback: 10 minutos a partir de agora
+          console.warn('[PIX] formato de expiresAt não reconhecido, usando fallback de 10 min');
+          expiresAtDate = new Date(Date.now() + 10 * 60 * 1000);
+        }
+
+        // Validar se a data é válida e está no futuro
+        if (isNaN(expiresAtDate.getTime())) {
+          console.warn('[PIX] data de expiração inválida, usando fallback de 10 min');
+          expiresAtDate = new Date(Date.now() + 10 * 60 * 1000);
+        }
+
+        console.log('[PIX] expiresAt recebido:', expiresAtValue, '-> parsed:', expiresAtDate.toISOString());
+
         setPixData({
           qrCodeImage: response.qrCodeImage,
           qrCodePayload: response.qrCodePayload,
-          expiresAt: new Date(response.expiresAt),
+          expiresAt: expiresAtDate,
           paymentId: response.paymentId
         });
         console.log('[PIX] pixData setado com sucesso');
@@ -423,6 +451,15 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const completeOrderWithPayment = useCallback(async (overridePaymentMethod?: PaymentMethod) => {
     if (!address || !phone) {
       throw new Error('Endereço e telefone são obrigatórios');
+    }
+
+    // Verificar se usuário ainda está autenticado antes de criar pedido
+    const { supabase } = await import('../../../utils/supabase');
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError || !session) {
+      console.error('[Checkout] Session check failed:', { sessionError, hasSession: !!session });
+      throw new Error('Sua sessão expirou. Por favor, faça login novamente para continuar.');
     }
 
     // Use override payment method if provided (fixes race condition when setting state and calling immediately)

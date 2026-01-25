@@ -30,9 +30,26 @@ class ApiClient {
     // In the future, this could be stored in localStorage or context
     try {
       const { supabase } = await import('../utils/supabase');
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      // DEBUG: Log para diagnóstico em produção
+      if (import.meta.env.DEV || !session) {
+        console.log('[Auth Debug]', {
+          hasSession: !!session,
+          hasToken: !!session?.access_token,
+          error: error?.message,
+          expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : null
+        });
+      }
+
+      if (error) {
+        console.error('[Auth Error]', error);
+        return null;
+      }
+
       return session?.access_token || null;
-    } catch {
+    } catch (err) {
+      console.error('[Auth Exception]', err);
       return null;
     }
   }

@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Order, AddressData, InternalLogisticsInfo, CartItem } from '../types';
+import { Order, AddressDataInput, LogisticsInfoInput, CartItem, OrderStatusHistoryEntry } from '../types';
 import { PaymentMethod, OrderStatus } from '../constants/enums';
 
 export class OrdersApi {
@@ -26,14 +26,13 @@ export class OrdersApi {
 
   async create(order: {
     items: CartItem[];
-    addressData: AddressData;
-    logisticsInfo: InternalLogisticsInfo;
+    addressData: AddressDataInput;
+    logisticsInfo: LogisticsInfoInput;
     paymentMethod: PaymentMethod;
     subtotal: number;
     finalAmount: number;
   }): Promise<Order> {
-    const addressData: any = order.addressData as any;
-    const logisticsInfo: any = order.logisticsInfo as any;
+    const { addressData, logisticsInfo } = order;
 
     const normalizedAddress = {
       cep: String(addressData.cep || ''),
@@ -56,11 +55,11 @@ export class OrdersApi {
     return apiClient.post<Order>('/orders', {
       ...order,
       addressData: {
-        ...(order.addressData as any),
+        ...addressData,
         ...normalizedAddress,
       },
       logisticsInfo: {
-        ...(order.logisticsInfo as any),
+        ...logisticsInfo,
         ...normalizedLogistics,
       },
     });
@@ -78,7 +77,7 @@ export class OrdersApi {
     await apiClient.downloadFile(`/pdf/plp/${orderId}`, `PLP-${orderId.slice(0, 8)}.pdf`);
   }
 
-  async getStatusHistory(orderId: string): Promise<any[]> {
-    return apiClient.get<any[]>(`/orders/${orderId}/status-history`);
+  async getStatusHistory(orderId: string): Promise<OrderStatusHistoryEntry[]> {
+    return apiClient.get<OrderStatusHistoryEntry[]>(`/orders/${orderId}/status-history`);
   }
 }
