@@ -10,6 +10,13 @@ export class CouponsApi {
     return apiClient.get<Coupon[]>('/coupons/all');
   }
 
+  /**
+   * Admin method - no cache, returns all coupons directly from database
+   */
+  async getAllAdmin(): Promise<Coupon[]> {
+    return apiClient.get<Coupon[]>('/coupons/all');
+  }
+
   async getByCode(code: string): Promise<Coupon | null> {
     return apiClient.get<Coupon | null>(`/coupons/code/${code}`);
   }

@@ -6,6 +6,13 @@ export class GuidesApi {
     return apiClient.get<SizeGuide[]>('/guides');
   }
 
+  /**
+   * Admin method - no cache, returns all guides directly from database
+   */
+  async getAllAdmin(): Promise<SizeGuide[]> {
+    return apiClient.get<SizeGuide[]>('/guides/admin');
+  }
+
   async create(guide: Partial<SizeGuide>): Promise<SizeGuide> {
     return apiClient.post<SizeGuide>('/guides', guide);
   }

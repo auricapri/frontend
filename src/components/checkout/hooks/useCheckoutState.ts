@@ -338,13 +338,11 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     setPixLoading(true);
     setPixError(null);
     try {
-      console.log('[PIX] Criando cobrança para ordem:', orderId);
       const response = await paymentsApi.processPayment({
         orderId,
         method: 'pix',
         customerInfo
       });
-      console.log('[PIX] Resposta do backend:', response);
 
       if (response.qrCodeImage && response.qrCodePayload && response.expiresAt) {
         // Parse de data mais robusto - lida com diferentes formatos
@@ -373,15 +371,12 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
           expiresAtDate = new Date(Date.now() + 10 * 60 * 1000);
         }
 
-        console.log('[PIX] expiresAt recebido:', expiresAtValue, '-> parsed:', expiresAtDate.toISOString());
-
         setPixData({
           qrCodeImage: response.qrCodeImage,
           qrCodePayload: response.qrCodePayload,
           expiresAt: expiresAtDate,
           paymentId: response.paymentId
         });
-        console.log('[PIX] pixData setado com sucesso');
         return true;
       } else {
         console.error('[PIX] Resposta incompleta:', {

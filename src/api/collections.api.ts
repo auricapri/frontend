@@ -10,6 +10,13 @@ export class CollectionsApi {
     return apiClient.get<Collection[]>('/collections/all');
   }
 
+  /**
+   * Admin method - no cache, returns all collections directly from database
+   */
+  async getAllAdmin(): Promise<Collection[]> {
+    return apiClient.get<Collection[]>('/collections/all');
+  }
+
   async getById(id: string): Promise<Collection | null> {
     return apiClient.get<Collection | null>(`/collections/${id}`);
   }

@@ -98,7 +98,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
         isOpen ? 'w-full md:w-[280px] lg:w-[320px] opacity-100' : 'w-0 opacity-0 border-0'
       }`}
     >
-      <div className="w-[280px] lg:w-[320px] px-6 md:px-8">
+      <div className="w-full md:w-[280px] lg:w-[320px] px-4 md:px-8">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-neutral-200">
           <h3 className="text-[13px] font-bold uppercase tracking-[0.15em] text-neutral-900">
