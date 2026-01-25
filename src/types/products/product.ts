@@ -9,6 +9,7 @@ export interface Product {
   collection_ids?: string[];
   name: LocalizedText;
   description: LocalizedText;
+  presentation?: LocalizedText; // Rich HTML content for product presentation
   slug: LocalizedText;
   is_active: boolean;
   is_highlight: boolean;

@@ -173,8 +173,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
+  // Mobile Sticky Bar State
+  const [showStickyBar, setShowStickyBar] = useState(false);
+
   // Face Swap State
   const [showFaceSwap, setShowFaceSwap] = useState(false);
+
+  // Presentation Section State (expandable, default expanded)
+  const [isPresentationExpanded, setIsPresentationExpanded] = useState(true);
 
   const actionsRef = useRef<HTMLDivElement>(null);
   const mobileGalleryRef = useRef<HTMLDivElement>(null);
@@ -201,6 +207,36 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       setQuantity(Math.max(1, activeVariant.stock_quantity));
     }
   }, [activeVariant, quantity]);
+
+  // Detect scroll for sticky bottom bar (mobile only)
+  useEffect(() => {
+    // Get the scroll container (AppLayout uses #main-scroll-container)
+    const scrollContainer = document.getElementById('main-scroll-container');
+
+    const handleScroll = () => {
+      // Get scroll position from container or window as fallback
+      const scrollY = scrollContainer?.scrollTop || window.scrollY || window.pageYOffset || 0;
+      // Show bar when scrolled down more than 200px
+      setShowStickyBar(scrollY > 200);
+    };
+
+    // Check initial scroll position
+    handleScroll();
+
+    // Listen to scroll on the container
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    // Also listen to window scroll as fallback
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   // IMAGES: Build gallery without duplicates by URL
   // Variant images are part of the master gallery, same image can be used by multiple variants
@@ -820,18 +856,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     {activeVariant?.stock_quantity === 0 ? t('product.outOfStock') : t('product.addToCart')}
                   </button>
 
-                  <button 
+                  <button
                     onClick={onToggleWishlist}
                     aria-label="Toggle wishlist"
-                    className={`flex-none aspect-square border rounded-2xl flex items-center justify-center transition-all duration-500 ${isWishlisted ? 'bg-black text-white border-black shadow-lg' : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'}`}
+                    className={`hidden md:flex flex-none aspect-square border rounded-2xl items-center justify-center transition-all duration-500 ${isWishlisted ? 'bg-black text-white border-black shadow-lg' : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'}`}
                   >
-                    <Heart 
-                      className="w-5 h-5 transition-transform active:scale-125" 
+                    <Heart
+                      className="w-5 h-5 transition-transform active:scale-125"
                       fill={isWishlisted ? "currentColor" : "none"}
                     />
                   </button>
 
-                  <div className="relative">
+                  <div className="hidden md:block relative">
                       <button 
                         onClick={() => setIsShareOpen(!isShareOpen)}
                         className={`h-full aspect-square border rounded-2xl flex items-center justify-center transition-all duration-500 ${isShareOpen ? 'bg-black text-white border-black shadow-lg' : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'}`}
@@ -906,8 +942,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                       {section.label}
                       {openSection === section.id ? <Minus className="w-4 h-4 text-neutral-400" /> : <Plus className="w-4 h-4 text-neutral-400" />}
                     </button>
-                    <div className={`overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${openSection === section.id ? 'max-h-96 opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
-                       <p className="text-[12px] leading-relaxed text-neutral-500 font-medium max-w-sm whitespace-pre-line">{section.content}</p>
+                    <div className={`overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${openSection === section.id ? 'max-h-[500px] opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
+                       <div
+                         className="prose prose-sm max-w-sm text-neutral-500 prose-p:text-[12px] prose-p:leading-relaxed prose-p:font-medium prose-headings:text-neutral-700 prose-headings:text-sm prose-strong:text-neutral-700"
+                         dangerouslySetInnerHTML={{ __html: section.content }}
+                       />
                     </div>
                  </div>
                ))}
@@ -1065,6 +1104,48 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         </div>
       )}
 
+      {/* APRESENTAÇÃO DO PRODUTO */}
+      {product.presentation && getLoc(product.presentation) && (
+        <div className="w-full bg-neutral-50 border-t border-neutral-100 py-16 md:py-24 px-8 md:px-24">
+          <div className="max-w-7xl mx-auto">
+            {/* Header com toggle */}
+            <button
+              onClick={() => setIsPresentationExpanded(!isPresentationExpanded)}
+              className="w-full flex justify-between items-center mb-8 md:mb-12 group"
+            >
+              <div className="flex flex-col items-start">
+                <h2 className="text-2xl md:text-4xl font-light tracking-tight uppercase">
+                  Conheça o Produto
+                </h2>
+                <p className="text-[10px] text-neutral-400 tracking-[0.2em] uppercase font-bold mt-1">
+                  Detalhes, fotos e vídeos exclusivos
+                </p>
+              </div>
+              <span className="flex items-center gap-2 text-sm text-neutral-500 group-hover:text-black transition-colors">
+                <span className="text-[10px] uppercase font-bold tracking-widest hidden md:inline">
+                  {isPresentationExpanded ? 'Recolher' : 'Expandir'}
+                </span>
+                <div className="p-3 bg-white rounded-full shadow-sm group-hover:shadow-md transition-all">
+                  {isPresentationExpanded ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                </div>
+              </span>
+            </button>
+
+            {/* Conteúdo expansível */}
+            <div
+              className={`overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                isPresentationExpanded ? 'max-h-none opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <div
+                className="prose prose-lg max-w-none prose-headings:font-light prose-headings:tracking-tight prose-headings:uppercase prose-p:text-neutral-600 prose-p:leading-relaxed prose-img:rounded-2xl prose-img:shadow-lg prose-a:text-black prose-a:font-bold prose-strong:text-black"
+                dangerouslySetInnerHTML={{ __html: getLoc(product.presentation) }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* REVIEWS */}
       {(reviews.length > 0 || isLoadingReviews) && (
         <div id="reviews" className="w-full bg-white border-t border-neutral-100 pt-32 pb-40 px-8 md:px-24">
@@ -1173,6 +1254,83 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           locale={locale}
         />
       )}
+
+      {/* Mobile Sticky Bottom Bar - aparece apenas no scroll */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-40 md:hidden transition-transform duration-300 ${
+          showStickyBar ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        <div className="flex items-stretch h-16 px-4 py-2 gap-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
+          {/* Botão Favorito */}
+          <button
+            onClick={onToggleWishlist}
+            className={`flex-1 flex items-center justify-center gap-2 rounded-xl border transition-all ${
+              isWishlisted
+                ? 'bg-black text-white border-black'
+                : 'border-neutral-200 text-neutral-600 hover:border-black'
+            }`}
+          >
+            <Heart className="w-4 h-4" fill={isWishlisted ? "currentColor" : "none"} />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Favorito</span>
+          </button>
+
+          {/* Botão Compartilhar */}
+          <button
+            onClick={() => setIsShareOpen(!isShareOpen)}
+            className={`flex-1 flex items-center justify-center gap-2 rounded-xl border transition-all ${
+              isShareOpen
+                ? 'bg-black text-white border-black'
+                : 'border-neutral-200 text-neutral-600 hover:border-black'
+            }`}
+          >
+            <Share2 className="w-4 h-4" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Compartilhar</span>
+          </button>
+
+          {/* Botão Voltar à Loja */}
+          <button
+            onClick={() => window.history.back()}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-black text-white transition-all hover:bg-neutral-800"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Voltar</span>
+          </button>
+        </div>
+
+        {/* Share Dropdown para Mobile (aparece acima da barra) */}
+        {isShareOpen && (
+          <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-2xl shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">Compartilhar</span>
+
+            <div className="flex flex-col gap-1">
+              <button onClick={() => handleShare('whatsapp')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                <div className="bg-green-500 text-white p-1.5 rounded-full"><MessageCircle className="w-3 h-3" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-widest">WhatsApp</span>
+              </button>
+
+              <button onClick={() => handleShare('facebook')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                <div className="bg-blue-600 text-white p-1.5 rounded-full"><Facebook className="w-3 h-3" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-widest">Facebook</span>
+              </button>
+
+              <button onClick={() => handleShare('twitter')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                <div className="bg-black text-white p-1.5 rounded-full"><Twitter className="w-3 h-3" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-widest">X / Twitter</span>
+              </button>
+
+              <div className="h-[1px] bg-neutral-100 my-2" />
+
+              <button onClick={() => handleShare('copy')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                <div className="bg-neutral-100 text-black p-1.5 rounded-full">
+                  {linkCopied ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-widest">{linkCopied ? 'Copiado!' : 'Copiar Link'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
