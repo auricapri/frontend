@@ -62,30 +62,34 @@ export interface HealthStatus {
 export class AiChatApi {
   /**
    * Envia uma mensagem para o chat IA
+   * Rota: POST /api/ai/chat (proxy para AI API com autenticação)
    */
   async sendMessage(request: ChatRequest): Promise<ChatResponse> {
-    return aiChatClient.post<ChatResponse>('/chat', request);
+    return aiChatClient.post<ChatResponse>('/ai/chat', request);
   }
 
   /**
    * Verifica a posição na fila de processamento
+   * Rota: GET /api/ai/queue/:userId
    */
   async getQueueStatus(userId: string): Promise<QueueStatus> {
-    return aiChatClient.get<QueueStatus>(`/queue/${encodeURIComponent(userId)}`);
+    return aiChatClient.get<QueueStatus>(`/ai/queue/${encodeURIComponent(userId)}`);
   }
 
   /**
    * Limpa o histórico da sessão do chat
+   * Rota: DELETE /api/ai/session/:userId
    */
   async clearSession(userId: string): Promise<{ status: string; message: string }> {
-    return aiChatClient.delete(`/session/${encodeURIComponent(userId)}`);
+    return aiChatClient.delete(`/ai/session/${encodeURIComponent(userId)}`);
   }
 
   /**
    * Verifica o status de saúde da API de IA
+   * Rota: GET /api/ai/health
    */
   async getHealth(): Promise<HealthStatus> {
-    return aiChatClient.get<HealthStatus>('/health');
+    return aiChatClient.get<HealthStatus>('/ai/health');
   }
 }
 
