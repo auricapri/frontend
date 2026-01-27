@@ -4,8 +4,9 @@
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
-const AI_CHAT_URL = import.meta.env.VITE_AI_CHAT_URL || 'http://localhost:7001';
-const FACESWAP_URL = import.meta.env.VITE_FACESWAP_URL || 'http://localhost:7001';
+
+// AI API calls go through backend proxy for security (backend adds X-API-Key)
+// Frontend should NOT call AI API directly - use /api/ai/* endpoints instead
 
 export interface ApiError {
   error: {
@@ -165,5 +166,8 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
-export const aiChatClient = new ApiClient(AI_CHAT_URL);
-export const faceSwapClient = new ApiClient(FACESWAP_URL);
+
+// AI clients now use backend proxy endpoints (/api/ai/*)
+// This ensures proper authentication with X-API-Key header
+export const aiChatClient = apiClient;
+export const faceSwapClient = apiClient;

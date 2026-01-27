@@ -29,16 +29,18 @@ export interface FaceSwapStatus {
 export class FaceSwapApi {
   /**
    * Processa face swap com a imagem do usuário
+   * Rota: POST /api/ai/face-swap (proxy para AI API com autenticação)
    */
   async process(request: FaceSwapRequest): Promise<FaceSwapResponse> {
-    return faceSwapClient.post<FaceSwapResponse>('/face-swap', request);
+    return faceSwapClient.post<FaceSwapResponse>('/ai/face-swap', request);
   }
 
   /**
    * Verifica disponibilidade do serviço de face swap
+   * Rota: GET /api/ai/face-swap/status
    */
   async getStatus(): Promise<FaceSwapStatus> {
-    return faceSwapClient.get<FaceSwapStatus>('/face-swap/status');
+    return faceSwapClient.get<FaceSwapStatus>('/ai/face-swap/status');
   }
 }
 
