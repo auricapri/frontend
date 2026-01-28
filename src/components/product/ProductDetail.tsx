@@ -29,9 +29,15 @@ import ProductReviews from './ProductReviews';
 import { FaceSwapModal } from './FaceSwapModal';
 import { formatCurrency } from '../../utils/currency';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
+import { createGetLoc } from '../../utils/localization';
+import { getDisplayPrice as getProductDisplayPrice, getProductCoupon, applyCouponDiscount } from '../../utils/coupon';
+import { share, type SharePlatform } from '../../utils/share';
 import { OptimizedImage } from '../ui';
 import { productReviewsApi } from '../../api/instances';
 import { useImageHotspots } from '../../hooks/useImageHotspots';
+import { useVariantSelection } from '../../hooks/useVariantSelection';
+import { useProductImages } from '../../hooks/useProductImages';
+import { useStickyBar } from '../../hooks/useStickyBar';
 import { ImageHotspots } from './ImageHotspots';
 
 // Cache de reviews por produto (TTL 5 min)
@@ -78,103 +84,39 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   wishlistIds = [],
   onToggleWishlistProduct
 }) => {
-  const getLoc = (obj: any): string => {
-    if (obj === null || obj === undefined) return "";
-    if (typeof obj === 'string') {
-      if (obj.trim().startsWith('{')) {
-        try { return getLoc(JSON.parse(obj)); } catch { return obj; }
-      }
-      return obj;
-    }
-    if (typeof obj === 'object') {
-      const val = obj[locale] || obj['pt'] || obj['en'] || obj['es'] || obj['fr'];
-      if (typeof val === 'string') return val;
-      const first = Object.values(obj).find(v => typeof v === 'string');
-      return (first as string) || "";
-    }
-    return String(obj);
-  };
+  // Use shared localization utility
+  const getLoc = useMemo(() => createGetLoc(locale), [locale]);
 
   // Load hotspots for this product
   const { hotspots } = useImageHotspots(product.id);
 
-  // Filter variants for atacado mode (stock >= 10)
-  const variants = useMemo(() => {
-    const allVariants = product.variants || [];
-    if (userMode === UserMode.ATACADO) {
-      return allVariants.filter(v => v.stock_quantity >= 10);
-    }
-    return allVariants;
-  }, [product.variants, userMode]);
-  
-  // Colors: all unique colors from all variants
-  const colors = useMemo(() => {
-    const unique = new Map();
-    variants.forEach(v => {
-      if (!unique.has(v.color_hex)) unique.set(v.color_hex, v.color_name);
-    });
-    return Array.from(unique.entries()).map(([hex, name]) => ({ hex, name }));
-  }, [variants]);
-
-  const [selectedSize, setSelectedSize] = useState<string>('');
-  const [selectedColorHex, setSelectedColorHex] = useState<string>('');
-
-  // Sizes: filtered dynamically based on selected color
-  const sizes = useMemo(() => {
-    if (!selectedColorHex) {
-      // If no color selected, show all sizes
-      return Array.from(new Set(variants.map(v => v.size).filter(Boolean)));
-    }
-    // Filter variants by selected color and get unique sizes
-    const variantsForColor = variants.filter(v => v.color_hex === selectedColorHex);
-    return Array.from(new Set(variantsForColor.map(v => v.size).filter(Boolean)));
-  }, [variants, selectedColorHex]);
-
-  // Check if selected size is available for selected color
-  const isSelectedSizeAvailable = useMemo(() => {
-    if (!selectedSize || !selectedColorHex) return true;
-    return variants.some(v => v.size === selectedSize && v.color_hex === selectedColorHex);
-  }, [variants, selectedSize, selectedColorHex]);
-
-  // Initialize selected size and color when variants are loaded
-  useEffect(() => {
-    if (colors.length > 0 && !selectedColorHex) {
-      setSelectedColorHex(colors[0].hex);
-    }
-  }, [colors, selectedColorHex]);
-
-  // Initialize selected size when color is selected
-  useEffect(() => {
-    if (selectedColorHex && sizes.length > 0 && !selectedSize) {
-      setSelectedSize(sizes[0]);
-    }
-  }, [selectedColorHex, sizes, selectedSize]);
-
-  // Update selected size when color changes or sizes list changes
-  useEffect(() => {
-    if (sizes.length > 0) {
-      // If current selected size is not available for new color, reset to first available
-      if (!isSelectedSizeAvailable) {
-        setSelectedSize(sizes[0] || '');
-      } else if (!selectedSize) {
-        // If no size selected, select first available
-        setSelectedSize(sizes[0] || '');
-      }
-    }
-  }, [sizes, selectedColorHex, isSelectedSizeAvailable]);
+  // Use variant selection hook
+  const {
+    colors,
+    sizes,
+    selectedSize,
+    selectedColorHex,
+    activeVariant,
+    setSelectedSize,
+    setSelectedColorHex,
+    isSelectedSizeAvailable,
+    filteredVariants: variants,
+  } = useVariantSelection({
+    variants: product.variants,
+    userMode,
+  });
   const [quantity, setQuantity] = useState(1);
   const [openSection, setOpenSection] = useState<string | null>('desc');
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [zoomImgIndex, setZoomImgIndex] = useState(0);
-  const [mobileActiveIdx, setMobileActiveIdx] = useState(0);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  
+
   // Share State
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
-  // Mobile Sticky Bar State
-  const [showStickyBar, setShowStickyBar] = useState(false);
+  // Use sticky bar hook
+  const showStickyBar = useStickyBar({ threshold: 200 });
 
   // Face Swap State
   const [showFaceSwap, setShowFaceSwap] = useState(false);
@@ -183,14 +125,20 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const [isPresentationExpanded, setIsPresentationExpanded] = useState(true);
 
   const actionsRef = useRef<HTMLDivElement>(null);
-  const mobileGalleryRef = useRef<HTMLDivElement>(null);
 
-  const activeVariant = useMemo(() => {
-    const found = variants.find(v => 
-      v.size === selectedSize && v.color_hex === selectedColorHex
-    );
-    return found || variants[0];
-  }, [selectedSize, selectedColorHex, variants]);
+  // Use product images hook
+  const {
+    images: allImagesWithVariant,
+    displayImages,
+    variantToImageIndex,
+    mobileGalleryRef,
+    mobileActiveIdx,
+    setMobileActiveIdx,
+  } = useProductImages({
+    product,
+    variants,
+    activeVariantId: activeVariant?.id,
+  });
 
   // Resolve active size guide image
   const activeSizeGuideImage = useMemo(() => {
@@ -208,222 +156,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     }
   }, [activeVariant, quantity]);
 
-  // Detect scroll for sticky bottom bar (mobile only)
-  useEffect(() => {
-    // Get the scroll container (AppLayout uses #main-scroll-container)
-    const scrollContainer = document.getElementById('main-scroll-container');
-
-    const handleScroll = () => {
-      // Get scroll position from container or window as fallback
-      const scrollY = scrollContainer?.scrollTop || window.scrollY || window.pageYOffset || 0;
-      // Show bar when scrolled down more than 200px
-      setShowStickyBar(scrollY > 200);
-    };
-
-    // Check initial scroll position
-    handleScroll();
-
-    // Listen to scroll on the container
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-    }
-    // Also listen to window scroll as fallback
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      if (scrollContainer) {
-        scrollContainer.removeEventListener('scroll', handleScroll);
-      }
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  // IMAGES: Build gallery without duplicates by URL
-  // Variant images are part of the master gallery, same image can be used by multiple variants
-  const allImagesWithVariant = useMemo(() => {
-    const images: Array<{ 
-      url: string; 
-      variantId: string; 
-      variantColor: string; 
-      variantColorName: any;
-      size: string;
-      combinationKey: string;
-      isBase: boolean;
-      variantIds: string[]; // Track all variants that use this image
-    }> = [];
-    const urlToIndex = new Map<string, number>(); // Map URL to index in images array
-    
-    // First, add base images if they exist (no duplicates)
-    const baseImgs = product.base_images || [];
-    baseImgs.forEach(img => {
-      if (img && typeof img === 'string' && img.trim() !== '') {
-        const trimmedUrl = img.trim();
-        if (!urlToIndex.has(trimmedUrl)) {
-          const index = images.length;
-          images.push({ 
-            url: trimmedUrl, 
-            variantId: 'base', 
-            variantColor: '', 
-            variantColorName: null,
-            size: '',
-            combinationKey: 'base',
-            isBase: true,
-            variantIds: ['base']
-          });
-          urlToIndex.set(trimmedUrl, index);
-        } else {
-          // Image already exists, add 'base' to variantIds
-          const existingIndex = urlToIndex.get(trimmedUrl)!;
-          if (!images[existingIndex].variantIds.includes('base')) {
-            images[existingIndex].variantIds.push('base');
-          }
-        }
-      }
-    });
-
-    // Then, process variant images - add only if URL doesn't exist, but track variantId
-    variants.forEach(variant => {
-      if (variant.variant_images && Array.isArray(variant.variant_images) && variant.variant_images.length > 0) {
-        const size = variant.size || '';
-        const colorHex = variant.color_hex || '';
-        const combinationKey = `${size}-${colorHex}`;
-        
-        variant.variant_images.forEach(img => {
-          if (img && typeof img === 'string' && img.trim() !== '') {
-            const trimmedUrl = img.trim();
-            
-            if (urlToIndex.has(trimmedUrl)) {
-              // Image already exists in gallery, just track this variant
-              const existingIndex = urlToIndex.get(trimmedUrl)!;
-              if (!images[existingIndex].variantIds.includes(variant.id)) {
-                images[existingIndex].variantIds.push(variant.id);
-              }
-              // Update variantId to first variant that uses this image (for backwards compatibility)
-              if (images[existingIndex].variantId === 'base') {
-                images[existingIndex].variantId = variant.id;
-                images[existingIndex].variantColor = colorHex;
-                images[existingIndex].variantColorName = variant.color_name;
-                images[existingIndex].size = size;
-                images[existingIndex].combinationKey = combinationKey;
-                images[existingIndex].isBase = false;
-              }
-            } else {
-              // New image, add to gallery
-              const index = images.length;
-              images.push({ 
-                url: trimmedUrl, 
-                variantId: variant.id, 
-                variantColor: colorHex,
-                variantColorName: variant.color_name,
-                size: size,
-                combinationKey: combinationKey,
-                isBase: false,
-                variantIds: [variant.id]
-              });
-              urlToIndex.set(trimmedUrl, index);
-            }
-          }
-        });
-      }
-    });
-
-    // Sort: base images first, then by combination
-    images.sort((a, b) => {
-      if (a.isBase && !b.isBase) return -1;
-      if (!a.isBase && b.isBase) return 1;
-      if (a.isBase && b.isBase) return 0;
-      // Group by combinationKey
-      if (a.combinationKey !== b.combinationKey) {
-        return a.combinationKey.localeCompare(b.combinationKey);
-      }
-      return 0;
-    });
-
-    // If no images found, add placeholder
-    if (images.length === 0) {
-      images.push({ 
-        url: 'https://via.placeholder.com/1200x1600?text=No+Image', 
-        variantId: 'base', 
-        variantColor: '', 
-        variantColorName: null,
-        size: '',
-        combinationKey: 'base',
-        isBase: true,
-        variantIds: ['base']
-      });
-    }
-
-    return images;
-  }, [variants, product.base_images]);
-
-  // Map variantId to first image index in gallery
-  const variantToImageIndex = useMemo(() => {
-    const map = new Map<string, number>();
-    allImagesWithVariant.forEach((img, index) => {
-      img.variantIds.forEach(variantId => {
-        if (!map.has(variantId)) {
-          map.set(variantId, index);
-        }
-      });
-    });
-    return map;
-  }, [allImagesWithVariant]);
-
-  // Extract just URLs for display (backward compatibility)
-  const displayImages = useMemo(() => allImagesWithVariant.map(img => img.url), [allImagesWithVariant]);
-
-  // Scroll to active variant images when variant changes
-  useEffect(() => {
-    if (!activeVariant) return;
-    
-    // Find the index using the variantToImageIndex map
-    const targetImageIndex = variantToImageIndex.get(activeVariant.id);
-    const finalIndex = targetImageIndex !== undefined && targetImageIndex >= 0 ? targetImageIndex : 0;
-    
-    // Wait a bit for DOM to be ready, then scroll
-    const scrollTimeout = setTimeout(() => {
-      // Desktop: scroll vertical using scrollIntoView (more reliable)
-      const desktopGallery = document.getElementById('desktop-gallery');
-      
-      if (desktopGallery && finalIndex >= 0 && finalIndex < desktopGallery.children.length) {
-        const targetCard = desktopGallery.children[finalIndex] as HTMLElement;
-        if (targetCard) {
-          // Use scrollIntoView for reliable smooth scrolling
-          targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-
-      // Mobile: scroll horizontal by index with retry if gallery not ready
-      const attemptMobileScroll = () => {
-        if (mobileGalleryRef.current && finalIndex >= 0 && finalIndex < allImagesWithVariant.length) {
-          const galleryWidth = mobileGalleryRef.current.offsetWidth;
-          
-          if (galleryWidth > 0) {
-            const scrollPosition = finalIndex * galleryWidth;
-            mobileGalleryRef.current.scrollTo({ left: scrollPosition, behavior: 'smooth' });
-            setMobileActiveIdx(finalIndex);
-            return true;
-          }
-          return false;
-        }
-        return false;
-      };
-      
-      // Try immediately, retry if needed
-      if (!attemptMobileScroll()) {
-        // Retry after a short delay if gallery not ready
-        setTimeout(() => {
-          attemptMobileScroll();
-        }, 200);
-      }
-
-      // Update zoom index to first image of active variant
-      setZoomImgIndex(finalIndex);
-    }, 150);
-    
-    return () => clearTimeout(scrollTimeout);
-  }, [activeVariant?.id, variantToImageIndex, allImagesWithVariant]);
-
+  // Handle mobile scroll to update active index
   const handleMobileScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollLeft = e.currentTarget.scrollLeft;
     const width = e.currentTarget.offsetWidth;
@@ -435,12 +168,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     ? calculatePrice(activeVariant, userMode, product)
     : 0;
 
-  // Calculate Discount
-  const activeCoupon = useMemo(() => coupons.find(c => c.product_ids?.includes(product.id)), [coupons, product.id]);
+  // Calculate Discount using shared coupon utilities
+  const activeCoupon = useMemo(() => getProductCoupon(product.id, coupons), [coupons, product.id]);
   const finalPrice = useMemo(() => {
       if (!activeCoupon) return rawPrice;
-      if (activeCoupon.discount_type === 'percentage') return rawPrice * (1 - activeCoupon.discount_value / 100);
-      return Math.max(0, rawPrice - activeCoupon.discount_value);
+      return applyCouponDiscount(rawPrice, activeCoupon);
   }, [rawPrice, activeCoupon]);
 
   const handleAddToCart = () => {
@@ -489,30 +221,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       }
   };
 
-  const handleShare = (platform: 'whatsapp' | 'facebook' | 'twitter' | 'linkedin' | 'copy') => {
-      const url = window.location.href;
-      const text = `Confira ${getLoc(product.name)} na Auricapri.`;
-      
-      switch(platform) {
-          case 'whatsapp':
-              window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
-              break;
-          case 'facebook':
-              window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-              break;
-          case 'twitter':
-              window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-              break;
-          case 'linkedin':
-              window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
-              break;
-          case 'copy':
-              navigator.clipboard.writeText(url);
-              setLinkCopied(true);
-              setTimeout(() => setLinkCopied(false), 2000);
-              break;
-      }
-      setIsShareOpen(false);
+  const handleShare = async (platform: SharePlatform) => {
+    const url = window.location.href;
+    const text = `Confira ${getLoc(product.name)} na Auricapri.`;
+
+    const result = await share({ platform, text, url });
+
+    if (platform === 'copy' && result.success) {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    }
+
+    setIsShareOpen(false);
   };
 
   const [reviews, setReviews] = useState<ProductReview[]>([]);
@@ -583,18 +303,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     return combined.slice(0, 5);
   }, [products, product.id, product.category_id, userMode]);
 
-  const getDisplayPrice = (p: Product, originalPrice: number) => {
-    const activeCoupon = coupons.find(c => c.product_ids?.includes(p.id));
-    if (!activeCoupon) return { original: originalPrice, final: originalPrice, hasDiscount: false };
-
-    let final = originalPrice;
-    if (activeCoupon.discount_type === 'percentage') {
-        final = originalPrice * (1 - activeCoupon.discount_value / 100);
-    } else {
-        final = Math.max(0, originalPrice - activeCoupon.discount_value);
-    }
-    return { original: originalPrice, final, hasDiscount: true, code: activeCoupon.code };
-  };
+  // Use shared coupon utility for related product pricing
+  const getRelatedDisplayPrice = (p: Product, originalPrice: number) =>
+    getProductDisplayPrice(originalPrice, p.id, coupons);
 
   return (
     <div className="relative w-full bg-white">
@@ -654,7 +365,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   </div>
                   {isActiveVariantImage && (
                     <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-full">
-                      {getLoc(activeVariant.color_name)}
+                      {getLoc(activeVariant?.color_name)}
                     </div>
                   )}
                 </div>
@@ -713,7 +424,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     </ImageHotspots>
                     {isActiveVariantImage && (
                       <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-full">
-                        {getLoc(activeVariant.color_name)}
+                        {getLoc(activeVariant?.color_name)}
                       </div>
                     )}
                   </div>
@@ -761,7 +472,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     )}
                     <span className={`text-2xl font-light tracking-tighter ${activeCoupon ? 'text-red-500' : 'text-black'}`}>{formatCurrency(finalPrice, locale)}</span>
                 </div>
-                {activeVariant?.stock_quantity <= 10 && activeVariant?.stock_quantity > 0 && (
+                {activeVariant && activeVariant.stock_quantity <= 10 && activeVariant.stock_quantity > 0 && (
                     <span className="text-[10px] font-bold uppercase tracking-widest text-red-500 mt-2 animate-pulse">
                         Últimas {activeVariant.stock_quantity} unidades
                     </span>
@@ -969,7 +680,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               {relatedProducts.map((p) => {
                 const mainVariant = p.variants?.[0];
                 const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
-                const { original, final, hasDiscount, code } = getDisplayPrice(p, rawPrice);
+                const { original, final, hasDiscount, code } = getRelatedDisplayPrice(p, rawPrice);
                 const displayImg = p.default_image_url || p.base_images[0];
                 const isWishlistedProduct = wishlistIds.includes(p.id);
                 
@@ -1037,7 +748,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 {relatedProducts.map((p) => {
                   const mainVariant = p.variants?.[0];
                   const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
-                  const { original, final, hasDiscount, code } = getDisplayPrice(p, rawPrice);
+                  const { original, final, hasDiscount, code } = getRelatedDisplayPrice(p, rawPrice);
                   const displayImg = p.default_image_url || p.base_images[0];
                   const isWishlistedProduct = wishlistIds.includes(p.id);
                   
