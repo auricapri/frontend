@@ -112,18 +112,16 @@ export default defineConfig(({ mode }) => {
 
               // Checkout - separate chunk per step
               if (id.includes('/components/checkout/')) {
-                if (id.includes('AddressStep') || id.includes('MapPicker')) {
-                  return 'checkout-address';
-                }
                 if (id.includes('PaymentStep') || id.includes('PaymentForm')) {
                   return 'checkout-payment';
                 }
+                // AddressStep, MapPicker, and other checkout files share state - keep together
                 return 'checkout-other';
               }
 
               // Product components
               if (id.includes('/components/product/')) {
-                if (id.includes('ProductGrid')) {
+                if (id.includes('ProductGrid') || id.includes('FilterSidebar') || id.includes('FilterAccordion') || id.includes('FilterContent') || id.includes('QuickAddModal')) {
                   return 'product-grid';
                 }
                 if (id.includes('ProductDetail')) {

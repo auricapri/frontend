@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ProductDetail } from '../components/product';
+import ProductDetail from '../components/product/ProductDetail';
 import { Product, Coupon, UserMode, UserProfile, SizeGuide } from '../types';
 import { Locale } from '../i18n';
 import { SEOHead, createProductSchema } from '../components/seo';

@@ -1,26 +1,17 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Product, UserMode, Category, Collection, Coupon, LocalizedText } from '../../types';
+import { Product, UserMode, Category, Collection, Coupon } from '../../types';
 import { Heart, ArrowLeft, ArrowRight, Tag, SlidersHorizontal, X, ShoppingBag } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { Gender } from '../../constants/enums';
 import { formatCurrency } from '../../utils/currency';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
+import { getDisplayPrice as getProductDisplayPrice } from '../../utils/coupon';
+import { getProductColors } from '../../utils/variant';
 import { useProductFilters } from '../../hooks/useProductFilters';
 import { FilterSidebar } from './FilterSidebar';
 import { QuickAddModal } from './QuickAddModal';
-
-// Helper to extract unique colors from product variants
-const getProductColors = (product: Product): Array<{ hex: string; name: LocalizedText }> => {
-  const colors = new Map<string, LocalizedText>();
-  product.variants?.forEach(v => {
-    if (v.color_hex && !colors.has(v.color_hex)) {
-      colors.set(v.color_hex, v.color_name);
-    }
-  });
-  return Array.from(colors.entries()).map(([hex, name]) => ({ hex, name }));
-};
 
 interface ProductGridProps {
   products: Product[];
@@ -182,23 +173,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     return filteredAndSortedProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
   }, [currentPage, filteredAndSortedProducts]);
 
-  // Helper to calculate discounted price
+  // Use shared coupon utility for price display
   const getDisplayPrice = (product: Product, originalPrice: number) => {
-    const activeCoupon = coupons.find(c => c.product_ids?.includes(product.id));
-    if (!activeCoupon) return { original: originalPrice, final: originalPrice, hasDiscount: false, discountDisplay: '' };
-
-    let final = originalPrice;
-    let discountDisplay = '';
-
-    if (activeCoupon.discount_type === 'percentage') {
-        final = originalPrice * (1 - activeCoupon.discount_value / 100);
-        discountDisplay = `${activeCoupon.discount_value}%`;
-    } else {
-        final = Math.max(0, originalPrice - activeCoupon.discount_value);
-        discountDisplay = `R$${activeCoupon.discount_value}`;
-    }
-
-    return { original: originalPrice, final, hasDiscount: true, code: activeCoupon.code, discountDisplay };
+    const result = getProductDisplayPrice(originalPrice, product.id, coupons);
+    // Strip leading dash from discountDisplay for badge format ("10% OFF" not "-10% OFF")
+    const discountDisplay = result.discountDisplay?.replace(/^-/, '') || '';
+    return { ...result, discountDisplay };
   };
 
   // Count active filters for badge
@@ -349,7 +329,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     const { original, final, hasDiscount, code, discountDisplay } = getDisplayPrice(p, rawPrice);
                     const displayImg = p.default_image_url || p.base_images[0];
                     const isWishlisted = wishlistIds.includes(p.id);
-                    const colors = getProductColors(p);
+                    const colors = getProductColors(p.variants);
                     const hasMultipleVariants = (p.variants?.length || 0) > 1;
 
                     return (

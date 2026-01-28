@@ -150,30 +150,27 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
       }
 
       try {
-          // TODO: Restaurar pricingApi quando backend estiver disponível
-          // const economics = await pricingApi.calculateOrderEconomics({
-          //     items: order.items.map(item => ({
-          //       product_id: item.product_id,
-          //       variant_id: item.variant_id,
-          //       price: item.price,
-          //       quantity: item.quantity
-          //     })),
-          //     total: order.total,
-          //     freightRealCost: order.internal_logistics?.real_cost ?? 0,
-          //     paymentMethod: order.payment_method ?? 'credit_card',
-          //     financialSettings: DEFAULT_FINANCIAL_SETTINGS
-          // });
+          // NOTA: calculateOrderEconomics precisa ser implementado no backend (PricingApi)
+          // Por enquanto, calculamos valores básicos localmente
+          // Para implementar: backend/src/api/routes/pricing.routes.ts -> POST /pricing/order-economics
+          const gatewayRate = order.payment_method === 'pix' ? 0.0099 : 0.0399;
+          const freightReal = order.internal_logistics?.real_cost ?? 0;
+          const gatewayFee = order.total * gatewayRate;
+          const estimatedCogs = order.total * 0.3; // Placeholder - precisa buscar custo real dos produtos
+          const totalVariableCosts = freightReal + gatewayFee + estimatedCogs;
+          const netProfit = order.total - totalVariableCosts;
+          const marginPercent = order.total > 0 ? (netProfit / order.total) * 100 : 0;
 
           const result = {
               revenue: order.total,
-              cogs: 0,
-              freightReal: 0,
-              gatewayFee: 0,
+              cogs: estimatedCogs,
+              freightReal,
+              gatewayFee,
               dasProportional: 0,
-              totalVariableCosts: 0,
-              netProfit: order.total,
-              marginPercent: 100,
-              gatewayRate: 0.0399,
+              totalVariableCosts,
+              netProfit,
+              marginPercent,
+              gatewayRate,
               taxRate: 0
           };
 
