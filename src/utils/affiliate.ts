@@ -53,6 +53,16 @@ export const normalizeProductUrl = (baseUrl: string, affiliateId?: string): stri
 };
 
 /**
+ * Generates a referral link with the affiliate code for sharing
+ * When someone uses this link to register, their account will be associated with the affiliate
+ */
+export const generateReferralLink = (affiliateCode: string): string => {
+  // Use environment variable or fallback to current origin
+  const baseUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+  return `${baseUrl}/?ref=${encodeURIComponent(affiliateCode)}`;
+};
+
+/**
  * Simple logging for URL failures
  */
 export const logUrlFailure = (url: string, error: string) => {

@@ -1,5 +1,5 @@
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { X, Loader2, ShoppingBag, Mail, ArrowLeft, Check } from 'lucide-react';
 import { UserProfile as UserType } from '../../types';
 import { Locale } from '../../i18n';
@@ -29,6 +29,18 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [referralCode, setReferralCode] = useState('');
+
+  // Read referral code from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref') || params.get('aff') || params.get('affiliate_id');
+    if (ref) {
+      setReferralCode(ref.toUpperCase());
+      // If we have a referral code, automatically show register mode
+      setAuthMode('register');
+    }
+  }, []);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,10 +55,15 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
         // Just close the drawer - the hook will update currentUser
         onClose();
       } else {
-        const { error } = await supabase.auth.signUp({ 
+        const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: fullName } }
+          options: {
+            data: {
+              full_name: fullName,
+              referred_by_code: referralCode || undefined
+            }
+          }
         });
         if (error) throw error;
         alert('Cadastro realizado! Verifique seu email para confirmar.');
@@ -309,10 +326,23 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
 
                 <form className="space-y-6" onSubmit={handleAuth}>
                    {authMode === 'register' && (
-                     <div className="space-y-2">
-                        <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">Nome Completo</label>
-                        <input className="w-full px-6 py-4 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none" value={fullName} onChange={e => setFullName(e.target.value)} required />
-                     </div>
+                     <>
+                       <div className="space-y-2">
+                          <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">Nome Completo</label>
+                          <input className="w-full px-6 py-4 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none" value={fullName} onChange={e => setFullName(e.target.value)} required />
+                       </div>
+                       <div className="space-y-2">
+                          <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">
+                            Código de Indicação <span className="text-neutral-300 normal-case">(opcional)</span>
+                          </label>
+                          <input
+                            className="w-full px-6 py-4 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none placeholder:text-neutral-300"
+                            value={referralCode}
+                            onChange={e => setReferralCode(e.target.value.toUpperCase())}
+                            placeholder="Ex: AUR-MARIA-AB12"
+                          />
+                       </div>
+                     </>
                    )}
                    <div className="space-y-2">
                      <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">{t('auth.email')}</label>

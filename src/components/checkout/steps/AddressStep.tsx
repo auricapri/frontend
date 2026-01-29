@@ -1,5 +1,5 @@
-import React from 'react';
-import { AlertCircle, Check, Loader2, MapPin, Navigation, Search, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { AlertCircle, Check, Loader2, MapPin, Navigation, Search, ChevronDown } from 'lucide-react';
 import { type CheckoutState } from '../hooks/useCheckoutState';
 import { maskCep, normalizeCepDigits } from '../../../utils/masks';
 
@@ -14,7 +14,6 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
     confirmManualAddress,
     handleCepChange,
     isManualAddress,
-    isMapPickerOpen,
     loadingCep,
     mapContainerRef,
     mapError,
@@ -26,15 +25,11 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
     cpf,
     setCpf,
     maskCPF,
-    pickerContainerRef,
     searchQuery,
     setComplement,
-    setIsMapPickerOpen,
     setManualAddress,
     setNum,
     setPhone,
-    setSearchQuery,
-    handlePickerSearch,
     handleSearchQueryChange,
     handleSelectSearchResult,
     isSearching,
@@ -48,11 +43,21 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
     handleSelectSavedAddress,
   } = checkout;
 
+  // State para busca inline (mobile-friendly)
+  const [showInlineSearch, setShowInlineSearch] = useState(false);
+
   // Atualizar campo do endereço
   const updateAddressField = (field: string, value: string) => {
     if (address) {
       setAddress({ ...address, [field]: value });
     }
+  };
+
+  // Handler para quando seleciona um resultado da busca inline
+  const handleInlineSearchSelect = (result: any) => {
+    handleSelectSearchResult(result);
+    // Após selecionar, a busca é fechada automaticamente e os campos são preenchidos
+    setShowInlineSearch(false);
   };
 
   return (
@@ -124,11 +129,13 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             <div className="flex justify-between items-center">
               <button
                 type="button"
-                onClick={() => setIsMapPickerOpen(true)}
-                data-testid="open-map-picker"
+                onClick={() => setShowInlineSearch(!showInlineSearch)}
+                data-testid="toggle-address-search"
                 className="text-xs font-black uppercase tracking-widest text-neutral-600 hover:text-black transition-colors flex items-center gap-2"
               >
-                <Navigation className="w-3 h-3" /> Não sei meu CEP
+                <Navigation className="w-3 h-3" />
+                Não sei meu CEP
+                <ChevronDown className={`w-3 h-3 transition-transform ${showInlineSearch ? 'rotate-180' : ''}`} />
               </button>
               {cepError && (
                 <div className="flex items-center gap-2 text-xs text-red-500 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
@@ -137,6 +144,125 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 </div>
               )}
             </div>
+
+            {/* Busca de Endereço Inline (mobile-friendly) */}
+            {showInlineSearch && (
+              <div className="mt-4 p-4 bg-neutral-50 rounded-2xl border border-neutral-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+                    Buscar por Rua ou Bairro
+                  </label>
+                  <div className="relative">
+                    <input
+                      className="w-full p-4 pr-12 bg-white border border-neutral-200 rounded-2xl text-sm font-black outline-none focus:border-black transition-all"
+                      placeholder="Digite sua rua, bairro ou cidade..."
+                      value={searchQuery}
+                      onChange={(e) => handleSearchQueryChange(e.target.value)}
+                      autoFocus
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                      {isSearching ? (
+                        <Loader2 className="w-5 h-5 animate-spin text-neutral-400" />
+                      ) : (
+                        <Search className="w-5 h-5 text-neutral-300" />
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-neutral-400">
+                    Digite pelo menos 3 caracteres para buscar
+                  </p>
+                </div>
+
+                {/* Resultados da busca */}
+                {searchResults.length > 0 && (
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {searchResults.map((result, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleInlineSearchSelect(result)}
+                        className="w-full p-4 bg-white border border-neutral-100 rounded-xl text-left hover:border-black hover:bg-neutral-50 transition-all group"
+                      >
+                        <p className="text-sm font-black uppercase tracking-tight group-hover:text-black">
+                          {result.text}
+                        </p>
+                        <p className="text-xs text-neutral-500 truncate mt-1">
+                          {result.place_name}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Formulário manual se não encontrou */}
+                {searchQuery.length >= 3 && searchResults.length === 0 && !isSearching && (
+                  <div className="pt-4 border-t border-neutral-200 space-y-4">
+                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                      Não encontrou? Preencha manualmente:
+                    </p>
+                    <div className="grid grid-cols-1 gap-3">
+                      <input
+                        className="w-full p-3 bg-white border border-neutral-200 rounded-xl text-sm font-black outline-none focus:border-black transition-all"
+                        placeholder="Rua / Logradouro"
+                        value={manualAddress.street}
+                        onChange={(e) => setManualAddress({ ...manualAddress, street: e.target.value })}
+                      />
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          className="w-full p-3 bg-white border border-neutral-200 rounded-xl text-sm font-black outline-none focus:border-black transition-all"
+                          placeholder="Bairro"
+                          value={manualAddress.neighborhood}
+                          onChange={(e) => setManualAddress({ ...manualAddress, neighborhood: e.target.value })}
+                        />
+                        <input
+                          className="w-full p-3 bg-white border border-neutral-200 rounded-xl text-sm font-black outline-none focus:border-black transition-all"
+                          placeholder="Cidade"
+                          value={manualAddress.city}
+                          onChange={(e) => setManualAddress({ ...manualAddress, city: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          className="w-full p-3 bg-white border border-neutral-200 rounded-xl text-sm font-black outline-none focus:border-black transition-all"
+                          placeholder="Estado (UF)"
+                          value={manualAddress.state}
+                          onChange={(e) => setManualAddress({ ...manualAddress, state: e.target.value.toUpperCase() })}
+                          maxLength={2}
+                        />
+                        <input
+                          className="w-full p-3 bg-white border border-neutral-200 rounded-xl text-sm font-black font-mono outline-none focus:border-black transition-all"
+                          placeholder="CEP"
+                          value={manualAddress.cep}
+                          onChange={(e) => {
+                            const digits = normalizeCepDigits(e.target.value);
+                            setManualAddress({ ...manualAddress, cep: digits ? maskCep(digits) : '' });
+                          }}
+                          inputMode="numeric"
+                          maxLength={9}
+                        />
+                      </div>
+                      {manualCepError && (
+                        <div className="flex items-center gap-2 text-xs text-red-500 font-bold uppercase tracking-widest">
+                          <AlertCircle className="w-3 h-3" />
+                          {manualCepError}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          confirmManualAddress();
+                          setShowInlineSearch(false);
+                        }}
+                        disabled={!manualAddress.street || !manualAddress.city || !manualAddress.neighborhood}
+                        className="w-full py-3 bg-black text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-neutral-800 disabled:opacity-30 transition-all"
+                      >
+                        <Check className="w-4 h-4" /> Confirmar Endereço
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           {address && (
             <div className="md:col-span-2 space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -291,133 +417,6 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           Confirmar e Pagar
         </button>
       </section>
-
-      {isMapPickerOpen && (
-        <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-500">
-          <div className="bg-white w-full max-w-5xl rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-[85vh] md:h-[70vh]">
-            <div className="w-full md:w-1/2 relative bg-neutral-100 flex items-center justify-center">
-              <div ref={pickerContainerRef} className="w-full h-full" />
-              <div className="absolute top-4 left-4 right-4 z-10">
-                <div className="relative group">
-                  <input
-                    className="w-full p-4 pr-14 bg-white border-none rounded-2xl shadow-xl text-xs font-black uppercase tracking-widest outline-none placeholder:text-neutral-300"
-                    placeholder="Digite sua rua e cidade..."
-                    value={searchQuery}
-                    onChange={(e) => handleSearchQueryChange(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handlePickerSearch()}
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black text-white rounded-xl">
-                    {isSearching ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Search className={`w-4 h-4 ${searchQuery.length >= 3 ? 'opacity-50' : ''}`} />
-                    )}
-                  </div>
-                </div>
-                {searchResults.length > 0 && (
-                  <div className="mt-2 bg-white rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-top-2">
-                    {searchResults.map((res, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSelectSearchResult(res)}
-                        className="w-full p-4 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors"
-                      >
-                        <p className="text-xs font-black uppercase tracking-widest">{res.text}</p>
-                        <p className="text-xs text-neutral-600 truncate">{res.place_name}</p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-between overflow-y-auto no-scrollbar">
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="text-2xl font-black uppercase italic tracking-tighter leading-none mb-2">Localizador</h2>
-                    <p className="text-xs font-black uppercase tracking-widest text-neutral-600">Confirme os detalhes do endereço</p>
-                  </div>
-                  <button onClick={() => setIsMapPickerOpen(false)} className="p-4 bg-neutral-50 rounded-full hover:bg-neutral-100 transition-all">
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Rua / Logradouro</label>
-                    <input
-                      className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-black uppercase outline-none focus:border-black transition-all"
-                      value={manualAddress.street}
-                      onChange={(e) => setManualAddress({ ...manualAddress, street: e.target.value })}
-                      placeholder="NOME DA RUA"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Bairro</label>
-                      <input
-                        className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
-                        value={manualAddress.neighborhood}
-                        onChange={(e) => setManualAddress({ ...manualAddress, neighborhood: e.target.value })}
-                        placeholder="BAIRRO"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Cidade</label>
-                      <input
-                        className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
-                        value={manualAddress.city}
-                        onChange={(e) => setManualAddress({ ...manualAddress, city: e.target.value })}
-                        placeholder="CIDADE"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Estado</label>
-                      <input
-                        className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
-                        value={manualAddress.state}
-                        onChange={(e) => setManualAddress({ ...manualAddress, state: e.target.value.toUpperCase() })}
-                        placeholder="UF"
-                        maxLength={2}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-neutral-600">CEP</label>
-                      <input
-                        className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl text-xs font-black uppercase outline-none focus:border-black transition-all"
-                        value={manualAddress.cep}
-                      onChange={(e) => {
-                          const digits = normalizeCepDigits(e.target.value);
-                          setManualAddress({ ...manualAddress, cep: digits ? maskCep(digits) : '' });
-                        }}
-                        placeholder="00000-000"
-                        inputMode="numeric"
-                        autoComplete="postal-code"
-                        maxLength={9}
-                      />
-                      {manualCepError && (
-                        <div className="flex items-center gap-2 text-xs text-red-500 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {manualCepError}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={confirmManualAddress}
-                data-testid="manual-address-confirm"
-                disabled={!manualAddress.street || !manualAddress.city || !manualAddress.neighborhood}
-                className="w-full py-4 bg-black text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] shadow-xl flex items-center justify-center gap-3 mt-6 hover:scale-[1.02] active:scale-95 disabled:opacity-20 transition-all"
-              >
-                <Check className="w-4 h-4" /> Confirmar Localização
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
