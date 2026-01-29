@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Auricapri</title>
-    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="icon" type="image/svg+xml" href="/logo-auricapri.svg" />
 
     <!-- Preconnect para fontes Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -91,6 +91,13 @@
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         font-weight: 300;
         animation: logo-reveal 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      @keyframes splash-logo-pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(0.97); }
+      }
+      .splash-logo-pulse {
+        animation: splash-logo-pulse 2s ease-in-out infinite;
       }
       #splash-screen {
         position: fixed;
@@ -255,9 +262,11 @@
     <!-- Initial Splash Screen -->
     <div id="splash-screen">
       <div class="flex flex-col items-center">
-        <h1 class="splash-logo text-xl md:text-3xl font-light uppercase tracking-[0.6em] text-black">
-          AURICAPRI
-        </h1>
+        <img
+          src="/logo-auricapri.svg"
+          alt="Auricapri"
+          class="w-20 h-20 md:w-28 md:h-28 splash-logo-pulse"
+        />
         <div class="mt-8 h-[1px] w-32 bg-neutral-100 relative overflow-hidden">
            <div class="absolute inset-0 bg-black animate-[shimmer_2s_infinite_linear]"></div>
         </div>
