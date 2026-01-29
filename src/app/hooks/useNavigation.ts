@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../../utils/supabase';
 import { trackingService } from '../../services/tracking.service';
-import { ProductsApi } from '../../api/products.api';
+import { CachedProductsApi } from '../../api/cached.products.api';
 import { logger } from '../../utils/logger';
 import type { Locale } from '../../i18n';
 import type { Collection, Product, UserProfile } from '../../types';
@@ -40,7 +40,7 @@ export function useNavigation(params: UseNavigationParams) {
 
   const mainRef = useRef<HTMLElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const productsApi = useMemo(() => new ProductsApi(), []);
+  const productsApi = useMemo(() => new CachedProductsApi(), []);
 
   const extractProductSlug = useCallback((pathname: string): string | null => {
     const match = pathname.match(/^\/product\/(.+)$/);
