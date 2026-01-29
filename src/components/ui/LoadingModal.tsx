@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 // Logo do public folder - Vite serve arquivos do public na raiz
-const logoImg = '/logo.png';
+const logoImg = '/logo-auricapri.svg';
 
 interface LoadingModalProps {
   isOpen: boolean;
