@@ -1,5 +1,5 @@
 import React, { Suspense, useState } from 'react';
-import { MessageCircle, X, Loader2 } from 'lucide-react';
+import { MessageCircle, X } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import Hero from '../components/shared/Hero';
@@ -369,7 +369,20 @@ export function AppLayout(props: {
 
       {app.isProcessingOrder && (
         <div className="fixed inset-0 z-[2000] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center">
-          <Loader2 className="w-12 h-12 animate-spin text-black mb-4" />
+          <style>
+            {`
+              @keyframes logo-pulse {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.5; transform: scale(0.95); }
+              }
+            `}
+          </style>
+          <img
+            src="/logo-auricapri.svg"
+            alt="Carregando..."
+            className="w-16 h-16 mb-6"
+            style={{ animation: 'logo-pulse 1.5s ease-in-out infinite' }}
+          />
           <h3 className="text-xl font-black uppercase tracking-tighter">Processando Pedido</h3>
           <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mt-2">Não feche esta janela...</p>
         </div>
