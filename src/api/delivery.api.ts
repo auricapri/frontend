@@ -88,5 +88,56 @@ export class DeliveryApi {
   }): Promise<DeliveryReport> {
     return apiClient.post<DeliveryReport>('/delivery/reports', params);
   }
+
+  // =============================================
+  // LOGISTICS WORKFLOW METHODS
+  // =============================================
+
+  /**
+   * Get delivery dashboard with orders grouped by status
+   */
+  async getDeliveryDashboard(): Promise<{
+    awaiting_pickup: Order[];
+    collected: Order[];
+    counts: {
+      awaiting_pickup: number;
+      collected: number;
+    };
+  }> {
+    return apiClient.get('/delivery/dashboard');
+  }
+
+  /**
+   * Get orders awaiting pickup by delivery team
+   * Status: AWAITING_PICKUP
+   */
+  async getAwaitingPickupOrders(limit = 50, offset = 0): Promise<Order[]> {
+    return apiClient.get<Order[]>(`/delivery/orders/awaiting-pickup?limit=${limit}&offset=${offset}`);
+  }
+
+  /**
+   * Get orders that have been collected (in transit to expedition)
+   * Status: COLLECTED
+   */
+  async getCollectedOrders(limit = 50, offset = 0): Promise<Order[]> {
+    return apiClient.get<Order[]>(`/delivery/orders/collected?limit=${limit}&offset=${offset}`);
+  }
+
+  /**
+   * Mark order as collected by delivery team
+   * Transitions: AWAITING_PICKUP -> COLLECTED
+   */
+  async markAsCollected(orderId: string): Promise<Order> {
+    return apiClient.put<Order>(`/delivery/orders/${orderId}/collected`, {});
+  }
+
+  /**
+   * Move order to expedition (processing)
+   * Transitions: COLLECTED -> PROCESSING
+   * Note: Admin only
+   */
+  async moveToExpedition(orderId: string): Promise<Order> {
+    return apiClient.put<Order>(`/delivery/orders/${orderId}/expedition`, {});
+  }
 }
 

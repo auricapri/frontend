@@ -16,6 +16,7 @@ const AdminDelivery = React.lazy(() => import('../components/admin/AdminDelivery
 const OrderReceipt = React.lazy(() => import('../components/orders/OrderReceipt'));
 const SharedWishlistPage = React.lazy(() => import('../pages/SharedWishlistPage'));
 const SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').then(m => ({ default: m.SearchResultsPage })));
+const MarketplaceOAuthCallback = React.lazy(() => import('../pages/MarketplaceOAuthCallback').then(m => ({ default: m.MarketplaceOAuthCallback })));
 
 export function AppRouter(props: {
   app: any;
@@ -152,6 +153,14 @@ export function AppRouter(props: {
     return (
       <Suspense fallback={<LoadingFallback />}>
         <SharedWishlistPage locale={app.locale} t={app.t} userMode={app.userMode} currentUser={app.currentUser} onNavigate={app.onNavigate} slug={slug} />
+      </Suspense>
+    );
+  }
+
+  if (app.currentView === 'marketplace-callback') {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <MarketplaceOAuthCallback />
       </Suspense>
     );
   }
