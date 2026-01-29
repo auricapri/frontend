@@ -24,6 +24,7 @@ export type AppView =
   | 'privacy'
   | 'terms'
   | 'search-results'
+  | 'marketplace-callback'
   | '404';
 
 interface UseNavigationParams {
@@ -75,6 +76,7 @@ export function useNavigation(params: UseNavigationParams) {
     if (pathname.startsWith('/collection')) return 'collection';
     if (pathname === '/privacy') return 'privacy';
     if (pathname === '/terms') return 'terms';
+    if (pathname === '/admin/marketplace-callback') return 'marketplace-callback';
     if (pathname === '/') return 'home';
     return '404';
   }, []);
