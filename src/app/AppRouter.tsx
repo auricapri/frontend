@@ -160,7 +160,7 @@ export function AppRouter(props: {
   if (app.currentView === 'marketplace-callback') {
     return (
       <Suspense fallback={<LoadingFallback />}>
-        <MarketplaceOAuthCallback />
+        <MarketplaceOAuthCallback onNavigate={app.onNavigate} />
       </Suspense>
     );
   }
