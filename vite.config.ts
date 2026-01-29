@@ -121,7 +121,7 @@ export default defineConfig(({ mode }) => {
 
               // Product components
               if (id.includes('/components/product/')) {
-                if (id.includes('ProductGrid') || id.includes('FilterSidebar') || id.includes('FilterAccordion') || id.includes('FilterContent') || id.includes('QuickAddModal')) {
+                if (id.includes('ProductGrid') || id.includes('FilterSidebar') || id.includes('FilterAccordion') || id.includes('FilterContent') || id.includes('QuickAddModal') || id.includes('PriceRangeSlider')) {
                   return 'product-grid';
                 }
                 if (id.includes('ProductDetail')) {

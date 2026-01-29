@@ -6,6 +6,8 @@
 export enum OrderStatus {
   PENDING = 'pending',
   CONFIRMED = 'confirmed',
+  AWAITING_PICKUP = 'awaiting_pickup',  // Aguardando coleta pelo delivery
+  COLLECTED = 'collected',               // Coletado - em trânsito para expedição
   PROCESSING = 'processing',
   SHIPPED = 'shipped',
   DELIVERED = 'delivered',
@@ -58,7 +60,9 @@ export enum Locale {
 
 export const OrderStatusTransitions: Record<OrderStatus, OrderStatus[]> = {
   [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
-  [OrderStatus.CONFIRMED]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
+  [OrderStatus.CONFIRMED]: [OrderStatus.AWAITING_PICKUP, OrderStatus.PROCESSING, OrderStatus.CANCELLED],
+  [OrderStatus.AWAITING_PICKUP]: [OrderStatus.COLLECTED, OrderStatus.CANCELLED],
+  [OrderStatus.COLLECTED]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
   [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
   [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED],
   [OrderStatus.DELIVERED]: [],

@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Box, Users, Settings, LogOut,
   BarChart3, Tag, Layers, Image as ImageIcon, Ticket, Archive, BookOpen, Ruler, Lightbulb,
   AlertTriangle, X, Loader2, Store, Truck, ShoppingBag, ChevronDown, DollarSign
@@ -8,17 +8,16 @@ import { Box, Users, Settings, LogOut,
 import {
   productsApi,
   ordersApi,
-  usersApi,
   storeApi,
   couponsApi,
   collectionsApi,
   assetsApi,
-  guidesApi,
   bannersApi,
   suppliersApi,
   marketingApi,
 } from '../../api/instances';
-import { logger } from '../../utils/logger';
+import { useAdminRouter, AdminTab } from '../../hooks/useAdminRouter';
+import { useAdminData } from '../../hooks/useAdminData';
 import { Locale } from '../../i18n';
 import {
   Product, Category, Collection, Banner, Coupon, Asset,
@@ -60,10 +59,19 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, onProductChange }) => {
-  const [activeTab, setActiveTab] = useState('health');
+  // Routing - URL-based navigation
+  const { activeTab, navigate } = useAdminRouter();
+
+  // Data - lazy loaded per tab with 5-minute cache
+  const {
+    products, categories, collections, banners, coupons, campaigns,
+    assets, orders, users, sizeGuides, suppliers, config,
+    isLoading, fetchData,
+    setProducts, setCategories, setCollections, setBanners, setCoupons,
+    setAssets, setOrders, setConfig, setSizeGuides, setSuppliers
+  } = useAdminData(activeTab);
+
   const [marketingSubTab, setMarketingSubTab] = useState<'banners' | 'campaigns' | 'users' | 'analytics'>('banners');
-  const [isLoading, setIsLoading] = useState(true);
-  const [, setIsRefreshing] = useState(false);
   const [editLocale, setEditLocale] = useState<Locale>(locale);
 
   // Sidebar categories collapse state
@@ -83,35 +91,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
     });
   };
 
-  // Data State
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [assets, setAssets] = useState<Asset[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [sizeGuides, setSizeGuides] = useState<SizeGuide[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [config, setConfig] = useState<StoreConfig>({
-    brand_name: '',
-    about_us: { pt: '', en: '' },
-    about_us_image: '',
-    terms_of_service: { pt: '', en: '' },
-    privacy_policy: { pt: '', en: '' },
-    financial_settings: {
-      fixed_monthly: 0,
-      infra_tech: 0,
-      monthly_sales_vol: 0,
-      das_mei: 0,
-      marketing_fixed: 0,
-      packaging_cost: 0,
-      avg_freight_cost: 0
-    }
-  });
-
   // Editor State
   const [editingItem, setEditingItem] = useState<{ type: string; data: unknown } | null>(null);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
@@ -127,65 +106,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
   const [deleteQueue, setDeleteQueue] = useState<Array<{ id: string; status: 'pending' | 'processing' | 'success' | 'failed'; error?: string }>>([]);
   const [confirmationText, setConfirmationText] = useState('');
 
-  const fetchData = useCallback(async (isSilent = false) => {
-    if (!isSilent) setIsLoading(true);
-    else setIsRefreshing(true);
-
-    try {
-      // Usa singletons de API em vez de criar novas instâncias
-      // Admin methods - no cache, direct database queries
-      const [
-        productsData,
-        categoriesData,
-        collectionsData,
-        bannersData,
-        couponsData,
-        assetsData,
-        ordersData,
-        usersData,
-        configData,
-        guidesData,
-        suppliersData,
-        campaignsData
-      ] = await Promise.all([
-        productsApi.getAllAdmin(),
-        storeApi.getAllCategoriesAdmin(),
-        collectionsApi.getAllAdmin(),
-        bannersApi.getAllAdmin(),
-        couponsApi.getAllAdmin(),
-        assetsApi.getAllAdmin(),
-        ordersApi.getAllAdmin(),
-        usersApi.getAll(),
-        storeApi.getConfigAdmin(),
-        guidesApi.getAllAdmin(),
-        suppliersApi.getAll(),
-        marketingApi.getCampaigns()
-      ]);
-
-      setProducts(productsData);
-      setCategories(categoriesData);
-      setCollections(collectionsData);
-      setBanners(bannersData);
-      setCoupons(couponsData);
-      setAssets(assetsData);
-      setOrders(ordersData);
-      setUsers(usersData);
-      if (configData) setConfig(configData);
-      setSizeGuides(guidesData);
-      setSuppliers(suppliersData);
-      setCampaigns(campaignsData);
-
-    } catch (e) {
-      logger.error("Admin Fetch Error", e);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   const handleUpdateOrderStatus = async (orderId: string, status: OrderStatus, trackingCode?: string) => {
     try {
@@ -480,7 +400,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                     ].map(item => (
                       <button
                         key={item.id}
-                        onClick={() => setActiveTab(item.id)}
+                        onClick={() => navigate(item.id as AdminTab)}
                         className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
                       >
                         <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -510,7 +430,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                     ].map(item => (
                       <button
                         key={item.id}
-                        onClick={() => setActiveTab(item.id)}
+                        onClick={() => navigate(item.id as AdminTab)}
                         className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
                       >
                         <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -541,7 +461,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                     ].map(item => (
                       <button
                         key={item.id}
-                        onClick={() => setActiveTab(item.id)}
+                        onClick={() => navigate(item.id as AdminTab)}
                         className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
                       >
                         <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -570,7 +490,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                     ].map(item => (
                       <button
                         key={item.id}
-                        onClick={() => setActiveTab(item.id)}
+                        onClick={() => navigate(item.id as AdminTab)}
                         className={`flex items-center gap-4 p-2.5 rounded-xl transition-all w-full ${activeTab === item.id ? 'bg-white text-black font-bold' : 'text-neutral-500 hover:text-white hover:bg-white/10'}`}
                       >
                         <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -699,7 +619,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout, t, locale, on
                     banners={banners} 
                     campaigns={campaigns}
                     onEdit={(b) => setEditingItem({ type: 'banner', data: b })} 
-                    onRefresh={() => fetchData(true)}
+                    onRefresh={() => fetchData()}
                     locale={locale}
                     activeTab={marketingSubTab}
                     onTabChange={setMarketingSubTab}

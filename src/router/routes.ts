@@ -1,4 +1,4 @@
-export type View = 'home' | 'product' | 'collection' | 'admin' | 'admin-login' | 'delivery' | 'delivery-login' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | 'order-review' | 'privacy' | 'terms' | 'search-results';
+export type View = 'home' | 'product' | 'collection' | 'admin' | 'admin-login' | 'delivery' | 'delivery-login' | 'checkout' | 'receipt' | 'about' | 'reset-password' | 'shared-wishlist' | 'order-review' | 'privacy' | 'terms' | 'search-results' | 'marketplace-callback';
 
 export interface Route {
   view: View;
@@ -21,5 +21,6 @@ export const routes: Record<View, Route> = {
   'order-review': { view: 'order-review', path: '/order-review' },
   privacy: { view: 'privacy', path: '/privacy' },
   terms: { view: 'terms', path: '/terms' },
-  'search-results': { view: 'search-results', path: '/search' }
+  'search-results': { view: 'search-results', path: '/search' },
+  'marketplace-callback': { view: 'marketplace-callback', path: '/admin/marketplace-callback' }
 };

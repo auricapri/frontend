@@ -38,7 +38,7 @@ interface AdminOrdersProps {
 const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets = [], onUpdateStatus, locale }) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [trackingInput, setTrackingInput] = useState('');
-  const [isGeneratingPLP, setIsGeneratingPLP] = useState(false);
+  const [isGeneratingLabel, setIsGeneratingLabel] = useState(false);
   const [customerData, setCustomerData] = useState<UserProfile | null>(null);
   const [loadingCustomer, setLoadingCustomer] = useState(false);
   
@@ -195,16 +195,20 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
 
   const handleGenerateDoc = async () => {
       if (!selectedOrder) return;
-      
-      setIsGeneratingPLP(true);
+
+      setIsGeneratingLabel(true);
       try {
-          await ordersApi.downloadPLPPDF(selectedOrder.id);
+          // Uses unified label endpoint that auto-detects:
+          // - Auricapri orders -> PLP Correios
+          // - Mercado Livre orders -> ML shipping label
+          // - TikTok Shop orders -> TikTok label or fallback
+          await ordersApi.downloadLabel(selectedOrder.id);
           setGeneratedDocs(prev => ({ ...prev, [selectedOrder.id]: true }));
       } catch (error: any) {
-          console.error('Error generating PLP:', error);
-          alert('Erro ao gerar PLP. Tente novamente.');
+          console.error('Error generating shipping label:', error);
+          alert('Erro ao gerar etiqueta. Tente novamente.');
       } finally {
-          setIsGeneratingPLP(false);
+          setIsGeneratingLabel(false);
       }
   };
 
@@ -213,7 +217,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
       const hasDoc = selectedOrder.logistics_metadata?.doc_url || generatedDocs[selectedOrder.id];
       
       if (!hasDoc) {
-          alert("REGRA DE NEGÓCIO: É obrigatório gerar o Documento de Postagem (PLP) antes de enviar.");
+          alert("REGRA DE NEGÓCIO: É obrigatório gerar a Etiqueta de Envio antes de despachar.");
           return;
       }
       if (!trackingInput.trim()) {
@@ -526,7 +530,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                                   <div className="flex justify-between items-center mb-4">
                                       <div className="flex items-center gap-3">
                                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${isDocGenerated ? 'bg-green-500 text-white' : 'bg-black text-white'}`}>1</div>
-                                          <span className="text-[10px] font-black uppercase tracking-widest">Documento de Postagem (PLP)</span>
+                                          <span className="text-[10px] font-black uppercase tracking-widest">Etiqueta de Envio</span>
                                       </div>
                                       {isDocGenerated && <CheckCircle2 className="w-5 h-5 text-green-600" />}
                                   </div>
@@ -542,7 +546,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                                           </div>
                                           <button 
                                               onClick={handleGenerateDoc} 
-                                              disabled={isGeneratingPLP}
+                                              disabled={isGeneratingLabel}
                                               className="w-full py-4 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 disabled:opacity-50"
                                           >
                                               <Printer className="w-4 h-4" /> Gerar & Baixar PDF
@@ -555,10 +559,10 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, products = [], assets
                                               <p className="text-[10px] font-bold text-green-700">Documento Anexado</p>
                                               <button 
                                                   onClick={handleGenerateDoc} 
-                                                  disabled={isGeneratingPLP}
+                                                  disabled={isGeneratingLabel}
                                                   className="text-[9px] underline disabled:opacity-50"
                                               >
-                                                  {isGeneratingPLP ? 'Gerando...' : 'Baixar novamente'}
+                                                  {isGeneratingLabel ? 'Gerando etiqueta...' : 'Baixar novamente'}
                                               </button>
                                           </div>
                                       </div>

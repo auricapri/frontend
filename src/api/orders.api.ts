@@ -77,6 +77,16 @@ export class OrdersApi {
     await apiClient.downloadFile(`/pdf/plp/${orderId}`, `PLP-${orderId.slice(0, 8)}.pdf`);
   }
 
+  /**
+   * Download shipping label (auto-detects type based on order origin)
+   * - Auricapri orders: PLP Correios
+   * - Mercado Livre orders: ML shipping label
+   * - TikTok Shop orders: TikTok label or fallback
+   */
+  async downloadLabel(orderId: string): Promise<void> {
+    await apiClient.downloadFile(`/orders/${orderId}/label`, `etiqueta-${orderId.slice(0, 8)}.pdf`);
+  }
+
   async getStatusHistory(orderId: string): Promise<OrderStatusHistoryEntry[]> {
     return apiClient.get<OrderStatusHistoryEntry[]>(`/orders/${orderId}/status-history`);
   }

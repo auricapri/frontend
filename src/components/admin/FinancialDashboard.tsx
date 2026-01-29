@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, RefreshCw, TrendingUp, AlertCircle } from 'lucide-react';
+import { DollarSign, RefreshCw, TrendingUp, AlertCircle, Link as LinkIcon } from 'lucide-react';
 import { PaymentsApi } from '../../api/payments.api';
 import { marketplaceApi } from '../../api/marketplace.api';
 
@@ -18,9 +18,19 @@ interface PlatformCardProps {
   balance: Balance | null;
   loading: boolean;
   error: string | null;
+  needsReauth: boolean;
+  onReconnect?: () => void;
 }
 
-const PlatformCard: React.FC<PlatformCardProps> = ({ name, provider, balance, loading, error }) => {
+const PlatformCard: React.FC<PlatformCardProps> = ({
+  name,
+  provider,
+  balance,
+  loading,
+  error,
+  needsReauth,
+  onReconnect
+}) => {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -58,7 +68,17 @@ const PlatformCard: React.FC<PlatformCardProps> = ({ name, provider, balance, lo
           <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
           <AlertCircle className="text-red-500" size={24} />
         </div>
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-red-600 mb-4">{error}</p>
+
+        {needsReauth && onReconnect && (
+          <button
+            onClick={onReconnect}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full justify-center"
+          >
+            <LinkIcon size={16} />
+            Reconectar
+          </button>
+        )}
       </div>
     );
   }
@@ -130,6 +150,26 @@ export const FinancialDashboard: React.FC = () => {
     tt: null
   });
 
+  const [needsReauth, setNeedsReauth] = useState<{
+    ml: boolean;
+    tt: boolean;
+  }>({
+    ml: false,
+    tt: false
+  });
+
+  const isOAuthError = (error: any): boolean => {
+    const errorMsg = error?.message || '';
+    return (
+      errorMsg.includes('403') ||
+      errorMsg.includes('Forbidden') ||
+      errorMsg.includes('500') ||
+      errorMsg.includes('Internal Server Error') ||
+      errorMsg.includes('unauthorized') ||
+      errorMsg.includes('Token')
+    );
+  };
+
   const fetchAllBalances = async (isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
@@ -138,6 +178,7 @@ export const FinancialDashboard: React.FC = () => {
     }
 
     const newErrors = { asaas: null, ml: null, tt: null };
+    const newReauth = { ml: false, tt: false };
 
     // Fetch Asaas balance
     try {
@@ -161,7 +202,13 @@ export const FinancialDashboard: React.FC = () => {
       setMlBalance(ml);
     } catch (error: any) {
       console.error('Erro ao buscar saldo Mercado Livre:', error);
-      newErrors.ml = error.message || 'Não conectado ou erro ao carregar';
+
+      if (isOAuthError(error)) {
+        newErrors.ml = 'Token de acesso expirado. Clique em "Reconectar" para autenticar novamente.';
+        newReauth.ml = true;
+      } else {
+        newErrors.ml = error.message || 'Não conectado ou erro ao carregar';
+      }
     }
 
     // Fetch TikTok Shop balance
@@ -170,13 +217,90 @@ export const FinancialDashboard: React.FC = () => {
       setTtBalance(tt);
     } catch (error: any) {
       console.error('Erro ao buscar saldo TikTok Shop:', error);
-      newErrors.tt = error.message || 'Não conectado ou erro ao carregar';
+
+      if (isOAuthError(error)) {
+        newErrors.tt = 'Token de acesso expirado. Clique em "Reconectar" para autenticar novamente.';
+        newReauth.tt = true;
+      } else {
+        newErrors.tt = error.message || 'Não conectado ou erro ao carregar';
+      }
     }
 
     setErrors(newErrors);
+    setNeedsReauth(newReauth);
     setLastUpdate(new Date());
     setLoading(false);
     setRefreshing(false);
+  };
+
+  const handleReconnect = async (marketplace: 'mercado_livre' | 'tiktok_shop') => {
+    try {
+      // Get marketplace config ID based on provider
+      const configId = marketplace === 'mercado_livre' ? 'mercado-livre-default' : 'tiktok-shop-default';
+
+      // Get current URL for redirect
+      const redirectUri = `${window.location.origin}/admin/marketplace-callback`;
+
+      // Generate PKCE code verifier and challenge (for enhanced security)
+      const codeVerifier = generateRandomString(128);
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+      // Store code verifier in session storage for later use in callback
+      sessionStorage.setItem(`oauth_verifier_${marketplace}`, codeVerifier);
+      sessionStorage.setItem(`oauth_marketplace`, marketplace);
+
+      // Get OAuth authorization URL
+      const { url } = await marketplaceApi.getAuthUrl(
+        configId,
+        redirectUri,
+        codeChallenge,
+        codeVerifier
+      );
+
+      // Open OAuth URL in popup window
+      const width = 600;
+      const height = 700;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+
+      const popup = window.open(
+        url,
+        'oauth-popup',
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
+
+      // Listen for OAuth callback
+      const checkPopup = setInterval(() => {
+        if (!popup || popup.closed) {
+          clearInterval(checkPopup);
+          // Refresh balances after popup closes
+          setTimeout(() => fetchAllBalances(true), 1000);
+        }
+      }, 500);
+    } catch (error: any) {
+      console.error(`Erro ao reconectar ${marketplace}:`, error);
+      alert(`Erro ao iniciar reconexão: ${error.message}`);
+    }
+  };
+
+  // Helper functions for PKCE
+  const generateRandomString = (length: number): string => {
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    let text = '';
+    for (let i = 0; i < length; i++) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+  };
+
+  const generateCodeChallenge = async (verifier: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(verifier);
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    return btoa(String.fromCharCode(...new Uint8Array(digest)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
   };
 
   useEffect(() => {
@@ -290,6 +414,7 @@ export const FinancialDashboard: React.FC = () => {
             balance={asaasBalance}
             loading={loading}
             error={errors.asaas}
+            needsReauth={false}
           />
           <PlatformCard
             name="Mercado Livre"
@@ -297,6 +422,8 @@ export const FinancialDashboard: React.FC = () => {
             balance={mlBalance}
             loading={loading}
             error={errors.ml}
+            needsReauth={needsReauth.ml}
+            onReconnect={() => handleReconnect('mercado_livre')}
           />
           <PlatformCard
             name="TikTok Shop"
@@ -304,6 +431,8 @@ export const FinancialDashboard: React.FC = () => {
             balance={ttBalance}
             loading={loading}
             error={errors.tt}
+            needsReauth={needsReauth.tt}
+            onReconnect={() => handleReconnect('tiktok_shop')}
           />
         </div>
       </div>
