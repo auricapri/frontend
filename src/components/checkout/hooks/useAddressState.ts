@@ -216,6 +216,55 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
     }
   }, [address, addressLoaded, currentUser?.default_address, hasUserEditedCep, shipping]);
 
+  // Effect to lookup ViaCEP when CEP is programmatically set but address is incomplete
+  useEffect(() => {
+    const cleanedCep = cep.replace(/\D/g, '');
+
+    // Conditions to trigger lookup:
+    // 1. CEP is complete (8 digits)
+    // 2. Address is incomplete (no logradouro OR no bairro)
+    // 3. Not already loading
+    // 4. Address was loaded (meaning it came from saved data, not user typing)
+    const addressIncomplete = !address?.logradouro?.trim() || !address?.bairro?.trim();
+
+    if (
+      cleanedCep.length === 8 &&
+      addressIncomplete &&
+      !loadingCep &&
+      addressLoaded
+    ) {
+      setLoadingCep(true);
+
+      fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.erro) {
+            setCepError('CEP não encontrado');
+            return;
+          }
+
+          // Update address with ViaCEP data
+          setAddress({
+            logradouro: data.logradouro || '',
+            bairro: data.bairro || '',
+            localidade: data.localidade || '',
+            uf: data.uf || '',
+            cep: cep,
+          });
+          setCepError(null);
+
+          // Calculate shipping
+          shipping.calculateLogistics(cleanedCep);
+        })
+        .catch(() => {
+          setCepError('Erro ao consultar CEP');
+        })
+        .finally(() => {
+          setLoadingCep(false);
+        });
+    }
+  }, [cep, address?.logradouro, address?.bairro, loadingCep, addressLoaded, shipping]);
+
   // Handle CEP change with debounce and ViaCEP lookup
   const handleCepChange = useCallback((val: string) => {
     setHasUserEditedCep(true);
