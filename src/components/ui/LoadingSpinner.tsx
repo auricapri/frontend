@@ -23,82 +23,32 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
   return (
     <div className={`flex flex-col items-center justify-center ${containerSizeClasses[size]} p-8`}>
-      {/* Logo com animação skeleton pulse */}
-      <div className={`${sizeClasses[size]} relative`}>
-        <style>
-          {`
-            @keyframes skeleton-pulse {
-              0%, 100% {
-                opacity: 1;
-              }
-              50% {
-                opacity: 0.4;
-              }
+      <style>
+        {`
+          @keyframes logo-pulse {
+            0%, 100% {
+              opacity: 1;
+              transform: scale(1);
             }
-
-            @keyframes shimmer {
-              0% {
-                transform: translateX(-100%);
-              }
-              100% {
-                transform: translateX(100%);
-              }
+            50% {
+              opacity: 0.5;
+              transform: scale(0.95);
             }
+          }
+          .logo-pulse {
+            animation: logo-pulse 1.5s ease-in-out infinite;
+          }
+        `}
+      </style>
 
-            .skeleton-pulse {
-              animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-            }
-
-            .shimmer {
-              animation: shimmer 2s linear infinite;
-            }
-          `}
-        </style>
-
-        <svg
-          viewBox="0 0 100 100"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full skeleton-pulse"
-        >
-          <defs>
-            <linearGradient id="shimmer-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="rgba(0,0,0,0)" />
-              <stop offset="50%" stopColor="rgba(0,0,0,0.1)" />
-              <stop offset="100%" stopColor="rgba(0,0,0,0)" />
-            </linearGradient>
-          </defs>
-
-          {/* Logo "A" */}
-          <text
-            x="50"
-            y="55"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="fill-neutral-900"
-            style={{
-              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-              fontSize: '48px',
-              fontWeight: '300',
-              letterSpacing: '0.1em'
-            }}
-          >
-            A
-          </text>
-
-          {/* Shimmer overlay effect */}
-          <rect
-            x="-100"
-            y="0"
-            width="100"
-            height="100"
-            fill="url(#shimmer-gradient)"
-            className="shimmer"
-          />
-        </svg>
-      </div>
+      <img
+        src="/logo-auricapri.svg"
+        alt="Carregando..."
+        className={`${sizeClasses[size]} logo-pulse`}
+      />
 
       {message && (
-        <p className="mt-8 text-xs text-neutral-500 font-light tracking-[0.15em] uppercase skeleton-pulse">
+        <p className="mt-8 text-xs text-neutral-500 font-light tracking-[0.15em] uppercase">
           {message}
         </p>
       )}
