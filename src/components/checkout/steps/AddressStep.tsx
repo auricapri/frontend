@@ -327,7 +327,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Número</label>
+                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Número <span className="text-red-500">*</span></label>
                   <input
                     className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black"
                     placeholder="Ex: 123"
