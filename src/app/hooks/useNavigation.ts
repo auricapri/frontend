@@ -156,7 +156,7 @@ export function useNavigation(params: UseNavigationParams) {
     trackingService.trackPageView(currentPath);
   }, []);
 
-  // Load product from URL slug on mount or view change
+  // Load product from URL slug on mount or when products finish loading
   useEffect(() => {
     if (currentView === 'product') {
       const slug = extractProductSlug(window.location.pathname);
@@ -164,7 +164,7 @@ export function useNavigation(params: UseNavigationParams) {
         loadProductFromSlug(slug);
       }
     }
-  }, [activeProduct, currentView, extractProductSlug, getProductSlug, loadProductFromSlug, locale]);
+  }, [activeProduct, currentView, extractProductSlug, getProductSlug, loadProductFromSlug, locale, products]);
 
   // Track product views
   useEffect(() => {
