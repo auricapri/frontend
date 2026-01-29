@@ -1,11 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useEffect, useState, useMemo } from 'react';
 import { marketplaceApi } from '../api/marketplace.api';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
-export const MarketplaceOAuthCallback: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+interface Props {
+  onNavigate?: (view: string) => void;
+}
+
+export const MarketplaceOAuthCallback: React.FC<Props> = ({ onNavigate }) => {
+  // Use native URLSearchParams instead of react-router-dom
+  const searchParams = useMemo(() => new URLSearchParams(window.location.search), []);
+
+  const navigate = (path: string) => {
+    if (onNavigate) {
+      // Map path to view name
+      const viewMap: Record<string, string> = {
+        '/admin/financial': 'admin',
+        '/admin': 'admin',
+      };
+      onNavigate(viewMap[path] || 'home');
+    } else {
+      // Fallback to direct navigation
+      window.location.href = path;
+    }
+  };
 
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [message, setMessage] = useState('Processando autenticação...');
@@ -85,7 +102,8 @@ export const MarketplaceOAuthCallback: React.FC = () => {
     };
 
     handleCallback();
-  }, [searchParams, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
