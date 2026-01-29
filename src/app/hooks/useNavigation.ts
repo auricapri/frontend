@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../../utils/supabase';
 import { trackingService } from '../../services/tracking.service';
-import { CachedProductsApi } from '../../api/cached.products.api';
 import { logger } from '../../utils/logger';
 import type { Locale } from '../../i18n';
 import type { Collection, Product, UserProfile } from '../../types';
@@ -33,14 +32,15 @@ interface UseNavigationParams {
   isAuthLoading: boolean;
   showToast: (message: string, type?: 'info' | 'error') => void;
   onRefetchStoreData: () => void;
+  products: Product[];
+  isStoreLoading: boolean;
 }
 
 export function useNavigation(params: UseNavigationParams) {
-  const { locale, currentUser, isAuthLoading, showToast, onRefetchStoreData } = params;
+  const { locale, currentUser, isAuthLoading, showToast, onRefetchStoreData, products, isStoreLoading } = params;
 
   const mainRef = useRef<HTMLElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const productsApi = useMemo(() => new CachedProductsApi(), []);
 
   const extractProductSlug = useCallback((pathname: string): string | null => {
     const match = pathname.match(/^\/product\/(.+)$/);
@@ -96,21 +96,33 @@ export function useNavigation(params: UseNavigationParams) {
     return slug || '';
   });
 
+  // Helper function to find product by slug in loaded products
+  const findProductBySlug = useCallback(
+    (slug: string, productList: Product[]): Product | null => {
+      return productList.find((product) => {
+        if (!product.slug) return product.id === slug;
+        if (typeof product.slug === 'string') return product.slug === slug;
+        // Check all locale slugs
+        return Object.values(product.slug).some((s) => s === slug);
+      }) || null;
+    },
+    []
+  );
+
   const loadProductFromSlug = useCallback(
-    async (slug: string) => {
-      try {
-        const product = await productsApi.getBySlug(slug);
-        if (product) {
-          setActiveProduct(product);
-        } else {
-          setCurrentView('404');
-        }
-      } catch (error) {
-        logger.error('Error loading product from slug', error);
+    (slug: string) => {
+      // Search in already-loaded products first
+      const product = findProductBySlug(slug, products);
+      if (product) {
+        setActiveProduct(product);
+      } else if (!isStoreLoading && products.length > 0) {
+        // Products are loaded but slug not found - show 404
+        logger.warn('Product not found for slug:', slug);
         setCurrentView('404');
       }
+      // If still loading, do nothing - the effect below will handle it
     },
-    [productsApi]
+    [products, isStoreLoading, findProductBySlug]
   );
 
   // Handle browser back/forward navigation

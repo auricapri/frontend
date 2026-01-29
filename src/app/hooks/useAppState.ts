@@ -49,6 +49,8 @@ export function useAppState(params: UseAppStateParams) {
     isAuthLoading,
     showToast,
     onRefetchStoreData,
+    products,
+    isStoreLoading,
   });
 
   // Translation helper
