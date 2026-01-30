@@ -78,6 +78,25 @@ export class MarketplaceApi {
     return apiClient.delete(`${BASE_PATH}/configs/${id}`);
   }
 
+  /**
+   * Get a config by provider code.
+   * @param providerCode - Provider code (mercado_livre, tiktok_shop)
+   */
+  async getConfigByProviderCode(providerCode: string): Promise<MarketplaceConfig | null> {
+    try {
+      return await apiClient.get<MarketplaceConfig>(`${BASE_PATH}/configs/by-provider/${providerCode}`);
+    } catch (error: unknown) {
+      // Return null if config not found (404)
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 404) {
+          return null;
+        }
+      }
+      throw error;
+    }
+  }
+
   // ============================================
   // OAUTH
   // ============================================

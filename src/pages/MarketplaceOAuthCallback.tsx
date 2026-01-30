@@ -50,8 +50,12 @@ export const MarketplaceOAuthCallback: React.FC<Props> = ({ onNavigate }) => {
           throw new Error('Informações de marketplace não encontradas');
         }
 
-        // Get config ID based on marketplace
-        const configId = marketplace === 'mercado_livre' ? 'mercado-livre-default' : 'tiktok-shop-default';
+        // Get config from backend by provider code
+        const config = await marketplaceApi.getConfigByProviderCode(marketplace);
+        if (!config) {
+          throw new Error(`Configuração do marketplace ${marketplace} não encontrada. Configure primeiro em Admin > Marketplaces.`);
+        }
+        const configId = config.id;
         const redirectUri = `${window.location.origin}/admin/marketplace-callback`;
 
         // Exchange code for access token

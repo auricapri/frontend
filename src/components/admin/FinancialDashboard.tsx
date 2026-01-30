@@ -235,8 +235,12 @@ export const FinancialDashboard: React.FC = () => {
 
   const handleReconnect = async (marketplace: 'mercado_livre' | 'tiktok_shop') => {
     try {
-      // Get marketplace config ID based on provider
-      const configId = marketplace === 'mercado_livre' ? 'mercado-livre-default' : 'tiktok-shop-default';
+      // Get marketplace config from backend by provider code
+      const config = await marketplaceApi.getConfigByProviderCode(marketplace);
+      if (!config) {
+        throw new Error(`Configuração do marketplace ${marketplace} não encontrada. Configure primeiro em Admin > Marketplaces.`);
+      }
+      const configId = config.id;
 
       // Get current URL for redirect
       const redirectUri = `${window.location.origin}/admin/marketplace-callback`;
