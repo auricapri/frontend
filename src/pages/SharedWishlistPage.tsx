@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { wishlistApi, productsApi } from '../api/instances';
 import { Product, CartItem, AddressData, InternalLogisticsInfo } from '../types';
-import { formatCurrency } from '../utils/currency';
 import { Locale } from '../i18n';
 import CheckoutView from '../components/checkout/CheckoutViewV2';
 import { UserMode } from '../types';
 import { calculatePrice } from '../utils/product';
+import { ProductCard } from '../components/product/ProductCard';
 
 interface SharedWishlistPageProps {
   locale: Locale;
@@ -270,36 +270,30 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-20">
               {products.map(product => {
                 if (!product) return null;
-                
-                const variant = product.variants && Array.isArray(product.variants) ? product.variants[0] : undefined;
-                const price = variant ? calculatePrice(variant, userMode) : 0;
-                const image = variant?.variant_images?.[0] || (product.base_images && Array.isArray(product.base_images) ? product.base_images[0] : '') || '';
 
                 return (
-                  <div key={product.id || Math.random()} className="flex flex-col group">
-                    <div className="aspect-[3/4] bg-neutral-50 rounded-[2.5rem] overflow-hidden mb-6 relative shadow-sm group-hover:shadow-2xl transition-all duration-700">
-                      <img
-                        src={image}
-                        alt={getLoc(product.name)}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center p-8">
-                        <button 
-                          onClick={() => handleBuyItem(product.id)}
-                          className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
-                        >
-                          Presentear Este Item
-                        </button>
-                      </div>
-                    </div>
-                    <div className="px-2">
-                      <h3 className="text-sm font-black uppercase tracking-tight mb-1 truncate">
-                        {getLoc(product.name)}
-                      </h3>
-                      <p className="text-lg font-light tracking-tighter text-neutral-900">{formatCurrency(price, locale)}</p>
+                  <div key={product.id || Math.random()} className="relative group">
+                    <ProductCard
+                      product={product}
+                      userMode={userMode}
+                      locale={locale}
+                      variant="grid"
+                      showWishlist={false}
+                      showQuickAdd={false}
+                      showDiscountBadge={true}
+                      showColorSwatches={true}
+                    />
+                    {/* Gift overlay on hover */}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 z-10">
+                      <button
+                        onClick={() => handleBuyItem(product.id)}
+                        className="w-full py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                      >
+                        Presentear Este Item
+                      </button>
                     </div>
                   </div>
                 );
