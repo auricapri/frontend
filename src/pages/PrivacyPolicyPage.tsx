@@ -14,7 +14,7 @@ export function PrivacyPolicyPage({ config, locale, onBack }: PrivacyPolicyPageP
   return (
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-10 bg-white border-b border-neutral-100">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
             onClick={onBack}
             className="p-2 hover:bg-neutral-100 rounded-full transition-colors"
@@ -30,7 +30,7 @@ export function PrivacyPolicyPage({ config, locale, onBack }: PrivacyPolicyPageP
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         <div
           className="prose prose-neutral max-w-none"
           dangerouslySetInnerHTML={{ __html: content }}
