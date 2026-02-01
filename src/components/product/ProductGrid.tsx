@@ -1,17 +1,15 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Product, UserMode, Category, Collection, Coupon } from '../../types';
-import { Heart, ArrowLeft, ArrowRight, Tag, SlidersHorizontal, X, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, ArrowRight, SlidersHorizontal, X } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { Gender } from '../../constants/enums';
-import { formatCurrency } from '../../utils/currency';
-import { calculatePrice, filterProductsForMode } from '../../utils/product';
+import { filterProductsForMode } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
-import { getDisplayPrice as getProductDisplayPrice } from '../../utils/coupon';
-import { getProductColors } from '../../utils/variant';
 import { useProductFilters } from '../../hooks/useProductFilters';
 import { FilterSidebar } from './FilterSidebar';
 import { QuickAddModal } from './QuickAddModal';
+import { ProductCard } from './ProductCard';
 
 interface ProductGridProps {
   products: Product[];
@@ -173,14 +171,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     return filteredAndSortedProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
   }, [currentPage, filteredAndSortedProducts]);
 
-  // Use shared coupon utility for price display
-  const getDisplayPrice = (product: Product, originalPrice: number) => {
-    const result = getProductDisplayPrice(originalPrice, product.id, coupons);
-    // Strip leading dash from discountDisplay for badge format ("10% OFF" not "-10% OFF")
-    const discountDisplay = result.discountDisplay?.replace(/^-/, '') || '';
-    return { ...result, discountDisplay };
-  };
-
   // Count active filters for badge
   const activeFilterCount = selectedSizes.length + (priceMin !== null || priceMax !== null ? 1 : 0);
 
@@ -323,114 +313,25 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                   ? 'grid-cols-2 md:grid-cols-3'
                   : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
               }`}>
-                {!isLoading && currentProducts.map(p => {
-                    const mainVariant = p.variants?.[0];
-                    const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
-                    const { original, final, hasDiscount, code, discountDisplay } = getDisplayPrice(p, rawPrice);
-                    const displayImg = p.default_image_url || p.base_images[0];
-                    const isWishlisted = wishlistIds.includes(p.id);
-                    const colors = getProductColors(p.variants);
-                    const hasMultipleVariants = (p.variants?.length || 0) > 1;
-
-                    return (
-                      <div key={p.id} onClick={() => onSelectProduct(p)} className="cursor-pointer group flex flex-col relative border border-neutral-200 hover:border-neutral-300 transition-colors">
-                        <div className="relative aspect-square overflow-hidden bg-neutral-50">
-                          <img src={displayImg} alt={getLoc(p.name)} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-
-                          {/* Discount Badge - Domino Style */}
-                          {hasDiscount && (
-                            <div className="absolute top-2 left-2 flex items-center shadow-lg z-10 rounded overflow-hidden">
-                              <div className="bg-white text-black px-2 py-1 flex items-center">
-                                <span className="text-[11px] font-black tracking-tight">{discountDisplay}</span>
-                              </div>
-                              <div className="bg-black text-white px-2 py-1">
-                                <span className="text-[11px] font-black tracking-tight">OFF</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Wishlist Button */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id); }}
-                            aria-label="Toggle wishlist"
-                            className={`absolute top-2 right-2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm transition-all ${isWishlisted ? 'text-red-500' : 'text-neutral-400 hover:text-neutral-900'}`}
-                          >
-                            <Heart className="w-3.5 h-3.5" fill={isWishlisted ? "currentColor" : "none"} />
-                          </button>
-
-                          {/* Quick Add Button - Visível em mobile, animação apenas em desktop */}
-                          {onAddToCart && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (hasMultipleVariants) {
-                                  setQuickAddProduct(p);
-                                } else if (mainVariant) {
-                                  onAddToCart({
-                                    variant_id: mainVariant.id,
-                                    product_id: p.id,
-                                    name: p.name,
-                                    image: displayImg,
-                                    size: mainVariant.size || 'Único',
-                                    color_name: mainVariant.color_name,
-                                    color_hex: mainVariant.color_hex || '#000',
-                                    price: final,
-                                    original_price: hasDiscount ? original : undefined,
-                                    quantity: 1,
-                                    sku: mainVariant.sku
-                                  });
-                                }
-                              }}
-                              aria-label={t('product.addToCart')}
-                              className="absolute bottom-2 right-2 flex items-center gap-2 bg-black text-white rounded-full shadow-lg transition-all duration-300 ease-out overflow-hidden whitespace-nowrap opacity-100 translate-y-0 p-2 md:opacity-0 md:translate-y-2 md:p-2.5 md:group-hover:opacity-100 md:group-hover:translate-y-0 md:group-hover:pr-4 hover:scale-105 active:scale-95"
-                            >
-                              <ShoppingBag className="w-4 h-4 flex-shrink-0" />
-                              <span className="text-[11px] font-medium uppercase tracking-wider hidden md:inline max-w-0 opacity-0 md:group-hover:max-w-[200px] md:group-hover:opacity-100 transition-all duration-300 ease-out">
-                                {t('product.addToCart')}
-                              </span>
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Product Info */}
-                        <div className="p-3 space-y-1">
-                          <h3 className="text-[11px] font-medium text-neutral-900 leading-tight truncate">{getLoc(p.name)}</h3>
-
-                          {/* Price */}
-                          <div className="flex items-center gap-2">
-                            {hasDiscount && (
-                              <span className="text-[10px] text-neutral-400 line-through">
-                                {formatCurrency(original, locale)}
-                              </span>
-                            )}
-                            <span className={`text-[12px] font-semibold ${hasDiscount ? 'text-red-600' : 'text-neutral-900'}`}>
-                              {formatCurrency(final, locale)}
-                            </span>
-                          </div>
-
-                          {/* Color Swatches - At bottom */}
-                          {colors.length > 0 && (
-                            <div className="flex items-center gap-0.5 pt-0.5">
-                              {colors.slice(0, 5).map((color) => (
-                                <div
-                                  key={color.hex}
-                                  className="w-2 h-2 rounded-full border border-neutral-300"
-                                  style={{ backgroundColor: color.hex }}
-                                  title={getLoc(color.name)}
-                                />
-                              ))}
-                              {colors.length > 5 && (
-                                <span className="text-[8px] text-neutral-500 font-medium ml-0.5">
-                                  +{colors.length - 5}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                }
+                {!isLoading && currentProducts.map(p => (
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    userMode={userMode}
+                    locale={locale}
+                    coupons={coupons}
+                    variant="grid"
+                    showWishlist={true}
+                    showQuickAdd={!!onAddToCart}
+                    showDiscountBadge={true}
+                    showColorSwatches={true}
+                    isWishlisted={wishlistIds.includes(p.id)}
+                    onToggleWishlist={onToggleWishlist}
+                    onAddToCart={onAddToCart}
+                    onQuickAdd={(product) => setQuickAddProduct(product)}
+                    onClick={() => onSelectProduct(p)}
+                  />
+                ))}
               </div>
             )}
 

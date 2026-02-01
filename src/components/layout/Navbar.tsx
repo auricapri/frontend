@@ -347,10 +347,10 @@ const Navbar: React.FC<NavbarProps> = ({
                   }
                 }}
                 disabled={!searchQuery.trim()}
-                className="px-6 py-3 bg-black text-white rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm font-medium whitespace-nowrap flex items-center gap-2"
+                className="px-3 md:px-6 py-3 bg-black text-white rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm font-medium whitespace-nowrap flex items-center gap-2"
               >
                 <Search className="w-4 h-4" strokeWidth={2} />
-                Buscar
+                <span className="hidden md:inline">Buscar</span>
               </button>
             </div>
           </div>

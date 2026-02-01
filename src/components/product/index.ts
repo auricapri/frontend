@@ -7,4 +7,6 @@
 //
 // Componentes menores ok para barrel export:
 export { default as ProductReviews } from './ProductReviews';
+export { ProductCard } from './ProductCard';
+export type { ProductCardProps } from './ProductCard';
 

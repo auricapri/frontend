@@ -4,8 +4,7 @@ import { X, ShoppingBag, Trash2, ArrowRight, Link2, MessageCircle, ShoppingCart,
 import { Product, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { WishlistApi } from '../../api/wishlist.api';
-import { calculatePrice } from '../../utils/product';
-import { formatCurrency } from '../../utils/currency';
+import { ProductCard } from '../product/ProductCard';
 
 interface WishlistDrawerProps {
   isOpen: boolean;
@@ -178,7 +177,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
       <div className="fixed top-0 right-0 h-full w-full md:w-[480px] bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-8 md:p-10 border-b border-gray-100 bg-white">
+        <div className="flex items-center justify-between p-4 md:p-8 border-b border-gray-100 bg-white">
           <div className="flex flex-col">
             <span className="text-[9px] font-black uppercase tracking-[0.4em] text-neutral-300">My Curation</span>
             <h2 className="text-2xl font-black tracking-tighter uppercase italic">{t('wishlist.title')} ({items.length})</h2>
@@ -188,9 +187,9 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
           </button>
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-12 no-scrollbar bg-neutral-50/30">
-          
+        {/* Content Area - Fixed scroll with proper padding */}
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8 no-scrollbar bg-neutral-50/30">
+
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-6 py-20">
               <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-sm">
@@ -201,47 +200,31 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
             </div>
           ) : (
             <>
-              {/* Items List */}
-              <div className="space-y-8">
-                {items.map((item) => {
-                  const mainVariant = item.variants?.[0];
-                  const price = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
-                  return (
-                    <div key={item.id} className="bg-white p-6 rounded-[2rem] border border-neutral-100 flex space-x-6 group hover:shadow-xl transition-all duration-500">
-                      <div className="w-24 h-32 bg-gray-50 flex-none overflow-hidden rounded-xl cursor-pointer" onClick={() => { onSelectProduct(item); onClose(); }}>
-                        <img src={item.base_images[0]} alt={getLoc(item.name)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                      </div>
-                      <div className="flex-1 flex flex-col justify-between py-1">
-                        <div>
-                          <div className="flex justify-between items-start">
-                            <h3 className="text-[13px] font-black uppercase tracking-tight group-hover:underline cursor-pointer" onClick={() => { onSelectProduct(item); onClose(); }}>{getLoc(item.name)}</h3>
-                            <p className="text-sm font-light text-neutral-900">{formatCurrency(price, locale)}</p>
-                          </div>
-                          {item.category_id && (
-                            <p className="text-[9px] text-neutral-400 mt-2 uppercase tracking-widest font-bold">Category: {item.category_id.split('_')[1] || item.category_id}</p>
-                          )}
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); onSelectProduct(item); onClose(); }}
-                            className="text-[9px] uppercase font-black tracking-widest border-b-2 border-black pb-0.5 hover:opacity-50 transition-all flex items-center space-x-2"
-                          >
-                            <span>{t('wishlist.viewProduct')}</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </button>
-                          
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); onRemoveItem(item.id); }}
-                            className="p-3 bg-red-50 text-red-400 hover:bg-red-400 hover:text-white rounded-xl transition-all"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              {/* Items Grid - 2 columns */}
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                {items.map((item) => (
+                  <div key={item.id} className="relative">
+                    <ProductCard
+                      product={item}
+                      userMode={userMode}
+                      locale={locale}
+                      variant="grid"
+                      showWishlist={false}
+                      showQuickAdd={false}
+                      showDiscountBadge={true}
+                      showColorSwatches={true}
+                      onClick={() => { onSelectProduct(item); onClose(); }}
+                    />
+                    {/* Remove from wishlist button */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onRemoveItem(item.id); }}
+                      className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm text-red-400 hover:bg-red-500 hover:text-white rounded-full shadow-sm transition-all z-10"
+                      aria-label="Remover da wishlist"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
               </div>
 
               {/* Share & Gift Section */}
@@ -296,18 +279,17 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
 
         {/* Footer Actions */}
         {items.length > 0 && (
-          <div className="p-8 md:p-10 border-t border-gray-100 bg-white shadow-2xl">
-            <button 
+          <div className="p-4 md:p-8 border-t border-gray-100 bg-white shadow-2xl">
+            <button
               onClick={onBuyAll}
-              className="w-full bg-black text-white py-8 rounded-[2rem] flex items-center justify-between px-10 hover:bg-neutral-800 transition-all group shadow-2xl active:scale-95"
+              className="w-full bg-black text-white py-5 md:py-6 rounded-2xl flex items-center justify-between px-6 md:px-8 hover:bg-neutral-800 transition-all group shadow-xl active:scale-95"
             >
-              <div className="flex items-center gap-6">
-                <ShoppingCart className="w-6 h-6" />
-                <span className="text-xs font-black uppercase tracking-[0.4em]">Adicionar Todos à Bolsa</span>
+              <div className="flex items-center gap-4">
+                <ShoppingCart className="w-5 h-5" />
+                <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] md:tracking-[0.4em]">Adicionar Todos</span>
               </div>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
             </button>
-            <p className="text-[9px] text-center text-neutral-400 font-black uppercase tracking-widest mt-6">Completa tu look con un solo clic</p>
           </div>
         )}
       </div>
