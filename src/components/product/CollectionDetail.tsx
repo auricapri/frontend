@@ -2,9 +2,9 @@
 import React, { useMemo } from 'react';
 import { Collection, Product, UserMode, Category } from '../../types';
 import { Locale } from '../../i18n';
-import { Heart, ArrowLeft } from 'lucide-react';
-import { calculatePrice, filterProductsForMode } from '../../utils/product';
-import { formatCurrency } from '../../utils/currency';
+import { ArrowLeft } from 'lucide-react';
+import { filterProductsForMode } from '../../utils/product';
+import { ProductCard } from './ProductCard';
 
 interface CollectionDetailProps {
   collection: Collection;
@@ -118,36 +118,26 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
             <p className="text-xs font-black uppercase tracking-widest text-neutral-300">Nenhum produto nesta coleção ainda.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-24">
+          <div className="grid grid-cols-2 md:grid-cols-4">
             {collectionProducts.map(p => {
-              const mainVariant = p.variants?.[0];
-              const price = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
-              const displayImg = p.default_image_url || p.base_images[0];
-              const isWishlisted = wishlistIds.includes(p.id);
-              
+              const categoryName = getLoc(categories?.find(c => c.id === p.category_id)?.name);
               return (
-                <div key={p.id} onClick={() => onSelectProduct(p)} className="cursor-pointer group flex flex-col relative animate-in fade-in slide-in-from-bottom-4 duration-700">
-                  <div className="relative aspect-[3/4] overflow-hidden bg-neutral-50 mb-6 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm border border-neutral-100">
-                    <img src={displayImg} alt={getLoc(p.name)} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id); }} 
-                      className={`absolute top-4 right-4 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-sm transition-all transform hover:scale-110 active:scale-90 ${isWishlisted ? 'text-red-500' : 'text-neutral-400 hover:text-neutral-900'}`}
-                    >
-                      <Heart className="w-4 h-4" fill={isWishlisted ? "currentColor" : "none"} />
-                    </button>
-                  </div>
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-col">
-                      <h3 className="text-[11px] font-black uppercase tracking-widest text-neutral-900 mb-1 leading-tight">{getLoc(p.name)}</h3>
-                      {categories && (
-                         <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">
-                            {getLoc(categories.find(c => c.id === p.category_id)?.name)}
-                         </p>
-                      )}
-                    </div>
-                    <span className="text-[11px] font-black text-neutral-900 tracking-tighter">{formatCurrency(price, locale)}</span>
-                  </div>
-                </div>
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  userMode={userMode}
+                  locale={locale}
+                  variant="grid"
+                  showWishlist={true}
+                  showQuickAdd={false}
+                  showDiscountBadge={true}
+                  showColorSwatches={true}
+                  showCategory={true}
+                  categoryName={categoryName}
+                  isWishlisted={wishlistIds.includes(p.id)}
+                  onToggleWishlist={onToggleWishlist}
+                  onClick={() => onSelectProduct(p)}
+                />
               );
             })}
           </div>

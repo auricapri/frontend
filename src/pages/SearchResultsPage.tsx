@@ -2,15 +2,15 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Product, UserMode } from '../types';
 import { Locale } from '../i18n';
 import { searchProducts } from '../utils/productFilters';
-import { calculatePrice } from '../utils/product';
 import { createGetLoc } from '../utils/localization';
 import { unslugify } from '../utils/urlUtils';
-import { Heart, ArrowLeft, ArrowRight, SlidersHorizontal, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, SlidersHorizontal, X } from 'lucide-react';
 import { useProductFilters } from '../hooks/useProductFilters';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { FilterSidebar } from '../components/product/FilterSidebar';
 import { FilterBottomSheet } from '../components/product/FilterBottomSheet';
 import { FilterContent } from '../components/product/FilterContent';
+import { ProductCard } from '../components/product/ProductCard';
 
 interface SearchResultsPageProps {
   products: Product[];
@@ -203,17 +203,21 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
               isFiltersOpen && !isMobile
                 ? 'grid-cols-3'
                 : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
-            } gap-4 md:gap-6`}>
+            }`}>
               {currentProducts.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
                   userMode={userMode}
                   locale={locale}
-                  getLoc={getLoc}
-                  onSelect={onSelectProduct}
+                  variant="grid"
+                  showWishlist={true}
+                  showQuickAdd={false}
+                  showDiscountBadge={true}
+                  showColorSwatches={true}
                   isWishlisted={wishlistIds.includes(product.id)}
                   onToggleWishlist={onToggleWishlist}
+                  onClick={() => onSelectProduct(product)}
                 />
               ))}
             </div>
@@ -259,68 +263,6 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
           )}
         </div>
       </div>
-    </div>
-  );
-};
-
-// ProductCard component
-interface ProductCardProps {
-  product: Product;
-  userMode: UserMode;
-  locale: Locale;
-  getLoc: (obj: any) => string;
-  onSelect: (product: Product) => void;
-  isWishlisted: boolean;
-  onToggleWishlist: (productId: string) => void;
-}
-
-const ProductCard: React.FC<ProductCardProps> = ({
-  product,
-  userMode,
-  getLoc,
-  onSelect,
-  isWishlisted,
-  onToggleWishlist,
-  locale,
-}) => {
-  const mainVariant = product.variants?.[0];
-  const price = mainVariant ? calculatePrice(mainVariant, userMode, product) : 0;
-  const displayImg = product.default_image_url || product.base_images?.[0];
-
-  const formattedPrice = new Intl.NumberFormat(locale === 'pt' ? 'pt-BR' : 'en-US', {
-    style: 'currency',
-    currency: locale === 'pt' ? 'BRL' : 'USD'
-  }).format(price);
-
-  return (
-    <div className="group cursor-pointer" onClick={() => onSelect(product)}>
-      <div className="relative aspect-square bg-neutral-100 rounded-lg overflow-hidden mb-3">
-        {displayImg && (
-          <img
-            src={displayImg}
-            alt={getLoc(product.name)}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        )}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleWishlist(product.id);
-          }}
-          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors"
-        >
-          <Heart
-            className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-neutral-400'}`}
-            strokeWidth={1.5}
-          />
-        </button>
-      </div>
-      <h3 className="text-sm font-medium mb-1 line-clamp-2 tracking-wide">
-        {getLoc(product.name)}
-      </h3>
-      <p className="text-sm text-neutral-600 font-light">
-        {formattedPrice}
-      </p>
     </div>
   );
 };

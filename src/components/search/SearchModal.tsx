@@ -1,13 +1,13 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Product, UserMode, Category } from '../../types';
-import { X, Search as SearchIcon, SlidersHorizontal, Heart, Tag, ShoppingBag } from 'lucide-react';
+import { X, Search as SearchIcon, SlidersHorizontal } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { createGetLoc } from '../../utils/localization';
-import { formatCurrency } from '../../utils/currency';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
 import { useProductFilters } from '../../hooks/useProductFilters';
 import { FilterContent } from '../product/FilterContent';
 import { searchProducts } from '../../utils/productFilters';
+import { ProductCard } from '../product/ProductCard';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -245,58 +245,26 @@ export const SearchModal: React.FC<SearchModalProps> = ({
           </div>
         ) : (
           /* Product Grid */
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredProducts.map((p) => {
-              const mainVariant = p.variants?.[0];
-              const price = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
-              const displayImg = p.default_image_url || p.base_images?.[0];
-              const isWishlisted = wishlistIds.includes(p.id);
-
-              return (
-                <div
-                  key={p.id}
-                  onClick={() => {
-                    onSelectProduct(p);
-                    onClose();
-                  }}
-                  className="cursor-pointer group flex flex-col relative border border-neutral-200 hover:border-neutral-300 transition-colors rounded-lg overflow-hidden"
-                >
-                  <div className="relative aspect-square overflow-hidden bg-neutral-50">
-                    <img
-                      src={displayImg}
-                      alt={getLoc(p.name)}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-
-                    {/* Wishlist Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleWishlist(p.id);
-                      }}
-                      aria-label="Toggle wishlist"
-                      className={`absolute top-2 right-2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm transition-all ${
-                        isWishlisted ? 'text-red-500' : 'text-neutral-400 hover:text-neutral-900'
-                      }`}
-                    >
-                      <Heart className="w-3.5 h-3.5" fill={isWishlisted ? 'currentColor' : 'none'} />
-                    </button>
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="p-3 space-y-1">
-                    <h3 className="text-xs font-medium text-neutral-900 leading-tight truncate">
-                      {getLoc(p.name)}
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-neutral-900">
-                        {formatCurrency(price, locale)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {filteredProducts.map((p) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                userMode={userMode}
+                locale={locale}
+                variant="grid"
+                showWishlist={true}
+                showQuickAdd={false}
+                showDiscountBadge={true}
+                showColorSwatches={true}
+                isWishlisted={wishlistIds.includes(p.id)}
+                onToggleWishlist={onToggleWishlist}
+                onClick={() => {
+                  onSelectProduct(p);
+                  onClose();
+                }}
+              />
+            ))}
           </div>
         )}
       </div>

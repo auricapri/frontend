@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* No Scrollbar Utility */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
 /* Credit Card 3D Flip Animation */
 .perspective-1000 {
   perspective: 1000px;
