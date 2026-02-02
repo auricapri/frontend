@@ -27,6 +27,13 @@ export function ImageHotspots({
 }: ImageHotspotsProps) {
   const [activeHotspot, setActiveHotspot] = useState<ProductImageHotspot | null>(null);
 
+  // Helper to get localized text
+  const getLocText = (text: LocalizedText | string | undefined): string => {
+    if (!text) return '';
+    if (typeof text === 'string') return text;
+    return text[locale] || text.en || text.pt || Object.values(text)[0] || '';
+  };
+
   // Filter hotspots for this specific image
   const imageHotspots = hotspots.filter(h => h.image_url === imageUrl && h.is_active);
 
@@ -66,13 +73,15 @@ export function ImageHotspots({
       {/* The image */}
       {children}
 
-      {/* Render hotspot dots */}
+      {/* Render hotspot dots with labels */}
       {imageHotspots.map(hotspot => (
         <HotspotDot
           key={hotspot.id}
           x={hotspot.x_percent}
           y={hotspot.y_percent}
           isActive={activeHotspot?.id === hotspot.id}
+          productName={getLocText(hotspot.linked_product?.name)}
+          label={getLocText(hotspot.label)}
           onClick={() => setActiveHotspot(
             activeHotspot?.id === hotspot.id ? null : hotspot
           )}
@@ -93,14 +102,6 @@ export function ImageHotspots({
           }}
         />
       )}
-
-      {/* Hotspots indicator badge */}
-      <div className="absolute bottom-3 left-3 flex items-center gap-2 bg-black/80 backdrop-blur-sm text-white px-3 py-2 rounded-full pointer-events-none">
-        <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-        <span className="text-[9px] font-bold uppercase tracking-widest">
-          Clique para ver produtos relacionados
-        </span>
-      </div>
     </div>
   );
 }

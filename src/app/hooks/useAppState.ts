@@ -67,9 +67,6 @@ export function useAppState(params: UseAppStateParams) {
     [locale]
   );
 
-  // Legal view state
-  const [legalView, setLegalView] = useState<'terms' | 'privacy' | null>(null);
-
   // Pending checkout state
   const [pendingCheckout, setPendingCheckout] = useState(false);
 
@@ -145,10 +142,6 @@ export function useAppState(params: UseAppStateParams) {
     handleScroll: navigation.handleScroll,
     handleNavigate: navigation.handleNavigate,
     exitAdmin: navigation.exitAdmin,
-
-    // Legal
-    legalView,
-    setLegalView,
 
     // Checkout
     pendingCheckout,

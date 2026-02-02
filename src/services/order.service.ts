@@ -61,12 +61,13 @@ export class OrderService {
       const newAddrPayload = {
         user_id: userId,
         line1: addressData.logradouro + (addressData.numero ? `, ${addressData.numero}` : ''),
-        line2: addressData.bairro + (addressData.complemento ? ` - ${addressData.complemento}` : ''),
+        line2: addressData.complemento || '',
+        neighborhood: addressData.bairro || '',
         city: addressData.localidade,
         state: addressData.uf,
         postal_code: addressData.cep || '',
         country: 'BR',
-        is_default: isFirstAddress 
+        is_default: isFirstAddress
       };
       
       const addrData = await this.usersRepo.createAddress(newAddrPayload);

@@ -14,7 +14,7 @@ export function TermsPage({ config, locale, onBack }: TermsPageProps) {
   return (
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-10 bg-white border-b border-neutral-100">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+        <div className="w-full px-4 py-4 flex items-center gap-4">
           <button
             onClick={onBack}
             className="p-2 hover:bg-neutral-100 rounded-full transition-colors"
@@ -30,7 +30,7 @@ export function TermsPage({ config, locale, onBack }: TermsPageProps) {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="w-full px-4 py-8">
         <div
           className="prose prose-neutral max-w-none"
           dangerouslySetInnerHTML={{ __html: content }}

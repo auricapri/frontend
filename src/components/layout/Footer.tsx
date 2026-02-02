@@ -10,17 +10,15 @@ interface FooterProps {
   currentLocale: Locale;
   onChangeLocale: (locale: Locale) => void;
   storeConfig: StoreConfig;
-  onOpenLegal: (type: 'terms' | 'privacy') => void;
-  onNavigate: (view: 'home' | 'collection' | 'about', target?: string) => void;
+  onNavigate: (view: 'home' | 'collection' | 'about' | 'privacy' | 'terms', target?: string) => void;
 }
 
-const Footer: React.FC<FooterProps> = ({ 
-  t, 
-  currentLocale: _currentLocale, 
-  onChangeLocale: _onChangeLocale, 
-  storeConfig, 
-  onOpenLegal, 
-  onNavigate 
+const Footer: React.FC<FooterProps> = ({
+  t,
+  currentLocale: _currentLocale,
+  onChangeLocale: _onChangeLocale,
+  storeConfig,
+  onNavigate
 }) => {
   const [version, setVersion] = useState<string>('');
 
@@ -109,12 +107,12 @@ const Footer: React.FC<FooterProps> = ({
               </button>
             </li>
             <li>
-              <button onClick={() => onOpenLegal('terms')} className="hover:text-white transition-colors uppercase tracking-wide text-left">
+              <button onClick={() => onNavigate('terms')} className="hover:text-white transition-colors uppercase tracking-wide text-left">
                 Shipping & Returns
               </button>
             </li>
             <li>
-              <button onClick={() => onOpenLegal('terms')} className="hover:text-white transition-colors uppercase tracking-wide text-left">
+              <button onClick={() => onNavigate('terms')} className="hover:text-white transition-colors uppercase tracking-wide text-left">
                 FAQ
               </button>
             </li>
@@ -159,8 +157,8 @@ const Footer: React.FC<FooterProps> = ({
         <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
             <p>&copy; {new Date().getFullYear()} {storeConfig.brand_name}. {t('footer.rights')}</p>
             <div className="flex space-x-6">
-              <button onClick={() => onOpenLegal('privacy')} className="hover:text-white transition-colors font-bold uppercase">{t('footer.privacy')}</button>
-              <button onClick={() => onOpenLegal('terms')} className="hover:text-white transition-colors font-bold uppercase">{t('footer.terms')}</button>
+              <button onClick={() => onNavigate('privacy')} className="hover:text-white transition-colors font-bold uppercase">{t('footer.privacy')}</button>
+              <button onClick={() => onNavigate('terms')} className="hover:text-white transition-colors font-bold uppercase">{t('footer.terms')}</button>
             </div>
         </div>
         {version && (

@@ -175,29 +175,31 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const activeFilterCount = selectedSizes.length + (priceMin !== null || priceMax !== null ? 1 : 0);
 
   return (
-    <section id="collection" className="w-full bg-white flex flex-col pt-32 pb-40">
+    <section id="collection" className="w-full bg-white flex flex-col pt-32 pb-4">
 
       {/* Collections Section */}
-      <div className="mb-32">
-        <div className="px-6 md:px-12 mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-light tracking-tight uppercase mb-2">{t('nav.collection')}</h2>
-            <p className="text-[10px] text-neutral-400 tracking-[0.2em] uppercase font-bold">{t('grid.curated')}</p>
+      {collections.length > 0 && (
+        <div className="mb-32">
+          <div className="px-6 md:px-12 mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-light tracking-tight uppercase mb-2">{t('nav.collection')}</h2>
+              <p className="text-[10px] text-neutral-400 tracking-[0.2em] uppercase font-bold">{t('grid.curated')}</p>
+            </div>
+          </div>
+
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 no-scrollbar">
+            {!isLoading && collections.map((coll) => (
+              <div key={coll.id} onClick={() => onSelectCollection(coll)} className="flex-none w-[70vw] md:w-[35vw] snap-center group relative cursor-pointer aspect-[16/9] overflow-hidden bg-neutral-100 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm">
+                 <img src={coll.image_url} alt={getLoc(coll.name)} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105" />
+                 <div className="absolute inset-0 bg-black/20 flex flex-col justify-end p-8 text-white">
+                    <h3 className="text-2xl font-light tracking-widest uppercase">{getLoc(coll.name)}</h3>
+                    <div className="w-0 group-hover:w-full h-[1px] bg-white transition-all duration-500 mt-2 opacity-50" />
+                 </div>
+              </div>
+            ))}
           </div>
         </div>
-
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 no-scrollbar">
-          {!isLoading && collections.map((coll) => (
-            <div key={coll.id} onClick={() => onSelectCollection(coll)} className="flex-none w-[70vw] md:w-[35vw] snap-center group relative cursor-pointer aspect-[16/9] overflow-hidden bg-neutral-100 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm">
-               <img src={coll.image_url} alt={getLoc(coll.name)} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105" />
-               <div className="absolute inset-0 bg-black/20 flex flex-col justify-end p-8 text-white">
-                  <h3 className="text-2xl font-light tracking-widest uppercase">{getLoc(coll.name)}</h3>
-                  <div className="w-0 group-hover:w-full h-[1px] bg-white transition-all duration-500 mt-2 opacity-50" />
-               </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Anchor for Scrolling (Non-sticky) */}
       <div id="grid-anchor" className="w-full h-1" />

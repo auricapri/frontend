@@ -500,9 +500,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   <div className="flex justify-between items-center">
                     <label className="text-[10px] uppercase font-black tracking-[0.3em] text-neutral-400">Medidas</label>
                     <div className="flex items-center gap-4">
-                      <button onClick={() => setShowFaceSwap(true)} className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-neutral-900 border-b border-black pb-0.5 hover:opacity-50 transition-opacity">
-                        <Shirt className="w-3 h-3" /> Provador
-                      </button>
+                      {activeVariant?.face_swap_enabled && (
+                        <button onClick={() => setShowFaceSwap(true)} className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-neutral-900 border-b border-black pb-0.5 hover:opacity-50 transition-opacity">
+                          <Shirt className="w-3 h-3" /> Provador
+                        </button>
+                      )}
                       {activeSizeGuideImage && (
                           <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-neutral-900 border-b border-black pb-0.5 hover:opacity-50 transition-opacity">
                               <Ruler className="w-3 h-3" /> Guia de Tamanhos
@@ -809,7 +811,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       )}
 
       {/* FACE SWAP MODAL */}
-      {activeVariant && (
+      {activeVariant?.face_swap_enabled && (
         <FaceSwapModal
           isOpen={showFaceSwap}
           onClose={() => setShowFaceSwap(false)}
