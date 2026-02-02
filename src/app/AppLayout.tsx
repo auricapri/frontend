@@ -79,9 +79,6 @@ export function AppLayout(props: {
     pendingCheckout: boolean;
     setPendingCheckout: (v: boolean) => void;
 
-    legalView: 'terms' | 'privacy' | null;
-    setLegalView: (v: 'terms' | 'privacy' | null) => void;
-
     toast: { message: string; visible: boolean; type?: 'info' | 'error' };
     closeToast: () => void;
     showToast: (message: string, type?: 'info' | 'error') => void;
@@ -183,7 +180,6 @@ export function AppLayout(props: {
               currentLocale={app.locale}
               onChangeLocale={app.setLocale}
               storeConfig={app.storeConfig}
-              onOpenLegal={app.setLegalView}
               onNavigate={app.onNavigate}
             />
 
@@ -242,7 +238,6 @@ export function AppLayout(props: {
               currentLocale={app.locale}
               onChangeLocale={app.setLocale}
               storeConfig={app.storeConfig}
-              onOpenLegal={app.setLegalView}
               onNavigate={app.onNavigate}
             />
           </>
@@ -271,7 +266,6 @@ export function AppLayout(props: {
               currentLocale={app.locale}
               onChangeLocale={app.setLocale}
               storeConfig={app.storeConfig}
-              onOpenLegal={app.setLegalView}
               onNavigate={app.onNavigate}
             />
           </>
@@ -347,7 +341,6 @@ export function AppLayout(props: {
               currentLocale={app.locale}
               onChangeLocale={app.setLocale}
               storeConfig={app.storeConfig}
-              onOpenLegal={app.setLegalView}
               onNavigate={app.onNavigate}
             />
           </>
@@ -399,26 +392,6 @@ export function AppLayout(props: {
             locale={app.locale}
           />
         </Suspense>
-      )}
-
-      {app.legalView && (
-        <div className="fixed inset-0 z-[200] bg-white flex flex-col animate-in slide-in-from-bottom duration-700 overflow-hidden">
-          <header className="h-24 px-12 flex justify-between items-center border-b border-neutral-100">
-            <h2 className="text-xl font-black uppercase italic tracking-widest">
-              {app.legalView === 'terms' ? app.t('footer.terms') : app.t('footer.privacy')}
-            </h2>
-            <button onClick={() => app.setLegalView(null)} className="p-4 bg-neutral-50 rounded-full hover:rotate-90 transition-all">
-              <X className="w-6 h-6" />
-            </button>
-          </header>
-          <div className="flex-1 overflow-y-auto p-12 md:p-24 no-scrollbar bg-neutral-50/50">
-            <div className="max-w-4xl mx-auto bg-white p-12 md:p-20 rounded-[3rem] shadow-sm border border-neutral-100">
-              <div className="prose prose-neutral max-w-none whitespace-pre-wrap font-medium text-neutral-600 leading-relaxed text-sm">
-                {app.legalView === 'terms' ? app.storeConfig.terms_of_service[app.locale] : app.storeConfig.privacy_policy[app.locale]}
-              </div>
-            </div>
-          </div>
-        </div>
       )}
 
       <CartDrawer

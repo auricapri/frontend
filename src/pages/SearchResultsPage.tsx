@@ -89,9 +89,9 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
   }, [selectedSizes, priceMin, priceMax, sortBy, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Sticky Header + Filters */}
-      <div className="sticky top-24 md:top-20 z-30 bg-white">
+    <div className="bg-white pt-2 pb-4">
+      {/* Header + Filters */}
+      <div className="bg-white">
         {/* Header */}
         <div className="border-b border-neutral-100 py-3 md:py-4 px-6 md:px-12">
           <h1 className="text-xl md:text-2xl font-light tracking-[0.2em] uppercase mb-1">
@@ -155,7 +155,7 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
       )}
 
       {/* Desktop + Mobile Layout */}
-      <div className="flex px-6 md:px-12 pt-6 md:pt-8">
+      <div className="flex px-6 md:px-12 mt-4">
         {/* Desktop: Sidebar */}
         {!isMobile && (
           <FilterSidebar

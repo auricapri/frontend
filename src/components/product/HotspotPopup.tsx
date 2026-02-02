@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, ShoppingBag, ExternalLink } from 'lucide-react';
+import { X, Heart } from 'lucide-react';
 import { ProductImageHotspot, LocalizedText, Product } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { Locale } from '../../i18n';
@@ -43,7 +43,7 @@ export function HotspotPopup({
   // Garantir distância mínima do topo (para não sobrepor o header)
   const minTopOffset = 12; // Mínimo 12% do topo
 
-  // Position popup based on hotspot location - com margens maiores para mobile
+  // Position popup based on hotspot location
   if (position.x > 60) {
     popupStyle.right = `${100 - position.x + 3}%`;
     popupStyle.left = 'auto';
@@ -71,22 +71,22 @@ export function HotspotPopup({
     return (
       <div
         style={popupStyle}
-        className="bg-white rounded-2xl shadow-2xl overflow-hidden w-48 md:w-56 max-w-[calc(100vw-2rem)] animate-in zoom-in-95 fade-in duration-200 p-4"
+        className="bg-white rounded-2xl shadow-2xl overflow-hidden w-64 max-w-[calc(100vw-2rem)] animate-in zoom-in-95 fade-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 z-10 p-1 bg-white/90 hover:bg-white rounded-full transition-all"
-        >
-          <X className="w-4 h-4" />
-        </button>
-        <div className="flex flex-col items-center justify-center py-4 text-center">
-          <div className="w-10 h-10 bg-neutral-100 rounded-full flex items-center justify-center mb-3">
-            <ShoppingBag className="w-5 h-5 text-neutral-400" />
-          </div>
-          <p className="text-xs text-neutral-500">
-            Carregando produto...
-          </p>
+        <div className="flex items-center justify-between p-4">
+          <div className="h-4 w-24 bg-neutral-200 rounded animate-pulse" />
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-neutral-100 rounded-full transition-all"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="aspect-[4/3] bg-neutral-100 animate-pulse" />
+        <div className="p-4 space-y-3">
+          <div className="h-3 w-20 bg-neutral-200 rounded animate-pulse" />
+          <div className="h-5 w-16 bg-neutral-200 rounded animate-pulse" />
         </div>
       </div>
     );
@@ -101,33 +101,34 @@ export function HotspotPopup({
     }
   };
 
+  const inStock = linked_variant.stock_quantity > 0;
+
   return (
     <div
       style={popupStyle}
-      className="bg-white rounded-2xl shadow-2xl overflow-hidden w-56 md:w-64 max-w-[calc(100vw-2rem)] animate-in zoom-in-95 fade-in duration-200"
+      className="bg-white rounded-2xl shadow-2xl overflow-hidden w-64 max-w-[calc(100vw-2rem)] animate-in zoom-in-95 fade-in duration-200"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Related product label */}
-      <div className="bg-neutral-100 px-3 py-1.5 flex items-center justify-between">
-        <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">
-          Produto relacionado
-        </span>
-        {/* Close button */}
+      {/* Header: Product name + close button */}
+      <div className="flex items-center justify-between p-4 border-b border-neutral-100">
+        <h3 className="text-sm font-bold text-neutral-900 line-clamp-1 pr-2">
+          {getLocText(linked_product.name)}
+        </h3>
         <button
           onClick={onClose}
-          className="p-0.5 hover:bg-neutral-200 rounded-full transition-all"
+          className="flex-shrink-0 p-1 hover:bg-neutral-100 rounded-full transition-all"
         >
-          <X className="w-3.5 h-3.5 text-neutral-500" />
+          <X className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Product Image */}
+      {/* Product Image - clickable */}
       {imageUrl && (
         <div
           onClick={handleNavigate}
-          className="block cursor-pointer"
+          className="cursor-pointer"
         >
-          <div className="aspect-square bg-neutral-100 relative overflow-hidden">
+          <div className="aspect-[4/3] bg-neutral-100 relative overflow-hidden">
             <img
               src={imageUrl}
               alt={getLocText(linked_product.name)}
@@ -139,56 +140,49 @@ export function HotspotPopup({
 
       {/* Product Info */}
       <div className="p-4 space-y-3">
-        <div
-          onClick={handleNavigate}
-          className="block hover:opacity-70 transition-opacity cursor-pointer"
-        >
-          <h4 className="text-sm font-bold leading-tight line-clamp-2">
-            {getLocText(linked_product.name)}
-          </h4>
-          {(linked_variant.color_name || linked_variant.size) && (
-            <p className="text-[10px] text-neutral-500 mt-1">
-              {getLocText(linked_variant.color_name)}
-              {linked_variant.color_name && linked_variant.size && ' - '}
-              {linked_variant.size}
-            </p>
-          )}
-        </div>
+        {/* Inclusion status (from hotspot label) */}
+        {hotspot.label && (
+          <p className="text-sm text-neutral-500">
+            {getLocText(hotspot.label)}
+          </p>
+        )}
 
         {/* Price */}
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-black">
-            {formatCurrency(linked_variant.retail_price, locale)}
-          </span>
+        <p className="text-lg font-bold text-neutral-900">
+          {formatCurrency(linked_variant.retail_price, locale)}
+        </p>
 
-          {/* Stock indicator */}
-          {linked_variant.stock_quantity > 0 ? (
-            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full uppercase tracking-widest">
-              Em estoque
+        {/* Stock status */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-neutral-600">
+            {inStock ? 'Em estoque' : 'Indisponível'}
+          </span>
+          {inStock ? (
+            <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded uppercase tracking-wider">
+              EM ESTOQUE
             </span>
           ) : (
-            <span className="text-[9px] font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full uppercase tracking-widest">
-              Esgotado
+            <span className="text-[9px] font-bold text-red-700 bg-red-100 px-2 py-1 rounded uppercase tracking-wider">
+              ESGOTADO
             </span>
           )}
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-2">
-          <button
-            onClick={handleNavigate}
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Ver produto
-          </button>
+        {/* Action buttons */}
+        <div className="flex gap-2 pt-1">
           <button
             onClick={onAddToCart}
-            disabled={linked_variant.stock_quantity <= 0}
-            title="Adicionar ao carrinho"
-            className="p-3 border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!inStock}
+            className="flex-1 py-3 bg-black text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-neutral-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ShoppingBag className="w-4 h-4" />
+            ADICIONAR EXTRA
+          </button>
+          <button
+            onClick={handleNavigate}
+            className="p-3 border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-all"
+            title="Ver produto"
+          >
+            <Heart className="w-5 h-5" />
           </button>
         </div>
       </div>

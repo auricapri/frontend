@@ -23,6 +23,7 @@ export class UsersRepository {
   async createAddress(address: {
     line1: string;
     line2?: string;
+    neighborhood?: string;
     city: string;
     state: string;
     postal_code: string;
