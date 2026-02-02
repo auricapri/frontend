@@ -2,6 +2,7 @@ import { Order, CartItem, AddressData, InternalLogisticsInfo } from '../types';
 import { OrdersRepository } from '../api/repositories/orders.repository';
 import { UsersRepository } from '../api/repositories/users.repository';
 import { PaymentMethod, OrderStatus } from '../constants/enums';
+import { saveImplicitTermsConsent } from '../hooks/useTermsConsent';
 
 /**
  * Serviço responsável pela criação e gestão de pedidos.
@@ -55,6 +56,9 @@ export class OrderService {
     finalAmount: number,
     userId?: string
   ): Promise<Order> {
+    // Salvar aceite implícito dos termos ao realizar compra
+    saveImplicitTermsConsent();
+
     // Save address if user is logged in
     if (userId) {
       const isFirstAddress = true; // Check if user has addresses
