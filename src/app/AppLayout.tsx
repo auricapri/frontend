@@ -11,6 +11,8 @@ import AuthDrawer from '../components/auth/AuthDrawer';
 import Toast from '../components/ui/Toast';
 import { LoadingFallback } from '../components/ui/LoadingFallback';
 import { TestBanner } from '../components/common/TestBanner';
+import { TermsConsentModal } from '../components/common/TermsConsentModal';
+import { useTermsConsent } from '../hooks/useTermsConsent';
 import { filterProductsForMode } from '../utils/product';
 import { trackingService } from '../services/tracking.service';
 import { ChatProduct } from '../api/ai-chat.api';
@@ -101,6 +103,7 @@ export function AppLayout(props: {
   const { app } = props;
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedGender, setSelectedGender] = useState<Gender>(Gender.FEMALE);
+  const { showModal: showTermsModal, acceptTerms, closeModal: closeTermsModal } = useTermsConsent();
 
   // Handle selecting a product from chat
   const handleChatSelectProduct = (chatProduct: ChatProduct) => {
@@ -460,6 +463,14 @@ export function AppLayout(props: {
           userId={app.currentUser?.id}
         />
       </Suspense>
+
+      <TermsConsentModal
+        isOpen={showTermsModal}
+        onAccept={() => acceptTerms(false)}
+        onClose={closeTermsModal}
+        onNavigateTerms={() => { closeTermsModal(); app.onNavigate('terms'); }}
+        onNavigatePrivacy={() => { closeTermsModal(); app.onNavigate('privacy'); }}
+      />
     </div>
   );
 }
