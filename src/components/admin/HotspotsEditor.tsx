@@ -278,10 +278,10 @@ export function HotspotsEditor({ product, products, locale, onHotspotsChange }: 
             <div
               ref={imageContainerRef}
               onClick={handleImageClick}
-              className="relative aspect-square bg-neutral-100 rounded-[2rem] overflow-hidden cursor-crosshair border-2 border-dashed border-neutral-200"
+              className="relative aspect-[3/4] bg-neutral-100 rounded-[2rem] overflow-hidden cursor-crosshair border-2 border-dashed border-neutral-200"
             >
               {selectedImageUrl ? (
-                <img src={selectedImageUrl} alt="" className="w-full h-full object-cover" />
+                <img src={selectedImageUrl} alt="" className="w-full h-full object-contain" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-neutral-400">
                   <span className="text-xs font-bold uppercase tracking-widest">Selecione uma imagem</span>
