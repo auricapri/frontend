@@ -195,15 +195,17 @@ const GarmentsTab: React.FC = () => {
   const fetchGarments = async (pageNum = 1) => {
     try {
       const data = await api.listGarments(pageNum, 20);
+      const items = data?.items || [];
       if (pageNum === 1) {
-        setGarments(data.items);
+        setGarments(items);
       } else {
-        setGarments(prev => [...prev, ...data.items]);
+        setGarments(prev => [...prev, ...items]);
       }
-      setHasMore(data.has_more);
+      setHasMore(data?.has_more || false);
       setPage(pageNum);
     } catch (err) {
       console.error('Error fetching garments:', err);
+      if (pageNum === 1) setGarments([]);
     } finally {
       setIsLoading(false);
     }
@@ -287,15 +289,17 @@ const ModelsTab: React.FC = () => {
   const fetchModels = async (pageNum = 1) => {
     try {
       const data = await api.listModels(pageNum, 20);
+      const items = data?.items || [];
       if (pageNum === 1) {
-        setModels(data.items);
+        setModels(items);
       } else {
-        setModels(prev => [...prev, ...data.items]);
+        setModels(prev => [...prev, ...items]);
       }
-      setHasMore(data.has_more);
+      setHasMore(data?.has_more || false);
       setPage(pageNum);
     } catch (err) {
       console.error('Error fetching models:', err);
+      if (pageNum === 1) setModels([]);
     } finally {
       setIsLoading(false);
     }
@@ -385,10 +389,14 @@ const ProcessingTab: React.FC = () => {
           api.listGarments(1, 100),
           api.listModels(1, 100),
         ]);
-        setGarments(gData.items.filter(g => g.status === 'ready'));
-        setModels(mData.items.filter(m => m.status === 'ready'));
+        const gItems = gData?.items || [];
+        const mItems = mData?.items || [];
+        setGarments(gItems.filter(g => g.status === 'ready'));
+        setModels(mItems.filter(m => m.status === 'ready'));
       } catch (err) {
         console.error('Error fetching data:', err);
+        setGarments([]);
+        setModels([]);
       } finally {
         setIsLoading(false);
       }
@@ -673,15 +681,17 @@ const GalleryTab: React.FC = () => {
   const fetchGallery = async (pageNum = 1) => {
     try {
       const data = await api.listGallery(pageNum, 20);
+      const items = data?.items || [];
       if (pageNum === 1) {
-        setItems(data.items);
+        setItems(items);
       } else {
-        setItems(prev => [...prev, ...data.items]);
+        setItems(prev => [...prev, ...items]);
       }
-      setHasMore(data.has_more);
+      setHasMore(data?.has_more || false);
       setPage(pageNum);
     } catch (err) {
       console.error('Error fetching gallery:', err);
+      if (pageNum === 1) setItems([]);
     } finally {
       setIsLoading(false);
     }

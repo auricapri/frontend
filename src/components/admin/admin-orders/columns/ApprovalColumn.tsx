@@ -39,7 +39,7 @@ export const ApprovalColumn: React.FC<ApprovalColumnProps> = ({
           <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center font-bold text-xs shadow-sm">
-                {order.items[0]?.name['pt']?.[0] || '#'}
+                {order.items?.[0]?.name?.['pt']?.[0] || '#'}
               </div>
               <div>
                 <span className="text-[9px] font-black uppercase tracking-widest text-neutral-900 block">
