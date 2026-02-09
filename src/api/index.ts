@@ -18,3 +18,9 @@ export { NotificationsApi } from './notifications.api';
 export { UserConsentsApi } from './user_consents.api';
 export { CartApi } from './cart.api';
 export { HotspotsApi, hotspotsApi } from './hotspots.api';
+
+// AI APIs
+export { AiChatApi, aiChatApi } from './ai-chat.api';
+export { AiPersonalApi, aiPersonalApi } from './ai-personal.api';
+export { GarmentTransferApi, garmentTransferApi } from './garment-transfer.api';
+export { FaceSwapApi, faceSwapApi } from './face-swap.api';

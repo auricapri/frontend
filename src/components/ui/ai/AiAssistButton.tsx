@@ -1,0 +1,338 @@
+/**
+ * AiAssistButton - Reusable AI generation button with modal
+ */
+
+import React, { useState, useCallback } from 'react';
+import { Sparkles, Loader2, X, Check, RefreshCw, Wand2, Copy, ArrowRight } from 'lucide-react';
+import { useAiPersonal } from '../../../hooks/useAiPersonal';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface AiAssistButtonProps {
+  /** Label for the button */
+  label?: string;
+  /** Prompt template - use {{field}} for context variables */
+  promptTemplate: string;
+  /** Context data to inject into prompt */
+  context?: Record<string, unknown>;
+  /** Callback when user accepts generated content */
+  onAccept: (content: string) => void;
+  /** Custom system instruction */
+  systemInstruction?: string;
+  /** Button variant */
+  variant?: 'default' | 'small' | 'icon';
+  /** Disabled state */
+  disabled?: boolean;
+  /** Class name override */
+  className?: string;
+}
+
+// ============================================================================
+// Prompt Builder
+// ============================================================================
+
+function buildPrompt(template: string, context: Record<string, unknown>, systemInstruction?: string): string {
+  let prompt = template;
+
+  // Replace {{field}} placeholders
+  for (const [key, value] of Object.entries(context)) {
+    const placeholder = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+    const strValue = typeof value === 'string' ? value : JSON.stringify(value);
+    prompt = prompt.replace(placeholder, strValue);
+  }
+
+  // Add system instruction if provided
+  if (systemInstruction) {
+    prompt = `${systemInstruction}\n\n${prompt}`;
+  }
+
+  return prompt;
+}
+
+// ============================================================================
+// Modal Component
+// ============================================================================
+
+interface AiGenerateModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  promptTemplate: string;
+  context: Record<string, unknown>;
+  systemInstruction?: string;
+  onAccept: (content: string) => void;
+}
+
+const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
+  isOpen,
+  onClose,
+  promptTemplate,
+  context,
+  systemInstruction,
+  onAccept,
+}) => {
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const {
+    text,
+    isGenerating,
+    error,
+    generate,
+    abort,
+    clear,
+    refine,
+  } = useAiPersonal({
+    onError: (err) => console.error('AI Error:', err),
+  });
+
+  const handleGenerate = useCallback(async () => {
+    const prompt = customPrompt || buildPrompt(promptTemplate, context, systemInstruction);
+    await generate(prompt);
+  }, [customPrompt, promptTemplate, context, systemInstruction, generate]);
+
+  const handleRefine = useCallback(async () => {
+    const basePrompt = customPrompt || promptTemplate;
+    const contextStr = Object.entries(context)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ');
+    const refined = await refine(basePrompt, contextStr);
+    setSuggestions(refined);
+    setShowSuggestions(true);
+  }, [customPrompt, promptTemplate, context, refine]);
+
+  const handleAccept = useCallback(() => {
+    onAccept(text);
+    onClose();
+    clear();
+    setCustomPrompt('');
+    setSuggestions([]);
+    setShowSuggestions(false);
+  }, [text, onAccept, onClose, clear]);
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(text);
+  }, [text]);
+
+  const handleSelectSuggestion = useCallback((suggestion: string) => {
+    setCustomPrompt(suggestion);
+    setShowSuggestions(false);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    if (isGenerating) abort();
+    onClose();
+    clear();
+    setCustomPrompt('');
+    setSuggestions([]);
+    setShowSuggestions(false);
+  }, [isGenerating, abort, onClose, clear]);
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-xl z-[200] animate-in fade-in duration-300"
+        onClick={handleClose}
+      />
+      <div className="fixed inset-0 z-[201] flex items-center justify-center p-4 md:p-12">
+        <div className="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 duration-300 max-h-[80vh] flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-neutral-100 bg-gradient-to-r from-violet-50 to-indigo-50">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-violet-500 to-indigo-500 rounded-xl">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-xl font-black uppercase tracking-tight">
+                Assistente IA
+              </h2>
+            </div>
+            <button
+              onClick={handleClose}
+              className="p-3 bg-white/80 rounded-full hover:bg-white transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-4 overflow-y-auto flex-1">
+            {/* Custom Prompt Input */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">
+                Prompt (opcional - personalize a instrução)
+              </label>
+              <div className="relative">
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder={promptTemplate.slice(0, 150) + '...'}
+                  className="w-full p-4 pr-20 bg-neutral-50 border border-neutral-200 rounded-2xl text-sm resize-none focus:outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100 transition-all"
+                  rows={3}
+                  disabled={isGenerating}
+                />
+                <button
+                  onClick={handleRefine}
+                  disabled={isGenerating}
+                  className="absolute right-2 top-2 p-2 bg-white border border-neutral-200 rounded-xl hover:bg-violet-50 hover:border-violet-300 transition-all disabled:opacity-50"
+                  title="Refinar prompt com sugestões IA"
+                >
+                  <Wand2 className="w-4 h-4 text-violet-500" />
+                </button>
+              </div>
+            </div>
+
+            {/* Suggestions */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4 space-y-2 animate-in slide-in-from-top-2">
+                <p className="text-xs font-bold uppercase tracking-widest text-violet-600">
+                  Sugestões de prompt
+                </p>
+                {suggestions.map((suggestion, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSelectSuggestion(suggestion)}
+                    className="w-full text-left p-3 bg-white rounded-xl text-sm hover:bg-violet-100 transition-all flex items-center gap-2 group"
+                  >
+                    <ArrowRight className="w-4 h-4 text-violet-400 group-hover:text-violet-600 transition-colors" />
+                    <span className="line-clamp-2">{suggestion}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Generate Button */}
+            <button
+              onClick={handleGenerate}
+              disabled={isGenerating}
+              className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-2xl font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:from-violet-700 hover:to-indigo-700 transition-all disabled:opacity-50 shadow-lg shadow-violet-200"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Gerando...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5" />
+                  Gerar com IA
+                </>
+              )}
+            </button>
+
+            {/* Error */}
+            {error && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Generated Content */}
+            {text && (
+              <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">
+                    Conteúdo Gerado
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleCopy}
+                      className="p-2 bg-neutral-100 rounded-lg hover:bg-neutral-200 transition-all"
+                      title="Copiar"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleGenerate}
+                      disabled={isGenerating}
+                      className="p-2 bg-neutral-100 rounded-lg hover:bg-neutral-200 transition-all disabled:opacity-50"
+                      title="Regenerar"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-2xl max-h-60 overflow-y-auto">
+                  <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+                    {text}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          {text && (
+            <div className="p-6 border-t border-neutral-100 bg-neutral-50 flex items-center justify-end gap-3">
+              <button
+                onClick={handleClose}
+                className="px-6 py-3 bg-white border border-neutral-200 rounded-xl font-bold text-sm hover:bg-neutral-100 transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleAccept}
+                className="px-6 py-3 bg-black text-white rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-neutral-800 transition-all"
+              >
+                <Check className="w-4 h-4" />
+                Usar Conteúdo
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export const AiAssistButton: React.FC<AiAssistButtonProps> = ({
+  label = 'Gerar com IA',
+  promptTemplate,
+  context = {},
+  onAccept,
+  systemInstruction,
+  variant = 'default',
+  disabled = false,
+  className = '',
+}) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const baseClasses = {
+    default: 'px-4 py-2 bg-gradient-to-r from-violet-500 to-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:from-violet-600 hover:to-indigo-600 transition-all shadow-lg shadow-violet-200/50 disabled:opacity-50',
+    small: 'px-3 py-1.5 bg-gradient-to-r from-violet-500 to-indigo-500 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 hover:from-violet-600 hover:to-indigo-600 transition-all shadow-md shadow-violet-200/50 disabled:opacity-50',
+    icon: 'p-2 bg-gradient-to-r from-violet-500 to-indigo-500 text-white rounded-lg hover:from-violet-600 hover:to-indigo-600 transition-all shadow-md shadow-violet-200/50 disabled:opacity-50',
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsModalOpen(true)}
+        disabled={disabled}
+        className={`${baseClasses[variant]} ${className}`}
+        title={variant === 'icon' ? label : undefined}
+      >
+        <Sparkles className={variant === 'icon' ? 'w-4 h-4' : 'w-3.5 h-3.5'} />
+        {variant !== 'icon' && label}
+      </button>
+
+      <AiGenerateModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        promptTemplate={promptTemplate}
+        context={context}
+        systemInstruction={systemInstruction}
+        onAccept={onAccept}
+      />
+    </>
+  );
+};
+
+export default AiAssistButton;

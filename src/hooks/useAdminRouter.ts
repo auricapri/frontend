@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 
 export type AdminTab =
   | 'health' | 'dream' | 'orders' | 'delivery'
-  | 'inventory' | 'suppliers' | 'taxonomy' | 'guides'
+  | 'inventory' | 'suppliers' | 'taxonomy' | 'guides' | 'garment-gallery'
   | 'financial' | 'marketplaces' | 'marketing' | 'coupons' | 'assets'
   | 'about' | 'users' | 'system';
 
 const VALID_TABS: AdminTab[] = [
   'health', 'dream', 'orders', 'delivery',
-  'inventory', 'suppliers', 'taxonomy', 'guides',
+  'inventory', 'suppliers', 'taxonomy', 'guides', 'garment-gallery',
   'financial', 'marketplaces', 'marketing', 'coupons', 'assets',
   'about', 'users', 'system'
 ];
