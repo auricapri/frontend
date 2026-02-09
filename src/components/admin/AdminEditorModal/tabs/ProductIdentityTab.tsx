@@ -81,15 +81,7 @@ export const ProductIdentityTab: React.FC<ProductIdentityTabProps> = ({
               <AiAssistButton
                 label="Gerar"
                 variant="small"
-                promptTemplate={`Crie uma descrição curta e atraente para o produto "{{productName}}" da categoria "{{category}}".
-
-Requisitos:
-- Máximo 300 caracteres
-- Destaque os benefícios principais
-- Tom profissional e elegante
-- Adequado para loja de moda premium
-
-Retorne APENAS a descrição, sem HTML, sem explicações.`}
+                promptTemplate={`Descrição curta para "{{productName}}" ({{category}}). Max 200 caracteres. Tom elegante. Responda apenas com o texto.`}
                 context={{
                   productName: getLocVal(productData.name) || 'Produto',
                   category: categories.find(c => c.id === productData.category_id)?.name
@@ -97,7 +89,7 @@ Retorne APENAS a descrição, sem HTML, sem explicações.`}
                     : 'Moda',
                 }}
                 onAccept={(content) => updateNested('description', content)}
-                systemInstruction="Você é um copywriter especialista em moda de luxo e e-commerce premium."
+                systemInstruction="Copywriter de moda premium. Respostas diretas, sem explicações."
               />
             </div>
             <RichTextEditor
@@ -116,20 +108,18 @@ Retorne APENAS a descrição, sem HTML, sem explicações.`}
               <AiAssistButton
                 label="Gerar apresentação"
                 variant="small"
-                promptTemplate={`Crie uma apresentação completa e detalhada para o produto "{{productName}}" da categoria "{{category}}".
+                promptTemplate={`Apresentação HTML para "{{productName}}" ({{category}}).
 
-Descrição atual: {{description}}
+Descrição base: {{description}}
 
-Requisitos:
-1. Estruture com seções claras (ex: Sobre, Características, Detalhes, Cuidados)
-2. Use linguagem elegante e sofisticada
-3. Destaque materiais, acabamentos e diferenciais
-4. Inclua sugestões de uso e combinações
-5. Tom aspiracional adequado para moda premium
-6. Formato com parágrafos bem estruturados
-7. Máximo 800 palavras
+FORMATO HTML OBRIGATÓRIO:
+<h2>Título da Seção</h2>
+<p>Parágrafo com texto.</p>
+<ul><li>Item de lista</li></ul>
 
-Retorne APENAS o texto da apresentação, sem HTML, sem explicações.`}
+Seções: Sobre, Características, Detalhes, Como Usar.
+Tom elegante e premium. Máximo 400 palavras.
+Responda APENAS com o HTML, sem markdown, sem explicações.`}
                 context={{
                   productName: getLocVal(productData.name) || 'Produto',
                   category: categories.find(c => c.id === productData.category_id)?.name
@@ -138,7 +128,7 @@ Retorne APENAS o texto da apresentação, sem HTML, sem explicações.`}
                   description: getLocVal(productData.description) || '',
                 }}
                 onAccept={(content) => updateNested('presentation', content)}
-                systemInstruction="Você é um redator de conteúdo especialista em moda de luxo, com experiência em criar apresentações de produtos que transmitem exclusividade e sofisticação."
+                systemInstruction="Redator de moda premium. Gere HTML válido sem código markdown. Respostas diretas."
               />
             </div>
             <p className="text-[8px] text-neutral-400 -mt-2">
