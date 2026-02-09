@@ -119,7 +119,7 @@ export interface PersonalChatEvent {
 }
 
 export interface RefinePromptRequest {
-  message: string; // API uses "message" not "prompt" per docs
+  prompt: string;
   user_id: string;
 }
 
