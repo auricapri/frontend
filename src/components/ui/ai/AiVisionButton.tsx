@@ -3,7 +3,8 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { Camera, Loader2, X, Check, RefreshCw, Copy, Sparkles } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Camera, Loader2, X, Check, RefreshCw, Copy } from 'lucide-react';
 import { useAiPersonal } from '../../../hooks/useAiPersonal';
 
 export interface AiVisionButtonProps {
@@ -105,14 +106,14 @@ export const AiVisionButton: React.FC<AiVisionButtonProps> = ({
       </button>
 
       {/* Modal */}
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <>
           <div
-            className="fixed inset-0 bg-black/30 z-[200] animate-in fade-in duration-200"
+            className="fixed inset-0 bg-black/50 z-[9998] animate-in fade-in duration-200"
             onClick={handleClose}
           />
-          <div className="fixed top-0 right-0 bottom-0 z-[201] w-full max-w-md animate-in slide-in-from-right duration-300">
-            <div className="h-full bg-white shadow-2xl flex flex-col">
+          <div className="fixed top-0 right-0 bottom-0 z-[9999] w-full max-w-md animate-in slide-in-from-right duration-300 overflow-hidden">
+            <div className="h-full bg-white shadow-2xl flex flex-col overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-neutral-100 bg-gradient-to-r from-amber-50 to-orange-50">
                 <div className="flex items-center gap-3">
@@ -197,7 +198,7 @@ export const AiVisionButton: React.FC<AiVisionButtonProps> = ({
 
               {/* Footer */}
               {text && !isGenerating && (
-                <div className="p-4 border-t border-neutral-100 bg-neutral-50 flex items-center justify-end gap-2">
+                <div className="p-4 border-t border-neutral-100 bg-neutral-50 flex items-center justify-end gap-2 flex-shrink-0">
                   <button
                     onClick={handleClose}
                     className="px-4 py-2 bg-white border border-neutral-200 rounded-lg font-bold text-xs hover:bg-neutral-100 transition-all"
@@ -215,7 +216,8 @@ export const AiVisionButton: React.FC<AiVisionButtonProps> = ({
               )}
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </>
   );

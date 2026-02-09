@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Sparkles, Loader2, X, Check, RefreshCw, Wand2, Copy, ArrowRight } from 'lucide-react';
 import { useAiPersonal } from '../../../hooks/useAiPersonal';
 
@@ -106,12 +107,13 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
 
   const handleRefine = useCallback(async () => {
     const basePrompt = customPrompt || promptTemplate;
-    const contextStr = Object.entries(context)
+    const contextStr = Object.entries(context || {})
       .map(([k, v]) => `${k}: ${v}`)
       .join(', ');
     const refined = await refine(basePrompt, contextStr);
-    setSuggestions(refined);
-    setShowSuggestions(true);
+    const safeSuggestions = Array.isArray(refined) ? refined : [];
+    setSuggestions(safeSuggestions);
+    setShowSuggestions(safeSuggestions.length > 0);
   }, [customPrompt, promptTemplate, context, refine]);
 
   const handleAccept = useCallback(() => {
@@ -143,16 +145,16 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop - semi-transparent, click to close */}
       <div
-        className="fixed inset-0 bg-black/30 z-[200] animate-in fade-in duration-200"
+        className="fixed inset-0 bg-black/50 z-[9998] animate-in fade-in duration-200"
         onClick={handleClose}
       />
       {/* Side Drawer - right side */}
-      <div className="fixed top-0 right-0 bottom-0 z-[201] w-full max-w-md animate-in slide-in-from-right duration-300">
-        <div className="h-full bg-white shadow-2xl flex flex-col">
+      <div className="fixed top-0 right-0 bottom-0 z-[9999] w-full max-w-md animate-in slide-in-from-right duration-300 overflow-hidden">
+        <div className="h-full bg-white shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-neutral-100 bg-gradient-to-r from-violet-50 to-indigo-50">
             <div className="flex items-center gap-3">
@@ -199,7 +201,7 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
             </div>
 
             {/* Suggestions */}
-            {showSuggestions && suggestions.length > 0 && (
+            {showSuggestions && suggestions && suggestions.length > 0 && (
               <div className="bg-violet-50 border border-violet-200 rounded-xl p-3 space-y-2 animate-in slide-in-from-top-2">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-violet-600">
                   Sugestões
@@ -279,7 +281,7 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
 
           {/* Footer */}
           {text && (
-            <div className="p-4 border-t border-neutral-100 bg-neutral-50 flex items-center justify-end gap-2">
+            <div className="p-4 border-t border-neutral-100 bg-neutral-50 flex items-center justify-end gap-2 flex-shrink-0">
               <button
                 onClick={handleClose}
                 className="px-4 py-2 bg-white border border-neutral-200 rounded-lg font-bold text-xs hover:bg-neutral-100 transition-all"
@@ -297,7 +299,8 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
           )}
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 };
 

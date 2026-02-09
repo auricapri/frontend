@@ -280,10 +280,10 @@ export function useAiPersonal(options: UseAiPersonalOptions = {}): UseAiPersonal
   const refine = useCallback(async (prompt: string, context?: string): Promise<string[]> => {
     try {
       const response = await aiPersonalApi.refine({
-        message: prompt,
+        prompt: prompt,
         user_id: getUserId(),
       });
-      return response.suggestions || [];
+      return response?.suggestions || [];
     } catch (err) {
       console.error('Failed to refine prompt:', err);
       return [];
