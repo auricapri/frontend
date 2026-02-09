@@ -69,11 +69,10 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      const error: ApiError = await response.json().catch(() => ({
-        error: { message: `HTTP ${response.status}: ${response.statusText}` },
-      }));
-      const details = error.error.details?.map(d => `${d.path}: ${d.message}`).join(', ');
-      throw new Error(details ? `${error.error.message}: ${details}` : error.error.message);
+      const error = await response.json().catch(() => null);
+      const message = error?.error?.message || error?.message || `HTTP ${response.status}: ${response.statusText}`;
+      const details = error?.error?.details?.map((d: any) => `${d.path}: ${d.message}`).join(', ');
+      throw new Error(details ? `${message}: ${details}` : message);
     }
 
     // Handle empty responses (204 No Content)

@@ -1,15 +1,12 @@
 /**
- * AiAssistButton - Reusable AI generation button with modal
+ * AiAssistButton - AI generation button with auto-generate modal
+ * Opens modal and immediately starts generating - no typing required
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Sparkles, Loader2, X, Check, RefreshCw, Wand2, Copy, ArrowRight } from 'lucide-react';
+import { Sparkles, Loader2, X, Check, RefreshCw, Copy } from 'lucide-react';
 import { useAiPersonal } from '../../../hooks/useAiPersonal';
-
-// ============================================================================
-// Types
-// ============================================================================
 
 export interface AiAssistButtonProps {
   /** Label for the button */
@@ -30,21 +27,24 @@ export interface AiAssistButtonProps {
   className?: string;
 }
 
-// ============================================================================
-// Prompt Builder
-// ============================================================================
+// Status display mapping
+const statusDisplay: Record<string, string> = {
+  thinking: 'Pensando...',
+  searching: 'Pesquisando...',
+  analyzing_image: 'Analisando...',
+  tool_call: 'Processando...',
+  tool_executing: 'Executando...',
+};
 
 function buildPrompt(template: string, context: Record<string, unknown>, systemInstruction?: string): string {
   let prompt = template;
 
-  // Replace {{field}} placeholders
-  for (const [key, value] of Object.entries(context)) {
+  for (const [key, value] of Object.entries(context || {})) {
     const placeholder = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-    const strValue = typeof value === 'string' ? value : JSON.stringify(value);
+    const strValue = typeof value === 'string' ? value : JSON.stringify(value || '');
     prompt = prompt.replace(placeholder, strValue);
   }
 
-  // Add system instruction if provided
   if (systemInstruction) {
     prompt = `${systemInstruction}\n\n${prompt}`;
   }
@@ -52,11 +52,8 @@ function buildPrompt(template: string, context: Record<string, unknown>, systemI
   return prompt;
 }
 
-// ============================================================================
 // Modal Component
-// ============================================================================
-
-interface AiGenerateModalProps {
+interface AiModalProps {
   isOpen: boolean;
   onClose: () => void;
   promptTemplate: string;
@@ -65,7 +62,7 @@ interface AiGenerateModalProps {
   onAccept: (content: string) => void;
 }
 
-const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
+const AiModal: React.FC<AiModalProps> = ({
   isOpen,
   onClose,
   promptTemplate,
@@ -73,10 +70,6 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
   systemInstruction,
   onAccept,
 }) => {
-  const [customPrompt, setCustomPrompt] = useState('');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-
   const {
     text,
     isGenerating,
@@ -85,78 +78,50 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
     generate,
     abort,
     clear,
-    refine,
-  } = useAiPersonal({
-    onError: (err) => console.error('AI Error:', err),
-  });
+  } = useAiPersonal();
 
-  // Status display mapping
-  const statusDisplay: Record<string, string> = {
-    thinking: 'Pensando...',
-    searching: 'Pesquisando...',
-    analyzing_image: 'Analisando imagem...',
-    tool_call: 'Usando ferramenta...',
-    tool_executing: 'Executando...',
-    image_gen: 'Gerando imagem...',
-  };
+  // Auto-generate when modal opens
+  useEffect(() => {
+    if (isOpen && !text && !isGenerating) {
+      const prompt = buildPrompt(promptTemplate, context, systemInstruction);
+      generate(prompt);
+    }
+  }, [isOpen]);
 
-  const handleGenerate = useCallback(async () => {
-    const prompt = customPrompt || buildPrompt(promptTemplate, context, systemInstruction);
-    await generate(prompt);
-  }, [customPrompt, promptTemplate, context, systemInstruction, generate]);
-
-  const handleRefine = useCallback(async () => {
-    const basePrompt = customPrompt || promptTemplate;
-    const contextStr = Object.entries(context || {})
-      .map(([k, v]) => `${k}: ${v}`)
-      .join(', ');
-    const refined = await refine(basePrompt, contextStr);
-    const safeSuggestions = Array.isArray(refined) ? refined : [];
-    setSuggestions(safeSuggestions);
-    setShowSuggestions(safeSuggestions.length > 0);
-  }, [customPrompt, promptTemplate, context, refine]);
+  const handleRegenerate = useCallback(() => {
+    clear();
+    const prompt = buildPrompt(promptTemplate, context, systemInstruction);
+    generate(prompt);
+  }, [promptTemplate, context, systemInstruction, generate, clear]);
 
   const handleAccept = useCallback(() => {
     onAccept(text);
     onClose();
     clear();
-    setCustomPrompt('');
-    setSuggestions([]);
-    setShowSuggestions(false);
   }, [text, onAccept, onClose, clear]);
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(text);
   }, [text]);
 
-  const handleSelectSuggestion = useCallback((suggestion: string) => {
-    setCustomPrompt(suggestion);
-    setShowSuggestions(false);
-  }, []);
-
   const handleClose = useCallback(() => {
     if (isGenerating) abort();
     onClose();
     clear();
-    setCustomPrompt('');
-    setSuggestions([]);
-    setShowSuggestions(false);
   }, [isGenerating, abort, onClose, clear]);
 
   if (!isOpen) return null;
 
   return createPortal(
     <>
-      {/* Backdrop - semi-transparent, click to close */}
       <div
-        className="fixed inset-0 bg-black/50 z-[9998] animate-in fade-in duration-200"
+        className="fixed inset-0 bg-black/50 z-[9998]"
         onClick={handleClose}
       />
-      {/* Side Drawer - right side */}
-      <div className="fixed top-0 right-0 bottom-0 z-[9999] w-full max-w-md animate-in slide-in-from-right duration-300 overflow-hidden">
-        <div className="h-full bg-white shadow-2xl flex flex-col overflow-hidden">
+      <div className="fixed top-0 right-0 bottom-0 z-[9999] w-full max-w-md">
+        <div className="h-full bg-white shadow-2xl flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-neutral-100 bg-gradient-to-r from-violet-50 to-indigo-50">
+          <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-violet-50 to-indigo-50 flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-violet-500 to-indigo-500 rounded-xl">
                 <Sparkles className="w-4 h-4 text-white" />
@@ -167,111 +132,63 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
             </div>
             <button
               onClick={handleClose}
-              className="p-2 bg-white/80 rounded-full hover:bg-white transition-all"
+              className="p-2 bg-white/80 rounded-full hover:bg-white"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Content */}
-          <div className="p-4 space-y-3 overflow-y-auto flex-1">
-            {/* Custom Prompt Input */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-                Prompt (opcional)
-              </label>
-              <div className="relative">
-                <textarea
-                  value={customPrompt}
-                  onChange={(e) => setCustomPrompt(e.target.value)}
-                  placeholder={promptTemplate.slice(0, 100) + '...'}
-                  className="w-full p-3 pr-12 bg-neutral-50 border border-neutral-200 rounded-xl text-xs resize-none focus:outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100 transition-all"
-                  rows={2}
-                  disabled={isGenerating}
-                />
-                <button
-                  onClick={handleRefine}
-                  disabled={isGenerating}
-                  className="absolute right-2 top-2 p-1.5 bg-white border border-neutral-200 rounded-lg hover:bg-violet-50 hover:border-violet-300 transition-all disabled:opacity-50"
-                  title="Refinar prompt"
-                >
-                  <Wand2 className="w-3 h-3 text-violet-500" />
-                </button>
-              </div>
-            </div>
-
-            {/* Suggestions */}
-            {showSuggestions && suggestions && suggestions.length > 0 && (
-              <div className="bg-violet-50 border border-violet-200 rounded-xl p-3 space-y-2 animate-in slide-in-from-top-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-violet-600">
-                  Sugestões
-                </p>
-                {suggestions.map((suggestion, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSelectSuggestion(suggestion)}
-                    className="w-full text-left p-2 bg-white rounded-lg text-xs hover:bg-violet-100 transition-all flex items-center gap-2 group"
-                  >
-                    <ArrowRight className="w-3 h-3 text-violet-400 group-hover:text-violet-600 transition-colors flex-shrink-0" />
-                    <span className="line-clamp-2">{suggestion}</span>
-                  </button>
-                ))}
+          <div className="flex-1 overflow-y-auto p-4">
+            {/* Loading State */}
+            {isGenerating && (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-violet-500 mb-4" />
+                <span className="text-sm font-bold text-violet-600">
+                  {currentStatus ? statusDisplay[currentStatus] || 'Gerando...' : 'Gerando...'}
+                </span>
               </div>
             )}
 
-            {/* Generate Button */}
-            <button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:from-violet-700 hover:to-indigo-700 transition-all disabled:opacity-50 shadow-lg shadow-violet-200"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {currentStatus ? statusDisplay[currentStatus] || currentStatus : 'Gerando...'}
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  Gerar
-                </>
-              )}
-            </button>
-
             {/* Error */}
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm mb-4">
                 {error}
+                <button
+                  onClick={handleRegenerate}
+                  className="mt-2 w-full py-2 bg-red-100 rounded-lg text-xs font-bold hover:bg-red-200"
+                >
+                  Tentar novamente
+                </button>
               </div>
             )}
 
             {/* Generated Content */}
-            {text && (
-              <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2">
+            {text && !isGenerating && (
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
                     Resultado
-                  </label>
+                  </span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={handleCopy}
-                      className="p-1.5 bg-neutral-100 rounded-lg hover:bg-neutral-200 transition-all"
+                      className="p-1.5 bg-neutral-100 rounded-lg hover:bg-neutral-200"
                       title="Copiar"
                     >
                       <Copy className="w-3 h-3" />
                     </button>
                     <button
-                      onClick={handleGenerate}
-                      disabled={isGenerating}
-                      className="p-1.5 bg-neutral-100 rounded-lg hover:bg-neutral-200 transition-all disabled:opacity-50"
+                      onClick={handleRegenerate}
+                      className="p-1.5 bg-neutral-100 rounded-lg hover:bg-neutral-200"
                       title="Regenerar"
                     >
                       <RefreshCw className="w-3 h-3" />
                     </button>
                   </div>
                 </div>
-                <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-xl max-h-[40vh] overflow-y-auto">
-                  <div className="prose prose-sm max-w-none text-xs whitespace-pre-wrap">
+                <div className="p-4 bg-neutral-50 border rounded-xl">
+                  <div className="prose prose-sm max-w-none text-sm whitespace-pre-wrap">
                     {text}
                   </div>
                 </div>
@@ -280,17 +197,17 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
           </div>
 
           {/* Footer */}
-          {text && (
-            <div className="p-4 border-t border-neutral-100 bg-neutral-50 flex items-center justify-end gap-2 flex-shrink-0">
+          {text && !isGenerating && (
+            <div className="p-4 border-t bg-neutral-50 flex items-center justify-end gap-2 flex-shrink-0">
               <button
                 onClick={handleClose}
-                className="px-4 py-2 bg-white border border-neutral-200 rounded-lg font-bold text-xs hover:bg-neutral-100 transition-all"
+                className="px-4 py-2 bg-white border rounded-lg font-bold text-xs hover:bg-neutral-100"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleAccept}
-                className="px-4 py-2 bg-black text-white rounded-lg font-bold text-xs flex items-center gap-2 hover:bg-neutral-800 transition-all"
+                className="px-4 py-2 bg-black text-white rounded-lg font-bold text-xs flex items-center gap-2 hover:bg-neutral-800"
               >
                 <Check className="w-3 h-3" />
                 Usar
@@ -304,10 +221,7 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
   );
 };
 
-// ============================================================================
-// Main Component
-// ============================================================================
-
+// Main Button Component
 export const AiAssistButton: React.FC<AiAssistButtonProps> = ({
   label = 'Gerar com IA',
   promptTemplate,
@@ -339,7 +253,7 @@ export const AiAssistButton: React.FC<AiAssistButtonProps> = ({
         {variant !== 'icon' && label}
       </button>
 
-      <AiGenerateModal
+      <AiModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         promptTemplate={promptTemplate}
