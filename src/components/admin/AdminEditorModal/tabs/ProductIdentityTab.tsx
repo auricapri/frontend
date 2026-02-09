@@ -7,7 +7,7 @@ import { Product, ProductVariant, Category, Collection, Asset, SizeGuide } from 
 import { Supplier } from '../../../../types/suppliers';
 import { Gender } from '../../../../constants/enums';
 import { Locale } from '../../../../i18n';
-import { RichTextEditor, AiAssistButton } from '../../../ui';
+import { RichTextEditor, AiAssistButton, AiVisionButton } from '../../../ui';
 import { LocalizedText } from '../types';
 
 interface ProductIdentityTabProps {
@@ -78,19 +78,27 @@ export const ProductIdentityTab: React.FC<ProductIdentityTabProps> = ({
               <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
                 Descrição ({editLocale})
               </label>
-              <AiAssistButton
-                label="Gerar"
-                variant="small"
-                promptTemplate={`Descrição curta para "{{productName}}" ({{category}}). Max 200 caracteres. Tom elegante. Responda apenas com o texto.`}
-                context={{
-                  productName: getLocVal(productData.name) || 'Produto',
-                  category: categories.find(c => c.id === productData.category_id)?.name
-                    ? getLocVal(categories.find(c => c.id === productData.category_id)?.name)
-                    : 'Moda',
-                }}
-                onAccept={(content) => updateNested('description', content)}
-                systemInstruction="Copywriter de moda premium. Respostas diretas, sem explicações."
-              />
+              <div className="flex items-center gap-2">
+                <AiVisionButton
+                  label="Da imagem"
+                  variant="small"
+                  imageUrl={productData.base_images?.[0]}
+                  onAccept={(content) => updateNested('description', content)}
+                />
+                <AiAssistButton
+                  label="Gerar"
+                  variant="small"
+                  promptTemplate={`Descrição curta para "{{productName}}" ({{category}}). Max 200 caracteres. Tom elegante. Responda apenas com o texto.`}
+                  context={{
+                    productName: getLocVal(productData.name) || 'Produto',
+                    category: categories.find(c => c.id === productData.category_id)?.name
+                      ? getLocVal(categories.find(c => c.id === productData.category_id)?.name)
+                      : 'Moda',
+                  }}
+                  onAccept={(content) => updateNested('description', content)}
+                  systemInstruction="Copywriter de moda premium. Respostas diretas, sem explicações."
+                />
+              </div>
             </div>
             <RichTextEditor
               mode="simple"

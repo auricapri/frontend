@@ -79,6 +79,7 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
   const {
     text,
     isGenerating,
+    currentStatus,
     error,
     generate,
     abort,
@@ -87,6 +88,16 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
   } = useAiPersonal({
     onError: (err) => console.error('AI Error:', err),
   });
+
+  // Status display mapping
+  const statusDisplay: Record<string, string> = {
+    thinking: 'Pensando...',
+    searching: 'Pesquisando...',
+    analyzing_image: 'Analisando imagem...',
+    tool_call: 'Usando ferramenta...',
+    tool_executing: 'Executando...',
+    image_gen: 'Gerando imagem...',
+  };
 
   const handleGenerate = useCallback(async () => {
     const prompt = customPrompt || buildPrompt(promptTemplate, context, systemInstruction);
@@ -215,7 +226,7 @@ const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
               {isGenerating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Gerando...
+                  {currentStatus ? statusDisplay[currentStatus] || currentStatus : 'Gerando...'}
                 </>
               ) : (
                 <>

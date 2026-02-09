@@ -10,5 +10,5 @@ export { LoadingModal } from './LoadingModal';
 export { default as RichTextEditor } from './RichTextEditor';
 
 // AI Components
-export { AiAssistButton } from './ai';
-export type { AiAssistButtonProps } from './ai';
+export { AiAssistButton, AiVisionButton } from './ai';
+export type { AiAssistButtonProps, AiVisionButtonProps } from './ai';
