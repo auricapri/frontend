@@ -3,6 +3,7 @@
  */
 
 import React, { useState } from 'react';
+import { AiAssistButton } from '../../../ui/ai';
 import type { MarketplaceBrand } from '../types';
 
 // ============================================================================
@@ -18,6 +19,12 @@ export interface DescriptionEditorProps {
     views?: number;
     rating?: number;
   };
+  productContext?: {
+    name?: string;
+    category?: string;
+    price?: number;
+    tags?: string[];
+  };
   onChange: (value: string) => void;
 }
 
@@ -30,9 +37,43 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
   value,
   originalDescription,
   productMetrics,
+  productContext,
   onChange,
 }) => {
   const [showPreview, setShowPreview] = useState(false);
+
+  // Build AI context for description generation
+  const aiContext = {
+    marketplace: brand.name,
+    productName: productContext?.name || 'Produto',
+    category: productContext?.category || '',
+    price: productContext?.price || 0,
+    tags: productContext?.tags?.join(', ') || '',
+    originalDescription: originalDescription || '',
+    metrics: productMetrics
+      ? `${productMetrics.sales || 0} vendidos, ${productMetrics.views || 0} visualizações, ${productMetrics.rating || 0}/5 avaliação`
+      : '',
+  };
+
+  const descriptionPrompt = `Crie uma descrição de produto otimizada para o marketplace {{marketplace}}.
+
+Dados do produto:
+- Nome: {{productName}}
+- Categoria: {{category}}
+- Preço: R$ {{price}}
+- Tags: {{tags}}
+- Descrição original: {{originalDescription}}
+- Métricas: {{metrics}}
+
+Requisitos:
+1. Use emojis estrategicamente para chamar atenção
+2. Destaque benefícios e diferenciais
+3. Inclua bullet points com características
+4. Otimize para SEO do marketplace
+5. Mantenha tom profissional mas atraente
+6. Máximo 1500 caracteres
+
+Retorne APENAS a descrição, sem explicações.`;
 
   // Template placeholders
   const insertMetrics = () => {
@@ -92,6 +133,14 @@ ${productMetrics?.rating ? `⭐ ${productMetrics.rating}/5 avaliação` : '⭐ A
 
           {/* Quick Insert Buttons */}
           <div className="flex flex-wrap gap-2">
+            <AiAssistButton
+              label="Gerar descrição"
+              variant="small"
+              promptTemplate={descriptionPrompt}
+              context={aiContext}
+              onAccept={onChange}
+              systemInstruction="Você é um especialista em copywriting para e-commerce e marketplaces brasileiros. Crie descrições que convertem vendas."
+            />
             <button
               type="button"
               onClick={() => onChange(originalDescription || '')}

@@ -9,3 +9,6 @@ export { LoadingSpinner } from './LoadingSpinner';
 export { LoadingModal } from './LoadingModal';
 export { default as RichTextEditor } from './RichTextEditor';
 
+// AI Components
+export { AiAssistButton } from './ai';
+export type { AiAssistButtonProps } from './ai';

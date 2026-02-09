@@ -10,3 +10,7 @@ export { default as ProductReviews } from './ProductReviews';
 export { ProductCard } from './ProductCard';
 export type { ProductCardProps } from './ProductCard';
 
+// Virtual Try-On
+export { GarmentTryOnModal } from './GarmentTryOnModal';
+export type { GarmentTryOnModalProps } from './GarmentTryOnModal';
+
