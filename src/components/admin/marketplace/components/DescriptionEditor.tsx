@@ -55,25 +55,11 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
       : '',
   };
 
-  const descriptionPrompt = `Crie uma descrição de produto otimizada para o marketplace {{marketplace}}.
+  const descriptionPrompt = `Descrição para {{marketplace}}: "{{productName}}" ({{category}}) R${{price}}.
+Tags: {{tags}}
+Original: {{originalDescription}}
 
-Dados do produto:
-- Nome: {{productName}}
-- Categoria: {{category}}
-- Preço: R$ {{price}}
-- Tags: {{tags}}
-- Descrição original: {{originalDescription}}
-- Métricas: {{metrics}}
-
-Requisitos:
-1. Use emojis estrategicamente para chamar atenção
-2. Destaque benefícios e diferenciais
-3. Inclua bullet points com características
-4. Otimize para SEO do marketplace
-5. Mantenha tom profissional mas atraente
-6. Máximo 1500 caracteres
-
-Retorne APENAS a descrição, sem explicações.`;
+Use emojis, bullet points. Máximo 1000 caracteres. Responda apenas com a descrição.`;
 
   // Template placeholders
   const insertMetrics = () => {
@@ -139,7 +125,7 @@ ${productMetrics?.rating ? `⭐ ${productMetrics.rating}/5 avaliação` : '⭐ A
               promptTemplate={descriptionPrompt}
               context={aiContext}
               onAccept={onChange}
-              systemInstruction="Você é um especialista em copywriting para e-commerce e marketplaces brasileiros. Crie descrições que convertem vendas."
+              systemInstruction="Copywriter e-commerce brasileiro. Respostas diretas, sem explicações."
             />
             <button
               type="button"
