@@ -1,44 +1,32 @@
+/// Product Detail
+/// Main orchestrator component using modular sub-components
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Product, UserMode, CartItem, UserProfile, Coupon, SizeGuide, Category, ProductReview } from '../../types';
-import {
-  Plus,
-  Minus,
-  Heart,
-  Maximize2,
-  X,
-  ChevronRight,
-  ChevronLeft,
-  Star,
-  Ruler,
-  Share2,
-  Copy,
-  Check,
-  Facebook,
-  Twitter,
-  MessageCircle,
-  ShieldCheck,
-  Truck,
-  RefreshCw,
-  Camera,
-  Shirt
-} from 'lucide-react';
 import { Locale } from '../../i18n';
 import ProductReviews from './ProductReviews';
 import { FaceSwapModal } from './FaceSwapModal';
-import { formatCurrency } from '../../utils/currency';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
 import { getProductCoupon, applyCouponDiscount } from '../../utils/coupon';
 import { share, type SharePlatform } from '../../utils/share';
-import { OptimizedImage } from '../ui';
 import { productReviewsApi } from '../../api/instances';
 import { useImageHotspots } from '../../hooks/useImageHotspots';
 import { useVariantSelection } from '../../hooks/useVariantSelection';
 import { useProductImages } from '../../hooks/useProductImages';
 import { useStickyBar } from '../../hooks/useStickyBar';
-import { ImageHotspots } from './ImageHotspots';
 import { RelatedProducts } from './RelatedProducts';
+import {
+  ImageGallery,
+  ProductInfo,
+  ProductVariants,
+  ProductActions,
+  ProductAccordions,
+  PresentationSection,
+  SizeGuideModal,
+  ZoomModal,
+  MobileStickyBar,
+} from './detail';
 
 // Cache de reviews por produto (TTL 5 min)
 const reviewsCache = new Map<string, { reviews: ProductReview[]; timestamp: number }>();
@@ -55,7 +43,7 @@ interface ProductDetailProps {
   t: (key: string) => any;
   locale: Locale;
   currentUser: UserProfile | null;
-  userOrders?: any[]; // Order[]
+  userOrders?: any[];
   onShowToast?: (message: string, type?: 'info' | 'error') => void;
   sizeGuides?: SizeGuide[];
   products?: Product[];
@@ -65,14 +53,14 @@ interface ProductDetailProps {
   onToggleWishlistProduct?: (productId: string) => void;
 }
 
-const ProductDetail: React.FC<ProductDetailProps> = ({ 
-  product, 
+const ProductDetail: React.FC<ProductDetailProps> = ({
+  product,
   coupons = [],
-  userMode, 
-  onAddToCart, 
-  isWishlisted, 
-  onToggleWishlist, 
-  t, 
+  userMode,
+  onAddToCart,
+  isWishlisted,
+  onToggleWishlist,
+  t,
   locale,
   currentUser,
   userOrders = [],
@@ -84,79 +72,63 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   wishlistIds = [],
   onToggleWishlistProduct
 }) => {
-  // Use shared localization utility
   const getLoc = useMemo(() => createGetLoc(locale), [locale]);
-
-  // Load hotspots for this product
   const { hotspots } = useImageHotspots(product.id);
 
-  // Use variant selection hook
+  // Variant selection
   const {
-    colors,
-    sizes,
-    selectedSize,
-    selectedColorHex,
-    activeVariant,
-    setSelectedSize,
-    setSelectedColorHex,
-    isSelectedSizeAvailable,
+    colors, sizes, selectedSize, selectedColorHex, activeVariant,
+    setSelectedSize, setSelectedColorHex, isSelectedSizeAvailable,
     filteredVariants: variants,
-  } = useVariantSelection({
-    variants: product.variants,
-    userMode,
-  });
+  } = useVariantSelection({ variants: product.variants, userMode });
+
+  // Local state
   const [quantity, setQuantity] = useState(1);
   const [openSection, setOpenSection] = useState<string | null>('desc');
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [zoomImgIndex, setZoomImgIndex] = useState(0);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-
-  // Share State
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-
-  // Use sticky bar hook
-  const showStickyBar = useStickyBar({ threshold: 200 });
-
-  // Face Swap State
   const [showFaceSwap, setShowFaceSwap] = useState(false);
-
-  // Presentation Section State (expandable, default expanded)
   const [isPresentationExpanded, setIsPresentationExpanded] = useState(true);
+  const [reviews, setReviews] = useState<ProductReview[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
 
   const actionsRef = useRef<HTMLDivElement>(null);
+  const showStickyBar = useStickyBar({ threshold: 200 });
 
-  // Use product images hook
+  // Product images
   const {
     images: allImagesWithVariant,
     displayImages,
-    variantToImageIndex,
     mobileGalleryRef,
     mobileActiveIdx,
     setMobileActiveIdx,
-  } = useProductImages({
-    product,
-    variants,
-    activeVariantId: activeVariant?.id,
-  });
+  } = useProductImages({ product, variants, activeVariantId: activeVariant?.id });
 
-  // Resolve active size guide image
+  // Size guide image
   const activeSizeGuideImage = useMemo(() => {
-      if (activeVariant?.size_guide_id) {
-          const guide = sizeGuides.find(g => g.id === activeVariant.size_guide_id);
-          return guide ? guide.image_url : null;
-      }
-      return null;
+    if (activeVariant?.size_guide_id) {
+      const guide = sizeGuides.find(g => g.id === activeVariant.size_guide_id);
+      return guide ? guide.image_url : null;
+    }
+    return null;
   }, [activeVariant, sizeGuides]);
 
-  // Ensure quantity doesn't exceed stock when switching variants
+  // Ensure quantity doesn't exceed stock
   useEffect(() => {
     if (activeVariant && quantity > activeVariant.stock_quantity) {
       setQuantity(Math.max(1, activeVariant.stock_quantity));
     }
   }, [activeVariant, quantity]);
 
-  // Handle mobile scroll to update active index
+  // Price calculations
+  const rawPrice = activeVariant ? calculatePrice(activeVariant, userMode, product) : 0;
+  const activeCoupon = useMemo(() => getProductCoupon(product.id, coupons), [coupons, product.id]);
+  const finalPrice = useMemo(() => activeCoupon ? applyCouponDiscount(rawPrice, activeCoupon) : rawPrice, [rawPrice, activeCoupon]);
+
+  // Mobile scroll handler
   const handleMobileScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollLeft = e.currentTarget.scrollLeft;
     const width = e.currentTarget.offsetWidth;
@@ -164,35 +136,17 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     if (newIdx !== mobileActiveIdx) setMobileActiveIdx(newIdx);
   };
 
-  const rawPrice = activeVariant 
-    ? calculatePrice(activeVariant, userMode, product)
-    : 0;
-
-  // Calculate Discount using shared coupon utilities
-  const activeCoupon = useMemo(() => getProductCoupon(product.id, coupons), [coupons, product.id]);
-  const finalPrice = useMemo(() => {
-      if (!activeCoupon) return rawPrice;
-      return applyCouponDiscount(rawPrice, activeCoupon);
-  }, [rawPrice, activeCoupon]);
-
+  // Add to cart handler
   const handleAddToCart = () => {
     if (!activeVariant) return;
-    
     if (quantity > activeVariant.stock_quantity) {
-        if (onShowToast) {
-            onShowToast(`Estoque insuficiente. Apenas ${activeVariant.stock_quantity} disponíveis.`, 'error');
-        } else {
-            alert(`Estoque insuficiente.`);
-        }
-        return;
+      onShowToast?.(`Estoque insuficiente. Apenas ${activeVariant.stock_quantity} disponíveis.`, 'error');
+      return;
     }
 
-    // Priorizar imagem da variante, depois imagem base do produto
-    const itemImage = (activeVariant.variant_images && activeVariant.variant_images.length > 0)
+    const itemImage = (activeVariant.variant_images?.length)
       ? activeVariant.variant_images[0]
-      : (product.base_images && product.base_images.length > 0)
-        ? product.base_images[0]
-        : '';
+      : (product.base_images?.length) ? product.base_images[0] : '';
 
     onAddToCart({
       variant_id: activeVariant.id,
@@ -204,58 +158,48 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       color_hex: activeVariant.color_hex || '#000',
       price: finalPrice,
       original_price: activeCoupon ? rawPrice : undefined,
-      quantity: quantity,
+      quantity,
       sku: activeVariant.sku,
       applied_coupon_code: activeCoupon?.code
     });
   };
 
+  // Increment quantity handler
   const incrementQuantity = () => {
-      if (!activeVariant) return;
-      if (quantity < activeVariant.stock_quantity) {
-          setQuantity(quantity + 1);
-      } else {
-          if (onShowToast) {
-              onShowToast("Limite de estoque atingido para este item.", 'info');
-          }
-      }
+    if (!activeVariant) return;
+    if (quantity < activeVariant.stock_quantity) {
+      setQuantity(quantity + 1);
+    } else {
+      onShowToast?.("Limite de estoque atingido para este item.", 'info');
+    }
   };
 
+  // Share handler
   const handleShare = async (platform: SharePlatform) => {
     const url = window.location.href;
     const text = `Confira ${getLoc(product.name)} na Auricapri.`;
-
     const result = await share({ platform, text, url });
-
     if (platform === 'copy' && result.success) {
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     }
-
     setIsShareOpen(false);
   };
 
-  const [reviews, setReviews] = useState<ProductReview[]>([]);
-  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
-
+  // Load reviews
   useEffect(() => {
     let isMounted = true;
-
     const loadReviews = async () => {
-      // Verifica cache primeiro
       const cached = reviewsCache.get(product.id);
       if (cached && Date.now() - cached.timestamp < REVIEWS_CACHE_TTL) {
         setReviews(cached.reviews);
         return;
       }
-
       setIsLoadingReviews(true);
       try {
-        const productReviews: ProductReview[] = await productReviewsApi.getByProductId(product.id);
+        const productReviews = await productReviewsApi.getByProductId(product.id);
         if (!isMounted) return;
-
         setReviews(productReviews);
-        // Salva no cache
         reviewsCache.set(product.id, { reviews: productReviews, timestamp: Date.now() });
       } catch (error) {
         console.error('Error loading reviews:', error);
@@ -264,408 +208,113 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         if (isMounted) setIsLoadingReviews(false);
       }
     };
-
     loadReviews();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [product.id]);
 
-
-  // Construct Composition String
-  const compositionText = activeVariant?.composition 
-    ? `${getLoc(activeVariant.composition)}\n\n${getLoc(activeVariant.care_instructions)}` 
+  // Composition text
+  const compositionText = activeVariant?.composition
+    ? `${getLoc(activeVariant.composition)}\n\n${getLoc(activeVariant.care_instructions)}`
     : 'Sustainable luxury materials. Hand-finished in our atelier.';
 
+  // Accordion sections
+  const accordionSections = [
+    { id: 'desc', label: t('product.description'), content: getLoc(product.description) },
+    { id: 'comp', label: t('product.composition'), content: compositionText }
+  ];
+
+  // Related products
   const relatedProducts = useMemo(() => {
     if (!products.length) return [];
-    
     const modeFiltered = filterProductsForMode(products, userMode);
-    
-    const sameCategory = modeFiltered.filter(p => 
-      p.id !== product.id && 
-      p.category_id === product.category_id &&
-      p.is_active
-    );
-    
-    if (sameCategory.length >= 5) {
-      return sameCategory.slice(0, 5);
-    }
-    
-    const otherProducts = modeFiltered.filter(p => 
-      p.id !== product.id && 
-      p.category_id !== product.category_id &&
-      p.is_active
-    );
-    
-    const combined = [...sameCategory, ...otherProducts];
-    return combined.slice(0, 5);
+    const sameCategory = modeFiltered.filter(p => p.id !== product.id && p.category_id === product.category_id && p.is_active);
+    if (sameCategory.length >= 5) return sameCategory.slice(0, 5);
+    const otherProducts = modeFiltered.filter(p => p.id !== product.id && p.category_id !== product.category_id && p.is_active);
+    return [...sameCategory, ...otherProducts].slice(0, 5);
   }, [products, product.id, product.category_id, userMode]);
 
   return (
     <div className="relative w-full bg-white">
       <div className="flex flex-col md:flex-row w-full min-h-screen">
-        
-        {/* GALLERY COLUMN - 60% Width */}
-        <div className="w-full md:w-[60%] bg-neutral-50 relative">
-          
-          {/* DESKTOP VIEW: Vertical Scroll Stack */}
-          <div className="hidden md:flex flex-col space-y-4 p-4 lg:p-12 overflow-y-visible" id="desktop-gallery">
-            {allImagesWithVariant.map((imgData, idx) => {
-              // Check if this image belongs to the active variant using variantIds
-              const isActiveVariantImage = activeVariant && imgData.variantIds?.includes(activeVariant.id) || false;
-              
-              // Add anchor on first image of each combination
-              const isFirstOfCombination = idx === 0 || allImagesWithVariant[idx - 1].combinationKey !== imgData.combinationKey;
-              
-              return (
-                <div 
-                  key={`img-${imgData.variantId}-${idx}-${imgData.url}`}
-                  data-variant-id={imgData.variantIds?.join(',') || imgData.variantId}
-                  data-combination-key={imgData.combinationKey}
-                  id={isFirstOfCombination ? `anchor-${imgData.combinationKey}` : undefined}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`Ampliar imagem ${idx + 1} do produto ${getLoc(product.name)}`}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setZoomImgIndex(idx);
-                      setIsZoomOpen(true);
-                    }
-                  }}
-                  className="relative aspect-[3/4] bg-white overflow-hidden cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2"
-                  onClick={() => { setZoomImgIndex(idx); setIsZoomOpen(true); }}
-                >
-                  <ImageHotspots
-                    imageUrl={imgData.url}
-                    hotspots={hotspots}
-                    locale={locale}
-                    onAddToCart={onAddToCart}
-                    onNavigateToProduct={onSelectProduct}
-                  >
-                    <OptimizedImage
-                      src={imgData.url}
-                      alt={`${getLoc(product.name)} view ${idx + 1}`}
-                      className="w-full h-full transition-transform duration-[1.5s] ease-out group-hover:scale-110"
-                      size={idx < 2 ? 'large' : 'medium'}
-                      priority={idx < 2}
-                      objectFit="contain"
-                      useSrcSet
-                      srcSetSizes={['medium', 'large', 'xlarge']}
-                    />
-                  </ImageHotspots>
-                  <div className="absolute bottom-10 right-10 p-5 bg-white/90 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">
-                    <Maximize2 className="w-6 h-6" />
-                  </div>
-                  {isActiveVariantImage && (
-                    <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-full">
-                      {getLoc(activeVariant?.color_name)}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+        {/* Gallery Column */}
+        <ImageGallery
+          product={product}
+          allImagesWithVariant={allImagesWithVariant}
+          activeVariantId={activeVariant?.id}
+          activeVariantColorName={activeVariant?.color_name}
+          getLoc={getLoc}
+          setZoomImgIndex={setZoomImgIndex}
+          setIsZoomOpen={setIsZoomOpen}
+          mobileGalleryRef={mobileGalleryRef}
+          handleMobileScroll={handleMobileScroll}
+          mobileActiveIdx={mobileActiveIdx}
+          showFaceSwap={activeVariant?.face_swap_enabled}
+          onFaceSwapClick={() => setShowFaceSwap(true)}
+          hotspots={hotspots}
+          onAddToCart={onAddToCart}
+          onNavigateToProduct={onSelectProduct}
+          locale={locale}
+        />
 
-          {/* MOBILE VIEW: Horizontal Swipe Carousel */}
-          <div className="md:hidden relative group">
-            <div 
-              ref={mobileGalleryRef}
-              onScroll={handleMobileScroll}
-              className="aspect-[3/4] overflow-x-auto snap-x snap-mandatory flex no-scrollbar bg-white"
-            >
-              {allImagesWithVariant.map((imgData, idx) => {
-                // Check if this image belongs to the active variant using variantIds
-                const isActiveVariantImage = activeVariant && imgData.variantIds?.includes(activeVariant.id) || false;
-                
-                // Add anchor on first image of each combination
-                const isFirstOfCombination = idx === 0 || allImagesWithVariant[idx - 1].combinationKey !== imgData.combinationKey;
-                
-                return (
-                  <div 
-                    key={`img-mobile-${imgData.variantId}-${idx}-${imgData.url}`}
-                    data-variant-id={imgData.variantIds?.join(',') || imgData.variantId}
-                    data-combination-key={imgData.combinationKey}
-                    id={isFirstOfCombination ? `anchor-mobile-${imgData.combinationKey}` : undefined}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`Ampliar imagem ${idx + 1} do produto ${getLoc(product.name)}`}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setZoomImgIndex(idx);
-                        setIsZoomOpen(true);
-                      }
-                    }}
-                    className="flex-none w-full h-full snap-center relative overflow-hidden focus:outline-2 focus:outline-black focus:outline-offset-2"
-                    onClick={() => { setZoomImgIndex(idx); setIsZoomOpen(true); }}
-                  >
-                    <ImageHotspots
-                      imageUrl={imgData.url}
-                      hotspots={hotspots}
-                      locale={locale}
-                      onAddToCart={onAddToCart}
-                      onNavigateToProduct={onSelectProduct}
-                    >
-                      <OptimizedImage
-                        src={imgData.url}
-                        alt={`${getLoc(product.name)} - ${getLoc(activeVariant?.color_name || {})} - Vista ${idx + 1}`}
-                        className="w-full h-full"
-                        size="medium"
-                        priority={idx === 0}
-                        objectFit="contain"
-                      />
-                    </ImageHotspots>
-                    {isActiveVariantImage && (
-                      <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-full">
-                        {getLoc(activeVariant?.color_name)}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/20">
-               <span className="text-[10px] font-black text-white uppercase tracking-widest">
-                  {mobileActiveIdx + 1} <span className="text-white/40">/ {allImagesWithVariant.length}</span>
-               </span>
-            </div>
-          </div>
-        </div>
-
-        {/* INFO COLUMN - 40% Width */}
+        {/* Info Column */}
         <div className="w-full md:w-[40%] p-8 md:p-12 lg:p-16 bg-white">
           <div className="md:sticky md:top-24 transition-all duration-700">
-            {/* Top section: name, price, selections - NO SCROLL */}
-            <div className="mb-6 pt-2 md:pt-0">
-              {reviews.length > 0 && (
-                <div className="flex items-center gap-3 mb-4 animate-in fade-in duration-700">
-                  <div className="flex text-black">
-                     {[...Array(5)].map((_, i) => <Star key={i} className={`w-3 h-3 ${i < 4 ? 'fill-current' : 'text-neutral-100'}`} />)}
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">({reviews.length} avaliações)</span>
-                </div>
-              )}
-              
-              {product.has_free_shipping && (
-                <div className="flex items-center gap-1.5 mb-4 bg-emerald-500 text-white px-2.5 py-1 rounded-full w-fit">
-                  <Truck className="w-2.5 h-2.5" />
-                  <span className="text-[8px] font-black uppercase tracking-widest">Frete Grátis</span>
-                </div>
-              )}
-              
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-light tracking-tighter uppercase leading-[0.95] mb-6 text-neutral-900 line-clamp-2">
-                {getLoc(product.name)}
-              </h1>
-              
-              <div className="flex flex-col mb-6">
-                <div className="flex items-baseline space-x-4">
-                    {activeCoupon && (
-                        <span className="text-lg font-bold text-neutral-400 line-through decoration-red-400 decoration-2">{formatCurrency(rawPrice, locale)}</span>
-                    )}
-                    <span className={`text-2xl font-light tracking-tighter ${activeCoupon ? 'text-red-500' : 'text-black'}`}>{formatCurrency(finalPrice, locale)}</span>
-                </div>
-                {activeVariant && activeVariant.stock_quantity <= 10 && activeVariant.stock_quantity > 0 && (
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-red-500 mt-2 animate-pulse">
-                        Últimas {activeVariant.stock_quantity} unidades
-                    </span>
-                )}
-              </div>
+            <ProductInfo
+              product={product}
+              locale={locale}
+              t={t}
+              getLoc={getLoc}
+              reviewsCount={reviews.length}
+              rawPrice={rawPrice}
+              finalPrice={finalPrice}
+              activeCoupon={activeCoupon}
+              stockQuantity={activeVariant?.stock_quantity}
+            />
+
+            <ProductVariants
+              getLoc={getLoc}
+              colors={colors}
+              selectedColorHex={selectedColorHex}
+              onSelectColor={setSelectedColorHex}
+              activeColorName={activeVariant?.color_name}
+              sizes={sizes}
+              selectedSize={selectedSize}
+              onSelectSize={setSelectedSize}
+              activeSizeGuideImage={activeSizeGuideImage}
+              onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+              isSelectedSizeAvailable={isSelectedSizeAvailable}
+              showProvador={activeVariant?.face_swap_enabled}
+              onOpenProvador={() => setShowFaceSwap(true)}
+            />
+
+            <div ref={actionsRef}>
+              <ProductActions
+                quantity={quantity}
+                onDecrement={() => setQuantity(Math.max(1, quantity - 1))}
+                onIncrement={incrementQuantity}
+                maxQuantity={activeVariant?.stock_quantity || 0}
+                onAddToCart={handleAddToCart}
+                addDisabled={!activeVariant || activeVariant.stock_quantity === 0}
+                addLabel={activeVariant?.stock_quantity === 0 ? t('product.outOfStock') : t('product.addToCart')}
+                isWishlisted={isWishlisted}
+                onToggleWishlist={onToggleWishlist}
+                isShareOpen={isShareOpen}
+                onToggleShare={() => setIsShareOpen(!isShareOpen)}
+                linkCopied={linkCopied}
+                onShare={handleShare}
+              />
             </div>
 
-            {/* SELECTION AREAS - NO SCROLL */}
-            <div className="space-y-6 mb-6">
-              {colors.length > 0 && (
-                <div className="space-y-3">
-                  <label className="text-[10px] uppercase font-black tracking-[0.3em] text-neutral-400">Paleta — {getLoc(activeVariant?.color_name)}</label>
-                  <div className="flex flex-wrap gap-3">
-                    {colors.map(c => (
-                      <button 
-                        key={c.hex} 
-                        onClick={() => setSelectedColorHex(c.hex)}
-                        className={`w-12 h-12 rounded-full border-2 p-1 transition-all duration-500 ${selectedColorHex === c.hex ? 'border-black scale-110 shadow-lg' : 'border-transparent hover:scale-105'}`}
-                      >
-                        <div className="w-full h-full rounded-full shadow-inner border border-neutral-100" style={{ backgroundColor: c.hex }} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {sizes.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <label className="text-[10px] uppercase font-black tracking-[0.3em] text-neutral-400">Medidas</label>
-                    <div className="flex items-center gap-4">
-                      {activeVariant?.face_swap_enabled && (
-                        <button onClick={() => setShowFaceSwap(true)} className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-neutral-900 border-b border-black pb-0.5 hover:opacity-50 transition-opacity">
-                          <Shirt className="w-3 h-3" /> Provador
-                        </button>
-                      )}
-                      {activeSizeGuideImage && (
-                          <button onClick={() => setIsSizeGuideOpen(true)} className="flex items-center gap-2 text-[10px] uppercase font-black tracking-widest text-neutral-900 border-b border-black pb-0.5 hover:opacity-50 transition-opacity">
-                              <Ruler className="w-3 h-3" /> Guia de Tamanhos
-                          </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {sizes.map(s => {
-                      const isSelected = selectedSize === s;
-                      
-                      return (
-                        <button 
-                          key={s} 
-                          onClick={() => setSelectedSize(s || '')}
-                          className={`min-w-[60px] px-5 py-3 text-[11px] font-black border transition-all duration-500 rounded-xl uppercase tracking-widest ${
-                            isSelected 
-                              ? 'bg-black text-white border-black shadow-xl' 
-                              : 'bg-white text-neutral-400 border-neutral-100 hover:border-black hover:text-black'
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  
-                  {selectedSize && !isSelectedSizeAvailable && (
-                    <p className="text-[10px] text-orange-600 font-bold uppercase tracking-widest mt-2">
-                      Tamanho {selectedSize} não disponível para esta cor. Selecione outro tamanho.
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* ACTIONS - Always visible */}
-            <div ref={actionsRef} className="pt-6 border-t border-neutral-100 bg-white">
-              <div className="flex flex-col gap-4">
-               <div className="flex items-stretch gap-3 h-16">
-                  <div className="flex flex-none items-center bg-neutral-50 rounded-2xl border border-neutral-100 px-4 space-x-6">
-                     <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 hover:opacity-50 transition-opacity"><Minus className="w-4 h-4" /></button>
-                     <span className="text-sm font-black w-4 text-center">{quantity}</span>
-                     <button 
-                        onClick={incrementQuantity} 
-                        className={`p-2 transition-opacity ${quantity >= (activeVariant?.stock_quantity || 0) ? 'opacity-20 cursor-not-allowed' : 'hover:opacity-50'}`}
-                        disabled={quantity >= (activeVariant?.stock_quantity || 0)}
-                     >
-                        <Plus className="w-4 h-4" />
-                     </button>
-                  </div>
-                  
-                  <button 
-                    onClick={handleAddToCart}
-                    disabled={!activeVariant || activeVariant.stock_quantity === 0}
-                    className="flex-1 bg-black text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-neutral-800 transition-all active:scale-[0.98] disabled:opacity-20 flex items-center justify-center text-center px-4"
-                  >
-                    {activeVariant?.stock_quantity === 0 ? t('product.outOfStock') : t('product.addToCart')}
-                  </button>
-
-                  <button
-                    onClick={onToggleWishlist}
-                    aria-label="Toggle wishlist"
-                    className={`hidden md:flex flex-none aspect-square border rounded-2xl items-center justify-center transition-all duration-500 ${isWishlisted ? 'bg-black text-white border-black shadow-lg' : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'}`}
-                  >
-                    <Heart
-                      className="w-5 h-5 transition-transform active:scale-125"
-                      fill={isWishlisted ? "currentColor" : "none"}
-                    />
-                  </button>
-
-                  <div className="hidden md:block relative">
-                      <button 
-                        onClick={() => setIsShareOpen(!isShareOpen)}
-                        className={`h-full aspect-square border rounded-2xl flex items-center justify-center transition-all duration-500 ${isShareOpen ? 'bg-black text-white border-black shadow-lg' : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'}`}
-                      >
-                        <Share2 className="w-5 h-5" />
-                      </button>
-
-                      {isShareOpen && (
-                          <div className="absolute bottom-[110%] right-0 min-w-[220px] bg-white rounded-[2rem] shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300 z-50">
-                              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">Compartilhar</span>
-                              
-                              <div className="flex flex-col gap-1">
-                                  <button onClick={() => handleShare('whatsapp')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
-                                      <div className="bg-green-500 text-white p-1.5 rounded-full group-hover:scale-110 transition-transform"><MessageCircle className="w-3 h-3" /></div>
-                                      <span className="text-[10px] font-bold uppercase tracking-widest">WhatsApp</span>
-                                  </button>
-                                  
-                                  <button onClick={() => handleShare('facebook')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
-                                      <div className="bg-blue-600 text-white p-1.5 rounded-full group-hover:scale-110 transition-transform"><Facebook className="w-3 h-3" /></div>
-                                      <span className="text-[10px] font-bold uppercase tracking-widest">Facebook</span>
-                                  </button>
-
-                                  <button onClick={() => handleShare('twitter')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
-                                      <div className="bg-black text-white p-1.5 rounded-full group-hover:scale-110 transition-transform"><Twitter className="w-3 h-3" /></div>
-                                      <span className="text-[10px] font-bold uppercase tracking-widest">X / Twitter</span>
-                                  </button>
-
-                                  <div className="h-[1px] bg-neutral-100 my-2" />
-
-                                  <button onClick={() => handleShare('copy')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
-                                      <div className="bg-neutral-100 text-black p-1.5 rounded-full group-hover:scale-110 transition-transform">
-                                          {linkCopied ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
-                                      </div>
-                                      <span className="text-[10px] font-bold uppercase tracking-widest">{linkCopied ? 'Copiado!' : 'Copiar Link'}</span>
-                                  </button>
-                              </div>
-                          </div>
-                      )}
-                  </div>
-               </div>
-               
-               {/* Trust Badges */}
-               <div className="flex flex-wrap items-center gap-4 pt-2">
-                 <div className="flex items-center gap-2 text-neutral-600">
-                   <RefreshCw className="w-4 h-4" />
-                   <span className="text-[9px] font-black uppercase tracking-widest">Troca fácil</span>
-                 </div>
-                 <div className="flex items-center gap-2 text-neutral-600">
-                   <ShieldCheck className="w-4 h-4" />
-                   <span className="text-[9px] font-black uppercase tracking-widest">Pagamento seguro</span>
-                 </div>
-                 <div className="flex items-center gap-2 text-neutral-600">
-                   <Truck className="w-4 h-4" />
-                   <span className="text-[9px] font-black uppercase tracking-widest">Envio para todo Brasil</span>
-                 </div>
-               </div>
-              </div>
-            </div>
-
-            {/* ACCORDIONS - Below fold content */}
-            <div className="pt-6 border-t border-neutral-100 mt-6">
-              <div className="space-y-2">
-               {[
-                 { id: 'desc', label: t('product.description'), content: getLoc(product.description) },
-                 { id: 'comp', label: t('product.composition'), content: compositionText }
-               ].map(section => (
-                 <div key={section.id} className="border-b border-neutral-50 last:border-0">
-                    <button 
-                      onClick={() => setOpenSection(openSection === section.id ? null : section.id)} 
-                      className="w-full flex justify-between items-center py-5 text-[11px] font-black uppercase tracking-[0.3em] hover:opacity-60 transition-opacity"
-                    >
-                      {section.label}
-                      {openSection === section.id ? <Minus className="w-4 h-4 text-neutral-400" /> : <Plus className="w-4 h-4 text-neutral-400" />}
-                    </button>
-                    <div className={`overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${openSection === section.id ? 'max-h-[500px] opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
-                       <div
-                         className="prose prose-sm max-w-sm text-neutral-500 prose-p:text-[12px] prose-p:leading-relaxed prose-p:font-medium prose-headings:text-neutral-700 prose-headings:text-sm prose-strong:text-neutral-700"
-                         dangerouslySetInnerHTML={{ __html: section.content }}
-                       />
-                    </div>
-                 </div>
-               ))}
-              </div>
-            </div>
+            <ProductAccordions
+              sections={accordionSections}
+              openSection={openSection}
+              onToggleSection={(id) => setOpenSection(openSection === id ? null : id)}
+            />
           </div>
         </div>
       </div>
 
-      {/* RELATED PRODUCTS */}
+      {/* Related Products */}
       <RelatedProducts
         products={relatedProducts}
         userMode={userMode}
@@ -678,139 +327,54 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         t={t}
       />
 
-      {/* APRESENTAÇÃO DO PRODUTO */}
+      {/* Presentation Section */}
       {product.presentation && getLoc(product.presentation) && (
-        <div className="w-full bg-neutral-50 border-t border-neutral-100 py-16 md:py-24 px-8 md:px-24">
-          <div className="max-w-7xl mx-auto">
-            {/* Header com toggle */}
-            <button
-              onClick={() => setIsPresentationExpanded(!isPresentationExpanded)}
-              className="w-full flex justify-between items-center mb-8 md:mb-12 group"
-            >
-              <div className="flex flex-col items-start">
-                <h2 className="text-2xl md:text-4xl font-light tracking-tight uppercase">
-                  Conheça o Produto
-                </h2>
-                <p className="text-[10px] text-neutral-400 tracking-[0.2em] uppercase font-bold mt-1">
-                  Detalhes, fotos e vídeos exclusivos
-                </p>
-              </div>
-              <span className="flex items-center gap-2 text-sm text-neutral-500 group-hover:text-black transition-colors">
-                <span className="text-[10px] uppercase font-bold tracking-widest hidden md:inline">
-                  {isPresentationExpanded ? 'Recolher' : 'Expandir'}
-                </span>
-                <div className="p-3 bg-white rounded-full shadow-sm group-hover:shadow-md transition-all">
-                  {isPresentationExpanded ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                </div>
-              </span>
-            </button>
-
-            {/* Conteúdo expansível */}
-            <div
-              className={`overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                isPresentationExpanded ? 'max-h-none opacity-100' : 'max-h-0 opacity-0'
-              }`}
-            >
-              <div
-                className="prose prose-lg max-w-none prose-headings:font-light prose-headings:tracking-tight prose-headings:uppercase prose-p:text-neutral-600 prose-p:leading-relaxed prose-img:rounded-2xl prose-img:shadow-lg prose-a:text-black prose-a:font-bold prose-strong:text-black"
-                dangerouslySetInnerHTML={{ __html: getLoc(product.presentation) }}
-              />
-            </div>
-          </div>
-        </div>
+        <PresentationSection
+          content={getLoc(product.presentation)}
+          isExpanded={isPresentationExpanded}
+          onToggle={() => setIsPresentationExpanded(!isPresentationExpanded)}
+        />
       )}
 
-      {/* REVIEWS */}
+      {/* Reviews Section */}
       {(reviews.length > 0 || isLoadingReviews) && (
         <div id="reviews" className="w-full bg-white border-t border-neutral-100 pt-32 pb-40 px-8 md:px-24">
           <div className="max-w-7xl mx-auto">
-            <ProductReviews 
-              productId={product.id} 
-              reviews={reviews} 
-              user={currentUser} 
+            <ProductReviews
+              productId={product.id}
+              reviews={reviews}
+              user={currentUser}
               userOrders={userOrders}
-              t={t} 
+              t={t}
               isLoading={isLoadingReviews}
-              onAddReview={async (r) => { 
-                 const newReview: ProductReview = { ...r, id: `rev_${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), helpful_count: 0, cashback_awarded: false } as ProductReview;
-                 setReviews(prev => [newReview, ...prev]);
+              onAddReview={async (r) => {
+                const newReview: ProductReview = { ...r, id: `rev_${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), helpful_count: 0, cashback_awarded: false } as ProductReview;
+                setReviews(prev => [newReview, ...prev]);
               }}
             />
           </div>
         </div>
       )}
 
-      {/* SIZE GUIDE MODAL */}
-      {isSizeGuideOpen && activeSizeGuideImage && (
-          <div className="fixed inset-0 z-[2000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setIsSizeGuideOpen(false)}>
-              <div className="bg-white rounded-[2rem] overflow-hidden max-w-3xl w-full max-h-[90vh] relative shadow-2xl" onClick={e => e.stopPropagation()}>
-                  <button 
-                    onClick={() => setIsSizeGuideOpen(false)}
-                    className="absolute top-4 right-4 p-2 bg-black text-white rounded-full z-10 hover:rotate-90 transition-all"
-                  >
-                      <X className="w-5 h-5" />
-                  </button>
-                  <img src={activeSizeGuideImage} className="w-full h-full object-contain max-h-[90vh]" alt="Size Guide" />
-              </div>
-          </div>
-      )}
+      {/* Size Guide Modal */}
+      <SizeGuideModal
+        isOpen={isSizeGuideOpen}
+        imageUrl={activeSizeGuideImage}
+        onClose={() => setIsSizeGuideOpen(false)}
+      />
 
-      {/* ZOOM MODAL */}
-      {isZoomOpen && (
-        <div className="fixed inset-0 z-[1000] bg-white flex flex-col animate-in fade-in zoom-in-95 duration-700">
-           <header className="h-24 px-12 flex justify-between items-center fixed top-0 w-full z-10 bg-white/90 backdrop-blur-3xl">
-              <div className="flex flex-col">
-                <span className="text-[8px] font-black uppercase tracking-[0.4em] text-neutral-300">Gallery View</span>
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em]">{getLoc(product.name)}</h4>
-              </div>
-              <button onClick={() => setIsZoomOpen(false)} className="p-4 bg-black text-white rounded-full hover:rotate-90 transition-all duration-500 shadow-2xl">
-                <X className="w-6 h-6" />
-              </button>
-           </header>
-           
-           <div className="flex-1 overflow-hidden p-8 md:p-24 flex items-center justify-center relative bg-neutral-50/30">
-              <button 
-                disabled={zoomImgIndex === 0} 
-                onClick={() => setZoomImgIndex(prev => prev - 1)} 
-                className="absolute left-6 md:left-12 p-6 bg-white/80 backdrop-blur-md rounded-full shadow-2xl disabled:opacity-0 transition-all"
-              >
-                <ChevronLeft className="w-8 h-8" />
-              </button>
-              
-              <div className="w-full h-full flex items-center justify-center overflow-hidden">
-                <img 
-                  src={displayImages[zoomImgIndex]} 
-                  className="max-h-full max-w-full object-contain cursor-crosshair transition-transform duration-700 hover:scale-150" 
-                  alt=""
-                />
-              </div>
-              
-              <button 
-                disabled={zoomImgIndex === allImagesWithVariant.length - 1} 
-                onClick={() => setZoomImgIndex(prev => prev + 1)} 
-                className="absolute right-6 md:right-12 p-6 bg-white/80 backdrop-blur-md rounded-full shadow-2xl disabled:opacity-0 transition-all"
-              >
-                <ChevronRight className="w-8 h-8" />
-              </button>
-           </div>
-           
-           <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-white/50 backdrop-blur-xl rounded-[2rem] border border-white/20">
-              {allImagesWithVariant.map((imgData, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => setZoomImgIndex(i)}
-                  aria-label={`Ver imagem ${i + 1} de ${allImagesWithVariant.length} do produto ${getLoc(product.name)}`}
-                  aria-pressed={zoomImgIndex === i}
-                  className={`w-12 h-16 rounded-xl overflow-hidden border-2 transition-all ${zoomImgIndex === i ? 'border-black scale-110 shadow-lg' : 'border-transparent opacity-40 hover:opacity-100'}`}
-                >
-                  <img src={imgData.url} className="w-full h-full object-contain" alt={`Miniatura ${i + 1}`} />
-                </button>
-              ))}
-           </div>
-        </div>
-      )}
+      {/* Zoom Modal */}
+      <ZoomModal
+        isOpen={isZoomOpen}
+        images={allImagesWithVariant}
+        displayImages={displayImages}
+        currentIndex={zoomImgIndex}
+        productName={getLoc(product.name)}
+        onClose={() => setIsZoomOpen(false)}
+        onNavigate={setZoomImgIndex}
+      />
 
-      {/* FACE SWAP MODAL */}
+      {/* Face Swap Modal */}
       {activeVariant?.face_swap_enabled && (
         <FaceSwapModal
           isOpen={showFaceSwap}
@@ -818,93 +382,26 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           variant={activeVariant}
           productName={product.name}
           productImage={
-            (activeVariant.variant_images && activeVariant.variant_images.length > 0)
+            (activeVariant.variant_images?.length)
               ? activeVariant.variant_images[0]
-              : (product.base_images && product.base_images.length > 0)
-                ? product.base_images[0]
-                : ''
+              : (product.base_images?.length) ? product.base_images[0] : ''
           }
           userId={currentUser?.id || `guest_${Date.now()}`}
           locale={locale}
         />
       )}
 
-      {/* Mobile Sticky Bottom Bar - aparece apenas no scroll */}
-      <div
-        className={`fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-40 md:hidden transition-transform duration-300 ${
-          showStickyBar ? 'translate-y-0' : 'translate-y-full'
-        }`}
-      >
-        <div className="flex items-stretch h-16 px-4 py-2 gap-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
-          {/* Botão Favorito */}
-          <button
-            onClick={onToggleWishlist}
-            className={`flex-1 flex items-center justify-center gap-2 rounded-xl border transition-all ${
-              isWishlisted
-                ? 'bg-black text-white border-black'
-                : 'border-neutral-200 text-neutral-600 hover:border-black'
-            }`}
-          >
-            <Heart className="w-4 h-4" fill={isWishlisted ? "currentColor" : "none"} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Favorito</span>
-          </button>
-
-          {/* Botão Compartilhar */}
-          <button
-            onClick={() => setIsShareOpen(!isShareOpen)}
-            className={`flex-1 flex items-center justify-center gap-2 rounded-xl border transition-all ${
-              isShareOpen
-                ? 'bg-black text-white border-black'
-                : 'border-neutral-200 text-neutral-600 hover:border-black'
-            }`}
-          >
-            <Share2 className="w-4 h-4" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Compartilhar</span>
-          </button>
-
-          {/* Botão Voltar à Loja */}
-          <button
-            onClick={() => window.history.back()}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-black text-white transition-all hover:bg-neutral-800"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Voltar</span>
-          </button>
-        </div>
-
-        {/* Share Dropdown para Mobile (aparece acima da barra) */}
-        {isShareOpen && (
-          <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-2xl shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">Compartilhar</span>
-
-            <div className="flex flex-col gap-1">
-              <button onClick={() => handleShare('whatsapp')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
-                <div className="bg-green-500 text-white p-1.5 rounded-full"><MessageCircle className="w-3 h-3" /></div>
-                <span className="text-[10px] font-bold uppercase tracking-widest">WhatsApp</span>
-              </button>
-
-              <button onClick={() => handleShare('facebook')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
-                <div className="bg-blue-600 text-white p-1.5 rounded-full"><Facebook className="w-3 h-3" /></div>
-                <span className="text-[10px] font-bold uppercase tracking-widest">Facebook</span>
-              </button>
-
-              <button onClick={() => handleShare('twitter')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
-                <div className="bg-black text-white p-1.5 rounded-full"><Twitter className="w-3 h-3" /></div>
-                <span className="text-[10px] font-bold uppercase tracking-widest">X / Twitter</span>
-              </button>
-
-              <div className="h-[1px] bg-neutral-100 my-2" />
-
-              <button onClick={() => handleShare('copy')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
-                <div className="bg-neutral-100 text-black p-1.5 rounded-full">
-                  {linkCopied ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest">{linkCopied ? 'Copiado!' : 'Copiar Link'}</span>
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Mobile Sticky Bar */}
+      <MobileStickyBar
+        isVisible={showStickyBar}
+        isWishlisted={isWishlisted}
+        onToggleWishlist={onToggleWishlist}
+        isShareOpen={isShareOpen}
+        onToggleShare={() => setIsShareOpen(!isShareOpen)}
+        linkCopied={linkCopied}
+        onShare={handleShare}
+        onBack={() => window.history.back()}
+      />
     </div>
   );
 };

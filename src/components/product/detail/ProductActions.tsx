@@ -1,10 +1,16 @@
-import React from 'react';
-import { Check, Copy, Facebook, Heart, MessageCircle, Minus, Plus, RefreshCw, Share2, ShieldCheck, Truck, Twitter } from 'lucide-react';
+/// Product Actions
+/// Quantity controls, add to cart, wishlist, share, and trust badges
 
-export function ProductActions(props: {
+import React from 'react';
+import {
+  Check, Copy, Facebook, Heart, MessageCircle,
+  Minus, Plus, RefreshCw, Share2, ShieldCheck, Truck, Twitter
+} from 'lucide-react';
+
+interface ProductActionsProps {
   quantity: number;
-  setQuantity: (q: number) => void;
-  incrementQuantity: () => void;
+  onDecrement: () => void;
+  onIncrement: () => void;
   maxQuantity: number;
   onAddToCart: () => void;
   addDisabled: boolean;
@@ -12,38 +18,40 @@ export function ProductActions(props: {
   isWishlisted: boolean;
   onToggleWishlist: () => void;
   isShareOpen: boolean;
-  setIsShareOpen: (open: boolean) => void;
+  onToggleShare: () => void;
   linkCopied: boolean;
-  handleShare: (platform: 'whatsapp' | 'facebook' | 'twitter' | 'copy') => void;
-}) {
-  const {
-    quantity,
-    setQuantity,
-    incrementQuantity,
-    maxQuantity,
-    onAddToCart,
-    addDisabled,
-    addLabel,
-    isWishlisted,
-    onToggleWishlist,
-    isShareOpen,
-    setIsShareOpen,
-    linkCopied,
-    handleShare,
-  } = props;
+  onShare: (platform: 'whatsapp' | 'facebook' | 'twitter' | 'copy') => void;
+}
 
+export function ProductActions({
+  quantity,
+  onDecrement,
+  onIncrement,
+  maxQuantity,
+  onAddToCart,
+  addDisabled,
+  addLabel,
+  isWishlisted,
+  onToggleWishlist,
+  isShareOpen,
+  onToggleShare,
+  linkCopied,
+  onShare,
+}: ProductActionsProps) {
   return (
     <div className="pt-6 border-t border-neutral-100 bg-white">
       <div className="flex flex-col gap-4">
         <div className="flex items-stretch gap-3 h-16">
           <div className="flex flex-none items-center bg-neutral-50 rounded-2xl border border-neutral-100 px-4 space-x-6">
-            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 hover:opacity-50 transition-opacity">
+            <button onClick={onDecrement} className="p-2 hover:opacity-50 transition-opacity">
               <Minus className="w-4 h-4" />
             </button>
             <span className="text-sm font-black w-4 text-center">{quantity}</span>
             <button
-              onClick={incrementQuantity}
-              className={`p-2 transition-opacity ${quantity >= maxQuantity ? 'opacity-20 cursor-not-allowed' : 'hover:opacity-50'}`}
+              onClick={onIncrement}
+              className={`p-2 transition-opacity ${
+                quantity >= maxQuantity ? 'opacity-20 cursor-not-allowed' : 'hover:opacity-50'
+              }`}
               disabled={quantity >= maxQuantity}
             >
               <Plus className="w-4 h-4" />
@@ -61,18 +69,25 @@ export function ProductActions(props: {
           <button
             onClick={onToggleWishlist}
             aria-label="Toggle wishlist"
-            className={`flex-none aspect-square border rounded-2xl flex items-center justify-center transition-all duration-500 ${
-              isWishlisted ? 'bg-black text-white border-black shadow-lg' : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'
+            className={`hidden md:flex flex-none aspect-square border rounded-2xl items-center justify-center transition-all duration-500 ${
+              isWishlisted
+                ? 'bg-black text-white border-black shadow-lg'
+                : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'
             }`}
           >
-            <Heart className="w-5 h-5 transition-transform active:scale-125" fill={isWishlisted ? 'currentColor' : 'none'} />
+            <Heart
+              className="w-5 h-5 transition-transform active:scale-125"
+              fill={isWishlisted ? 'currentColor' : 'none'}
+            />
           </button>
 
-          <div className="relative">
+          <div className="hidden md:block relative">
             <button
-              onClick={() => setIsShareOpen(!isShareOpen)}
+              onClick={onToggleShare}
               className={`h-full aspect-square border rounded-2xl flex items-center justify-center transition-all duration-500 ${
-                isShareOpen ? 'bg-black text-white border-black shadow-lg' : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'
+                isShareOpen
+                  ? 'bg-black text-white border-black shadow-lg'
+                  : 'border-neutral-100 text-neutral-300 hover:text-black hover:border-black hover:bg-neutral-50'
               }`}
             >
               <Share2 className="w-5 h-5" />
@@ -80,24 +95,35 @@ export function ProductActions(props: {
 
             {isShareOpen && (
               <div className="absolute bottom-[110%] right-0 min-w-[220px] bg-white rounded-[2rem] shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300 z-50">
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">Compartilhar</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">
+                  Compartilhar
+                </span>
 
                 <div className="flex flex-col gap-1">
-                  <button onClick={() => handleShare('whatsapp')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                  <button
+                    onClick={() => onShare('whatsapp')}
+                    className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left"
+                  >
                     <div className="bg-green-500 text-white p-1.5 rounded-full group-hover:scale-110 transition-transform">
                       <MessageCircle className="w-3 h-3" />
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-widest">WhatsApp</span>
                   </button>
 
-                  <button onClick={() => handleShare('facebook')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                  <button
+                    onClick={() => onShare('facebook')}
+                    className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left"
+                  >
                     <div className="bg-blue-600 text-white p-1.5 rounded-full group-hover:scale-110 transition-transform">
                       <Facebook className="w-3 h-3" />
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-widest">Facebook</span>
                   </button>
 
-                  <button onClick={() => handleShare('twitter')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                  <button
+                    onClick={() => onShare('twitter')}
+                    className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left"
+                  >
                     <div className="bg-black text-white p-1.5 rounded-full group-hover:scale-110 transition-transform">
                       <Twitter className="w-3 h-3" />
                     </div>
@@ -106,11 +132,16 @@ export function ProductActions(props: {
 
                   <div className="h-[1px] bg-neutral-100 my-2" />
 
-                  <button onClick={() => handleShare('copy')} className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left">
+                  <button
+                    onClick={() => onShare('copy')}
+                    className="flex items-center gap-3 p-3 hover:bg-neutral-50 rounded-xl transition-all group w-full text-left"
+                  >
                     <div className="bg-neutral-100 text-black p-1.5 rounded-full group-hover:scale-110 transition-transform">
                       {linkCopied ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest">{linkCopied ? 'Copiado!' : 'Copiar Link'}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">
+                      {linkCopied ? 'Copiado!' : 'Copiar Link'}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -118,6 +149,7 @@ export function ProductActions(props: {
           </div>
         </div>
 
+        {/* Trust Badges */}
         <div className="flex flex-wrap items-center gap-4 pt-2">
           <div className="flex items-center gap-2 text-neutral-600">
             <RefreshCw className="w-4 h-4" />
@@ -136,4 +168,3 @@ export function ProductActions(props: {
     </div>
   );
 }
-
