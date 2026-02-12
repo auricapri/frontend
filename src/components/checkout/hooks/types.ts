@@ -211,6 +211,7 @@ export interface UseAddressStateReturn {
   setPhone: (phone: string) => void;
   cpf: string;
   setCpf: (cpf: string) => void;
+  cpfError: string | null;
 
   // Saved addresses
   userAddresses: SavedAddress[];

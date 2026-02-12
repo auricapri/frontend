@@ -29,6 +29,7 @@ import { PricingApi } from './pricing.api';
 import { BannersApi } from './banners.api';
 import { GuidesApi } from './guides.api';
 import { WishlistApi } from './wishlist.api';
+import { FAQApi } from './faq.api';
 
 // Order Management APIs
 import { ShipmentsApi } from './shipments.api';
@@ -80,6 +81,7 @@ export const pricingApi = new PricingApi();
 export const bannersApi = new BannersApi();
 export const guidesApi = new GuidesApi();
 export const wishlistApi = new WishlistApi();
+export const faqApi = new FAQApi();
 
 // ============================================
 // SINGLETONS - Order Management APIs

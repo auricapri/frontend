@@ -1,5 +1,5 @@
 import React from 'react';
-import { ImageIcon, Upload, Loader2, X } from 'lucide-react';
+import { ImageIcon, Upload, Loader2, X, Clock, Calendar } from 'lucide-react';
 import { Category } from '../../../../types';
 import { LocalizedText } from '../types';
 import { CATEGORY_ICONS } from '../constants';
@@ -100,6 +100,86 @@ export const CategoryCollectionEditor: React.FC<CategoryCollectionEditorProps> =
           </div>
         </div>
       </div>
+
+      {/* COLLECTION-ONLY: Limited Time Settings */}
+      {type === 'collection' && (
+        <div className="space-y-6 pt-6 border-t border-neutral-100">
+          <div className="flex items-center gap-3 mb-4">
+            <Clock className="w-5 h-5 text-orange-500" />
+            <div>
+              <h4 className="text-sm font-black uppercase tracking-wider">Coleção Limitada</h4>
+              <p className="text-[10px] text-neutral-400 font-medium">
+                Configure datas para criar urgência. A coleção sumirá automaticamente ao expirar.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5" />
+                Data de Início
+              </label>
+              <input
+                type="datetime-local"
+                className="w-full p-5 bg-white border border-neutral-200 rounded-2xl text-xs font-bold focus:border-black focus:ring-0 outline-none transition-colors"
+                value={data.starts_at ? new Date(data.starts_at).toISOString().slice(0, 16) : ''}
+                onChange={e => updateSimple('starts_at', e.target.value ? new Date(e.target.value).toISOString() : null)}
+              />
+              <p className="text-[9px] text-neutral-400">
+                Deixe vazio para iniciar imediatamente
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5" />
+                Data de Término
+              </label>
+              <input
+                type="datetime-local"
+                className="w-full p-5 bg-white border border-neutral-200 rounded-2xl text-xs font-bold focus:border-black focus:ring-0 outline-none transition-colors"
+                value={data.ends_at ? new Date(data.ends_at).toISOString().slice(0, 16) : ''}
+                onChange={e => updateSimple('ends_at', e.target.value ? new Date(e.target.value).toISOString() : null)}
+              />
+              <p className="text-[9px] text-neutral-400">
+                Deixe vazio para coleção permanente
+              </p>
+            </div>
+          </div>
+
+          {(data.starts_at || data.ends_at) && (
+            <div className="p-4 bg-orange-50 border border-orange-200 rounded-2xl">
+              <div className="flex items-start gap-3">
+                <Clock className="w-4 h-4 text-orange-600 mt-0.5" />
+                <div className="text-[10px] text-orange-800">
+                  <p className="font-bold mb-1">Preview do Countdown:</p>
+                  {data.starts_at && new Date(data.starts_at) > new Date() ? (
+                    <p>A coleção começará em {new Date(data.starts_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                  ) : data.ends_at ? (
+                    <p>A coleção terminará em {new Date(data.ends_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                  ) : (
+                    <p>Coleção sem data de término definida</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {data.ends_at && (
+            <button
+              type="button"
+              onClick={() => {
+                updateSimple('starts_at', null);
+                updateSimple('ends_at', null);
+              }}
+              className="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase tracking-widest"
+            >
+              Remover Limite de Tempo
+            </button>
+          )}
+        </div>
+      )}
 
       {/* CATEGORY-ONLY: Icon Selection */}
       {type === 'category' && (

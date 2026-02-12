@@ -9,4 +9,7 @@ export interface Collection {
   is_active: boolean;
   seo_metadata?: any;
   _associatedProductIds?: string[];
+  // Limited-time collection fields
+  starts_at?: string | null;  // ISO date string
+  ends_at?: string | null;    // ISO date string
 }

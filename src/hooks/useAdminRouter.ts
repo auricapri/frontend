@@ -4,13 +4,13 @@ export type AdminTab =
   | 'health' | 'dream' | 'orders' | 'delivery'
   | 'inventory' | 'suppliers' | 'taxonomy' | 'guides' | 'garment-gallery'
   | 'financial' | 'marketplaces' | 'marketing' | 'coupons' | 'assets'
-  | 'about' | 'users' | 'system';
+  | 'about' | 'users' | 'system' | 'faq';
 
 const VALID_TABS: AdminTab[] = [
   'health', 'dream', 'orders', 'delivery',
   'inventory', 'suppliers', 'taxonomy', 'guides', 'garment-gallery',
   'financial', 'marketplaces', 'marketing', 'coupons', 'assets',
-  'about', 'users', 'system'
+  'about', 'users', 'system', 'faq'
 ];
 
 const DEFAULT_TAB: AdminTab = 'health';

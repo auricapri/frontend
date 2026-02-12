@@ -28,6 +28,7 @@ const AdminUsers = React.lazy(() => import('../AdminUsers'));
 const AdminSystem = React.lazy(() => import('../AdminSystem'));
 const AdminAboutUs = React.lazy(() => import('../AdminAboutUs'));
 const AdminGuides = React.lazy(() => import('../AdminGuides'));
+const AdminFAQ = React.lazy(() => import('../AdminFAQ'));
 const AdminDreamBoard = React.lazy(() => import('../AdminDreamBoard'));
 const AdminSuppliers = React.lazy(() => import('../AdminSuppliers'));
 const AdminDelivery = React.lazy(() => import('../AdminDelivery'));
@@ -230,6 +231,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   onLocaleChange={setEditLocale}
                 />
               )}
+              {activeTab === 'faq' && <AdminFAQ locale={locale} />}
               {activeTab === 'users' && <AdminUsers users={users} />}
               {activeTab === 'system' && (
                 <AdminSystem

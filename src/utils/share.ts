@@ -60,17 +60,17 @@ export function shareToFacebook(url: string): void {
 }
 
 /**
- * Shares content to Twitter/X
- * Opens Twitter with pre-filled tweet
+ * Shares content to X (formerly Twitter)
+ * Opens X with pre-filled post
  *
- * @param text - The tweet text
+ * @param text - The post text
  * @param url - Optional URL to include
  */
 export function shareToTwitter(text: string, url?: string): void {
   const params = new URLSearchParams();
   params.set('text', text);
   if (url) params.set('url', url);
-  window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank');
+  window.open(`https://x.com/intent/tweet?${params.toString()}`, '_blank');
 }
 
 /**
