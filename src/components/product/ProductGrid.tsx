@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Product, UserMode, Category, Collection, Coupon } from '../../types';
-import { ArrowLeft, ArrowRight, SlidersHorizontal, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, SlidersHorizontal, X, ShoppingBag } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { Gender } from '../../constants/enums';
 import { filterProductsForMode } from '../../utils/product';
@@ -10,6 +10,8 @@ import { useProductFilters } from '../../hooks/useProductFilters';
 import { FilterSidebar } from './FilterSidebar';
 import { QuickAddModal } from './QuickAddModal';
 import { ProductCard } from './ProductCard';
+import { CountdownBadge, useCollectionAvailability } from '../ui/CountdownBadge';
+import { useCartContext } from '../../context/CartContext';
 
 interface ProductGridProps {
   products: Product[];
@@ -22,6 +24,7 @@ interface ProductGridProps {
   wishlistIds: string[];
   onToggleWishlist: (id: string) => void;
   onAddToCart?: (item: any) => void;
+  onGoToCart?: () => void;
   t: (key: string) => string;
   locale: Locale;
   isLoading?: boolean;
@@ -30,6 +33,77 @@ interface ProductGridProps {
 }
 
 const ITEMS_PER_PAGE = 12;
+
+// Localized text for collection cards
+const COMING_SOON_TEXT: Record<Locale, string> = {
+  pt: 'Em breve',
+  en: 'Coming soon',
+  es: 'Próximamente',
+  fr: 'Bientôt',
+};
+
+// Collection Card with countdown and expiration handling
+interface CollectionCardProps {
+  collection: Collection;
+  getLoc: (obj: any) => string;
+  onSelect: (collection: Collection) => void;
+  locale: Locale;
+}
+
+const CollectionCard: React.FC<CollectionCardProps> = ({ collection, getLoc, onSelect, locale }) => {
+  const { isAvailable, isExpired } = useCollectionAvailability(collection.starts_at, collection.ends_at);
+
+  // Don't render expired collections at all (after refresh)
+  if (isExpired) return null;
+
+  // Check if collection hasn't started yet
+  const hasStartDate = !!collection.starts_at;
+  const notStartedYet = hasStartDate && new Date(collection.starts_at!) > new Date();
+
+  const handleClick = () => {
+    // Block click if expired or not started
+    if (!isAvailable) return;
+    onSelect(collection);
+  };
+
+  return (
+    <div
+      onClick={handleClick}
+      className={`flex-none w-[70vw] md:w-[35vw] snap-center group relative aspect-[16/9] overflow-hidden bg-neutral-100 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm transition-all ${
+        isAvailable ? 'cursor-pointer' : 'cursor-not-allowed opacity-75'
+      }`}
+    >
+      <img
+        src={collection.image_url}
+        alt={getLoc(collection.name)}
+        className={`w-full h-full object-cover transition-all duration-1000 ${isAvailable ? 'group-hover:scale-105' : 'grayscale'}`}
+      />
+      <div className="absolute inset-0 bg-black/20 flex flex-col justify-end p-8 text-white">
+        {/* Countdown Badge - positioned at top */}
+        {(collection.ends_at || notStartedYet) && (
+          <div className="absolute top-4 right-4">
+            <CountdownBadge
+              endsAt={collection.ends_at}
+              startsAt={collection.starts_at}
+              variant="badge"
+              locale={locale}
+            />
+          </div>
+        )}
+
+        <h3 className="text-2xl font-light tracking-widest uppercase">{getLoc(collection.name)}</h3>
+        <div className={`w-0 h-[1px] bg-white transition-all duration-500 mt-2 opacity-50 ${isAvailable ? 'group-hover:w-full' : ''}`} />
+
+        {/* Overlay message for unavailable collections */}
+        {!isAvailable && !isExpired && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+            <span className="text-white text-sm font-bold uppercase tracking-widest">{COMING_SOON_TEXT[locale]}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const ProductGrid: React.FC<ProductGridProps> = ({
   products,
@@ -42,12 +116,17 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   wishlistIds,
   onToggleWishlist,
   onAddToCart,
+  onGoToCart,
   t,
   locale,
   isLoading,
   selectedGender: externalGender,
   onGenderChange
 }) => {
+  // Cart context for incentive bar
+  const { cartItems, subtotal } = useCartContext();
+  const itemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
   const [activeCategory, setActiveCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [quickAddProduct, setQuickAddProduct] = useState<Product | null>(null);
@@ -174,13 +253,107 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   // Count active filters for badge
   const activeFilterCount = selectedSizes.length + (priceMin !== null || priceMax !== null ? 1 : 0);
 
+  // Find most urgent limited collection (has ends_at or starts_at, not expired)
+  const urgentCollection = useMemo(() => {
+    const now = new Date().getTime();
+    return collections
+      .filter(c => {
+        // Must have at least ends_at to be a limited collection
+        if (!c.ends_at && !c.starts_at) return false;
+        // Check if expired
+        if (c.ends_at) {
+          const endTime = new Date(c.ends_at).getTime();
+          if (endTime <= now) return false; // Already expired
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        // Prioritize collections that already started and are ending soon
+        const aEnd = a.ends_at ? new Date(a.ends_at).getTime() : Infinity;
+        const bEnd = b.ends_at ? new Date(b.ends_at).getTime() : Infinity;
+        return aEnd - bEnd;
+      })[0] || null;
+  }, [collections]);
+
+  // Debug: log to see if collections have time fields
+  useEffect(() => {
+    if (collections.length > 0) {
+      console.log('[ProductGrid] Collections with time fields:', collections.map(c => ({
+        name: c.name,
+        starts_at: c.starts_at,
+        ends_at: c.ends_at
+      })));
+      console.log('[ProductGrid] Urgent collection:', urgentCollection);
+    }
+  }, [collections, urgentCollection]);
+
   return (
     <section id="collection" className="w-full bg-white flex flex-col pt-32 pb-4">
 
+      {/* Cart Incentive Banner - Fixed at top when cart has items */}
+      {itemCount > 0 && onGoToCart && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-black text-white">
+          <button
+            onClick={onGoToCart}
+            className="w-full flex items-center justify-between px-6 py-3 hover:bg-neutral-900 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <ShoppingBag className="w-5 h-5" />
+                <span className="absolute -top-1.5 -right-1.5 bg-white text-black text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                  {itemCount}
+                </span>
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest">
+                {itemCount} {itemCount === 1 ? 'item' : 'itens'} no carrinho
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-black">
+                R$ {subtotal.toFixed(2).replace('.', ',')}
+              </span>
+              <div className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full">
+                <span className="text-[9px] font-black uppercase tracking-widest">Finalizar</span>
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* URGENCY BANNER - Shows when there's an active limited collection */}
+      {urgentCollection && (urgentCollection.ends_at || urgentCollection.starts_at) && (
+        <div
+          onClick={() => onSelectCollection(urgentCollection)}
+          className="cursor-pointer mx-6 md:mx-12 mb-4 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
+        >
+          <CountdownBadge
+            endsAt={urgentCollection.ends_at}
+            startsAt={urgentCollection.starts_at}
+            variant="banner"
+            locale={locale}
+          />
+          <div className="bg-neutral-900 text-white px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {urgentCollection.image_url && (
+                <img src={urgentCollection.image_url} alt="" className="w-12 h-12 rounded-xl object-cover" />
+              )}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+                  {locale === 'pt' ? 'Não perca' : locale === 'es' ? 'No te lo pierdas' : locale === 'fr' ? 'Ne manquez pas' : "Don't miss"}
+                </p>
+                <p className="text-lg font-bold uppercase tracking-wide">{getLoc(urgentCollection.name)}</p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-white/60" />
+          </div>
+        </div>
+      )}
+
       {/* Collections Section */}
       {collections.length > 0 && (
-        <div className="mb-32">
-          <div className="px-6 md:px-12 mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="mb-4">
+          <div className="px-6 md:px-12 mb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <h2 className="text-3xl font-light tracking-tight uppercase mb-2">{t('nav.collection')}</h2>
               <p className="text-[10px] text-neutral-400 tracking-[0.2em] uppercase font-bold">{t('grid.curated')}</p>
@@ -189,13 +362,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
           <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 no-scrollbar">
             {!isLoading && collections.map((coll) => (
-              <div key={coll.id} onClick={() => onSelectCollection(coll)} className="flex-none w-[70vw] md:w-[35vw] snap-center group relative cursor-pointer aspect-[16/9] overflow-hidden bg-neutral-100 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm">
-                 <img src={coll.image_url} alt={getLoc(coll.name)} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105" />
-                 <div className="absolute inset-0 bg-black/20 flex flex-col justify-end p-8 text-white">
-                    <h3 className="text-2xl font-light tracking-widest uppercase">{getLoc(coll.name)}</h3>
-                    <div className="w-0 group-hover:w-full h-[1px] bg-white transition-all duration-500 mt-2 opacity-50" />
-                 </div>
-              </div>
+              <CollectionCard
+                key={coll.id}
+                collection={coll}
+                getLoc={getLoc}
+                onSelect={onSelectCollection}
+                locale={locale}
+              />
             ))}
           </div>
         </div>

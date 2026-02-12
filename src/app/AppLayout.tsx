@@ -181,6 +181,7 @@ export function AppLayout(props: {
                 wishlistIds={app.wishlistIds}
                 onToggleWishlist={app.handleToggleWishlist}
                 onAddToCart={app.addToCart}
+                onGoToCart={() => app.onNavigate('checkout')}
                 t={app.t}
                 locale={app.locale}
                 isLoading={app.isLoading}
@@ -270,7 +271,6 @@ export function AppLayout(props: {
                 wishlistIds={app.wishlistIds}
                 onToggleWishlist={app.handleToggleWishlist}
                 onBack={() => app.onNavigate('home', 'collection')}
-                onGoToCart={() => app.onNavigate('checkout')}
                 locale={app.locale}
               />
             </Suspense>
