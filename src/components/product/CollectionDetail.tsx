@@ -2,9 +2,11 @@
 import React, { useMemo } from 'react';
 import { Collection, Product, UserMode, Category } from '../../types';
 import { Locale } from '../../i18n';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, ArrowRight } from 'lucide-react';
 import { filterProductsForMode } from '../../utils/product';
 import { ProductCard } from './ProductCard';
+import { useCollectionAvailability } from '../ui/CountdownBadge';
+import { useCartContext } from '../../context/CartContext';
 
 interface CollectionDetailProps {
   collection: Collection;
@@ -15,6 +17,7 @@ interface CollectionDetailProps {
   wishlistIds: string[];
   onToggleWishlist: (id: string) => void;
   onBack: () => void;
+  onGoToCart: () => void;
   locale: Locale;
 }
 
@@ -27,8 +30,25 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
   wishlistIds,
   onToggleWishlist,
   onBack,
+  onGoToCart,
   locale,
 }) => {
+  // Cart context for incentive bar
+  const { cartItems, subtotal } = useCartContext();
+  const itemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+  // Check if collection is available (started and not expired)
+  const { isAvailable, isExpired } = useCollectionAvailability(
+    collection.starts_at,
+    collection.ends_at
+  );
+
+  // If collection expired, redirect back
+  React.useEffect(() => {
+    if (isExpired) {
+      onBack();
+    }
+  }, [isExpired, onBack]);
   // Helper robusto para extrair texto localizado
   const getLoc = (obj: any): string => {
     if (obj === null || obj === undefined) return "";
@@ -70,9 +90,45 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
     });
   }, [products, collection.id, userMode]);
 
+  // Don't render if expired (safety check while redirect happens)
+  if (isExpired) {
+    return null;
+  }
+
   return (
     <div className="w-full bg-white min-h-screen">
-      
+
+      {/* Cart Incentive Banner */}
+      {itemCount > 0 && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-black text-white">
+          <button
+            onClick={onGoToCart}
+            className="w-full flex items-center justify-between px-6 py-3 hover:bg-neutral-900 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <ShoppingBag className="w-5 h-5" />
+                <span className="absolute -top-1.5 -right-1.5 bg-white text-black text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                  {itemCount}
+                </span>
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest">
+                {itemCount} {itemCount === 1 ? 'item' : 'itens'} no carrinho
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-black">
+                R$ {subtotal.toFixed(2).replace('.', ',')}
+              </span>
+              <div className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full">
+                <span className="text-[9px] font-black uppercase tracking-widest">Finalizar</span>
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </div>
+          </button>
+        </div>
+      )}
+
       {/* Banner Section */}
       <div className="relative w-full h-[60vh] md:h-[70vh] bg-neutral-900 overflow-hidden">
         <div className="absolute inset-0 z-0">
