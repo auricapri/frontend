@@ -131,11 +131,27 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!resultImage) return;
 
     const link = document.createElement('a');
-    link.href = `data:image/jpeg;base64,${resultImage}`;
+
+    // Check if resultImage is a URL or base64 data
+    if (resultImage.startsWith('http')) {
+      // For URLs, fetch the image and convert to blob for download
+      try {
+        const response = await fetch(resultImage);
+        const blob = await response.blob();
+        link.href = URL.createObjectURL(blob);
+      } catch {
+        // Fallback: open URL in new tab if fetch fails
+        window.open(resultImage, '_blank');
+        return;
+      }
+    } else {
+      link.href = `data:image/jpeg;base64,${resultImage}`;
+    }
+
     link.download = `auricapri-look-${Date.now()}.jpg`;
     link.click();
   };
@@ -186,7 +202,8 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
 
   const getZoomImageSrc = () => {
     if (resultImage) {
-      return `data:image/jpeg;base64,${resultImage}`;
+      // Check if resultImage is already a URL or base64 data
+      return resultImage.startsWith('http') ? resultImage : `data:image/jpeg;base64,${resultImage}`;
     }
     return productImage;
   };
@@ -236,7 +253,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
               {resultImage ? (
                 <BeforeAfterSlider
                   beforeImage={productImage}
-                  afterImage={`data:image/jpeg;base64,${resultImage}`}
+                  afterImage={resultImage.startsWith('http') ? resultImage : `data:image/jpeg;base64,${resultImage}`}
                   onImageClick={() => setShowZoom(true)}
                 />
               ) : (
