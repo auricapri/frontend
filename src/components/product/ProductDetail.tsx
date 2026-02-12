@@ -1,6 +1,10 @@
 /// Product Detail
 /// Main orchestrator component using modular sub-components
 
+// PROVADOR VIRTUAL DESATIVADO - ver docs/provador-virtual-desativado.md
+// TODO: Reativar quando o serviço estiver estável
+const PROVADOR_VIRTUAL_ENABLED = false;
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Product, UserMode, CartItem, UserProfile, Coupon, SizeGuide, Category, ProductReview } from '../../types';
 import { Locale } from '../../i18n';
@@ -248,7 +252,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           mobileGalleryRef={mobileGalleryRef}
           handleMobileScroll={handleMobileScroll}
           mobileActiveIdx={mobileActiveIdx}
-          showFaceSwap={activeVariant?.face_swap_enabled}
+          showFaceSwap={PROVADOR_VIRTUAL_ENABLED && activeVariant?.face_swap_enabled}
           onFaceSwapClick={() => setShowFaceSwap(true)}
           hotspots={hotspots}
           onAddToCart={onAddToCart}
@@ -283,7 +287,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               activeSizeGuideImage={activeSizeGuideImage}
               onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
               isSelectedSizeAvailable={isSelectedSizeAvailable}
-              showProvador={activeVariant?.face_swap_enabled}
+              showProvador={PROVADOR_VIRTUAL_ENABLED && activeVariant?.face_swap_enabled}
               onOpenProvador={() => setShowFaceSwap(true)}
             />
 
@@ -374,8 +378,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         onNavigate={setZoomImgIndex}
       />
 
-      {/* Face Swap Modal */}
-      {activeVariant?.face_swap_enabled && (
+      {/* Face Swap Modal - DESATIVADO */}
+      {PROVADOR_VIRTUAL_ENABLED && activeVariant?.face_swap_enabled && (
         <FaceSwapModal
           isOpen={showFaceSwap}
           onClose={() => setShowFaceSwap(false)}
