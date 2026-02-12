@@ -26,7 +26,7 @@ const TAB_DATA_REQUIREMENTS: Record<AdminTab, string[]> = {
   dream: ['categories', 'collections', 'assets'],
   orders: ['orders', 'products', 'assets'],
   delivery: ['orders', 'suppliers'],
-  inventory: ['products', 'suppliers'],
+  inventory: ['products', 'suppliers', 'categories', 'collections'],
   suppliers: ['suppliers'],
   taxonomy: ['categories', 'collections'],
   guides: ['guides'],
@@ -38,6 +38,7 @@ const TAB_DATA_REQUIREMENTS: Record<AdminTab, string[]> = {
   system: ['config'],
   financial: [], // Self-contained
   marketplaces: [], // Self-contained
+  'garment-gallery': [], // Self-contained - manages its own data fetching
 };
 
 // Cache TTL in ms (5 minutes)
@@ -169,6 +170,7 @@ export function useAdminData(activeTab: AdminTab) {
       for (const { key, success } of results) {
         if (success) loadedKeysRef.current.add(key);
       }
+      console.log('[useAdminData] Fetched keys:', keysToFetch, '| Results:', results.map(r => ({ key: r.key, success: r.success })));
     } catch (error) {
       logger.error('Admin fetch error:', error);
     } finally {
@@ -179,16 +181,17 @@ export function useAdminData(activeTab: AdminTab) {
 
   // Load data for active tab
   useEffect(() => {
-    const requiredKeys = TAB_DATA_REQUIREMENTS[activeTab] as DataKey[];
-    if (requiredKeys.length > 0) {
+    const requiredKeys = TAB_DATA_REQUIREMENTS[activeTab] as DataKey[] | undefined;
+    console.log('[useAdminData] Tab changed to:', activeTab, '| Required keys:', requiredKeys);
+    if (requiredKeys && requiredKeys.length > 0) {
       fetchDataKeys(requiredKeys);
     }
   }, [activeTab, fetchDataKeys]);
 
   // Force refresh all data for current tab
   const refreshCurrentTab = useCallback(async () => {
-    const requiredKeys = TAB_DATA_REQUIREMENTS[activeTab] as DataKey[];
-    if (requiredKeys.length > 0) {
+    const requiredKeys = TAB_DATA_REQUIREMENTS[activeTab] as DataKey[] | undefined;
+    if (requiredKeys && requiredKeys.length > 0) {
       await fetchDataKeys(requiredKeys, true);
     }
   }, [activeTab, fetchDataKeys]);
