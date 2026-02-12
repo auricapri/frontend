@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { UserProfile } from '../../../../types';
 import { Locale } from '../../../../i18n';
 import { ProfileFormState, GetLocFn } from '../types';
+import { maskPhone, maskCPF } from '../../../../utils/masks';
 
 export const getPhonePrefix = (locale: Locale): string => {
   switch (locale) {
@@ -32,8 +33,8 @@ interface UseProfileStateParams {
 
 export const useProfileState = ({ user, locale, onUpdate }: UseProfileStateParams) => {
   const [fullName, setFullName] = useState(user.full_name);
-  const [phone, setPhone] = useState(user.phone || getPhonePrefix(locale));
-  const [cpf, setCpf] = useState(user.cpf || '');
+  const [phone, setPhone] = useState(user.phone ? maskPhone(user.phone) : getPhonePrefix(locale));
+  const [cpf, setCpf] = useState(user.cpf ? maskCPF(user.cpf) : '');
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Update phone prefix when locale changes

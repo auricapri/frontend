@@ -2,6 +2,7 @@ import React, { Suspense, useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import FAQModal from '../components/layout/FAQModal';
 import Hero from '../components/shared/Hero';
 import LoyaltyBanner from '../components/shared/LoyaltyBanner';
 import CartDrawer from '../components/cart/CartDrawer';
@@ -103,6 +104,7 @@ export function AppLayout(props: {
 }) {
   const { app } = props;
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isFAQOpen, setIsFAQOpen] = useState(false);
   const [selectedGender, setSelectedGender] = useState<Gender>(Gender.FEMALE);
   const { showModal: showTermsModal, acceptTerms, closeModal: closeTermsModal } = useTermsConsent();
 
@@ -194,6 +196,7 @@ export function AppLayout(props: {
               onChangeLocale={app.setLocale}
               storeConfig={app.storeConfig}
               onNavigate={app.onNavigate}
+              onOpenFAQ={() => setIsFAQOpen(true)}
             />
 
             {/* WhatsApp Button */}
@@ -252,6 +255,7 @@ export function AppLayout(props: {
               onChangeLocale={app.setLocale}
               storeConfig={app.storeConfig}
               onNavigate={app.onNavigate}
+              onOpenFAQ={() => setIsFAQOpen(true)}
             />
           </>
         )}
@@ -280,6 +284,7 @@ export function AppLayout(props: {
               onChangeLocale={app.setLocale}
               storeConfig={app.storeConfig}
               onNavigate={app.onNavigate}
+              onOpenFAQ={() => setIsFAQOpen(true)}
             />
           </>
         )}
@@ -355,6 +360,7 @@ export function AppLayout(props: {
               onChangeLocale={app.setLocale}
               storeConfig={app.storeConfig}
               onNavigate={app.onNavigate}
+              onOpenFAQ={() => setIsFAQOpen(true)}
             />
           </>
         )}
@@ -480,6 +486,13 @@ export function AppLayout(props: {
         onClose={closeTermsModal}
         onNavigateTerms={() => { closeTermsModal(); app.onNavigate('terms'); }}
         onNavigatePrivacy={() => { closeTermsModal(); app.onNavigate('privacy'); }}
+      />
+
+      <FAQModal
+        isOpen={isFAQOpen}
+        onClose={() => setIsFAQOpen(false)}
+        locale={app.locale}
+        t={app.t}
       />
     </div>
   );

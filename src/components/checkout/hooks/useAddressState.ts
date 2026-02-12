@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { UsersApi } from '../../../api/users.api';
-import { maskCep, normalizeCepDigits } from '../../../utils/masks';
+import { maskCep, normalizeCepDigits, validateCPF } from '../../../utils/masks';
 import type { AddressData, SavedAddress, UseAddressStateParams, UseAddressStateReturn } from './types';
 
 export function useAddressState(params: UseAddressStateParams): UseAddressStateReturn {
@@ -25,7 +25,23 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
 
   // Contact info
   const [phone, setPhone] = useState('');
-  const [cpf, setCpf] = useState(currentUser?.cpf || '');
+  const [cpf, setCpfInternal] = useState(currentUser?.cpf || '');
+  const [cpfError, setCpfError] = useState<string | null>(null);
+
+  // Wrapper for setCpf that validates
+  const setCpf = useCallback((value: string) => {
+    setCpfInternal(value);
+    const digits = value.replace(/\D/g, '');
+    if (digits.length === 0) {
+      setCpfError(null);
+    } else if (digits.length < 11) {
+      setCpfError('CPF deve ter 11 dígitos');
+    } else if (!validateCPF(digits)) {
+      setCpfError('CPF inválido');
+    } else {
+      setCpfError(null);
+    }
+  }, []);
 
   // Saved addresses
   const [userAddresses, setUserAddresses] = useState<SavedAddress[]>([]);
@@ -42,7 +58,8 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
   // Update CPF when currentUser changes (e.g., after login)
   useEffect(() => {
     if (currentUser?.cpf && !cpf) {
-      setCpf(currentUser.cpf);
+      setCpfInternal(currentUser.cpf);
+      setCpfError(null); // Pre-filled CPF from user profile - assume valid
     }
   }, [currentUser?.cpf, cpf]);
 
@@ -294,12 +311,18 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
       return;
     }
 
-    // Complete CEP: debounce 500ms before lookup
+    // Complete CEP: debounce 500ms before lookup with 3s timeout
     if (cleaned.length === 8) {
       setLoadingCep(true);
       cepDebounceRef.current = setTimeout(async () => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+
         try {
-          const res = await fetch(`https://viacep.com.br/ws/${cleaned}/json/`);
+          const res = await fetch(`https://viacep.com.br/ws/${cleaned}/json/`, {
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
           if (!res.ok) throw new Error('CEP lookup failed');
           const data = await res.json();
           if (data.erro) throw new Error('CEP not found');
@@ -310,9 +333,31 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
           });
           setIsManualAddress(false);
           shipping.calculateLogistics(cleaned);
-        } catch {
+        } catch (err: any) {
+          clearTimeout(timeoutId);
+          // Check if it was a timeout
+          if (err?.name === 'AbortError') {
+            setCepError('Tempo esgotado. Preencha manualmente.');
+            setIsManualAddress(true);
+            setAddress({
+              logradouro: '',
+              bairro: '',
+              localidade: '',
+              uf: '',
+              cep: formatted,
+            });
+            setLoadingCep(false);
+            return;
+          }
+
+          // Try fallback API with timeout
+          const controller2 = new AbortController();
+          const timeoutId2 = setTimeout(() => controller2.abort(), 3000);
           try {
-            const resFallback = await fetch(`https://cep.awesomeapi.com.br/json/${cleaned}`);
+            const resFallback = await fetch(`https://cep.awesomeapi.com.br/json/${cleaned}`, {
+              signal: controller2.signal
+            });
+            clearTimeout(timeoutId2);
             if (!resFallback.ok) throw new Error('Fallback failed');
             const dataFallback = await resFallback.json();
             // If bairro is empty, leave it empty for user to fill
@@ -324,9 +369,18 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
             });
             setIsManualAddress(false);
             shipping.calculateLogistics(cleaned);
-          } catch {
-            setCepError('Falha ao carregar CEP. Use o buscador de mapa.');
-            setAddress(null);
+          } catch (err2: any) {
+            clearTimeout(timeoutId2);
+            // Fallback to manual entry
+            setCepError(err2?.name === 'AbortError' ? 'Tempo esgotado. Preencha manualmente.' : 'CEP não encontrado. Preencha manualmente.');
+            setIsManualAddress(true);
+            setAddress({
+              logradouro: '',
+              bairro: '',
+              localidade: '',
+              uf: '',
+              cep: formatted,
+            });
           }
         } finally {
           setLoadingCep(false);
@@ -356,6 +410,7 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
     setPhone,
     cpf,
     setCpf,
+    cpfError,
 
     // Saved addresses
     userAddresses,

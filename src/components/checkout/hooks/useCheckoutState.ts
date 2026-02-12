@@ -194,6 +194,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     setPhone: addressState.setPhone,
     cpf: addressState.cpf,
     setCpf: addressState.setCpf,
+    cpfError: addressState.cpfError,
     cepError: addressState.cepError,
     addressLoaded: addressState.addressLoaded,
     setAddressLoaded: addressState.setAddressLoaded,

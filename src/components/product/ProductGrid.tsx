@@ -86,24 +86,37 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection, getLoc, onS
         <div className={`w-0 h-[1px] bg-white transition-all duration-500 mt-2 opacity-50 ${isAvailable ? 'group-hover:w-full' : ''}`} />
       </div>
 
-      {/* Countdown overlay - covers entire card, fades on hover for suspense */}
+      {/* Countdown overlay - semi-transparent to show image, fades on hover for suspense */}
       {hasCountdown && isAvailable && (
-        <div className="absolute inset-0 bg-gradient-to-t from-orange-600 via-orange-500 to-orange-400 flex flex-col items-center justify-center text-white transition-opacity duration-500 group-hover:opacity-0">
-          <div className="text-[10px] font-bold uppercase tracking-[0.3em] mb-2 opacity-80">
-            {notStartedYet
-              ? (locale === 'pt' ? 'Começa em' : locale === 'es' ? 'Comienza en' : 'Starts in')
-              : (locale === 'pt' ? 'Termina em' : locale === 'es' ? 'Termina en' : 'Ends in')
-            }
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] flex flex-col items-center justify-center text-white transition-all duration-500 group-hover:opacity-0 group-hover:backdrop-blur-0">
+          {/* Collection name at top */}
+          <div className="absolute top-6 left-0 right-0 text-center">
+            <h3 className="text-xl md:text-2xl font-light tracking-[0.2em] uppercase text-white/90">{getLoc(collection.name)}</h3>
           </div>
-          <CountdownBadge
-            endsAt={collection.ends_at}
-            startsAt={collection.starts_at}
-            variant="badge"
-            locale={locale}
-          />
-          <div className="mt-4 text-lg font-bold uppercase tracking-widest">{getLoc(collection.name)}</div>
-          <div className="mt-2 text-[9px] font-bold uppercase tracking-[0.2em] opacity-60">
-            {locale === 'pt' ? 'Passe o mouse para ver' : locale === 'es' ? 'Pasa el mouse para ver' : 'Hover to reveal'}
+
+          {/* Big countdown in center */}
+          <div className="text-center">
+            <div className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] mb-3 text-orange-400">
+              {notStartedYet
+                ? (locale === 'pt' ? 'Começa em' : locale === 'es' ? 'Comienza en' : 'Starts in')
+                : (locale === 'pt' ? 'Termina em' : locale === 'es' ? 'Termina en' : 'Ends in')
+              }
+            </div>
+            <div className="scale-150 md:scale-[1.75]">
+              <CountdownBadge
+                endsAt={collection.ends_at}
+                startsAt={collection.starts_at}
+                variant="badge"
+                locale={locale}
+              />
+            </div>
+          </div>
+
+          {/* Hint at bottom */}
+          <div className="absolute bottom-6 left-0 right-0 text-center">
+            <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/50">
+              {locale === 'pt' ? 'Passe o mouse para ver' : locale === 'es' ? 'Pasa el mouse para ver' : 'Hover to reveal'}
+            </div>
           </div>
         </div>
       )}
@@ -301,7 +314,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   }, [collections, urgentCollection]);
 
   return (
-    <section id="collection" className="w-full bg-white flex flex-col pt-32 pb-4">
+    <section id="collection" className="w-full bg-white flex flex-col pt-20 pb-4">
 
       {/* Cart Incentive Banner - Premium design with gradient */}
       {itemCount > 0 && onGoToCart && (

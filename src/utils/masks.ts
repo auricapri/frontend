@@ -70,6 +70,41 @@ export const unmask = (value: string): string => {
   return value.replace(/\D/g, "");
 };
 
+/**
+ * Validates a Brazilian CPF number
+ * Returns true if valid, false otherwise
+ */
+export const validateCPF = (cpf: string): boolean => {
+  // Remove non-digits
+  const numbers = cpf.replace(/\D/g, "");
+
+  // Must have 11 digits
+  if (numbers.length !== 11) return false;
+
+  // Reject all same digits (00000000000, 11111111111, etc.)
+  if (/^(\d)\1{10}$/.test(numbers)) return false;
+
+  // Validate first check digit
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(numbers[i]) * (10 - i);
+  }
+  let remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(numbers[9])) return false;
+
+  // Validate second check digit
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(numbers[i]) * (11 - i);
+  }
+  remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(numbers[10])) return false;
+
+  return true;
+};
+
 export const normalizeCepDigits = (value: string): string => {
   return value.replace(/\D/g, "").slice(0, 8);
 };

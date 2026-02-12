@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AlertCircle, Check, Loader2, MapPin, Navigation, Search, ChevronDown } from 'lucide-react';
 import { type CheckoutState } from '../hooks/useCheckoutState';
-import { maskCep, normalizeCepDigits } from '../../../utils/masks';
+import { maskCep, normalizeCepDigits, validateCPF } from '../../../utils/masks';
 
 export function AddressStep({ checkout }: { checkout: CheckoutState }) {
   const {
@@ -24,6 +24,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
     phone,
     cpf,
     setCpf,
+    cpfError,
     maskCPF,
     searchQuery,
     setComplement,
@@ -62,6 +63,18 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
 
   return (
     <>
+      {/* Blocking loading overlay for CEP lookup */}
+      {loadingCep && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-4 max-w-sm mx-4">
+            <Loader2 className="w-12 h-12 animate-spin text-black" />
+            <div className="text-center">
+              <h4 className="text-lg font-black uppercase tracking-tight">Buscando Endereço</h4>
+              <p className="text-sm text-neutral-500 mt-1">Aguarde enquanto localizamos seu CEP...</p>
+            </div>
+          </div>
+        </div>
+      )}
       <section className="space-y-6 animate-in fade-in slide-in-from-left duration-700">
         <div className="flex items-center gap-4 mb-6">
           <div className="p-4 bg-neutral-50 rounded-2xl">
@@ -386,7 +399,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
               </label>
               <input
                 className={`w-full p-4 bg-neutral-50 border ${
-                  cpf && cpf.replace(/\D/g, '').length === 11 ? 'border-green-300' : cpf ? 'border-orange-200' : 'border-neutral-100'
+                  cpfError ? 'border-red-300 bg-red-50/20' : cpf && cpf.replace(/\D/g, '').length === 11 && validateCPF(cpf) ? 'border-green-300' : cpf ? 'border-orange-200' : 'border-neutral-100'
                 } rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black`}
                 placeholder="000.000.000-00"
                 value={cpf}
@@ -394,8 +407,8 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 maxLength={14}
               />
               <p className="text-xs text-neutral-400 font-medium">
-                {cpf && cpf.replace(/\D/g, '').length !== 11
-                  ? <span className="text-orange-500">CPF deve ter 11 dígitos</span>
+                {cpfError
+                  ? <span className="text-red-500 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {cpfError}</span>
                   : 'Obrigatório para emissão de nota fiscal'}
               </p>
             </div>
@@ -410,7 +423,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             !num ||
             !shipping.bestInternalShipping ||
             ((!currentUser?.phone || !currentUser.phone.trim()) && (!phone || phone.trim().length < 10)) ||
-            (!currentUser?.cpf && (!cpf || cpf.replace(/\D/g, '').length !== 11))
+            (!currentUser?.cpf && (!cpf || cpf.replace(/\D/g, '').length !== 11 || !validateCPF(cpf)))
           }
           className="w-full md:w-auto px-8 py-4 bg-black text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] shadow-xl flex items-center justify-center gap-3 hover:scale-[1.02] transition-all disabled:opacity-20 active:scale-95"
         >

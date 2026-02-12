@@ -1,6 +1,18 @@
 
 import React, { useState } from 'react';
-import { X, ShoppingBag, Trash2, ArrowRight, Link2, MessageCircle, ShoppingCart, Facebook, Twitter } from 'lucide-react';
+import { X, ShoppingBag, Trash2, ArrowRight, Link2, MessageCircle, ShoppingCart, Facebook } from 'lucide-react';
+
+// Custom X (Twitter) icon component
+const XIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 import { Product, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { WishlistApi } from '../../api/wishlist.api';
@@ -157,7 +169,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
     if (platform === 'whatsapp') {
       window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + url)}`, '_blank');
     } else if (platform === 'twitter') {
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+      window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
     } else if (platform === 'facebook') {
       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
     }
@@ -262,13 +274,13 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                     >
                       <Facebook className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleSocialShare('twitter')}
                       disabled={isGeneratingLink || !currentUserId}
-                      title="Compartilhar no Twitter"
+                      title="Compartilhar no X"
                       className="flex items-center justify-center p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
-                      <Twitter className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      <XIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     </button>
                   </div>
                 </div>

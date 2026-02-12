@@ -5,7 +5,7 @@ import React from 'react';
 import {
   Box, Users, Settings, LogOut, BarChart3, Tag, Layers,
   Image as ImageIcon, Ticket, Archive, BookOpen, Ruler, Lightbulb,
-  Store, Truck, ShoppingBag, ChevronDown, DollarSign, Shirt
+  Store, Truck, ShoppingBag, ChevronDown, DollarSign, Shirt, HelpCircle
 } from 'lucide-react';
 import { AdminTab } from '../../../../hooks/useAdminRouter';
 
@@ -55,6 +55,7 @@ const sidebarConfig = [
     label: 'Sistema',
     items: [
       { id: 'about', icon: BookOpen, label: 'Sobre Nós' },
+      { id: 'faq', icon: HelpCircle, label: 'FAQ' },
       { id: 'users', icon: Users, label: 'Usuários' },
       { id: 'system', icon: Settings, label: 'Sistema' },
     ],

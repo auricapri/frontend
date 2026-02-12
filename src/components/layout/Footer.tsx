@@ -11,6 +11,7 @@ interface FooterProps {
   onChangeLocale: (locale: Locale) => void;
   storeConfig: StoreConfig;
   onNavigate: (view: 'home' | 'collection' | 'about' | 'privacy' | 'terms', target?: string) => void;
+  onOpenFAQ?: () => void;
 }
 
 const Footer: React.FC<FooterProps> = ({
@@ -18,7 +19,8 @@ const Footer: React.FC<FooterProps> = ({
   currentLocale: _currentLocale,
   onChangeLocale: _onChangeLocale,
   storeConfig,
-  onNavigate
+  onNavigate,
+  onOpenFAQ
 }) => {
   const [version, setVersion] = useState<string>('');
 
@@ -112,7 +114,7 @@ const Footer: React.FC<FooterProps> = ({
               </button>
             </li>
             <li>
-              <button onClick={() => onNavigate('terms')} className="hover:text-white transition-colors uppercase tracking-wide text-left">
+              <button onClick={onOpenFAQ} className="hover:text-white transition-colors uppercase tracking-wide text-left">
                 FAQ
               </button>
             </li>

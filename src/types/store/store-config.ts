@@ -44,3 +44,14 @@ export interface SizeGuide {
   name: string;
   image_url: string;
 }
+
+export interface FAQItem {
+  id: string;
+  question: LocalizedText;
+  answer: LocalizedText;
+  sort_order: number;
+  is_active: boolean;
+  category?: string; // Optional category for grouping FAQs
+  created_at?: string;
+  updated_at?: string;
+}
