@@ -25,6 +25,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
     paymentMethod,
     pixDiscount,
     preAppliedDiscount,
+    quantityDiscount,
     subtotal,
     setCouponCode,
     userMode,
@@ -167,6 +168,12 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
             <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-emerald-600">
               <span>Desconto ({appliedCoupon?.code})</span>
               <span>-{formatCurrency(manualCouponDiscount, locale)}</span>
+            </div>
+          )}
+          {quantityDiscount > 0 && (
+            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-amber-600">
+              <span>Desconto Quantidade</span>
+              <span>-{formatCurrency(quantityDiscount, locale)}</span>
             </div>
           )}
 

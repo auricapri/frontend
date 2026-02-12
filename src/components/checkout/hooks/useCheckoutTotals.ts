@@ -6,6 +6,7 @@
 
 import { useMemo } from 'react';
 import { PaymentMethod } from '../../../constants/enums';
+import { calculateQuantityDiscount } from '../../cart/BoxSavingsIndicator';
 import type { UseCheckoutTotalsParams, UseCheckoutTotalsReturn } from './types';
 
 export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutTotalsReturn {
@@ -38,10 +39,21 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
     return originalSubtotal - subtotal;
   }, [originalSubtotal, subtotal]);
 
-  // Total before PIX discount and cashback
+  // Total item count for quantity discount
+  const totalItemCount = useMemo(() => {
+    return safeItems.reduce((sum, item) => sum + (item?.quantity || 0), 0);
+  }, [safeItems]);
+
+  // Quantity discount based on box optimization (3 items per box, R$35 savings per shared item)
+  const quantityDiscount = useMemo(() => {
+    const { discountValue } = calculateQuantityDiscount(totalItemCount, subtotal);
+    return discountValue;
+  }, [totalItemCount, subtotal]);
+
+  // Total before PIX discount and cashback (includes quantity discount)
   const totalBeforeDiscounts = useMemo(() => {
-    return subtotal - manualCouponDiscount + shippingCost;
-  }, [subtotal, manualCouponDiscount, shippingCost]);
+    return subtotal - manualCouponDiscount - quantityDiscount + shippingCost;
+  }, [subtotal, manualCouponDiscount, quantityDiscount, shippingCost]);
 
   // PIX discount (5% if payment method is PIX)
   const pixDiscount = useMemo(() => {
@@ -67,6 +79,7 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
     subtotal,
     originalSubtotal,
     preAppliedDiscount,
+    quantityDiscount,
     totalBeforeDiscounts,
     pixDiscount,
     totalAfterPix,

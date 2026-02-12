@@ -1,72 +1,164 @@
 import React from 'react';
-import { Package, Check, Sparkles } from 'lucide-react';
+import { Package, Check, Sparkles, Gift } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 
 interface BoxSavingsIndicatorProps {
   itemCount: number;
+  subtotal: number;
   locale: Locale;
-  /** Cost of shipping per box (default R$18) */
-  boxShippingCost?: number;
+  /** Cost saved per shared item (default R$35 - shipping cost) */
+  savingsPerItem?: number;
   /** Items per box capacity (default 3) */
   boxCapacity?: number;
 }
 
 /**
- * Visual indicator showing shipping savings when buying multiple items.
- * Shows a progress bar with slots representing box capacity.
- *
- * Logic:
- * - 1 item in box = pays full shipping alone
- * - 2 items in box = splits shipping cost
- * - 3 items (full box) = maximum savings per item
+ * Calculates the quantity discount based on box optimization.
+ * Returns the discount value and whether to show as percentage or fixed amount.
  */
-const BoxSavingsIndicator: React.FC<BoxSavingsIndicatorProps> = ({
-  itemCount,
-  locale,
-  boxShippingCost = 18,
-  boxCapacity = 3,
-}) => {
-  // Calculate items in current box (cycle through boxes)
-  const itemsInCurrentBox = itemCount === 0 ? 0 : ((itemCount - 1) % boxCapacity) + 1;
+export function calculateQuantityDiscount(
+  itemCount: number,
+  subtotal: number,
+  savingsPerItem: number = 35,
+  boxCapacity: number = 3
+): {
+  discountValue: number;
+  discountPercent: number;
+  showAsPercent: boolean;
+  itemsInCurrentBox: number;
+  slotsRemaining: number;
+  isBoxComplete: boolean;
+  potentialExtraSavings: number;
+} {
+  if (itemCount === 0 || subtotal === 0) {
+    return {
+      discountValue: 0,
+      discountPercent: 0,
+      showAsPercent: false,
+      itemsInCurrentBox: 0,
+      slotsRemaining: boxCapacity,
+      isBoxComplete: false,
+      potentialExtraSavings: 0,
+    };
+  }
+
+  // Items in current box (cycle through boxes)
+  const itemsInCurrentBox = ((itemCount - 1) % boxCapacity) + 1;
   const slotsRemaining = boxCapacity - itemsInCurrentBox;
   const isBoxComplete = itemsInCurrentBox === boxCapacity;
 
-  // Calculate shipping cost per item
-  const shippingPerItem = itemsInCurrentBox > 0 ? boxShippingCost / itemsInCurrentBox : boxShippingCost;
-  const shippingIfFull = boxShippingCost / boxCapacity;
-  const potentialSavings = (shippingPerItem - shippingIfFull) * itemsInCurrentBox;
+  // Calculate total boxes and savings
+  // Each item after the first in a box saves one shipping cost
+  const fullBoxes = Math.floor(itemCount / boxCapacity);
+  const itemsInPartialBox = itemCount % boxCapacity;
+
+  // Savings = (items - boxes) * savingsPerItem
+  // Because each box only needs 1 shipping, not per-item
+  const totalBoxes = fullBoxes + (itemsInPartialBox > 0 ? 1 : 0);
+  const itemsSavingShipping = itemCount - totalBoxes;
+  const discountValue = itemsSavingShipping * savingsPerItem;
+
+  // Calculate percentage
+  const discountPercent = subtotal > 0 ? (discountValue / subtotal) * 100 : 0;
+
+  // Round percentage to nearest integer
+  const roundedPercent = Math.round(discountPercent);
+
+  // Show as percent if >= 3%, otherwise show as R$ value
+  const showAsPercent = roundedPercent >= 3;
+
+  // Calculate potential extra savings if box was completed
+  const potentialExtraSavings = slotsRemaining * savingsPerItem;
+
+  return {
+    discountValue,
+    discountPercent: roundedPercent,
+    showAsPercent,
+    itemsInCurrentBox,
+    slotsRemaining,
+    isBoxComplete,
+    potentialExtraSavings,
+  };
+}
+
+/**
+ * Visual indicator showing quantity-based discounts.
+ * Encourages customers to add more items to maximize savings.
+ */
+const BoxSavingsIndicator: React.FC<BoxSavingsIndicatorProps> = ({
+  itemCount,
+  subtotal,
+  locale,
+  savingsPerItem = 35,
+  boxCapacity = 3,
+}) => {
+  const {
+    discountValue,
+    discountPercent,
+    showAsPercent,
+    itemsInCurrentBox,
+    slotsRemaining,
+    isBoxComplete,
+    potentialExtraSavings,
+  } = calculateQuantityDiscount(itemCount, subtotal, savingsPerItem, boxCapacity);
+
+  // Calculate what percent the potential savings would be
+  const potentialPercent = subtotal > 0
+    ? Math.round(((discountValue + potentialExtraSavings) / subtotal) * 100)
+    : 0;
+  const showPotentialAsPercent = potentialPercent >= 3;
 
   // Localized text
   const getText = () => {
     if (itemCount === 0) return null;
 
-    if (isBoxComplete) {
-      if (locale === 'pt') return { main: 'Caixa completa!', sub: 'Economia máxima no frete' };
-      if (locale === 'es') return { main: '¡Caja completa!', sub: 'Ahorro máximo en envío' };
-      return { main: 'Box complete!', sub: 'Maximum shipping savings' };
+    // User has discount applied
+    if (discountValue > 0 && isBoxComplete) {
+      const discountText = showAsPercent
+        ? `${discountPercent}% OFF`
+        : `${formatCurrency(discountValue, locale)} OFF`;
+
+      if (locale === 'pt') return { main: 'Desconto aplicado!', sub: discountText };
+      if (locale === 'es') return { main: '¡Descuento aplicado!', sub: discountText };
+      return { main: 'Discount applied!', sub: discountText };
     }
 
-    if (locale === 'pt') {
+    // User can get more discount
+    if (slotsRemaining > 0) {
+      const potentialText = showPotentialAsPercent
+        ? `${potentialPercent}% OFF`
+        : `${formatCurrency(discountValue + potentialExtraSavings, locale)} OFF`;
+
+      if (locale === 'pt') {
+        return {
+          main: `Adicione +${slotsRemaining} e ganhe`,
+          sub: potentialText,
+        };
+      }
+      if (locale === 'es') {
+        return {
+          main: `Añade +${slotsRemaining} y gana`,
+          sub: potentialText,
+        };
+      }
       return {
-        main: `Adicione +${slotsRemaining} e economize`,
-        sub: `${formatCurrency(potentialSavings, locale)} no frete`,
+        main: `Add +${slotsRemaining} and get`,
+        sub: potentialText,
       };
     }
-    if (locale === 'es') {
-      return {
-        main: `Añade +${slotsRemaining} y ahorra`,
-        sub: `${formatCurrency(potentialSavings, locale)} en envío`,
-      };
-    }
-    return {
-      main: `Add +${slotsRemaining} and save`,
-      sub: `${formatCurrency(potentialSavings, locale)} on shipping`,
-    };
+
+    return null;
   };
 
   const text = getText();
   if (!text || itemCount === 0) return null;
+
+  // Show current discount if any
+  const hasCurrentDiscount = discountValue > 0;
+  const currentDiscountText = hasCurrentDiscount
+    ? (showAsPercent ? `${discountPercent}% OFF` : formatCurrency(discountValue, locale))
+    : null;
 
   return (
     <div className={`rounded-2xl p-4 transition-all duration-500 ${
@@ -82,7 +174,7 @@ const BoxSavingsIndicator: React.FC<BoxSavingsIndicatorProps> = ({
           {isBoxComplete ? (
             <Sparkles className="w-4 h-4 text-green-600" />
           ) : (
-            <Package className="w-4 h-4 text-amber-600" />
+            <Gift className="w-4 h-4 text-amber-600" />
           )}
         </div>
 
@@ -94,7 +186,7 @@ const BoxSavingsIndicator: React.FC<BoxSavingsIndicatorProps> = ({
             }`}>
               {text.main}
             </span>
-            <span className={`text-[9px] font-bold ${
+            <span className={`text-[11px] font-black ${
               isBoxComplete ? 'text-green-600' : 'text-amber-600'
             }`}>
               {text.sub}
@@ -123,17 +215,17 @@ const BoxSavingsIndicator: React.FC<BoxSavingsIndicatorProps> = ({
               );
             })}
           </div>
+
+          {/* Show current savings if partial */}
+          {hasCurrentDiscount && !isBoxComplete && (
+            <p className="text-[8px] text-amber-600/80 mt-2 font-bold">
+              {locale === 'pt' && `Você já tem ${currentDiscountText} de desconto`}
+              {locale === 'es' && `Ya tienes ${currentDiscountText} de descuento`}
+              {locale === 'en' && `You already have ${currentDiscountText} off`}
+            </p>
+          )}
         </div>
       </div>
-
-      {/* Micro explanation */}
-      {!isBoxComplete && (
-        <p className="text-[8px] text-amber-600/70 mt-2 text-center font-medium">
-          {locale === 'pt' && 'Cada caixa comporta 3 produtos com o mesmo frete'}
-          {locale === 'es' && 'Cada caja cabe 3 productos con el mismo envío'}
-          {locale === 'en' && 'Each box fits 3 products with the same shipping'}
-        </p>
-      )}
     </div>
   );
 };

@@ -59,6 +59,7 @@ export interface UseCheckoutTotalsReturn {
   subtotal: number;
   originalSubtotal: number;
   preAppliedDiscount: number;
+  quantityDiscount: number;
   totalBeforeDiscounts: number;
   pixDiscount: number;
   totalAfterPix: number;

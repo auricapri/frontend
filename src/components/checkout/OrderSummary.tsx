@@ -49,6 +49,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
         <div className="mb-8">
           <BoxSavingsIndicator
             itemCount={items.reduce((sum, item) => sum + (item?.quantity || 0), 0)}
+            subtotal={subtotal}
             locale={locale}
           />
         </div>
