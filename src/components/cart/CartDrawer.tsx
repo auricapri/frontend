@@ -4,6 +4,7 @@ import { X, Minus, Plus, Trash2, ArrowRight } from 'lucide-react';
 import { CartItem, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
+import BoxSavingsIndicator from './BoxSavingsIndicator';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -59,6 +60,16 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Box Savings Indicator */}
+        {items.length > 0 && (
+          <div className="px-6 md:px-8 pt-4">
+            <BoxSavingsIndicator
+              itemCount={items.reduce((sum, item) => sum + item.quantity, 0)}
+              locale={locale}
+            />
+          </div>
+        )}
 
         {/* Items List */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 no-scrollbar">

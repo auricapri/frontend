@@ -6,6 +6,7 @@ import { formatCurrency } from '../../utils/currency';
 import { ShippingOption } from '../../services/logistics.service';
 import { PaymentMethod } from '../../constants/enums';
 import { OptimizedImage } from '../ui';
+import BoxSavingsIndicator from '../cart/BoxSavingsIndicator';
 
 interface OrderSummaryProps {
   items: CartItem[];
@@ -38,11 +39,21 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
 }) => {
   return (
     <div className="bg-neutral-50 rounded-[3rem] p-10 md:p-12 sticky top-32 border border-neutral-100 shadow-sm">
-      <div className="flex items-center gap-4 mb-10 border-b border-neutral-100 pb-6">
+      <div className="flex items-center gap-4 mb-6 border-b border-neutral-100 pb-6">
         <ShoppingBag className="w-5 h-5 text-neutral-400" />
         <h4 className="text-[10px] font-black uppercase tracking-[0.4em]">Sua Sacola</h4>
       </div>
-      
+
+      {/* Box Savings Indicator */}
+      {items.length > 0 && userMode !== UserMode.ATACADO && (
+        <div className="mb-8">
+          <BoxSavingsIndicator
+            itemCount={items.reduce((sum, item) => sum + (item?.quantity || 0), 0)}
+            locale={locale}
+          />
+        </div>
+      )}
+
       <div className="space-y-8 mb-12 max-h-[400px] overflow-y-auto pr-4 no-scrollbar">
         {Array.isArray(items) && items.length > 0 ? items.map((item, idx) => (
           <div
