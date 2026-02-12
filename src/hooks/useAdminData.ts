@@ -170,7 +170,6 @@ export function useAdminData(activeTab: AdminTab) {
       for (const { key, success } of results) {
         if (success) loadedKeysRef.current.add(key);
       }
-      console.log('[useAdminData] Fetched keys:', keysToFetch, '| Results:', results.map(r => ({ key: r.key, success: r.success })));
     } catch (error) {
       logger.error('Admin fetch error:', error);
     } finally {
@@ -182,7 +181,6 @@ export function useAdminData(activeTab: AdminTab) {
   // Load data for active tab
   useEffect(() => {
     const requiredKeys = TAB_DATA_REQUIREMENTS[activeTab] as DataKey[] | undefined;
-    console.log('[useAdminData] Tab changed to:', activeTab, '| Required keys:', requiredKeys);
     if (requiredKeys && requiredKeys.length > 0) {
       fetchDataKeys(requiredKeys);
     }
