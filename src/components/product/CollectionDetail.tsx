@@ -92,9 +92,9 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
   return (
     <div className="w-full bg-white min-h-screen">
 
-      {/* Collection Countdown Banner - positioned below header */}
+      {/* Collection Countdown Banner - inline, not fixed */}
       {collection.ends_at && (
-        <div className="fixed top-20 left-0 right-0 z-40">
+        <div className="w-full">
           <CountdownBadge
             endsAt={collection.ends_at}
             startsAt={collection.starts_at}
@@ -104,8 +104,8 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
         </div>
       )}
 
-      {/* Banner Section - add top padding when countdown is visible */}
-      <div className={`relative w-full h-[60vh] md:h-[70vh] bg-neutral-900 overflow-hidden ${collection.ends_at ? 'mt-12' : ''}`}>
+      {/* Banner Section - directly after countdown, no gap */}
+      <div className="relative w-full h-[60vh] md:h-[70vh] bg-neutral-900 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
             src={collection.image_url}

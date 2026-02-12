@@ -59,6 +59,7 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection, getLoc, onS
   // Check if collection hasn't started yet
   const hasStartDate = !!collection.starts_at;
   const notStartedYet = hasStartDate && new Date(collection.starts_at!) > new Date();
+  const hasCountdown = collection.ends_at || notStartedYet;
 
   const handleClick = () => {
     // Block click if expired or not started
@@ -78,29 +79,41 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection, getLoc, onS
         alt={getLoc(collection.name)}
         className={`w-full h-full object-cover transition-all duration-1000 ${isAvailable ? 'group-hover:scale-105' : 'grayscale'}`}
       />
-      <div className="absolute inset-0 bg-black/20 flex flex-col justify-end p-8 text-white">
-        {/* Countdown Badge - positioned at top */}
-        {(collection.ends_at || notStartedYet) && (
-          <div className="absolute top-4 right-4">
-            <CountdownBadge
-              endsAt={collection.ends_at}
-              startsAt={collection.starts_at}
-              variant="badge"
-              locale={locale}
-            />
-          </div>
-        )}
 
+      {/* Base overlay with title */}
+      <div className="absolute inset-0 bg-black/20 flex flex-col justify-end p-8 text-white">
         <h3 className="text-2xl font-light tracking-widest uppercase">{getLoc(collection.name)}</h3>
         <div className={`w-0 h-[1px] bg-white transition-all duration-500 mt-2 opacity-50 ${isAvailable ? 'group-hover:w-full' : ''}`} />
-
-        {/* Overlay message for unavailable collections */}
-        {!isAvailable && !isExpired && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="text-white text-sm font-bold uppercase tracking-widest">{COMING_SOON_TEXT[locale]}</span>
-          </div>
-        )}
       </div>
+
+      {/* Countdown overlay - covers entire card, fades on hover for suspense */}
+      {hasCountdown && isAvailable && (
+        <div className="absolute inset-0 bg-gradient-to-t from-orange-600 via-orange-500 to-orange-400 flex flex-col items-center justify-center text-white transition-opacity duration-500 group-hover:opacity-0">
+          <div className="text-[10px] font-bold uppercase tracking-[0.3em] mb-2 opacity-80">
+            {notStartedYet
+              ? (locale === 'pt' ? 'Começa em' : locale === 'es' ? 'Comienza en' : 'Starts in')
+              : (locale === 'pt' ? 'Termina em' : locale === 'es' ? 'Termina en' : 'Ends in')
+            }
+          </div>
+          <CountdownBadge
+            endsAt={collection.ends_at}
+            startsAt={collection.starts_at}
+            variant="badge"
+            locale={locale}
+          />
+          <div className="mt-4 text-lg font-bold uppercase tracking-widest">{getLoc(collection.name)}</div>
+          <div className="mt-2 text-[9px] font-bold uppercase tracking-[0.2em] opacity-60">
+            {locale === 'pt' ? 'Passe o mouse para ver' : locale === 'es' ? 'Pasa el mouse para ver' : 'Hover to reveal'}
+          </div>
+        </div>
+      )}
+
+      {/* Overlay message for unavailable collections */}
+      {!isAvailable && !isExpired && (
+        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+          <span className="text-white text-sm font-bold uppercase tracking-widest">{COMING_SOON_TEXT[locale]}</span>
+        </div>
+      )}
     </div>
   );
 };
@@ -290,32 +303,49 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   return (
     <section id="collection" className="w-full bg-white flex flex-col pt-32 pb-4">
 
-      {/* Cart Incentive Banner - Shows when cart has items */}
+      {/* Cart Incentive Banner - Premium design with gradient */}
       {itemCount > 0 && onGoToCart && (
         <div
           onClick={onGoToCart}
-          className="cursor-pointer mx-6 md:mx-12 mb-4 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-black"
+          className="cursor-pointer mx-6 md:mx-12 mb-6 rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-[1.01] group"
         >
-          <div className="text-white px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <ShoppingBag className="w-6 h-6" />
-                <span className="absolute -top-1.5 -right-1.5 bg-white text-black text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-                  {itemCount}
+          {/* Gradient background */}
+          <div className="relative bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 text-white px-6 md:px-8 py-5 md:py-6">
+            {/* Animated shine effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-4 md:gap-6">
+                {/* Cart icon with pulse animation */}
+                <div className="relative">
+                  <div className="absolute inset-0 bg-white/20 rounded-full animate-ping" />
+                  <div className="relative bg-white/10 p-3 rounded-full">
+                    <ShoppingBag className="w-6 h-6 md:w-7 md:h-7" />
+                  </div>
+                  <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
+                    {itemCount}
+                  </span>
+                </div>
+
+                <div>
+                  <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">
+                    {locale === 'pt' ? 'Seu carrinho' : locale === 'es' ? 'Tu carrito' : 'Your cart'}
+                  </p>
+                  <p className="text-xl md:text-2xl font-light tracking-tight">
+                    <span className="font-bold">{itemCount}</span> {itemCount === 1 ? 'item' : 'itens'}
+                    <span className="mx-2 text-white/30">•</span>
+                    <span className="text-orange-400 font-bold">R$ {subtotal.toFixed(2).replace('.', ',')}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <div className="flex items-center gap-3 bg-white text-black px-5 md:px-6 py-3 rounded-full font-bold group-hover:bg-orange-500 group-hover:text-white transition-colors duration-300">
+                <span className="text-[10px] md:text-xs uppercase tracking-[0.15em]">
+                  {locale === 'pt' ? 'Finalizar' : locale === 'es' ? 'Finalizar' : 'Checkout'}
                 </span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
-                  {locale === 'pt' ? 'Continue comprando' : locale === 'es' ? 'Sigue comprando' : locale === 'fr' ? 'Continuer vos achats' : 'Continue shopping'}
-                </p>
-                <p className="text-lg font-bold uppercase tracking-wide">
-                  {itemCount} {itemCount === 1 ? 'item' : 'itens'} • R$ {subtotal.toFixed(2).replace('.', ',')}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full">
-              <span className="text-[9px] font-black uppercase tracking-widest">Finalizar</span>
-              <ArrowRight className="w-4 h-4" />
             </div>
           </div>
         </div>
