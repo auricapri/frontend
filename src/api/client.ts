@@ -138,7 +138,7 @@ class ApiClient {
    */
   async downloadFile(endpoint: string, filename: string): Promise<void> {
     const token = await this.getAuthToken();
-    
+
     const headers: HeadersInit = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -149,7 +149,17 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to download file: ${response.statusText}`);
+      // Try to get error details from response
+      let errorMessage = `Failed to download file: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        if (errorData?.error?.message) {
+          errorMessage = errorData.error.message;
+        }
+      } catch {
+        // Response wasn't JSON, use default message
+      }
+      throw new Error(errorMessage);
     }
 
     const blob = await response.blob();
