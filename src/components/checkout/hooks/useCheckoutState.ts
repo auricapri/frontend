@@ -307,6 +307,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     subtotal: totals.subtotal,
     originalSubtotal: totals.originalSubtotal,
     preAppliedDiscount: totals.preAppliedDiscount,
+    quantityDiscount: totals.quantityDiscount,
     shippingCost,
     pixDiscount: totals.pixDiscount,
     cashbackUsed: totals.cashbackUsed,

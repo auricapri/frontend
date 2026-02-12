@@ -66,6 +66,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
           <div className="px-6 md:px-8 pt-4">
             <BoxSavingsIndicator
               itemCount={items.reduce((sum, item) => sum + item.quantity, 0)}
+              subtotal={subtotal}
               locale={locale}
             />
           </div>
