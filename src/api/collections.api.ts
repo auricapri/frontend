@@ -36,4 +36,13 @@ export class CollectionsApi {
   async delete(id: string): Promise<void> {
     return apiClient.delete<void>(`/collections/${id}`);
   }
+
+  /**
+   * Update the collections associated with a product
+   * @param productId - The product ID
+   * @param collectionIds - Array of collection IDs to associate with the product
+   */
+  async updateProductCollections(productId: string, collectionIds: string[]): Promise<void> {
+    return apiClient.put<void>(`/collections/product-relations/${productId}`, { collectionIds });
+  }
 }

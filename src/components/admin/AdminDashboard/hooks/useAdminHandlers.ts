@@ -67,15 +67,24 @@ export const useAdminHandlers = ({
       const { type, data } = editingItem;
       const payload = { ...data };
       const variants = payload.variants;
+      // Extract collection_ids before sending to API (it's a computed field, not a DB column)
+      const collectionIds = payload.collection_ids;
       delete payload.variants;
       delete payload._associatedProductIds;
+      delete payload.collection_ids;
 
       if (type === 'product') {
         preparePayloadWithSlugAndDescription(payload);
+        let productId = data.id;
         if (data.id) {
           await productsApi.update(data.id, { ...payload, variants });
         } else {
-          await productsApi.create({ ...payload, variants });
+          const created = await productsApi.create({ ...payload, variants });
+          productId = created.id;
+        }
+        // Update product-collection relations if collection_ids was provided
+        if (productId && Array.isArray(collectionIds)) {
+          await collectionsApi.updateProductCollections(productId, collectionIds);
         }
       } else if (type === 'collection') {
         preparePayloadWithSlugAndDescription(payload);
