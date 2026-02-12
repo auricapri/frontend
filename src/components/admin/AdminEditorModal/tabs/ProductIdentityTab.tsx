@@ -57,8 +57,6 @@ export const ProductIdentityTab: React.FC<ProductIdentityTabProps> = ({
   toggleCollectionForProduct,
   t,
 }) => {
-  // Debug: Log categories and collections to verify they're being received
-  console.log('[ProductIdentityTab] categories:', categories?.length || 0, 'collections:', collections?.length || 0);
   return (
     <div className="space-y-20 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">

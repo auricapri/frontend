@@ -54,9 +54,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setAssets, setOrders, setConfig, setSizeGuides, setSuppliers
   } = useAdminData(activeTab);
 
-  // Debug: Log when data changes
-  console.log('[AdminDashboard] Tab:', activeTab, '| Categories:', categories?.length || 0, '| Collections:', collections?.length || 0);
-
   const [marketingSubTab, setMarketingSubTab] = useState<MarketingSubTab>('banners');
   const [editLocale, setEditLocale] = useState<Locale>(locale);
 
