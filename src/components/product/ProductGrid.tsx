@@ -70,39 +70,39 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection, getLoc, onS
   return (
     <div
       onClick={handleClick}
-      className={`flex-none w-[70vw] md:w-[35vw] snap-center group relative aspect-[16/9] overflow-hidden bg-neutral-100 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm transition-all ${
+      className={`flex-none w-[65vw] md:w-[35vw] snap-center group relative aspect-[4/3] md:aspect-[16/9] overflow-hidden bg-neutral-100 rounded-2xl md:rounded-[2.5rem] shadow-sm transition-all ${
         isAvailable ? 'cursor-pointer' : 'cursor-not-allowed opacity-75'
       }`}
     >
       <img
         src={collection.image_url}
         alt={getLoc(collection.name)}
-        className={`w-full h-full object-cover transition-all duration-1000 ${isAvailable ? 'group-hover:scale-105' : 'grayscale'}`}
+        className={`w-full h-full object-cover transition-all duration-1000 ${isAvailable ? 'group-hover:scale-105 group-active:scale-105' : 'grayscale'}`}
       />
 
       {/* Base overlay with title */}
-      <div className="absolute inset-0 bg-black/20 flex flex-col justify-end p-8 text-white">
-        <h3 className="text-2xl font-light tracking-widest uppercase">{getLoc(collection.name)}</h3>
-        <div className={`w-0 h-[1px] bg-white transition-all duration-500 mt-2 opacity-50 ${isAvailable ? 'group-hover:w-full' : ''}`} />
+      <div className="absolute inset-0 bg-black/20 flex flex-col justify-end p-4 md:p-8 text-white">
+        <h3 className="text-lg md:text-2xl font-light tracking-widest uppercase">{getLoc(collection.name)}</h3>
+        <div className={`w-0 h-[1px] bg-white transition-all duration-500 mt-2 opacity-50 ${isAvailable ? 'group-hover:w-full group-active:w-full' : ''}`} />
       </div>
 
-      {/* Countdown overlay - semi-transparent to show image, fades on hover for suspense */}
+      {/* Countdown overlay - semi-transparent to show image, fades on hover/tap for suspense */}
       {hasCountdown && isAvailable && (
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] flex flex-col items-center justify-center text-white transition-all duration-500 group-hover:opacity-0 group-hover:backdrop-blur-0">
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] flex flex-col items-center justify-center text-white transition-all duration-500 group-hover:opacity-0 group-hover:backdrop-blur-0 group-active:opacity-0">
           {/* Collection name at top */}
-          <div className="absolute top-6 left-0 right-0 text-center">
-            <h3 className="text-xl md:text-2xl font-light tracking-[0.2em] uppercase text-white/90">{getLoc(collection.name)}</h3>
+          <div className="absolute top-4 md:top-6 left-0 right-0 text-center">
+            <h3 className="text-base md:text-2xl font-light tracking-[0.15em] md:tracking-[0.2em] uppercase text-white/90">{getLoc(collection.name)}</h3>
           </div>
 
-          {/* Big countdown in center */}
+          {/* Countdown in center */}
           <div className="text-center">
-            <div className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] mb-3 text-orange-400">
+            <div className="text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] mb-2 md:mb-3 text-orange-400">
               {notStartedYet
                 ? (locale === 'pt' ? 'Começa em' : locale === 'es' ? 'Comienza en' : 'Starts in')
                 : (locale === 'pt' ? 'Termina em' : locale === 'es' ? 'Termina en' : 'Ends in')
               }
             </div>
-            <div className="scale-150 md:scale-[1.75]">
+            <div className="scale-125 md:scale-[1.75]">
               <CountdownBadge
                 endsAt={collection.ends_at}
                 startsAt={collection.starts_at}
@@ -112,10 +112,11 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection, getLoc, onS
             </div>
           </div>
 
-          {/* Hint at bottom */}
-          <div className="absolute bottom-6 left-0 right-0 text-center">
-            <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/50">
-              {locale === 'pt' ? 'Passe o mouse para ver' : locale === 'es' ? 'Pasa el mouse para ver' : 'Hover to reveal'}
+          {/* Hint at bottom - different text for mobile */}
+          <div className="absolute bottom-4 md:bottom-6 left-0 right-0 text-center">
+            <div className="text-[8px] md:text-[9px] font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-white/50">
+              <span className="md:hidden">{locale === 'pt' ? 'Toque para ver' : locale === 'es' ? 'Toca para ver' : 'Tap to reveal'}</span>
+              <span className="hidden md:inline">{locale === 'pt' ? 'Passe o mouse para ver' : locale === 'es' ? 'Pasa el mouse para ver' : 'Hover to reveal'}</span>
             </div>
           </div>
         </div>
@@ -316,48 +317,65 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   return (
     <section id="collection" className="w-full bg-white flex flex-col pt-20 pb-4">
 
-      {/* Cart Incentive Banner - Premium design with gradient */}
+      {/* Cart Incentive Banner - Compact mobile, premium desktop */}
       {itemCount > 0 && onGoToCart && (
         <div
           onClick={onGoToCart}
-          className="cursor-pointer mx-6 md:mx-12 mb-6 rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-[1.01] group"
+          className="cursor-pointer mx-4 md:mx-12 mb-4 md:mb-6 group"
         >
-          {/* Gradient background */}
-          <div className="relative bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 text-white px-6 md:px-8 py-5 md:py-6">
-            {/* Animated shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-
-            <div className="relative flex items-center justify-between">
-              <div className="flex items-center gap-4 md:gap-6">
-                {/* Cart icon with pulse animation */}
+          {/* Mobile: Slim minimal bar */}
+          <div className="md:hidden">
+            <div className="flex items-center justify-between bg-neutral-900 text-white px-4 py-3 rounded-2xl shadow-lg">
+              <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-white/20 rounded-full animate-ping" />
-                  <div className="relative bg-white/10 p-3 rounded-full">
-                    <ShoppingBag className="w-6 h-6 md:w-7 md:h-7" />
-                  </div>
-                  <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
+                  <ShoppingBag className="w-5 h-5" />
+                  <span className="absolute -top-1.5 -right-1.5 bg-orange-500 text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {itemCount}
                   </span>
                 </div>
-
-                <div>
-                  <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">
-                    {locale === 'pt' ? 'Seu carrinho' : locale === 'es' ? 'Tu carrito' : 'Your cart'}
-                  </p>
-                  <p className="text-xl md:text-2xl font-light tracking-tight">
-                    <span className="font-bold">{itemCount}</span> {itemCount === 1 ? 'item' : 'itens'}
-                    <span className="mx-2 text-white/30">•</span>
-                    <span className="text-orange-400 font-bold">R$ {subtotal.toFixed(2).replace('.', ',')}</span>
-                  </p>
-                </div>
-              </div>
-
-              {/* CTA Button */}
-              <div className="flex items-center gap-3 bg-white text-black px-5 md:px-6 py-3 rounded-full font-bold group-hover:bg-orange-500 group-hover:text-white transition-colors duration-300">
-                <span className="text-[10px] md:text-xs uppercase tracking-[0.15em]">
-                  {locale === 'pt' ? 'Finalizar' : locale === 'es' ? 'Finalizar' : 'Checkout'}
+                <span className="text-orange-400 font-bold text-sm">
+                  R$ {subtotal.toFixed(2).replace('.', ',')}
                 </span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+              <div className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                {locale === 'pt' ? 'Finalizar' : locale === 'es' ? 'Finalizar' : 'Checkout'}
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop: Premium design with gradient */}
+          <div className="hidden md:block rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-[1.01]">
+            <div className="relative bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 text-white px-8 py-6">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-white/20 rounded-full animate-ping" />
+                    <div className="relative bg-white/10 p-3 rounded-full">
+                      <ShoppingBag className="w-7 h-7" />
+                    </div>
+                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
+                      {itemCount}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">
+                      {locale === 'pt' ? 'Seu carrinho' : locale === 'es' ? 'Tu carrito' : 'Your cart'}
+                    </p>
+                    <p className="text-2xl font-light tracking-tight">
+                      <span className="font-bold">{itemCount}</span> {itemCount === 1 ? 'item' : 'itens'}
+                      <span className="mx-2 text-white/30">•</span>
+                      <span className="text-orange-400 font-bold">R$ {subtotal.toFixed(2).replace('.', ',')}</span>
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-white text-black px-6 py-3 rounded-full font-bold group-hover:bg-orange-500 group-hover:text-white transition-colors duration-300">
+                  <span className="text-xs uppercase tracking-[0.15em]">
+                    {locale === 'pt' ? 'Finalizar' : locale === 'es' ? 'Finalizar' : 'Checkout'}
+                  </span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
               </div>
             </div>
           </div>
