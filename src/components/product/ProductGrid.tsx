@@ -290,62 +290,33 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   return (
     <section id="collection" className="w-full bg-white flex flex-col pt-32 pb-4">
 
-      {/* Cart Incentive Banner - Fixed at top when cart has items */}
+      {/* Cart Incentive Banner - Shows when cart has items */}
       {itemCount > 0 && onGoToCart && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-black text-white">
-          <button
-            onClick={onGoToCart}
-            className="w-full flex items-center justify-between px-6 py-3 hover:bg-neutral-900 transition-colors"
-          >
-            <div className="flex items-center gap-3">
+        <div
+          onClick={onGoToCart}
+          className="cursor-pointer mx-6 md:mx-12 mb-4 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-black"
+        >
+          <div className="text-white px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
               <div className="relative">
-                <ShoppingBag className="w-5 h-5" />
+                <ShoppingBag className="w-6 h-6" />
                 <span className="absolute -top-1.5 -right-1.5 bg-white text-black text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
                   {itemCount}
                 </span>
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest">
-                {itemCount} {itemCount === 1 ? 'item' : 'itens'} no carrinho
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-black">
-                R$ {subtotal.toFixed(2).replace('.', ',')}
-              </span>
-              <div className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full">
-                <span className="text-[9px] font-black uppercase tracking-widest">Finalizar</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </button>
-        </div>
-      )}
-
-      {/* URGENCY BANNER - Shows when there's an active limited collection */}
-      {urgentCollection && (urgentCollection.ends_at || urgentCollection.starts_at) && (
-        <div
-          onClick={() => onSelectCollection(urgentCollection)}
-          className="cursor-pointer mx-6 md:mx-12 mb-4 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
-        >
-          <CountdownBadge
-            endsAt={urgentCollection.ends_at}
-            startsAt={urgentCollection.starts_at}
-            variant="banner"
-            locale={locale}
-          />
-          <div className="bg-neutral-900 text-white px-6 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {urgentCollection.image_url && (
-                <img src={urgentCollection.image_url} alt="" className="w-12 h-12 rounded-xl object-cover" />
-              )}
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
-                  {locale === 'pt' ? 'Não perca' : locale === 'es' ? 'No te lo pierdas' : locale === 'fr' ? 'Ne manquez pas' : "Don't miss"}
+                  {locale === 'pt' ? 'Continue comprando' : locale === 'es' ? 'Sigue comprando' : locale === 'fr' ? 'Continuer vos achats' : 'Continue shopping'}
                 </p>
-                <p className="text-lg font-bold uppercase tracking-wide">{getLoc(urgentCollection.name)}</p>
+                <p className="text-lg font-bold uppercase tracking-wide">
+                  {itemCount} {itemCount === 1 ? 'item' : 'itens'} • R$ {subtotal.toFixed(2).replace('.', ',')}
+                </p>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5 text-white/60" />
+            <div className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full">
+              <span className="text-[9px] font-black uppercase tracking-widest">Finalizar</span>
+              <ArrowRight className="w-4 h-4" />
+            </div>
           </div>
         </div>
       )}
