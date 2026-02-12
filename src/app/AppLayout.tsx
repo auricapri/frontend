@@ -13,6 +13,7 @@ import { LoadingFallback } from '../components/ui/LoadingFallback';
 import { TestBanner } from '../components/common/TestBanner';
 import { TermsConsentModal } from '../components/common/TermsConsentModal';
 import { useTermsConsent } from '../hooks/useTermsConsent';
+import { AbandonedCartToast } from '../components/ui/AbandonedCartToast';
 import { filterProductsForMode } from '../utils/product';
 import { trackingService } from '../services/tracking.service';
 import { ChatProduct } from '../api/ai-chat.api';
@@ -154,6 +155,14 @@ export function AppLayout(props: {
         {app.currentView === 'home' && (
           <div className="min-h-full flex flex-col">
             <Hero onNavigate={app.onNavigate as any} t={app.t} banners={app.banners} locale={app.locale} isLoading={app.isLoading} />
+
+            {/* Abandoned Cart Toast - appears above collection section */}
+            <AbandonedCartToast
+              cartItems={app.cartItems}
+              onOpenCart={() => app.setIsCartOpen(true)}
+              locale={app.locale}
+            />
+
             <Suspense fallback={<LoadingFallback />}>
               <ProductGrid
                 products={app.products}
@@ -261,6 +270,7 @@ export function AppLayout(props: {
                 wishlistIds={app.wishlistIds}
                 onToggleWishlist={app.handleToggleWishlist}
                 onBack={() => app.onNavigate('home', 'collection')}
+                onGoToCart={() => app.onNavigate('checkout')}
                 locale={app.locale}
               />
             </Suspense>
