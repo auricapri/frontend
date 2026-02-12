@@ -2,22 +2,20 @@
 import React, { useMemo } from 'react';
 import { Collection, Product, UserMode, Category } from '../../types';
 import { Locale } from '../../i18n';
-import { ArrowLeft, ShoppingBag, ArrowRight } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { filterProductsForMode } from '../../utils/product';
 import { ProductCard } from './ProductCard';
-import { useCollectionAvailability } from '../ui/CountdownBadge';
-import { useCartContext } from '../../context/CartContext';
+import { CountdownBadge, useCollectionAvailability } from '../ui/CountdownBadge';
 
 interface CollectionDetailProps {
   collection: Collection;
   products: Product[];
-  categories: Category[]; // Added to resolve missing type in Product Card
+  categories: Category[];
   userMode: UserMode;
   onSelectProduct: (product: Product) => void;
   wishlistIds: string[];
   onToggleWishlist: (id: string) => void;
   onBack: () => void;
-  onGoToCart: () => void;
   locale: Locale;
 }
 
@@ -30,13 +28,8 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
   wishlistIds,
   onToggleWishlist,
   onBack,
-  onGoToCart,
   locale,
 }) => {
-  // Cart context for incentive bar
-  const { cartItems, subtotal } = useCartContext();
-  const itemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-
   // Check if collection is available (started and not expired)
   const { isAvailable, isExpired } = useCollectionAvailability(
     collection.starts_at,
@@ -49,10 +42,11 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
       onBack();
     }
   }, [isExpired, onBack]);
+
   // Helper robusto para extrair texto localizado
   const getLoc = (obj: any): string => {
     if (obj === null || obj === undefined) return "";
-    
+
     // Se for string, verifica se é um JSON encodado (comum em migrações de banco)
     if (typeof obj === 'string') {
       if (obj.trim().startsWith('{') || obj.trim().startsWith('[')) {
@@ -71,12 +65,12 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
     if (typeof obj === 'object') {
       const val = obj[locale] || obj['pt'] || obj['en'] || obj['es'] || obj['fr'];
       if (typeof val === 'string') return val;
-      
+
       // Fallback: pega o primeiro valor que seja string
       const firstString = Object.values(obj).find(v => typeof v === 'string');
       return (firstString as string) || "";
     }
-    
+
     return String(obj);
   };
 
@@ -98,48 +92,29 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
   return (
     <div className="w-full bg-white min-h-screen">
 
-      {/* Cart Incentive Banner */}
-      {itemCount > 0 && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-black text-white">
-          <button
-            onClick={onGoToCart}
-            className="w-full flex items-center justify-between px-6 py-3 hover:bg-neutral-900 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <ShoppingBag className="w-5 h-5" />
-                <span className="absolute -top-1.5 -right-1.5 bg-white text-black text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-                  {itemCount}
-                </span>
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-widest">
-                {itemCount} {itemCount === 1 ? 'item' : 'itens'} no carrinho
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-black">
-                R$ {subtotal.toFixed(2).replace('.', ',')}
-              </span>
-              <div className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full">
-                <span className="text-[9px] font-black uppercase tracking-widest">Finalizar</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </button>
+      {/* Collection Countdown Banner */}
+      {collection.ends_at && (
+        <div className="fixed top-0 left-0 right-0 z-50">
+          <CountdownBadge
+            endsAt={collection.ends_at}
+            startsAt={collection.starts_at}
+            variant="banner"
+            locale={locale}
+          />
         </div>
       )}
 
       {/* Banner Section */}
       <div className="relative w-full h-[60vh] md:h-[70vh] bg-neutral-900 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img 
-            src={collection.image_url} 
-            alt={getLoc(collection.name)} 
-            className="w-full h-full object-cover opacity-80" 
+          <img
+            src={collection.image_url}
+            alt={getLoc(collection.name)}
+            className="w-full h-full object-cover opacity-80"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
         </div>
-        
+
         {/* Back Button Overlay */}
         <div className="absolute top-24 left-6 md:left-12 z-20">
            <button onClick={onBack} className="flex items-center gap-3 text-white/80 hover:text-white transition-colors group">
