@@ -22,7 +22,7 @@ interface UseAppStateParams {
 }
 
 export function useAppState(params: UseAppStateParams) {
-  const { products, collections: _collections, isStoreLoading, currentUser, isAuthLoading, onRefetchStoreData } = params;
+  const { products, collections: _collections, isStoreLoading, currentUser, isAuthLoading } = params;
 
   // Locale state
   const [locale, setLocale] = useState<Locale>('pt');
@@ -48,7 +48,6 @@ export function useAppState(params: UseAppStateParams) {
     currentUser,
     isAuthLoading,
     showToast,
-    onRefetchStoreData,
     products,
     isStoreLoading,
   });
@@ -141,7 +140,6 @@ export function useAppState(params: UseAppStateParams) {
     isScrolled: navigation.isScrolled,
     handleScroll: navigation.handleScroll,
     handleNavigate: navigation.handleNavigate,
-    exitAdmin: navigation.exitAdmin,
 
     // Checkout
     pendingCheckout,
