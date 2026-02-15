@@ -11,6 +11,7 @@ interface FooterProps {
   storeConfig: StoreConfig;
   onNavigate: (view: 'home' | 'collection' | 'about' | 'privacy' | 'terms', target?: string) => void;
   onOpenFAQ?: () => void;
+  onOpenAuth?: () => void;
 }
 
 /** Strips non-digit chars from phone for tel: links */
@@ -24,11 +25,21 @@ const Footer: React.FC<FooterProps> = ({
   onChangeLocale: _onChangeLocale,
   storeConfig,
   onNavigate,
-  onOpenFAQ
+  onOpenFAQ,
+  onOpenAuth
 }) => {
   const handleScrollToContact = () => {
     const el = document.getElementById('footer-contact');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // If not on home page, navigate home first, then scroll
+      onNavigate('home');
+      setTimeout(() => {
+        const contactEl = document.getElementById('footer-contact');
+        if (contactEl) contactEl.scrollIntoView({ behavior: 'smooth' });
+      }, 500);
+    }
   };
 
   return (
@@ -120,7 +131,7 @@ const Footer: React.FC<FooterProps> = ({
               </button>
             </li>
             <li>
-              <button onClick={() => onNavigate('terms')} className="hover:text-white transition-colors uppercase tracking-wide text-left">
+              <button onClick={onOpenFAQ} className="hover:text-white transition-colors uppercase tracking-wide text-left">
                 Envios & Devoluções
               </button>
             </li>
@@ -130,9 +141,9 @@ const Footer: React.FC<FooterProps> = ({
               </button>
             </li>
             <li>
-              <a href="/affiliates" className="hover:text-white transition-colors uppercase tracking-wide text-left">
+              <button onClick={onOpenAuth} className="hover:text-white transition-colors uppercase tracking-wide text-left">
                 Programa de Afiliados
-              </a>
+              </button>
             </li>
           </ul>
         </div>

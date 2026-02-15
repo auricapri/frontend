@@ -70,13 +70,16 @@ export function useNavigation(params: UseNavigationParams) {
     if (pathname.startsWith('/order-review/')) return 'order-review';
     if (pathname.startsWith('/wishlist/')) return 'shared-wishlist';
     if (pathname.startsWith('/search/')) return 'search-results';
-    if (pathname.startsWith('/product')) return 'product';
-    if (pathname.startsWith('/collection')) return 'collection';
+    if (pathname === '/product') return 'home';
+    if (pathname.startsWith('/product/')) return 'product';
+    if (pathname === '/collection') return 'home';
+    if (pathname.startsWith('/collection/')) return 'collection';
     if (pathname === '/privacy') return 'privacy';
     if (pathname === '/terms') return 'terms';
     if (pathname === '/contact') return 'home';
     if (pathname === '/shipping') return 'terms';
     if (pathname === '/faq') return 'home';
+    if (pathname === '/affiliates') return 'home';
     if (pathname === '/products') return 'home';
     if (pathname === '/collections') return 'new-arrivals';
     if (pathname === '/admin/marketplace-callback') return 'marketplace-callback';

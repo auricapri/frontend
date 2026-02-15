@@ -302,7 +302,7 @@ const Navbar: React.FC<NavbarProps> = ({
       <div
         className={`fixed left-0 w-full z-40 transition-all duration-700 ease-out overflow-hidden
           ${isSearchOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
-          ${isSolid ? 'top-16 md:top-14' : 'top-32 md:top-24'}
+          ${isSolid ? 'top-24 md:top-[5.5rem]' : 'top-40 md:top-32'}
         `}
         style={{ marginTop: showTestBanner ? '48px' : '0' }}
       >
@@ -481,7 +481,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     onClick={(e) => { e.preventDefault(); handleNav('about'); }}
                     className="block w-full text-3xl md:text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left no-underline text-inherit"
                   >
-                    Sobre Nos
+                    Sobre Nós
                   </a>
                 </div>
               </div>
