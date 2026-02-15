@@ -38,7 +38,10 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
     message: '',
     type: 'info',
   });
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  });
   const [activeTab, setActiveTab] = useState<'today' | 'coleta' | 'history' | 'notifications'>('today');
   const [busyAction, setBusyAction] = useState(false);
 
