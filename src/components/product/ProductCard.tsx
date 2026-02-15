@@ -69,7 +69,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   // Calculate price and discount
   const mainVariant = product.variants?.[0];
-  const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode) : 0;
+  const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode, product) : 0;
   const priceResult = getProductDisplayPrice(rawPrice, product.id, coupons);
   const { original, final, hasDiscount } = priceResult;
   // Strip leading dash from discountDisplay for badge format ("10% OFF" not "-10% OFF")
@@ -161,6 +161,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           src={displayImg}
           alt={getLoc(product.name)}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+          width={400}
+          height={aspectRatio === 'portrait' ? 533 : 400}
         />
 
         {/* Discount Badge - Domino Style */}

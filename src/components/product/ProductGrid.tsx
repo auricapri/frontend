@@ -180,7 +180,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   const scrollToFilters = () => {
     // Specific container from App.tsx
-    const mainContainer = document.getElementById('main-scroll-container');
+    const mainContainer = document.getElementById('main-content');
     // Non-sticky anchor point above filters
     const anchor = document.getElementById('grid-anchor');
 
@@ -518,7 +518,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <div className={`grid ${
                 isFiltersOpen
                   ? 'grid-cols-2 md:grid-cols-3'
-                  : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+                  : currentProducts.length <= 3
+                    ? 'grid-cols-2 md:grid-cols-3'
+                    : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
               }`}>
                 {!isLoading && currentProducts.map(p => (
                   <ProductCard

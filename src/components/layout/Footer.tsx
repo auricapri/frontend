@@ -1,9 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
-import { ShieldCheck, CreditCard, Lock, MapPin, Mail, Phone, FileText, RefreshCw, Truck } from 'lucide-react';
+import React from 'react';
+import { ShieldCheck, CreditCard, Lock, MapPin, Mail, Phone, FileText, RefreshCw, Truck, Instagram } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { StoreConfig } from '../../types';
-import { getVersion } from '../../utils/version';
 
 interface FooterProps {
   t: (key: string) => string;
@@ -14,6 +13,11 @@ interface FooterProps {
   onOpenFAQ?: () => void;
 }
 
+/** Strips non-digit chars from phone for tel: links */
+function cleanPhoneForTel(phone: string): string {
+  return phone.replace(/\D/g, '');
+}
+
 const Footer: React.FC<FooterProps> = ({
   t,
   currentLocale: _currentLocale,
@@ -22,12 +26,6 @@ const Footer: React.FC<FooterProps> = ({
   onNavigate,
   onOpenFAQ
 }) => {
-  const [version, setVersion] = useState<string>('');
-
-  useEffect(() => {
-    getVersion().then(setVersion);
-  }, []);
-  
   const handleScrollToContact = () => {
     const el = document.getElementById('footer-contact');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -36,7 +34,7 @@ const Footer: React.FC<FooterProps> = ({
   return (
     <footer className="w-full bg-neutral-900 text-white py-16 px-6 md:px-12 border-t border-neutral-800">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 border-b border-neutral-800 pb-16">
-        
+
         {/* Brand & Corporate Info */}
         <div className="space-y-8">
           <div className="space-y-4">
@@ -64,11 +62,24 @@ const Footer: React.FC<FooterProps> = ({
                </a>
              )}
              {storeConfig.support_phone && (
-               <a href={`tel:${storeConfig.support_phone}`} className="flex items-center gap-3 text-[10px] text-neutral-500 font-medium uppercase tracking-widest hover:text-white transition-colors">
+               <a href={`tel:+${cleanPhoneForTel(storeConfig.support_phone)}`} className="flex items-center gap-3 text-[10px] text-neutral-500 font-medium uppercase tracking-widest hover:text-white transition-colors">
                   <Phone className="w-3 h-3" />
                   <span>{storeConfig.support_phone}</span>
                </a>
              )}
+          </div>
+
+          {/* Social Links */}
+          <div className="flex items-center gap-4 pt-2">
+            <a
+              href="https://www.instagram.com/auricapri"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="text-neutral-500 hover:text-white transition-colors"
+            >
+              <Instagram className="w-5 h-5" />
+            </a>
           </div>
         </div>
 
@@ -105,17 +116,17 @@ const Footer: React.FC<FooterProps> = ({
             </li>
             <li>
               <button onClick={handleScrollToContact} className="hover:text-white transition-colors uppercase tracking-wide text-left">
-                Contact
+                Contato
               </button>
             </li>
             <li>
               <button onClick={() => onNavigate('terms')} className="hover:text-white transition-colors uppercase tracking-wide text-left">
-                Shipping & Returns
+                Envios & Devoluções
               </button>
             </li>
             <li>
               <button onClick={onOpenFAQ} className="hover:text-white transition-colors uppercase tracking-wide text-left">
-                FAQ
+                Perguntas Frequentes
               </button>
             </li>
           </ul>
@@ -133,9 +144,9 @@ const Footer: React.FC<FooterProps> = ({
              <ShieldCheck className="w-8 h-8 stroke-[0.8] opacity-60" />
           </div>
           <p className="text-[9px] text-neutral-600 leading-relaxed max-w-[150px]">
-            Payments processed securely by Auricapri Cloud Protocol.
+            Pagamentos processados com segurança via Asaas.
           </p>
-          
+
           {/* Trust Badges */}
           <div className="flex flex-col gap-3 pt-4 border-t border-neutral-700">
             <div className="flex items-center gap-2 text-neutral-400">
@@ -153,7 +164,7 @@ const Footer: React.FC<FooterProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Bottom Bar */}
       <div className="mt-8 flex flex-col md:flex-row justify-between items-center text-[10px] text-neutral-500 uppercase tracking-widest font-medium">
         <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
@@ -163,11 +174,6 @@ const Footer: React.FC<FooterProps> = ({
               <button onClick={() => onNavigate('terms')} className="hover:text-white transition-colors font-bold uppercase">{t('footer.terms')}</button>
             </div>
         </div>
-        {version && (
-          <div className="text-[9px] text-neutral-600 mt-2 md:mt-0">
-            v.{version}
-          </div>
-        )}
       </div>
     </footer>
   );

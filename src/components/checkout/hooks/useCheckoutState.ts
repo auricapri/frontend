@@ -156,7 +156,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
 
   // Scroll to top on step change
   useEffect(() => {
-    const mainContainer = document.getElementById('main-scroll-container');
+    const mainContainer = document.getElementById('main-content');
     if (mainContainer) {
       mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
