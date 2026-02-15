@@ -1,26 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
-const messages = [
-  'FRETE GRATIS ACIMA DE R$299',
-  'TROCA GRATIS EM ATE 30 DIAS',
-  'PARCELE EM ATE 6X SEM JUROS'
-];
+const MESSAGE = 'FRETE GRÁTIS ACIMA DE R$299  ·  TROCA GRÁTIS EM ATÉ 30 DIAS  ·  PARCELE EM ATÉ 6X SEM JUROS  ·  ';
 
 export function BenefitsBar() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % messages.length);
-    }, 3500);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <div className="w-full h-8 bg-black flex items-center justify-center z-50 relative">
-      <p className="text-white text-[9px] uppercase tracking-wider font-medium transition-opacity duration-500">
-        {messages[currentIndex]}
-      </p>
+    <div className="fixed top-0 left-0 w-full h-8 bg-black z-[51] overflow-hidden flex items-center">
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
+      <div
+        className="whitespace-nowrap flex items-center"
+        style={{ animation: 'marquee 25s linear infinite' }}
+      >
+        <span className="text-white text-[10px] uppercase tracking-wider font-medium px-4">
+          {MESSAGE}
+        </span>
+        <span className="text-white text-[10px] uppercase tracking-wider font-medium px-4">
+          {MESSAGE}
+        </span>
+      </div>
     </div>
   );
 }

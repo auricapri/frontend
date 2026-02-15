@@ -193,8 +193,8 @@ export function AppLayout(props: {
         userMode={app.userMode}
         onToggleMode={() => app.setUserMode((prev) => (prev === UserMode.VAREJO ? UserMode.ATACADO : UserMode.VAREJO))}
         onNavigate={app.onNavigate}
-        isScrolled={app.currentView === 'home' && app.isScrolled}
-        isProductView={app.currentView === 'product' || app.currentView === 'collection' || app.currentView === 'new-arrivals' || app.currentView === 'search-results'}
+        isScrolled={app.currentView !== 'home' || app.isScrolled}
+        isProductView={app.currentView === 'product' || app.currentView === 'collection'}
         onBack={() => app.onNavigate('home', 'collection')}
         isLoggedIn={!!app.currentUser}
         t={app.t}
@@ -267,6 +267,7 @@ export function AppLayout(props: {
               storeConfig={app.storeConfig}
               onNavigate={app.onNavigate}
               onOpenFAQ={() => setIsFAQOpen(true)}
+              onOpenAuth={() => app.setIsAuthOpen(true)}
             />
 
             {/* WhatsApp Button */}
@@ -337,6 +338,7 @@ export function AppLayout(props: {
               storeConfig={app.storeConfig}
               onNavigate={app.onNavigate}
               onOpenFAQ={() => setIsFAQOpen(true)}
+              onOpenAuth={() => app.setIsAuthOpen(true)}
             />
           </>
         )}
@@ -377,6 +379,7 @@ export function AppLayout(props: {
               storeConfig={app.storeConfig}
               onNavigate={app.onNavigate}
               onOpenFAQ={() => setIsFAQOpen(true)}
+              onOpenAuth={() => app.setIsAuthOpen(true)}
             />
           </>
         )}
@@ -478,6 +481,7 @@ export function AppLayout(props: {
               storeConfig={app.storeConfig}
               onNavigate={app.onNavigate}
               onOpenFAQ={() => setIsFAQOpen(true)}
+              onOpenAuth={() => app.setIsAuthOpen(true)}
             />
           </>
         )}
