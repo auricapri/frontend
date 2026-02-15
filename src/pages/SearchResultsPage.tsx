@@ -222,13 +222,49 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
               ))}
             </div>
           ) : (
-            <div className="text-center py-20">
-              <p className="text-xl text-neutral-400 mb-2">
-                {t('search.noResults')}
-              </p>
-              <p className="text-sm text-neutral-500">
-                {t('search.tryDifferent')}
-              </p>
+            <div className="py-20">
+              <div className="text-center mb-12">
+                <p className="text-xl text-neutral-400 mb-2">
+                  {t('search.noResults')}
+                </p>
+                <p className="text-sm text-neutral-500">
+                  {t('search.tryDifferent')}
+                </p>
+              </div>
+
+              {/* Popular Products */}
+              {(() => {
+                const highlightProducts = products.filter(p => p.is_highlight);
+                const popularProducts = highlightProducts.length > 0
+                  ? highlightProducts.slice(0, 4)
+                  : products.slice(0, 4);
+                if (popularProducts.length === 0) return null;
+                return (
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-neutral-600 mb-6">
+                      {t('search.popularProducts')}
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4">
+                      {popularProducts.map((product) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          userMode={userMode}
+                          locale={locale}
+                          variant="grid"
+                          showWishlist={true}
+                          showQuickAdd={false}
+                          showDiscountBadge={true}
+                          showColorSwatches={true}
+                          isWishlisted={wishlistIds.includes(product.id)}
+                          onToggleWishlist={onToggleWishlist}
+                          onClick={() => onSelectProduct(product)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
 

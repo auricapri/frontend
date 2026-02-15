@@ -87,7 +87,8 @@ const Navbar: React.FC<NavbarProps> = ({
 
   // Check if test banner is visible
   const showTestBanner = import.meta.env.VITE_SHOW_TEST_BANNER === 'true';
-  const topOffset = showTestBanner ? 'top-12' : 'top-0';
+  // Benefits bar is always h-8 (32px = top-8), test banner adds h-12 (48px)
+  const topOffset = showTestBanner ? 'top-20' : 'top-8';
 
   const handleNav = (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals', target?: string) => {
     onNavigate(view, target);
@@ -106,7 +107,7 @@ const Navbar: React.FC<NavbarProps> = ({
       <header>
       <nav
         className={`fixed ${topOffset} left-0 w-full z-50 transition-all duration-700 select-none will-change-transform
-          ${isSolid ? 'h-24 md:h-20' : 'h-32 md:h-24'}
+          ${isSolid ? 'h-16 md:h-14' : 'h-32 md:h-24'}
         `}
         style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
@@ -129,7 +130,7 @@ const Navbar: React.FC<NavbarProps> = ({
             <a
               href="/"
               onClick={(e) => { e.preventDefault(); handleNav('home'); }}
-              className="text-2xl font-light tracking-[0.3em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 no-underline text-inherit"
+              className={`${isSolid ? 'text-lg' : 'text-2xl'} font-light tracking-[0.3em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 no-underline text-inherit`}
             >
               {storeName}
             </a>
@@ -238,7 +239,7 @@ const Navbar: React.FC<NavbarProps> = ({
             <a
               href="/"
               onClick={(e) => { e.preventDefault(); handleNav('home'); }}
-              className="text-4xl font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2 no-underline text-inherit inline-block"
+              className={`${isSolid ? 'text-xl' : 'text-4xl'} font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2 no-underline text-inherit inline-block`}
             >
               {storeName}
             </a>
@@ -301,7 +302,7 @@ const Navbar: React.FC<NavbarProps> = ({
       <div
         className={`fixed left-0 w-full z-40 transition-all duration-700 ease-out overflow-hidden
           ${isSearchOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
-          ${isSolid ? 'top-24 md:top-20' : 'top-32 md:top-24'}
+          ${isSolid ? 'top-16 md:top-14' : 'top-32 md:top-24'}
         `}
         style={{ marginTop: showTestBanner ? '48px' : '0' }}
       >
@@ -407,17 +408,10 @@ const Navbar: React.FC<NavbarProps> = ({
                     {t('gender.female')}
                   </button>
                   <button
-                    onClick={() => {
-                      onGenderChange?.(Gender.MALE);
-                      setIsMenuOpen(false);
-                    }}
-                    className={`flex-1 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all ${
-                      selectedGender === Gender.MALE
-                        ? 'bg-black text-white'
-                        : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200'
-                    }`}
+                    disabled
+                    className="flex-1 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all bg-neutral-100 text-neutral-500 opacity-50 cursor-not-allowed"
                   >
-                    {t('gender.male')}
+                    {t('gender.male')} (Em breve)
                   </button>
                 </div>
               </div>

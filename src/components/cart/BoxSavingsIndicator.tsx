@@ -65,8 +65,8 @@ export function calculateQuantityDiscount(
   // Round percentage to nearest integer
   const roundedPercent = Math.round(discountPercent);
 
-  // Show as percent if >= 3%, otherwise show as R$ value
-  const showAsPercent = roundedPercent >= 3;
+  // Always show as R$ value (not percentage) for clarity
+  const showAsPercent = false;
 
   // Calculate potential extra savings if box was completed
   const potentialExtraSavings = slotsRemaining * savingsPerItem;
@@ -132,18 +132,18 @@ const BoxSavingsIndicator: React.FC<BoxSavingsIndicatorProps> = ({
 
       if (locale === 'pt') {
         return {
-          main: `Adicione +${slotsRemaining} e ganhe`,
+          main: `Adicione +${slotsRemaining} e economize ${potentialText} no frete`,
           sub: potentialText,
         };
       }
       if (locale === 'es') {
         return {
-          main: `Añade +${slotsRemaining} y gana`,
+          main: `Añade +${slotsRemaining} y ahorra ${potentialText} en envio`,
           sub: potentialText,
         };
       }
       return {
-        main: `Add +${slotsRemaining} and get`,
+        main: `Add +${slotsRemaining} and save ${potentialText} on shipping`,
         sub: potentialText,
       };
     }

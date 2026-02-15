@@ -74,6 +74,11 @@ export function useNavigation(params: UseNavigationParams) {
     if (pathname.startsWith('/collection')) return 'collection';
     if (pathname === '/privacy') return 'privacy';
     if (pathname === '/terms') return 'terms';
+    if (pathname === '/contact') return 'home';
+    if (pathname === '/shipping') return 'terms';
+    if (pathname === '/faq') return 'home';
+    if (pathname === '/products') return 'home';
+    if (pathname === '/collections') return 'new-arrivals';
     if (pathname === '/admin/marketplace-callback') return 'marketplace-callback';
     if (pathname === '/') return 'home';
     return '404';
