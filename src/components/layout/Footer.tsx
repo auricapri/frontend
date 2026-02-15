@@ -9,7 +9,7 @@ interface FooterProps {
   currentLocale: Locale;
   onChangeLocale: (locale: Locale) => void;
   storeConfig: StoreConfig;
-  onNavigate: (view: 'home' | 'collection' | 'about' | 'privacy' | 'terms', target?: string) => void;
+  onNavigate: (view: 'home' | 'collection' | 'about' | 'privacy' | 'terms' | 'shipping', target?: string) => void;
   onOpenFAQ?: () => void;
   onOpenAuth?: () => void;
 }
@@ -131,7 +131,7 @@ const Footer: React.FC<FooterProps> = ({
               </button>
             </li>
             <li>
-              <button onClick={onOpenFAQ} className="hover:text-white transition-colors uppercase tracking-wide text-left">
+              <button onClick={() => onNavigate('shipping')} className="hover:text-white transition-colors uppercase tracking-wide text-left">
                 Envios & Devoluções
               </button>
             </li>

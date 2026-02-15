@@ -21,6 +21,7 @@ export type AppView =
   | 'order-review'
   | 'privacy'
   | 'terms'
+  | 'shipping'
   | 'search-results'
   | 'marketplace-callback'
   | '404';
@@ -77,7 +78,7 @@ export function useNavigation(params: UseNavigationParams) {
     if (pathname === '/privacy') return 'privacy';
     if (pathname === '/terms') return 'terms';
     if (pathname === '/contact') return 'home';
-    if (pathname === '/shipping') return 'terms';
+    if (pathname === '/shipping') return 'shipping';
     if (pathname === '/faq') return 'home';
     if (pathname === '/affiliates') return 'home';
     if (pathname === '/products') return 'home';
@@ -202,6 +203,7 @@ export function useNavigation(params: UseNavigationParams) {
             'reset-password': '/reset-password',
             privacy: '/privacy',
             terms: '/terms',
+            shipping: '/shipping',
             'search-results': '/search',
           };
           path = routes[view] || '/';

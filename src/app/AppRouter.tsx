@@ -8,6 +8,7 @@ const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage').then(m => 
 const ResetPasswordPage = React.lazy(() => import('../pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const PrivacyPolicyPage = React.lazy(() => import('../pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })));
 const TermsPage = React.lazy(() => import('../pages/TermsPage').then(m => ({ default: m.TermsPage })));
+const ShippingReturnsPage = React.lazy(() => import('../pages/ShippingReturnsPage').then(m => ({ default: m.ShippingReturnsPage })));
 const AboutUs = React.lazy(() => import('../components/shared/AboutUs'));
 const OrderReceipt = React.lazy(() => import('../components/orders/OrderReceipt'));
 const SharedWishlistPage = React.lazy(() => import('../pages/SharedWishlistPage'));
@@ -73,6 +74,14 @@ export function AppRouter(props: {
     return (
       <Suspense fallback={<LoadingFallback />}>
         <TermsPage config={storeConfig} locale={app.locale} onBack={() => app.onNavigate('home')} />
+      </Suspense>
+    );
+  }
+
+  if (app.currentView === 'shipping') {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <ShippingReturnsPage locale={app.locale} onBack={() => app.onNavigate('home')} />
       </Suspense>
     );
   }
