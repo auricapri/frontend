@@ -204,7 +204,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
         <div className="mt-12 p-8 bg-white rounded-3xl border border-neutral-100 flex items-center gap-5 shadow-sm">
           <ShieldCheck className="w-6 h-6 text-neutral-300" />
           <span className="text-xs font-black uppercase tracking-widest text-neutral-600 leading-loose">
-            Transação protegida por criptografia militar de 256 bits via Auricapri Cloud Protocol.
+            Pagamento seguro via Asaas. Seus dados são protegidos com criptografia SSL 256 bits.
           </span>
         </div>
       </div>

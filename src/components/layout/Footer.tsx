@@ -155,12 +155,16 @@ const Footer: React.FC<FooterProps> = ({
              <Lock className="w-3 h-3" />
              <span className="text-[9px] uppercase tracking-wider">{t('footer.ssl')}</span>
           </div>
-          <div className="flex gap-4 text-neutral-400 pt-2">
-             <CreditCard className="w-8 h-8 stroke-[0.8] opacity-60" />
-             <ShieldCheck className="w-8 h-8 stroke-[0.8] opacity-60" />
+          <div className="flex flex-wrap gap-2 pt-2">
+            {/* Payment method badges */}
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Pix</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Visa</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Master</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Elo</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Boleto</span>
           </div>
-          <p className="text-[9px] text-neutral-600 leading-relaxed max-w-[150px]">
-            Pagamentos processados com segurança via Asaas.
+          <p className="text-[9px] text-neutral-600 leading-relaxed max-w-[180px]">
+            Pagamentos processados com segurança via Asaas. Dados protegidos com criptografia SSL.
           </p>
 
           {/* Trust Badges */}

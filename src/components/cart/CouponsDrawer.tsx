@@ -40,14 +40,14 @@ const CouponsDrawer: React.FC<CouponsDrawerProps> = ({ isOpen, onClose, t }) => 
   };
 
   const formatExpires = (coupon: Coupon): string => {
-    if (!coupon.expires_at) return 'No expiration';
+    if (!coupon.expires_at) return 'Sem expiração';
     const expires = new Date(coupon.expires_at);
     const now = new Date();
     const daysLeft = Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysLeft < 0) return 'Expired';
-    if (daysLeft === 0) return 'Expires today';
-    if (daysLeft === 1) return 'Expires tomorrow';
-    return `Expires in ${daysLeft} days`;
+    if (daysLeft < 0) return 'Expirado';
+    if (daysLeft === 0) return 'Expira hoje';
+    if (daysLeft === 1) return 'Expira amanhã';
+    return `Expira em ${daysLeft} dias`;
   };
 
   const getCouponColor = (coupon: Coupon): string => {
@@ -92,15 +92,15 @@ const CouponsDrawer: React.FC<CouponsDrawerProps> = ({ isOpen, onClose, t }) => 
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-gray-50/50 no-scrollbar">
-           <p className="text-sm text-gray-500 mb-6">Available offers for your next purchase.</p>
+           <p className="text-sm text-gray-500 mb-6">Ofertas disponíveis para sua próxima compra.</p>
            
            {isLoading ? (
              <div className="flex items-center justify-center py-12">
-               <p className="text-sm text-gray-400">Loading coupons...</p>
+               <p className="text-sm text-gray-400">Carregando ofertas...</p>
              </div>
            ) : coupons.length === 0 ? (
              <div className="flex items-center justify-center py-12">
-               <p className="text-sm text-gray-400">No coupons available at the moment.</p>
+               <p className="text-sm text-gray-400">Nenhuma oferta disponível no momento.</p>
              </div>
            ) : (
              <div className="space-y-4">
@@ -111,9 +111,9 @@ const CouponsDrawer: React.FC<CouponsDrawerProps> = ({ isOpen, onClose, t }) => 
                           <span className={`inline-block text-[10px] font-bold px-2 py-1 rounded mb-2 uppercase tracking-wider ${getCouponColor(coupon)}`}>
                               {formatDiscount(coupon)} OFF
                           </span>
-                          <h3 className="text-sm font-medium text-gray-900">Coupon Code: {coupon.code}</h3>
+                          <h3 className="text-sm font-medium text-gray-900">Código: {coupon.code}</h3>
                           {coupon.min_purchase_amount && (
-                            <p className="text-xs text-gray-500 mt-1">Min. purchase: R$ {coupon.min_purchase_amount.toFixed(2)}</p>
+                            <p className="text-xs text-gray-500 mt-1">Compra mínima: R$ {coupon.min_purchase_amount.toFixed(2)}</p>
                           )}
                           <p className="text-xs text-gray-400 mt-1">{formatExpires(coupon)}</p>
                         </div>
@@ -128,12 +128,12 @@ const CouponsDrawer: React.FC<CouponsDrawerProps> = ({ isOpen, onClose, t }) => 
                            {copiedCode === coupon.code ? (
                                <>
                                   <Check className="w-3 h-3 text-green-500" />
-                                  <span className="text-green-500">Copied</span>
+                                  <span className="text-green-500">Copiado</span>
                                </>
                            ) : (
                                <>
                                   <Copy className="w-3 h-3" />
-                                  <span>Copy</span>
+                                  <span>Copiar</span>
                                </>
                            )}
                         </button>
