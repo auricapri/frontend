@@ -143,7 +143,7 @@ BEGIN
         'name', COALESCE(prod1.name, jsonb_build_object('pt', 'Produto 1')),
         'quantity', 1,
         'price', COALESCE(var1.retail_price, 199.90),
-        'image', COALESCE((prod1.base_images->0)::text, '""'),
+        'image', COALESCE(prod1.base_images[1], ''),
         'size', COALESCE(var1.size, 'M'),
         'color_name', COALESCE(var1.color_name, jsonb_build_object('pt', 'Preto')),
         'sku', COALESCE(var1.sku, 'SKU001')
@@ -154,7 +154,7 @@ BEGIN
         'name', COALESCE(prod2.name, jsonb_build_object('pt', 'Produto 2')),
         'quantity', 2,
         'price', COALESCE(var2.retail_price, 249.90),
-        'image', COALESCE((prod2.base_images->0)::text, '""'),
+        'image', COALESCE(prod2.base_images[1], ''),
         'size', COALESCE(var2.size, 'P'),
         'color_name', COALESCE(var2.color_name, jsonb_build_object('pt', 'Branco')),
         'sku', COALESCE(var2.sku, 'SKU002')
@@ -190,7 +190,7 @@ BEGIN
         'name', COALESCE(prod3.name, jsonb_build_object('pt', 'Produto 3')),
         'quantity', 1,
         'price', COALESCE(var3.retail_price, 179.90),
-        'image', COALESCE((COALESCE(prod3.base_images, prod1.base_images)->0)::text, '""'),
+        'image', COALESCE(prod3.base_images[1], prod1.base_images[1], ''),
         'size', COALESCE(var3.size, 'G'),
         'color_name', COALESCE(var3.color_name, jsonb_build_object('pt', 'Rosa')),
         'sku', COALESCE(var3.sku, 'SKU003')
@@ -226,7 +226,7 @@ BEGIN
         'name', COALESCE(prod1.name, jsonb_build_object('pt', 'Produto 1')),
         'quantity', 2,
         'price', COALESCE(var1.retail_price, 199.90),
-        'image', COALESCE((prod1.base_images->0)::text, '""'),
+        'image', COALESCE(prod1.base_images[1], ''),
         'size', COALESCE(var1.size, 'G'),
         'color_name', COALESCE(var1.color_name, jsonb_build_object('pt', 'Preto')),
         'sku', COALESCE(var1.sku, 'SKU001')
@@ -237,7 +237,7 @@ BEGIN
         'name', COALESCE(prod2.name, jsonb_build_object('pt', 'Produto 2')),
         'quantity', 1,
         'price', COALESCE(var2.retail_price, 249.90),
-        'image', COALESCE((prod2.base_images->0)::text, '""'),
+        'image', COALESCE(prod2.base_images[1], ''),
         'size', COALESCE(var2.size, 'M'),
         'color_name', COALESCE(var2.color_name, jsonb_build_object('pt', 'Branco')),
         'sku', COALESCE(var2.sku, 'SKU002')
@@ -273,7 +273,7 @@ BEGIN
         'name', COALESCE(prod1.name, jsonb_build_object('pt', 'Produto 1')),
         'quantity', 1,
         'price', COALESCE(var1.retail_price, 199.90),
-        'image', COALESCE((prod1.base_images->0)::text, '""'),
+        'image', COALESCE(prod1.base_images[1], ''),
         'size', COALESCE(var1.size, 'P'),
         'color_name', COALESCE(var1.color_name, jsonb_build_object('pt', 'Preto')),
         'sku', COALESCE(var1.sku, 'SKU001')

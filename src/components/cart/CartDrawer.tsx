@@ -156,9 +156,9 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
             </div>
             {boxDiscount > 0 && (
               <p className="text-[9px] text-green-600 mb-2 text-right font-bold uppercase tracking-wider">
-                {locale === 'pt' ? `Economia de ${formatCurrency(boxDiscount, locale)} no frete` :
-                 locale === 'es' ? `Ahorro de ${formatCurrency(boxDiscount, locale)} en envío` :
-                 `Saving ${formatCurrency(boxDiscount, locale)} on shipping`}
+                {locale === 'pt' ? `Economia de ${formatCurrency(boxDiscount, locale)}` :
+                 locale === 'es' ? `Ahorro de ${formatCurrency(boxDiscount, locale)}` :
+                 `Saving ${formatCurrency(boxDiscount, locale)}`}
               </p>
             )}
             {(originalSubtotal > subtotal) && (
@@ -168,7 +168,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                  `Discount of ${formatCurrency(originalSubtotal - subtotal, locale)}`}
               </p>
             )}
-            <p className="text-[9px] text-green-600 mb-8 text-center uppercase tracking-widest font-black mt-4">{t('cart.freeShipping')}</p>
+            <div className="mb-8 mt-4" />
             <button 
               onClick={onCheckout}
               className="w-full bg-black text-white py-8 rounded-[2rem] flex items-center justify-between px-10 hover:bg-neutral-800 transition-all shadow-2xl active:scale-95 group"

@@ -132,18 +132,18 @@ const BoxSavingsIndicator: React.FC<BoxSavingsIndicatorProps> = ({
 
       if (locale === 'pt') {
         return {
-          main: `Adicione +${slotsRemaining} e economize ${potentialText} no frete`,
+          main: `Adicione +${slotsRemaining} e economize ${potentialText}`,
           sub: potentialText,
         };
       }
       if (locale === 'es') {
         return {
-          main: `Añade +${slotsRemaining} y ahorra ${potentialText} en envio`,
+          main: `Añade +${slotsRemaining} y ahorra ${potentialText}`,
           sub: potentialText,
         };
       }
       return {
-        main: `Add +${slotsRemaining} and save ${potentialText} on shipping`,
+        main: `Add +${slotsRemaining} and save ${potentialText}`,
         sub: potentialText,
       };
     }
