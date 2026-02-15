@@ -46,6 +46,11 @@ export function ProductInfo(props: {
           {activeCoupon && <span className="text-lg font-bold text-neutral-400 line-through decoration-red-400 decoration-2">{formatCurrency(rawPrice, locale)}</span>}
           <span className={`text-2xl font-light tracking-tighter ${activeCoupon ? 'text-red-500' : 'text-black'}`}>{formatCurrency(finalPrice, locale)}</span>
         </div>
+        {finalPrice > 0 && (
+          <span className="text-xs text-neutral-500 mt-1">
+            ou <span className="font-bold text-black">6x de {formatCurrency(finalPrice / 6, locale)}</span> sem juros
+          </span>
+        )}
         {typeof stockQuantity === 'number' && stockQuantity <= 10 && stockQuantity > 0 && (
           <span className="text-[10px] font-bold uppercase tracking-widest text-red-500 mt-2 animate-pulse">Últimas {stockQuantity} unidades</span>
         )}
