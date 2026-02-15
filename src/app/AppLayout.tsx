@@ -182,7 +182,7 @@ export function AppLayout(props: {
       </a>
 
       <TestBanner />
-      <BenefitsBar />
+      <BenefitsBar banners={app.banners} locale={app.locale} />
       <Navbar
         cartCount={app.cartItems.reduce((acc: number, item: any) => acc + item.quantity, 0)}
         onOpenCart={() => app.setIsCartOpen(true)}
