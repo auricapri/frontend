@@ -4,7 +4,6 @@ import { HomePage } from '../pages/HomePage';
 import { ProductPage } from '../pages/ProductPage';
 import { CollectionPage } from '../pages/CollectionPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
-import { AdminPage } from '../pages/AdminPage';
 import { AboutPage } from '../pages/AboutPage';
 import { ReceiptPage } from '../pages/ReceiptPage';
 import { OrderReviewPage } from '../pages/OrderReviewPage';
@@ -13,7 +12,6 @@ import {
   ProductPageProps,
   CollectionPageProps,
   CheckoutPageProps,
-  AdminPageProps,
   AboutPageProps,
   ReceiptPageProps,
   OrderReviewPageProps
@@ -25,7 +23,6 @@ interface RouterProps {
   productProps?: ProductPageProps;
   collectionProps?: CollectionPageProps;
   checkoutProps?: CheckoutPageProps;
-  adminProps?: AdminPageProps;
   aboutProps?: AboutPageProps;
   receiptProps?: ReceiptPageProps;
   orderReviewProps?: OrderReviewPageProps;
@@ -37,7 +34,6 @@ export const Router: React.FC<RouterProps> = ({
   productProps,
   collectionProps,
   checkoutProps,
-  adminProps,
   aboutProps,
   receiptProps,
   orderReviewProps
@@ -51,8 +47,6 @@ export const Router: React.FC<RouterProps> = ({
       return collectionProps ? <CollectionPage {...collectionProps} /> : null;
     case 'checkout':
       return checkoutProps ? <CheckoutPage {...checkoutProps} /> : null;
-    case 'admin':
-      return adminProps ? <AdminPage {...adminProps} /> : null;
     case 'about':
       return aboutProps ? <AboutPage {...aboutProps} /> : null;
     case 'receipt':

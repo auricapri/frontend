@@ -65,13 +65,6 @@ export interface CheckoutPageProps {
   locale: Locale;
 }
 
-export interface AdminPageProps {
-  onLogout: () => void;
-  onProductChange: () => void;
-  t: (key: string) => string;
-  locale: Locale;
-}
-
 export interface AboutPageProps {
   config: StoreConfig;
   locale: Locale;

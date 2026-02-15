@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
-import { useLanguage } from '../../context/LanguageContext';
+
+const BASE_URL = 'https://www.auricapri.com.br';
 
 interface SEOHeadProps {
   title?: string;
@@ -8,7 +9,8 @@ interface SEOHeadProps {
   image?: string;
   url?: string;
   type?: 'website' | 'product' | 'article';
-  schema?: object; // JSON-LD schema
+  schema?: object | object[]; // JSON-LD schema (single or array)
+  locale?: string;
 }
 
 export const SEOHead: React.FC<SEOHeadProps> = ({
@@ -18,11 +20,11 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   image,
   url,
   type = 'website',
-  schema
+  schema,
+  locale = 'pt'
 }) => {
-  const { locale } = useLanguage();
-  const canonical = url || window.location.href;
-  const ogImage = image || `${window.location.origin}/logo.png`;
+  const canonical = url || `${BASE_URL}${window.location.pathname}`;
+  const ogImage = image || `${BASE_URL}/logo.png`;
 
   return (
     <Helmet>
@@ -35,12 +37,13 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
       <meta name="keywords" content={keywords} />
 
       {/* Open Graph */}
+      <meta property="og:site_name" content="Auricapri" />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:url" content={canonical} />
       <meta property="og:type" content={type} />
-      <meta property="og:locale" content={locale} />
+      <meta property="og:locale" content={locale === 'pt' ? 'pt_BR' : locale} />
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -51,18 +54,17 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
       {/* Canonical URL */}
       <link rel="canonical" href={canonical} />
 
-      {/* Alternate Languages (hreflang) */}
-      <link rel="alternate" hrefLang="pt" href={canonical.replace(/\/(en|es|fr)/, '/pt')} />
-      <link rel="alternate" hrefLang="en" href={canonical.replace(/\/(pt|es|fr)/, '/en')} />
-      <link rel="alternate" hrefLang="es" href={canonical.replace(/\/(pt|en|fr)/, '/es')} />
-      <link rel="alternate" hrefLang="fr" href={canonical.replace(/\/(pt|en|es)/, '/fr')} />
-
-      {/* Schema Markup */}
-      {schema && (
+      {/* Schema Markup - supports single schema or array of schemas */}
+      {schema && !Array.isArray(schema) && (
         <script type="application/ld+json">
           {JSON.stringify(schema)}
         </script>
       )}
+      {schema && Array.isArray(schema) && schema.map((s, i) => (
+        <script key={i} type="application/ld+json">
+          {JSON.stringify(s)}
+        </script>
+      ))}
     </Helmet>
   );
 };

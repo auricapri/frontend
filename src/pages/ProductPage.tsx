@@ -75,6 +75,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({
         keywords={seoKeywords}
         image={productImage}
         type="product"
+        locale={locale}
         schema={productSchema}
       />
       <ProductDetail 

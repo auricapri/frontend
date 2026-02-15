@@ -18,8 +18,8 @@ export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "Auricapri",
-  "url": "https://auricapri.com",
-  "logo": "https://auricapri.com/logo.png",
+  "url": "https://www.auricapri.com.br",
+  "logo": "https://www.auricapri.com.br/logo.png",
   "contactPoint": {
     "@type": "ContactPoint",
     "telephone": "+55-11-XXXX-XXXX",
@@ -40,10 +40,10 @@ export const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "Auricapri",
-  "url": "https://auricapri.com",
+  "url": "https://www.auricapri.com.br",
   "potentialAction": {
     "@type": "SearchAction",
-    "target": "https://auricapri.com/search?q={search_term_string}",
+    "target": "https://www.auricapri.com.br/search?q={search_term_string}",
     "query-input": "required name=search_term_string"
   }
 };
@@ -107,9 +107,9 @@ export function createProductSchema(
  *
  * @example
  * createBreadcrumbSchema([
- *   { name: 'Home', url: 'https://auricapri.com/' },
- *   { name: 'Women', url: 'https://auricapri.com/collection/women' },
- *   { name: 'Dresses', url: 'https://auricapri.com/collection/dresses' }
+ *   { name: 'Home', url: 'https://www.auricapri.com.br/' },
+ *   { name: 'Women', url: 'https://www.auricapri.com.br/collection/women' },
+ *   { name: 'Dresses', url: 'https://www.auricapri.com.br/collection/dresses' }
  * ])
  */
 export function createBreadcrumbSchema(items: Array<{ name: string; url: string }>) {

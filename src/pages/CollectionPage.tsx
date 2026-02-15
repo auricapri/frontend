@@ -67,6 +67,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({
         keywords={seoKeywords}
         image={collectionImage}
         type="website"
+        locale={locale}
         schema={collectionSchema}
       />
       <CollectionDetail

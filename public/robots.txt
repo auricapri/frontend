@@ -16,4 +16,4 @@ Allow: /*.png$
 Allow: /*.webp$
 
 # Sitemap location
-Sitemap: https://auricapri.com/sitemap.xml
+Sitemap: https://www.auricapri.com.br/sitemap.xml

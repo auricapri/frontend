@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Base URL - adjust for production
-const BASE_URL = process.env.VITE_FRONTEND_URL || 'https://auricapri.com.br';
+const BASE_URL = process.env.VITE_FRONTEND_URL || 'https://www.auricapri.com.br';
 const API_URL = process.env.VITE_API_URL || 'https://api.auricapri.com.br/api';
 
 interface SitemapUrl {

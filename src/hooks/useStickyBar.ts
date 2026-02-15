@@ -9,7 +9,7 @@ import { useState, useEffect, useCallback } from 'react';
 export interface UseStickyBarProps {
   /** Scroll threshold in pixels to show the bar (default: 200) */
   threshold?: number;
-  /** ID of custom scroll container (default: 'main-scroll-container') */
+  /** ID of custom scroll container (default: 'main-content') */
   containerId?: string;
   /** Whether the hook is enabled (default: true) */
   enabled?: boolean;
@@ -33,7 +33,7 @@ export interface UseStickyBarProps {
  */
 export function useStickyBar({
   threshold = 200,
-  containerId = 'main-scroll-container',
+  containerId = 'main-content',
   enabled = true,
 }: UseStickyBarProps = {}): boolean {
   const [showStickyBar, setShowStickyBar] = useState(false);

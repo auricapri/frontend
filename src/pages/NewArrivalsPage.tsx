@@ -215,7 +215,6 @@ export function NewArrivalsPage({
         currentLocale={locale}
         onChangeLocale={onChangeLocale}
         storeConfig={storeConfig}
-        onOpenLegal={onOpenLegal}
         onNavigate={onNavigate}
       />
     </div>
