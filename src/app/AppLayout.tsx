@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -13,6 +13,7 @@ import Toast from '../components/ui/Toast';
 import { LoadingFallback } from '../components/ui/LoadingFallback';
 import { TestBanner } from '../components/common/TestBanner';
 import { CookieBanner } from '../components/common/CookieBanner';
+import { BenefitsBar } from '../components/common/BenefitsBar';
 import { TermsConsentModal } from '../components/common/TermsConsentModal';
 import { useTermsConsent } from '../hooks/useTermsConsent';
 import { AbandonedCartToast } from '../components/ui/AbandonedCartToast';
@@ -110,6 +111,13 @@ export function AppLayout(props: {
   const [selectedGender, setSelectedGender] = useState<Gender>(Gender.FEMALE);
   const { showModal: showTermsModal, acceptTerms, closeModal: closeTermsModal } = useTermsConsent();
 
+  // Auto-open FAQ modal when user navigates to /faq
+  useEffect(() => {
+    if (window.location.pathname === '/faq') {
+      setIsFAQOpen(true);
+    }
+  }, []);
+
   // Helper to get localized text from product/collection name objects
   const getLoc = (obj: any): string => {
     if (!obj) return '';
@@ -174,6 +182,7 @@ export function AppLayout(props: {
       </a>
 
       <TestBanner />
+      <BenefitsBar />
       <Navbar
         cartCount={app.cartItems.reduce((acc: number, item: any) => acc + item.quantity, 0)}
         onOpenCart={() => app.setIsCartOpen(true)}
@@ -185,7 +194,7 @@ export function AppLayout(props: {
         onToggleMode={() => app.setUserMode((prev) => (prev === UserMode.VAREJO ? UserMode.ATACADO : UserMode.VAREJO))}
         onNavigate={app.onNavigate}
         isScrolled={app.currentView === 'home' && app.isScrolled}
-        isProductView={app.currentView === 'product' || app.currentView === 'checkout' || app.currentView === 'collection' || app.currentView === 'new-arrivals' || app.currentView === 'search-results'}
+        isProductView={app.currentView === 'product' || app.currentView === 'collection' || app.currentView === 'new-arrivals' || app.currentView === 'search-results'}
         onBack={() => app.onNavigate('home', 'collection')}
         isLoggedIn={!!app.currentUser}
         t={app.t}

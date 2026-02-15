@@ -1,6 +1,6 @@
 import React from 'react';
 import { Product, UserMode, Coupon } from '../../types';
-import { Heart, ShoppingBag } from 'lucide-react';
+import { Heart, ShoppingBag, Truck } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { calculatePrice } from '../../utils/product';
@@ -79,6 +79,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const displayImg = product.default_image_url || product.base_images[0];
   const colors = getProductColors(product.variants);
   const hasMultipleVariants = (product.variants?.length || 0) > 1;
+
+  // Free shipping: use product flag or fallback to price >= 299
+  const hasFreeShipping = product.has_free_shipping === true || final >= 299;
 
   // Handle quick add
   const handleQuickAdd = (e: React.MouseEvent) => {
@@ -203,6 +206,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               Adicionar
             </span>
           </button>
+        )}
+
+        {/* Free Shipping Badge */}
+        {hasFreeShipping && (
+          <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded shadow-lg z-10">
+            <Truck className="w-3 h-3" strokeWidth={2} />
+            <span className="text-[10px] font-black uppercase tracking-tight">Frete gratis</span>
+          </div>
         )}
       </div>
 

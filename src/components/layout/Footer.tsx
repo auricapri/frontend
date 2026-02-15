@@ -129,6 +129,11 @@ const Footer: React.FC<FooterProps> = ({
                 Perguntas Frequentes
               </button>
             </li>
+            <li>
+              <a href="/affiliates" className="hover:text-white transition-colors uppercase tracking-wide text-left">
+                Programa de Afiliados
+              </a>
+            </li>
           </ul>
         </div>
 

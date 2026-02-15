@@ -35,7 +35,8 @@ export const translations = {
       priceRange: 'Price',
       minPrice: 'Min',
       maxPrice: 'Max',
-      clearFilters: 'Clear filters'
+      clearFilters: 'Clear filters',
+      popularProducts: 'Popular Products'
     },
     hero: {
       subtitle: 'Summer 2025',
@@ -99,7 +100,14 @@ export const translations = {
       title: 'Wishlist',
       empty: 'Your wishlist is empty',
       discover: 'DISCOVER PRODUCTS',
-      viewProduct: 'View Product'
+      viewProduct: 'View Product',
+      curation: 'My Curation',
+      shareTitle: 'Social Sharing & Gift Link'
+    },
+    benefits: {
+      freeShipping: 'FREE SHIPPING OVER R$299',
+      freeExchange: 'FREE EXCHANGE WITHIN 30 DAYS',
+      installments: 'UP TO 6X INTEREST-FREE'
     },
     auth: {
       signIn: 'Sign In',
@@ -226,7 +234,8 @@ export const translations = {
       priceRange: 'Preço',
       minPrice: 'Mín',
       maxPrice: 'Máx',
-      clearFilters: 'Limpar filtros'
+      clearFilters: 'Limpar filtros',
+      popularProducts: 'Produtos Populares'
     },
     hero: {
       subtitle: 'Verão 2025',
@@ -290,7 +299,14 @@ export const translations = {
       title: 'Favoritos',
       empty: 'Sua lista está vazia',
       discover: 'DESCOBRIR PRODUTOS',
-      viewProduct: 'Ver Produto'
+      viewProduct: 'Ver Produto',
+      curation: 'Minha Curadoria',
+      shareTitle: 'Compartilhar & Link de Presente'
+    },
+    benefits: {
+      freeShipping: 'FRETE GRÁTIS ACIMA DE R$299',
+      freeExchange: 'TROCA GRÁTIS EM ATÉ 30 DIAS',
+      installments: 'PARCELE EM ATÉ 6X SEM JUROS'
     },
     auth: {
       signIn: 'Entrar',
@@ -417,7 +433,8 @@ export const translations = {
       priceRange: 'Precio',
       minPrice: 'Mín',
       maxPrice: 'Máx',
-      clearFilters: 'Borrar filtros'
+      clearFilters: 'Borrar filtros',
+      popularProducts: 'Productos Populares'
     },
     hero: {
       subtitle: 'Verano 2025',
@@ -479,7 +496,14 @@ export const translations = {
       title: 'Favoritos',
       empty: 'Tu lista está vacía',
       discover: 'DESCUBRIR PRODUCTOS',
-      viewProduct: 'Ver Produto'
+      viewProduct: 'Ver Produto',
+      curation: 'Mi Curaduría',
+      shareTitle: 'Compartir & Enlace de Regalo'
+    },
+    benefits: {
+      freeShipping: 'ENVÍO GRATIS DESDE R$299',
+      freeExchange: 'CAMBIO GRATIS HASTA 30 DÍAS',
+      installments: 'HASTA 6X SIN INTERESES'
     },
     auth: {
       signIn: 'Entrar',
@@ -606,7 +630,8 @@ export const translations = {
       priceRange: 'Prix',
       minPrice: 'Min',
       maxPrice: 'Max',
-      clearFilters: 'Effacer les filtres'
+      clearFilters: 'Effacer les filtres',
+      popularProducts: 'Produits Populaires'
     },
     hero: {
       subtitle: 'Été 2025',
@@ -668,7 +693,14 @@ export const translations = {
       title: 'Favoris',
       empty: 'Votre liste est vide',
       discover: 'DÉCOUVRIR LES PRODUITS',
-      viewProduct: 'Voir le Produit'
+      viewProduct: 'Voir le Produit',
+      curation: 'Ma Curation',
+      shareTitle: 'Partager & Lien Cadeau'
+    },
+    benefits: {
+      freeShipping: 'LIVRAISON GRATUITE DÈS R$299',
+      freeExchange: 'ÉCHANGE GRATUIT SOUS 30 JOURS',
+      installments: 'JUSQU\'À 6X SANS INTÉRÊTS'
     },
     auth: {
       signIn: 'Se Connecter',
