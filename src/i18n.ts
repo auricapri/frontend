@@ -94,7 +94,8 @@ export const translations = {
       continue: 'CONTINUE SHOPPING',
       subtotal: 'Subtotal',
       checkout: 'Checkout',
-      shippingInfo: 'Shipping calculated at checkout'
+      shippingInfo: 'Shipping calculated at checkout',
+      freeShipping: 'Free shipping on all orders'
     },
     wishlist: {
       title: 'Wishlist',
@@ -293,7 +294,8 @@ export const translations = {
       continue: 'CONTINUAR COMPRANDO',
       subtotal: 'Subtotal',
       checkout: 'Finalizar',
-      shippingInfo: 'Frete calculado no checkout'
+      shippingInfo: 'Frete calculado no checkout',
+      freeShipping: 'Frete grátis em todos os pedidos'
     },
     wishlist: {
       title: 'Favoritos',
@@ -490,7 +492,8 @@ export const translations = {
       continue: 'CONTINUAR COMPRANDO',
       subtotal: 'Subtotal',
       checkout: 'Pagar',
-      shippingInfo: 'Envío calculado al pagar'
+      shippingInfo: 'Envío calculado al pagar',
+      freeShipping: 'Envío gratis en todos los pedidos'
     },
     wishlist: {
       title: 'Favoritos',
@@ -687,7 +690,8 @@ export const translations = {
       continue: 'CONTINUER VOS ACHATS',
       subtotal: 'Sous-total',
       checkout: 'Payer',
-      shippingInfo: 'Livraison calculée au paiement'
+      shippingInfo: 'Livraison calculée au paiement',
+      freeShipping: 'Livraison gratuite sur toutes les commandes'
     },
     wishlist: {
       title: 'Favoris',

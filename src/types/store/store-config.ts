@@ -26,6 +26,8 @@ export interface Banner {
   position: string;
   is_active: boolean;
   sort_order: number;
+  starts_at?: string;
+  ends_at?: string;
 }
 
 export interface Coupon {

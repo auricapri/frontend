@@ -4,7 +4,7 @@ import { X, Minus, Plus, Trash2, ArrowRight } from 'lucide-react';
 import { CartItem, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
-import BoxSavingsIndicator from './BoxSavingsIndicator';
+import BoxSavingsIndicator, { calculateQuantityDiscount } from './BoxSavingsIndicator';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -39,6 +39,16 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
     const price = item.price;
     return sum + (price * item.quantity);
   }, 0);
+
+  const originalSubtotal = items.reduce((sum, item) => {
+    const originalPrice = item.original_price || item.price;
+    return sum + (originalPrice * item.quantity);
+  }, 0);
+
+  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  const { discountValue: boxDiscount } = calculateQuantityDiscount(totalQuantity, subtotal);
+  const finalTotal = subtotal - boxDiscount;
+  const hasAnyDiscount = originalSubtotal > subtotal || boxDiscount > 0;
 
   if (!isOpen) return null;
 
@@ -82,6 +92,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
           ) : (
             items.map((item) => {
               const price = item.price;
+              const itemHasDiscount = item.original_price && item.original_price > item.price;
               return (
                 <div key={`${item.variant_id}-${item.size}-${item.color_hex}`} className="flex space-x-6 animate-in fade-in slide-in-from-right duration-300">
                   <div className="w-24 h-32 bg-gray-100 flex-none overflow-hidden rounded-xl">
@@ -91,7 +102,12 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                     <div>
                       <div className="flex justify-between items-start">
                         <h3 className="text-[11px] font-black uppercase tracking-tight leading-tight">{getLoc(item.name)}</h3>
-                        <p className="text-sm font-light">{formatCurrency(price * item.quantity, locale)}</p>
+                        <div className="text-right">
+                          {itemHasDiscount && (
+                            <p className="text-[10px] text-neutral-400 line-through">{formatCurrency(item.original_price! * item.quantity, locale)}</p>
+                          )}
+                          <p className="text-sm font-light">{formatCurrency(price * item.quantity, locale)}</p>
+                        </div>
                       </div>
                       <p className="text-[9px] text-gray-400 mt-1 uppercase font-bold tracking-widest">{getLoc(item.color_name)} / {item.size}</p>
                     </div>
@@ -129,11 +145,30 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
         {/* Footer / Checkout */}
         {items.length > 0 && (
           <div className="p-8 md:p-10 border-t border-gray-100 bg-white">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] uppercase tracking-[0.3em] font-black text-neutral-400">{t('cart.subtotal')}</span>
-              <span className="text-2xl font-light">{formatCurrency(subtotal, locale)}</span>
+              <div className="text-right">
+                {hasAnyDiscount && (
+                  <span className="text-sm text-neutral-400 line-through block">{formatCurrency(originalSubtotal, locale)}</span>
+                )}
+                <span className="text-2xl font-light">{formatCurrency(finalTotal, locale)}</span>
+              </div>
             </div>
-            <p className="text-[9px] text-neutral-300 mb-8 text-center uppercase tracking-widest font-black">{t('cart.shippingInfo')}</p>
+            {boxDiscount > 0 && (
+              <p className="text-[9px] text-green-600 mb-2 text-right font-bold uppercase tracking-wider">
+                {locale === 'pt' ? `Economia de ${formatCurrency(boxDiscount, locale)} no frete` :
+                 locale === 'es' ? `Ahorro de ${formatCurrency(boxDiscount, locale)} en envío` :
+                 `Saving ${formatCurrency(boxDiscount, locale)} on shipping`}
+              </p>
+            )}
+            {(originalSubtotal > subtotal) && (
+              <p className="text-[9px] text-green-600 mb-2 text-right font-bold uppercase tracking-wider">
+                {locale === 'pt' ? `Desconto de ${formatCurrency(originalSubtotal - subtotal, locale)}` :
+                 locale === 'es' ? `Descuento de ${formatCurrency(originalSubtotal - subtotal, locale)}` :
+                 `Discount of ${formatCurrency(originalSubtotal - subtotal, locale)}`}
+              </p>
+            )}
+            <p className="text-[9px] text-green-600 mb-8 text-center uppercase tracking-widest font-black mt-4">{t('cart.freeShipping')}</p>
             <button 
               onClick={onCheckout}
               className="w-full bg-black text-white py-8 rounded-[2rem] flex items-center justify-between px-10 hover:bg-neutral-800 transition-all shadow-2xl active:scale-95 group"
