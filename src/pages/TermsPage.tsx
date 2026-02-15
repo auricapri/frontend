@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
-import type { StoreConfig, Locale } from '../types';
+import type { StoreConfig } from '../types';
+import type { Locale } from '../i18n';
 
 interface TermsPageProps {
   config: StoreConfig;
