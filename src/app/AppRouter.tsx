@@ -3,6 +3,9 @@ import { type Order, type StoreConfig } from '../types';
 import { AppLayout } from './AppLayout';
 import { LoadingFallback } from '../components/ui';
 
+const DeliveryLoginPage = React.lazy(() => import('../pages/DeliveryLoginPage').then(m => ({ default: m.DeliveryLoginPage })));
+const DeliveryDashboard = React.lazy(() => import('../components/delivery/DeliveryDashboard'));
+
 // Lazy load páginas para melhor performance
 const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const ResetPasswordPage = React.lazy(() => import('../pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
@@ -40,10 +43,39 @@ export function AppRouter(props: {
   }
 
   if (app.currentView === 'admin-login' || app.currentView === 'admin' ||
-      app.currentView === 'delivery-login' || app.currentView === 'delivery' ||
       app.currentView === 'marketplace-callback') {
     window.location.href = 'https://admin.auricapri.com.br';
     return <LoadingFallback />;
+  }
+
+  if (app.currentView === 'delivery-login') {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <DeliveryLoginPage
+          onLoginSuccess={() => {
+            window.history.pushState({ view: 'delivery' }, '', '/delivery');
+            onSetCurrentView('delivery');
+          }}
+          t={app.t}
+          locale={app.locale}
+        />
+      </Suspense>
+    );
+  }
+
+  if (app.currentView === 'delivery') {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <DeliveryDashboard
+          locale={app.locale}
+          onLogout={async () => {
+            await onSignOut();
+            window.history.pushState({ view: 'delivery-login' }, '', '/delivery-login');
+            onSetCurrentView('delivery-login');
+          }}
+        />
+      </Suspense>
+    );
   }
 
   if (app.currentView === 'receipt' && lastSuccessOrder) {
