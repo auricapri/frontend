@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Loader2, RefreshCw, Truck, Package, CheckCircle, ArrowRight, LogOut } from 'lucide-react';
+import { Loader2, RefreshCw, Truck, Package, CheckCircle, ArrowRight, LogOut, Calendar } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { DeliveryApi, type DeliverySupplierGroup } from '../../api/delivery.api';
 import Toast from '../ui/Toast';
@@ -19,6 +19,13 @@ interface DeliveryDashboardProps {
   locale: Locale;
   onLogout: () => void;
 }
+
+const TAB_CONFIG = [
+  { key: 'today' as const, label: 'Fornecedores', icon: Package },
+  { key: 'coleta' as const, label: 'Coleta', icon: Truck },
+  { key: 'history' as const, label: 'Histórico', icon: RefreshCw },
+  { key: 'notifications' as const, label: 'Avisos', icon: CheckCircle },
+] as const;
 
 const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout }) => {
   const api = useMemo(() => new DeliveryApi(), []);
@@ -55,7 +62,7 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
       setGroups(list);
       setSelectedSupplierId((prev) => {
         if (prev && list.some((g) => g.supplier_id === prev)) return prev;
-        return list.length ? list[0].supplier_id : null;
+        return null;
       });
     } catch (e: any) {
       setError(e?.message || 'Falha ao carregar pedidos de delivery');
@@ -74,7 +81,6 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
     fetchGroups();
   }, [fetchGroups]);
 
-  // Fetch logistics workflow data
   const fetchLogisticsData = useCallback(async () => {
     setIsLoadingLogistics(true);
     try {
@@ -94,7 +100,6 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
     }
   }, [activeTab, fetchLogisticsData]);
 
-  // Mark order as collected (AWAITING_PICKUP -> COLLECTED)
   const handleMarkAsCollected = async (orderId: string) => {
     setLogisticsActionBusy(orderId);
     try {
@@ -108,7 +113,6 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
     }
   };
 
-  // Move order to expedition (COLLECTED -> PROCESSING)
   const handleMoveToExpedition = async (orderId: string) => {
     setLogisticsActionBusy(orderId);
     try {
@@ -126,22 +130,6 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
     if (!selectedSupplierId) return null;
     return groups.find((g) => g.supplier_id === selectedSupplierId) || null;
   }, [groups, selectedSupplierId]);
-
-  const dateLabel = useMemo(() => {
-    if (selectedDate) {
-      try {
-        const [y, m, d] = selectedDate.split('-').map((p) => parseInt(p, 10));
-        const dt = new Date(y, (m || 1) - 1, d || 1);
-        return dt.toLocaleDateString('pt-BR');
-      } catch {
-        return selectedDate;
-      }
-    }
-    const now = new Date();
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday.toLocaleDateString('pt-BR');
-  }, [selectedDate]);
 
   const onAcceptAll = async (supplierId: string) => {
     setBusyAction(true);
@@ -184,253 +172,218 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <div className="bg-black text-white px-4 md:px-8 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-black uppercase tracking-tighter">AURICAPRI</h1>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Painel de Entregas</p>
-        </div>
-        <button
-          type="button"
-          onClick={onLogout}
-          className="flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-xl text-sm font-bold uppercase tracking-wider transition-all"
-        >
-          <LogOut className="w-4 h-4" />
-          Sair
-        </button>
-      </div>
-
-      <div className="p-4 md:p-8 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
-          <h3 className="text-3xl font-black uppercase italic tracking-tighter">Entregas</h3>
-          <p className="text-[10px] font-bold uppercase text-neutral-400 tracking-widest mt-1">
-            Pedidos do dia ({dateLabel})
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Data</div>
+    <div className="min-h-screen bg-neutral-50 flex flex-col">
+      {/* Header — compact 48px */}
+      <div className="bg-black text-white px-3 md:px-6 h-12 flex items-center justify-between flex-shrink-0">
+        <h1 className="text-sm font-black uppercase tracking-tighter">AURICAPRI</h1>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-neutral-400" />
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-4 py-2 border border-neutral-200 rounded-xl text-sm bg-white"
+              className="bg-neutral-800 border-none text-xs text-white px-2 py-1 rounded-lg focus:outline-none focus:ring-1 focus:ring-white/30 w-[130px]"
             />
           </div>
           <button
             type="button"
             onClick={fetchGroups}
             disabled={isLoading}
-            className="p-3 rounded-xl bg-neutral-100 hover:bg-neutral-200 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 hover:bg-neutral-800 rounded-lg transition-all disabled:opacity-50"
             aria-label="Atualizar"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
+          <button
+            type="button"
+            onClick={onLogout}
+            className="p-2 hover:bg-neutral-800 rounded-lg transition-all"
+            aria-label="Sair"
+          >
+            <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        {(
-          [
-            { key: 'today' as const, label: 'Fornecedores' },
-            { key: 'coleta' as const, label: 'Coleta' },
-            { key: 'history' as const, label: 'Histórico' },
-            { key: 'notifications' as const, label: 'Notificações' },
-          ]
-        ).map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setActiveTab(t.key)}
-            className={
-              `px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30 ` +
-              (activeTab === t.key ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200')
-            }
-          >
-            {t.label}
-          </button>
-        ))}
+      {/* Tabs — single row, scrollable */}
+      <div className="bg-white border-b border-neutral-100 px-2 md:px-6 flex-shrink-0">
+        <div className="flex overflow-x-auto no-scrollbar">
+          {TAB_CONFIG.map((t) => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setActiveTab(t.key)}
+                className={
+                  `flex items-center gap-1.5 px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap border-b-2 transition-all ` +
+                  (activeTab === t.key
+                    ? 'border-black text-black'
+                    : 'border-transparent text-neutral-400 hover:text-neutral-600')
+                }
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {activeTab === 'history' ? (
-        <DeliveryHistoryPanel />
-      ) : activeTab === 'notifications' ? (
-        <DeliveryNotificationsPanel />
-      ) : activeTab === 'coleta' ? (
-        <div className="space-y-6">
-          {/* Logistics Summary */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-              <div className="text-2xl font-black">{awaitingPickupOrders.length}</div>
-              <div className="text-xs font-bold uppercase tracking-widest text-amber-700">Aguardando Coleta</div>
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-              <div className="text-2xl font-black">{collectedOrders.length}</div>
-              <div className="text-xs font-bold uppercase tracking-widest text-blue-700">Coletados</div>
-            </div>
+      {/* Content */}
+      <div className="flex-1 min-h-0">
+        {activeTab === 'history' ? (
+          <div className="p-2 md:p-6">
+            <DeliveryHistoryPanel />
           </div>
-
-          {isLoadingLogistics ? (
-            <div className="flex items-center justify-center h-64 bg-white rounded-2xl border border-neutral-100">
-              <Loader2 className="w-8 h-8 animate-spin text-black" />
+        ) : activeTab === 'notifications' ? (
+          <div className="p-2 md:p-6">
+            <DeliveryNotificationsPanel />
+          </div>
+        ) : activeTab === 'coleta' ? (
+          <div className="p-2 md:p-6 space-y-3">
+            {/* Logistics Summary */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <div className="text-xl font-black">{awaitingPickupOrders.length}</div>
+                <div className="text-[9px] font-bold uppercase tracking-widest text-amber-700">Aguardando</div>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                <div className="text-xl font-black">{collectedOrders.length}</div>
+                <div className="text-[9px] font-bold uppercase tracking-widest text-blue-700">Coletados</div>
+              </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Awaiting Pickup Column */}
-              <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-                <div className="px-6 py-4 border-b border-neutral-100 bg-amber-50">
-                  <div className="flex items-center gap-2">
-                    <Package className="w-5 h-5 text-amber-600" />
-                    <h4 className="font-black uppercase text-sm tracking-tight">Aguardando Coleta</h4>
+
+            {isLoadingLogistics ? (
+              <div className="flex items-center justify-center h-32 bg-white rounded-xl border border-neutral-100">
+                <Loader2 className="w-6 h-6 animate-spin text-black" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                {/* Awaiting Pickup */}
+                <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
+                  <div className="px-3 py-2.5 border-b border-neutral-100 bg-amber-50 flex items-center gap-2">
+                    <Package className="w-4 h-4 text-amber-600" />
+                    <h4 className="font-bold uppercase text-xs tracking-tight">Aguardando Coleta</h4>
                   </div>
-                  <p className="text-xs text-neutral-500 mt-1">Pedidos prontos para serem coletados</p>
-                </div>
-                <div className="divide-y divide-neutral-100 max-h-[500px] overflow-y-auto">
-                  {awaitingPickupOrders.length === 0 ? (
-                    <div className="p-8 text-center text-neutral-500 text-sm">
-                      Nenhum pedido aguardando coleta
-                    </div>
-                  ) : (
-                    awaitingPickupOrders.map((order) => (
-                      <div key={order.id} className="p-4 hover:bg-neutral-50 transition-colors">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="font-bold text-sm">{order.id.slice(0, 8).toUpperCase()}</div>
-                            <div className="text-xs text-neutral-500 mt-1">
-                              {order.items?.length || 0} item(s) • R$ {(order.total_amount || order.total || 0).toFixed(2)}
-                            </div>
-                            <div className="text-xs text-neutral-400 mt-1">
-                              {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                  <div className="divide-y divide-neutral-100">
+                    {awaitingPickupOrders.length === 0 ? (
+                      <div className="p-6 text-center text-neutral-400 text-xs">Nenhum pedido</div>
+                    ) : (
+                      awaitingPickupOrders.map((order) => (
+                        <div key={order.id} className="p-3 flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs">{order.id.slice(0, 8).toUpperCase()}</div>
+                            <div className="text-[10px] text-neutral-400 mt-0.5">
+                              {order.items?.length || 0} item(s)
                             </div>
                           </div>
                           <button
                             onClick={() => handleMarkAsCollected(order.id)}
                             disabled={logisticsActionBusy === order.id}
-                            className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-amber-600 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-amber-600 active:scale-[0.98] transition-all disabled:opacity-50"
                           >
                             {logisticsActionBusy === order.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
                             ) : (
                               <>
-                                <CheckCircle className="w-4 h-4" />
+                                <CheckCircle className="w-3.5 h-3.5" />
                                 Coletar
                               </>
                             )}
                           </button>
                         </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Collected Column */}
-              <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-                <div className="px-6 py-4 border-b border-neutral-100 bg-blue-50">
-                  <div className="flex items-center gap-2">
-                    <Truck className="w-5 h-5 text-blue-600" />
-                    <h4 className="font-black uppercase text-sm tracking-tight">Coletados</h4>
+                      ))
+                    )}
                   </div>
-                  <p className="text-xs text-neutral-500 mt-1">Pedidos coletados, prontos para expedição</p>
                 </div>
-                <div className="divide-y divide-neutral-100 max-h-[500px] overflow-y-auto">
-                  {collectedOrders.length === 0 ? (
-                    <div className="p-8 text-center text-neutral-500 text-sm">
-                      Nenhum pedido coletado
-                    </div>
-                  ) : (
-                    collectedOrders.map((order) => (
-                      <div key={order.id} className="p-4 hover:bg-neutral-50 transition-colors">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="font-bold text-sm">{order.id.slice(0, 8).toUpperCase()}</div>
-                            <div className="text-xs text-neutral-500 mt-1">
-                              {order.items?.length || 0} item(s) • R$ {(order.total_amount || order.total || 0).toFixed(2)}
-                            </div>
-                            <div className="text-xs text-neutral-400 mt-1">
-                              {new Date(order.created_at).toLocaleDateString('pt-BR')}
+
+                {/* Collected */}
+                <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
+                  <div className="px-3 py-2.5 border-b border-neutral-100 bg-blue-50 flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-blue-600" />
+                    <h4 className="font-bold uppercase text-xs tracking-tight">Coletados</h4>
+                  </div>
+                  <div className="divide-y divide-neutral-100">
+                    {collectedOrders.length === 0 ? (
+                      <div className="p-6 text-center text-neutral-400 text-xs">Nenhum pedido</div>
+                    ) : (
+                      collectedOrders.map((order) => (
+                        <div key={order.id} className="p-3 flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs">{order.id.slice(0, 8).toUpperCase()}</div>
+                            <div className="text-[10px] text-neutral-400 mt-0.5">
+                              {order.items?.length || 0} item(s)
                             </div>
                           </div>
                           <button
                             onClick={() => handleMoveToExpedition(order.id)}
                             disabled={logisticsActionBusy === order.id}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-blue-600 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-blue-600 active:scale-[0.98] transition-all disabled:opacity-50"
                           >
                             {logisticsActionBusy === order.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
                             ) : (
                               <>
-                                <ArrowRight className="w-4 h-4" />
+                                <ArrowRight className="w-3.5 h-3.5" />
                                 Expedição
                               </>
                             )}
                           </button>
                         </div>
-                      </div>
-                    ))
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Fornecedores tab — mobile: fullscreen navigation */
+          <div className="h-full">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <Loader2 className="w-6 h-6 animate-spin text-black" />
+              </div>
+            ) : error ? (
+              <div className="p-3 text-sm text-red-700">{error}</div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-3 h-full">
+                {/* List — hidden on mobile when supplier selected */}
+                <div className={`lg:col-span-1 lg:border-r lg:border-neutral-100 ${selectedSupplierId ? 'hidden lg:block' : ''}`}>
+                  <DeliverySupplierList
+                    groups={groups}
+                    selectedSupplierId={selectedSupplierId}
+                    onSelectSupplier={setSelectedSupplierId}
+                  />
+                </div>
+
+                {/* Details — hidden on mobile when no supplier selected */}
+                <div className={`lg:col-span-2 ${!selectedGroup ? 'hidden lg:flex lg:items-center lg:justify-center' : ''}`}>
+                  {!selectedGroup ? (
+                    <div className="text-center p-8">
+                      <Truck className="w-10 h-10 text-neutral-200 mx-auto mb-3" />
+                      <div className="text-sm text-neutral-400">Selecione um fornecedor</div>
+                    </div>
+                  ) : (
+                    <DeliverySupplierDetails
+                      group={selectedGroup}
+                      locale={locale}
+                      busy={busyAction}
+                      onAcceptAll={onAcceptAll}
+                      onAcceptItem={onAcceptItem}
+                      onReportItem={onReportItem}
+                      onRateSupplier={onRateSupplier}
+                      onBack={() => setSelectedSupplierId(null)}
+                    />
                   )}
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Refresh Button */}
-          <div className="flex justify-center">
-            <button
-              onClick={fetchLogisticsData}
-              disabled={isLoadingLogistics}
-              className="flex items-center gap-2 px-6 py-3 bg-neutral-100 text-neutral-700 text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-neutral-200 active:scale-[0.98] transition-all disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoadingLogistics ? 'animate-spin' : ''}`} />
-              Atualizar
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-64 bg-white rounded-2xl border border-neutral-100">
-                <Loader2 className="w-8 h-8 animate-spin text-black" />
-              </div>
-            ) : error ? (
-              <div className="bg-white rounded-2xl border border-neutral-100 p-6 text-sm text-red-700">{error}</div>
-            ) : (
-              <DeliverySupplierList
-                groups={groups}
-                selectedSupplierId={selectedSupplierId}
-                onSelectSupplier={setSelectedSupplierId}
-              />
             )}
           </div>
-
-          <div className="lg:col-span-2">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-64 bg-white rounded-2xl border border-neutral-100">
-                <Loader2 className="w-8 h-8 animate-spin text-black" />
-              </div>
-            ) : !selectedGroup ? (
-              <div className="bg-white rounded-2xl border border-neutral-100 p-12 text-center">
-                <Truck className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-                <div className="text-neutral-700 font-black uppercase tracking-tight">Selecione um fornecedor</div>
-                <div className="text-sm text-neutral-500 mt-2">Para ver detalhes e ações</div>
-              </div>
-            ) : (
-              <DeliverySupplierDetails
-                group={selectedGroup}
-                locale={locale}
-                busy={busyAction}
-                onAcceptAll={onAcceptAll}
-                onAcceptItem={onAcceptItem}
-                onReportItem={onReportItem}
-                onRateSupplier={onRateSupplier}
-              />
-            )}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <ReportProblemModal
         isOpen={reportOpen}
@@ -466,7 +419,6 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
         onClose={() => setToast((prev) => ({ ...prev, visible: false }))}
         type={toast.type}
       />
-    </div>
     </div>
   );
 };
