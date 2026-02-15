@@ -58,6 +58,8 @@ export function useNavigation(params: UseNavigationParams) {
   }, []);
 
   const getViewFromPath = useCallback((pathname: string): AppView => {
+    if (pathname === '/delivery-login' || pathname === '/delivery/login') return 'delivery-login';
+    if (pathname === '/delivery') return 'delivery';
     if (pathname === '/admin/login/delivery') return 'delivery-login';
     if (pathname === '/admin/delivery/login') return 'delivery-login';
     if (pathname === '/admin/delivery') return 'delivery';
