@@ -103,6 +103,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
+      <header>
       <nav
         className={`fixed ${topOffset} left-0 w-full z-50 transition-all duration-700 select-none will-change-transform
           ${isSolid ? 'h-24 md:h-20' : 'h-32 md:h-24'}
@@ -125,12 +126,13 @@ const Navbar: React.FC<NavbarProps> = ({
         `}>
           {/* Row 1: Brand Name */}
           <div className="text-center">
-            <div
-              onClick={() => handleNav('home')}
-              className="text-2xl font-light tracking-[0.3em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95"
+            <a
+              href="/"
+              onClick={(e) => { e.preventDefault(); handleNav('home'); }}
+              className="text-2xl font-light tracking-[0.3em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 no-underline text-inherit"
             >
               {storeName}
-            </div>
+            </a>
           </div>
 
           {/* Row 2: Menu + Actions */}
@@ -149,6 +151,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 <button
                   onClick={() => setIsMenuOpen(true)}
                   className="p-1 -ml-1 hover:opacity-50 transition-all active:scale-90"
+                  aria-label="Abrir menu"
                 >
                   <Menu className="w-5 h-5" strokeWidth={1.2} />
                 </button>
@@ -160,7 +163,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className="p-1.5 hover:opacity-50 transition-all active:scale-90"
-                aria-label="Search"
+                aria-label="Buscar"
               >
                 <Search className="w-5 h-5" strokeWidth={1.2} />
               </button>
@@ -168,7 +171,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenAuth}
                 className="p-1.5 hover:opacity-50 transition-all active:scale-90"
-                aria-label={isLoggedIn ? 'Account' : 'Login'}
+                aria-label={isLoggedIn ? 'Minha conta' : 'Entrar'}
               >
                 <User
                   className={`w-5 h-5 ${isLoggedIn ? 'fill-current' : ''}`}
@@ -179,7 +182,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenWishlist}
                 className="p-1.5 relative hover:opacity-50 transition-all active:scale-90"
-                aria-label="Wishlist"
+                aria-label="Lista de desejos"
               >
                 <Heart className="w-5 h-5" strokeWidth={1.2} fill={wishlistCount > 0 ? "currentColor" : "none"} />
                 {wishlistCount > 0 && (
@@ -190,7 +193,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenCart}
                 className="p-1.5 relative hover:opacity-50 transition-all active:scale-90"
-                aria-label="Cart"
+                aria-label="Carrinho"
               >
                 <ShoppingBag className="w-5 h-5" strokeWidth={1.2} />
                 {cartCount > 0 && (
@@ -223,6 +226,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => setIsMenuOpen(true)}
                 className="p-2 -ml-2 hover:opacity-50 transition-all active:scale-90"
+                aria-label="Abrir menu"
               >
                 <Menu className="w-6 h-6" strokeWidth={1.2} />
               </button>
@@ -231,12 +235,13 @@ const Navbar: React.FC<NavbarProps> = ({
 
           {/* Center Col: Brand */}
           <div className="flex-none text-center">
-            <div
-              onClick={() => handleNav('home')}
-              className="text-4xl font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2"
+            <a
+              href="/"
+              onClick={(e) => { e.preventDefault(); handleNav('home'); }}
+              className="text-4xl font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2 no-underline text-inherit inline-block"
             >
               {storeName}
-            </div>
+            </a>
           </div>
 
           {/* Right Col: Actions */}
@@ -245,7 +250,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className="p-2 -mr-2 hover:opacity-50 transition-all active:scale-90"
-                aria-label="Search"
+                aria-label="Buscar"
               >
                 <Search className="w-5 h-5" strokeWidth={1.2} />
               </button>
@@ -253,7 +258,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenAuth}
                 className="p-2 hover:opacity-50 transition-all active:scale-90"
-                aria-label={isLoggedIn ? 'Account' : 'Login'}
+                aria-label={isLoggedIn ? 'Minha conta' : 'Entrar'}
               >
                 <User
                   className={`w-5 h-5 ${isLoggedIn ? 'fill-current' : ''}`}
@@ -264,7 +269,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenWishlist}
                 className="p-2 relative hover:opacity-50 transition-all active:scale-90"
-                aria-label="Wishlist"
+                aria-label="Lista de desejos"
               >
                 <Heart className="w-5 h-5" strokeWidth={1.2} fill={wishlistCount > 0 ? "currentColor" : "none"} />
                 {wishlistCount > 0 && (
@@ -275,7 +280,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenCart}
                 className="p-2 relative hover:opacity-50 transition-all active:scale-90"
-                aria-label="Cart"
+                aria-label="Carrinho"
               >
                 <ShoppingBag className="w-5 h-5" strokeWidth={1.2} />
                 {cartCount > 0 && (
@@ -290,6 +295,7 @@ const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
       </nav>
+      </header>
 
       {/* Search Bar - Slides down from navbar */}
       <div
@@ -332,6 +338,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     setSearchQuery('');
                   }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:opacity-50 transition-opacity"
+                  aria-label="Fechar busca"
                 >
                   <X className="w-4 h-4 text-neutral-400" />
                 </button>
@@ -371,9 +378,10 @@ const Navbar: React.FC<NavbarProps> = ({
             {/* Menu Header */}
             <div className="h-20 flex items-center justify-between border-b border-neutral-100">
               <h2 className="text-lg font-light tracking-[0.2em] uppercase">{storeName}</h2>
-              <button 
-                onClick={() => setIsMenuOpen(false)} 
+              <button
+                onClick={() => setIsMenuOpen(false)}
                 className="p-4 bg-neutral-50 rounded-full hover:opacity-70 transition-all active:scale-90"
+                aria-label="Fechar menu"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -417,12 +425,13 @@ const Navbar: React.FC<NavbarProps> = ({
               {/* Scrollable Navigation Area */}
               <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 -mr-2">
                 <div className="space-y-6">
-                  <button
-                    onClick={() => handleNav('new-arrivals')}
-                    className="block w-full text-3xl md:text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
+                  <a
+                    href="/novidades"
+                    onClick={(e) => { e.preventDefault(); handleNav('new-arrivals'); }}
+                    className="block w-full text-3xl md:text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left no-underline text-inherit"
                   >
                     {t('nav.newArrivals')}
-                  </button>
+                  </a>
 
                   {/* Collections Collapse */}
                   <div>
@@ -473,12 +482,13 @@ const Navbar: React.FC<NavbarProps> = ({
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleNav('about')}
-                    className="block w-full text-3xl md:text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left"
+                  <a
+                    href="/about"
+                    onClick={(e) => { e.preventDefault(); handleNav('about'); }}
+                    className="block w-full text-3xl md:text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left no-underline text-inherit"
                   >
-                    Sobre Nós
-                  </button>
+                    Sobre Nos
+                  </a>
                 </div>
               </div>
 

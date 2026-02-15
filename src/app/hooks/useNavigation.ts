@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { supabase } from '../../utils/supabase';
 import { trackingService } from '../../services/tracking.service';
 import { logger } from '../../utils/logger';
 import type { Locale } from '../../i18n';
@@ -31,13 +30,12 @@ interface UseNavigationParams {
   currentUser: UserProfile | null;
   isAuthLoading: boolean;
   showToast: (message: string, type?: 'info' | 'error') => void;
-  onRefetchStoreData: () => void;
   products: Product[];
   isStoreLoading: boolean;
 }
 
 export function useNavigation(params: UseNavigationParams) {
-  const { locale, currentUser, isAuthLoading, showToast, onRefetchStoreData, products, isStoreLoading } = params;
+  const { locale, currentUser, isAuthLoading, showToast, products, isStoreLoading } = params;
 
   const mainRef = useRef<HTMLElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -173,116 +171,6 @@ export function useNavigation(params: UseNavigationParams) {
     }
   }, [activeProduct?.id, currentView, locale]);
 
-  // Admin MFA check
-  useEffect(() => {
-    if (currentView !== 'admin') return;
-    if (isAuthLoading) return;
-    if (!currentUser) {
-      setCurrentView('admin-login');
-      window.history.pushState({ view: 'admin-login' }, '', '/admin/login');
-      return;
-    }
-
-    const isAdmin = currentUser.role === 'admin' || (currentUser as Record<string, unknown>).is_admin === true;
-    if (!isAdmin) {
-      setCurrentView('home');
-      window.history.pushState({ view: 'home' }, '', '/');
-      showToast('Acesso negado. Apenas administradores podem acessar esta área.', 'error');
-      return;
-    }
-
-    const checkMfaStatus = async () => {
-      try {
-        const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-        if (aalError) return;
-
-        const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
-        if (factorsError) return;
-
-        const hasVerifiedFactors = factorsData.totp.some((f) => f.status === 'verified') || factorsData.phone.some((f) => f.status === 'verified');
-
-        if (!hasVerifiedFactors) {
-          setCurrentView('admin-login');
-          window.history.pushState({ view: 'admin-login' }, '', '/admin/login');
-          showToast('MFA obrigatório para administradores. Por favor, configure o MFA.', 'error');
-          return;
-        }
-
-        if (aalData?.currentLevel === 'aal1' && aalData?.nextLevel === 'aal2') {
-          setCurrentView('admin-login');
-          window.history.pushState({ view: 'admin-login' }, '', '/admin/login');
-          return;
-        }
-
-        if (aalData?.currentLevel !== 'aal2') {
-          setCurrentView('admin-login');
-          window.history.pushState({ view: 'admin-login' }, '', '/admin/login');
-          return;
-        }
-      } catch {
-        return;
-      }
-    };
-
-    checkMfaStatus();
-  }, [currentView, currentUser, isAuthLoading, showToast]);
-
-  // Delivery MFA check
-  useEffect(() => {
-    if (currentView !== 'delivery') return;
-    if (isAuthLoading) return;
-    if (!currentUser) {
-      setCurrentView('delivery-login');
-      window.history.pushState({ view: 'delivery-login' }, '', '/admin/login/delivery');
-      return;
-    }
-
-    const role = (currentUser as Record<string, unknown>).role as string;
-    const isDelivery = role === 'delivery' || (currentUser as Record<string, unknown>).is_delivery === true;
-    const isAdmin = role === 'admin' || (currentUser as Record<string, unknown>).is_admin === true;
-    if (!isDelivery && !isAdmin) {
-      setCurrentView('home');
-      window.history.pushState({ view: 'home' }, '', '/');
-      showToast('Acesso negado. Apenas usuários de entrega ou administradores podem acessar esta área.', 'error');
-      return;
-    }
-
-    const checkMfaStatus = async () => {
-      try {
-        const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-        if (aalError) return;
-
-        const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
-        if (factorsError) return;
-
-        const hasVerifiedFactors = factorsData.totp.some((f) => f.status === 'verified') || factorsData.phone.some((f) => f.status === 'verified');
-
-        if (!hasVerifiedFactors) {
-          setCurrentView('delivery-login');
-          window.history.pushState({ view: 'delivery-login' }, '', '/admin/login/delivery');
-          showToast('MFA obrigatório para entregadores. Por favor, configure o MFA.', 'error');
-          return;
-        }
-
-        if (aalData?.currentLevel === 'aal1' && aalData?.nextLevel === 'aal2') {
-          setCurrentView('delivery-login');
-          window.history.pushState({ view: 'delivery-login' }, '', '/admin/login/delivery');
-          return;
-        }
-
-        if (aalData?.currentLevel !== 'aal2') {
-          setCurrentView('delivery-login');
-          window.history.pushState({ view: 'delivery-login' }, '', '/admin/login/delivery');
-          return;
-        }
-      } catch {
-        return;
-      }
-    };
-
-    checkMfaStatus();
-  }, [currentView, currentUser, isAuthLoading, showToast]);
-
   const handleNavigate = useCallback(
     (view: Exclude<AppView, 'admin-login' | 'delivery-login' | 'shared-wishlist' | 'order-review'>, targetSection?: string, product?: Product) => {
       setCurrentView(view);
@@ -300,12 +188,10 @@ export function useNavigation(params: UseNavigationParams) {
             product: '/product',
             collection: '/collection',
             'new-arrivals': '/novidades',
-            admin: '/admin',
             checkout: '/checkout',
             receipt: '/receipt',
             about: '/about',
             'reset-password': '/reset-password',
-            delivery: '/admin/delivery',
             privacy: '/privacy',
             terms: '/terms',
             'search-results': '/search',
@@ -340,12 +226,6 @@ export function useNavigation(params: UseNavigationParams) {
     [getProductSlug, locale]
   );
 
-  const exitAdmin = useCallback(() => {
-    setCurrentView('home');
-    window.history.pushState({ view: 'home' }, '', '/');
-    onRefetchStoreData();
-  }, [onRefetchStoreData]);
-
   const handleScroll = useCallback(() => {
     if (!mainRef.current) return;
     const top = mainRef.current.scrollTop;
@@ -365,7 +245,6 @@ export function useNavigation(params: UseNavigationParams) {
     isScrolled,
     handleScroll,
     handleNavigate,
-    exitAdmin,
     getProductSlug,
   };
 }

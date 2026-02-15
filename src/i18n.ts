@@ -183,9 +183,9 @@ export const translations = {
       },
     },
     footer: {
-      tagline: 'Timeless elegance for the global woman. V16 Production Edition.',
+      tagline: 'Timeless elegance for the contemporary woman.',
       shop: 'Shop',
-      customerCare: 'Concierge',
+      customerCare: 'Customer Care',
       secure: 'Secure Payment',
       ssl: 'SSL Encryption',
       rights: 'All rights reserved.',
@@ -374,9 +374,9 @@ export const translations = {
       },
     },
     footer: {
-      tagline: 'Elegância atemporal. Edição de Produção V16.',
+      tagline: 'Elegância atemporal para a mulher contemporânea.',
       shop: 'Loja',
-      customerCare: 'Concierge',
+      customerCare: 'Atendimento',
       secure: 'Pagamento Seguro',
       ssl: 'Criptografia SSL',
       rights: 'Todos os direitos reservados.',
@@ -563,12 +563,12 @@ export const translations = {
       },
     },
     footer: {
-      tagline: 'Elegancia atemporal. Edición V16.',
+      tagline: 'Elegancia atemporal para la mujer contemporánea.',
       shop: 'Tienda',
-      customerCare: 'Concierge',
+      customerCare: 'Atención al Cliente',
       secure: 'Pago Seguro',
       ssl: 'Cifrado SSL',
-      rights: 'Todos los direitos reservados.',
+      rights: 'Todos los derechos reservados.',
       privacy: 'Privacidad',
       terms: 'Términos'
     }
@@ -752,9 +752,9 @@ export const translations = {
       },
     },
     footer: {
-      tagline: 'Élégance intemporelle. Édition V16.',
+      tagline: 'Elegance intemporelle pour la femme contemporaine.',
       shop: 'Boutique',
-      customerCare: 'Concierge',
+      customerCare: 'Service Client',
       secure: 'Paiement Sécurisé',
       ssl: 'Cryptage SSL',
       rights: 'Tous droits réservés.',

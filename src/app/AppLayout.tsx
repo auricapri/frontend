@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useMemo, useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -12,6 +12,7 @@ import AuthDrawer from '../components/auth/AuthDrawer';
 import Toast from '../components/ui/Toast';
 import { LoadingFallback } from '../components/ui/LoadingFallback';
 import { TestBanner } from '../components/common/TestBanner';
+import { CookieBanner } from '../components/common/CookieBanner';
 import { TermsConsentModal } from '../components/common/TermsConsentModal';
 import { useTermsConsent } from '../hooks/useTermsConsent';
 import { AbandonedCartToast } from '../components/ui/AbandonedCartToast';
@@ -20,6 +21,7 @@ import { trackingService } from '../services/tracking.service';
 import { ChatProduct } from '../api/ai-chat.api';
 import { Gender } from '../constants/enums';
 import { UserMode, type Category, type Collection, type Coupon, type Order, type Product, type SizeGuide, type StoreConfig, type UserProfile } from '../types';
+import { SEOHead, organizationSchema, websiteSchema, createProductSchema, createCollectionSchema } from '../components/seo';
 
 // Lazy load páginas e componentes pesados para melhor performance
 const ProductGrid = React.lazy(() => import('../components/product/ProductGrid'));
@@ -108,6 +110,49 @@ export function AppLayout(props: {
   const [selectedGender, setSelectedGender] = useState<Gender>(Gender.FEMALE);
   const { showModal: showTermsModal, acceptTerms, closeModal: closeTermsModal } = useTermsConsent();
 
+  // Helper to get localized text from product/collection name objects
+  const getLoc = (obj: any): string => {
+    if (!obj) return '';
+    if (typeof obj === 'string') return obj;
+    if (typeof obj === 'object') {
+      return obj[app.locale] || obj['pt'] || obj['en'] || obj['es'] || obj['fr'] || '';
+    }
+    return String(obj);
+  };
+
+  // Product SEO schema (memoized to avoid recalculation on every render)
+  const productSEO = useMemo(() => {
+    if (app.currentView !== 'product' || !app.activeProduct) return null;
+    const product = app.activeProduct;
+    const activeVariants = product.variants?.filter((v: any) => v.is_active) || [];
+    const defaultVariant = activeVariants[0] || product.variants?.[0];
+    const productName = getLoc(product.name);
+    const productImage = defaultVariant?.variant_images?.[0] || product.base_images?.[0] || product.default_image_url;
+    const seoTitle = app.t('seo.product.titleTemplate').replace('{productName}', productName);
+    const seoDescription = app.t('seo.product.descriptionTemplate')
+      .replace('{productName}', productName)
+      .replace('{category}', productName);
+    const seoKeywords = app.t('seo.product.keywords').replace('{category}', productName);
+    const schema = defaultVariant ? createProductSchema(product, defaultVariant, app.locale) : undefined;
+    return { seoTitle, seoDescription, seoKeywords, productImage, schema };
+  }, [app.currentView, app.activeProduct, app.locale]);
+
+  // Collection SEO schema (memoized)
+  const collectionSEO = useMemo(() => {
+    if (app.currentView !== 'collection' || !app.activeCollection) return null;
+    const collectionName = getLoc(app.activeCollection.name);
+    const collectionDescription = getLoc(app.activeCollection.description);
+    const collectionProducts = app.products.filter((p: Product) =>
+      p.collection_ids?.includes(app.activeCollection!.id)
+    );
+    const collectionImage = collectionProducts[0]?.base_images?.[0] || collectionProducts[0]?.default_image_url;
+    const seoTitle = app.t('seo.collection.titleTemplate').replace('{collectionName}', collectionName);
+    const seoDescription = app.t('seo.collection.descriptionTemplate').replace('{collectionName}', collectionName);
+    const seoKeywords = app.t('seo.collection.keywords').replace('{collectionName}', collectionName);
+    const schema = createCollectionSchema(collectionName, collectionDescription, window.location.href, collectionProducts.length);
+    return { seoTitle, seoDescription, seoKeywords, collectionImage, schema };
+  }, [app.currentView, app.activeCollection, app.locale, app.products]);
+
   // Handle selecting a product from chat
   const handleChatSelectProduct = (chatProduct: ChatProduct) => {
     // Find the matching product in our products list
@@ -120,6 +165,14 @@ export function AppLayout(props: {
 
   return (
     <div className="relative h-dvh w-full bg-white overflow-hidden text-neutral-900 font-sans">
+      {/* Skip to content link for keyboard/screen reader users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-black focus:text-white focus:px-4 focus:py-2 focus:rounded focus:text-sm focus:font-medium"
+      >
+        Pular para conteudo
+      </a>
+
       <TestBanner />
       <Navbar
         cartCount={app.cartItems.reduce((acc: number, item: any) => acc + item.quantity, 0)}
@@ -149,13 +202,21 @@ export function AppLayout(props: {
       />
 
       <main
-        id="main-scroll-container"
+        id="main-content"
         ref={app.mainRef}
         onScroll={app.handleScroll}
         className={`h-full w-full overflow-y-auto overflow-x-hidden no-scrollbar antialiased relative ${(app.currentView === 'home' || app.currentView === 'search-results') ? 'pt-0' : 'pt-32 md:pt-24'}`}
       >
         {app.currentView === 'home' && (
           <div className="min-h-full flex flex-col">
+            <SEOHead
+              title={app.t('seo.home.title')}
+              description={app.t('seo.home.description')}
+              keywords={app.t('seo.home.keywords')}
+              type="website"
+              locale={app.locale}
+              schema={[organizationSchema, websiteSchema]}
+            />
             <Hero onNavigate={app.onNavigate as any} t={app.t} banners={app.banners} locale={app.locale} isLoading={app.isLoading} />
 
             {/* Abandoned Cart Toast - appears above collection section */}
@@ -224,6 +285,17 @@ export function AppLayout(props: {
 
         {app.currentView === 'product' && app.activeProduct && (
           <>
+            {productSEO && (
+              <SEOHead
+                title={productSEO.seoTitle}
+                description={productSEO.seoDescription}
+                keywords={productSEO.seoKeywords}
+                image={productSEO.productImage}
+                type="product"
+                locale={app.locale}
+                schema={productSEO.schema}
+              />
+            )}
             <Suspense fallback={<LoadingFallback />}>
               <ProductDetail
                 product={app.activeProduct}
@@ -262,6 +334,17 @@ export function AppLayout(props: {
 
         {app.currentView === 'collection' && app.activeCollection && (
           <>
+            {collectionSEO && (
+              <SEOHead
+                title={collectionSEO.seoTitle}
+                description={collectionSEO.seoDescription}
+                keywords={collectionSEO.seoKeywords}
+                image={collectionSEO.collectionImage}
+                type="website"
+                locale={app.locale}
+                schema={collectionSEO.schema}
+              />
+            )}
             <Suspense fallback={<LoadingFallback />}>
               <CollectionDetail
                 collection={app.activeCollection}
@@ -290,18 +373,27 @@ export function AppLayout(props: {
         )}
 
         {app.currentView === 'checkout' && (
-          <Suspense fallback={<LoadingFallback />}>
-            <CheckoutView
-              items={app.cartItems}
-              currentUser={app.currentUser}
-              storeConfig={app.storeConfig}
-              userMode={app.userMode}
-              onBack={() => app.onNavigate('home')}
-              onComplete={app.handlePlaceOrder}
+          <>
+            <SEOHead
+              title={app.t('seo.checkout.title')}
+              description={app.t('seo.checkout.description')}
+              keywords={app.t('seo.checkout.keywords')}
+              type="website"
               locale={app.locale}
-              t={app.t}
             />
-          </Suspense>
+            <Suspense fallback={<LoadingFallback />}>
+              <CheckoutView
+                items={app.cartItems}
+                currentUser={app.currentUser}
+                storeConfig={app.storeConfig}
+                userMode={app.userMode}
+                onBack={() => app.onNavigate('home')}
+                onComplete={app.handlePlaceOrder}
+                locale={app.locale}
+                t={app.t}
+              />
+            </Suspense>
+          </>
         )}
 
         {app.currentView === 'order-review' &&
@@ -318,6 +410,14 @@ export function AppLayout(props: {
           })()}
 
         {app.currentView === 'new-arrivals' && (
+          <>
+          <SEOHead
+            title={`${app.t('nav.newArrivals')} | Auricapri`}
+            description={app.t('seo.home.description')}
+            keywords={app.t('seo.home.keywords')}
+            type="website"
+            locale={app.locale}
+          />
           <Suspense fallback={<LoadingFallback />}>
             <NewArrivalsPage
               collections={app.collections}
@@ -334,10 +434,18 @@ export function AppLayout(props: {
               onNavigate={app.onNavigate}
             />
           </Suspense>
+          </>
         )}
 
         {app.currentView === 'search-results' && app.searchSlug && (
           <>
+            <SEOHead
+              title={`${app.t('search.title')} | Auricapri`}
+              description={app.t('seo.site.description')}
+              keywords={app.t('seo.site.keywords')}
+              type="website"
+              locale={app.locale}
+            />
             <Suspense fallback={<LoadingFallback />}>
               <SearchResultsPage
                 products={app.products}
@@ -494,6 +602,8 @@ export function AppLayout(props: {
         locale={app.locale}
         t={app.t}
       />
+
+      <CookieBanner onNavigatePrivacy={() => app.onNavigate('privacy')} />
     </div>
   );
 }

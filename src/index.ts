@@ -5,7 +5,6 @@ export { HomePage } from './pages/HomePage';
 export { ProductPage } from './pages/ProductPage';
 export { CollectionPage } from './pages/CollectionPage';
 export { CheckoutPage } from './pages/CheckoutPage';
-export { AdminPage } from './pages/AdminPage';
 export { AboutPage } from './pages/AboutPage';
 export { ReceiptPage } from './pages/ReceiptPage';
 

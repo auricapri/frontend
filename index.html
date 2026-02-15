@@ -4,8 +4,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
     <title>Auricapri</title>
-    <link rel="icon" type="image/svg+xml" href="/logo-auricapri-2.svg" />
+    <link rel="icon" type="image/png" href="/logo.png" />
 
     <!-- Preconnect para fontes Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +21,7 @@
       (function() {
         function initMapbox() {
           if (window.mapboxgl) {
-            window.mapboxgl.accessToken = 'pk.eyJ1IjoiYWdlbmRhYnJhc2lsIiwiYSI6ImNtaW5sdnIzcjBhaHIzZW9qcXgyc292a3UifQ.xnR7-Wp3TdMkuuk_g-BcHQ';
+            window.mapboxgl.accessToken = '%VITE_MAPBOX_TOKEN%';
             console.log('Mapbox GL JS initialized with token');
             return true;
           }

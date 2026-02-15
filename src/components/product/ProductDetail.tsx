@@ -14,6 +14,7 @@ import { calculatePrice, filterProductsForMode } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
 import { getProductCoupon, applyCouponDiscount } from '../../utils/coupon';
 import { share, type SharePlatform } from '../../utils/share';
+import { createBreadcrumbSchema } from '../seo/schemas';
 import { productReviewsApi } from '../../api/instances';
 import { useImageHotspots } from '../../hooks/useImageHotspots';
 import { useVariantSelection } from '../../hooks/useVariantSelection';
@@ -221,6 +222,16 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     ? `${getLoc(activeVariant.composition)}\n\n${getLoc(activeVariant.care_instructions)}`
     : 'Sustainable luxury materials. Hand-finished in our atelier.';
 
+  // Breadcrumb schema for SEO
+  const breadcrumbSchema = useMemo(() => {
+    const productName = getLoc(product.name);
+    return createBreadcrumbSchema([
+      { name: 'Home', url: `${window.location.origin}/` },
+      { name: 'Colecoes', url: `${window.location.origin}/colecoes` },
+      { name: productName, url: window.location.href },
+    ]);
+  }, [product.name, getLoc]);
+
   // Accordion sections
   const accordionSections = [
     { id: 'desc', label: t('product.description'), content: getLoc(product.description) },
@@ -239,6 +250,31 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
   return (
     <div className="relative w-full bg-white">
+      {/* Breadcrumb JSON-LD Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+
+      {/* Visual Breadcrumb Navigation */}
+      <nav aria-label="Breadcrumb" className="px-6 md:px-12 lg:px-16 pt-2 pb-1">
+        <ol className="flex items-center gap-1.5 text-[11px] text-neutral-400">
+          <li>
+            <button onClick={() => window.history.back()} className="hover:text-neutral-700 transition-colors">
+              Home
+            </button>
+          </li>
+          <li aria-hidden="true" className="select-none">&gt;</li>
+          <li>
+            <span className="hover:text-neutral-700 transition-colors">Colecoes</span>
+          </li>
+          <li aria-hidden="true" className="select-none">&gt;</li>
+          <li aria-current="page" className="text-neutral-700 font-medium truncate max-w-[200px]">
+            {getLoc(product.name)}
+          </li>
+        </ol>
+      </nav>
+
       <div className="flex flex-col md:flex-row w-full min-h-screen">
         {/* Gallery Column */}
         <ImageGallery

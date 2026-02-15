@@ -182,8 +182,6 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
       app={app}
       storeConfig={storeConfig}
       lastSuccessOrder={orderProcessing.lastSuccessOrder}
-      userOrders={userOrders}
-      onExitAdmin={appState.exitAdmin}
       onSignOut={signOut}
       onSetCurrentView={appState.setCurrentView}
     />
