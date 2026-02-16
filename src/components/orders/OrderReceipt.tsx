@@ -16,9 +16,10 @@ interface OrderReceiptProps {
   onBack: () => void;
   t: (key: string) => any;
   locale: Locale;
+  taxId?: string;
 }
 
-const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale }) => {
+const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, taxId }) => {
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
   const [reviews, setReviews] = useState<OrderReview[]>([]);
   const [userReview, setUserReview] = useState<OrderReview | null>(null);
@@ -174,8 +175,9 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale })
             </div>
             <h1 className="text-2xl font-black uppercase tracking-[0.4em] mb-2">AURICAPRI</h1>
             <p className="text-[10px] uppercase tracking-widest text-neutral-500">Luxury Global Retail</p>
-            {/* Note: In a real app, pass global config to this component to display dynamic CNPJ */}
-            <p className="text-[10px] uppercase tracking-widest text-neutral-500 mt-1">CNPJ: 00.000.000/0001-99</p>
+            {taxId && (
+              <p className="text-[10px] uppercase tracking-widest text-neutral-500 mt-1">CNPJ: {taxId}</p>
+            )}
          </div>
 
          <div className="space-y-3 mb-8 bg-neutral-50 p-6 rounded-xl border border-neutral-100 print:border-black print:bg-white print:border-dashed">

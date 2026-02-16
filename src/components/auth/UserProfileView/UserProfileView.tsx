@@ -23,6 +23,8 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { LoadingFallback } from '../../ui/LoadingFallback';
 import { UserProfileViewProps, TabId } from './types';
 import { useProfileState, useOrders, useAddresses, createGetLoc } from './hooks';
+import { apiClient } from '../../../api/client';
+import { supabase } from '../../../utils/supabase';
 import {
   TabNavigation,
   ProfileTab,
@@ -64,6 +66,17 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({
       onUpdate,
     });
 
+  // Delete account handler (LGPD Art. 18)
+  const handleDeleteAccount = async () => {
+    try {
+      await apiClient.delete('/users/account');
+      await supabase.auth.signOut();
+      onLogout?.();
+    } catch (error) {
+      console.error('[DeleteAccount]', error);
+    }
+  };
+
   // Fetch data when tab changes
   useEffect(() => {
     if (activeTab === 'orders') fetchOrders();
@@ -80,6 +93,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({
             onBack={() => setViewingReceiptOrder(null)}
             t={t}
             locale={locale}
+            taxId={storeConfig?.tax_id}
           />
         </Suspense>
       </div>
@@ -104,6 +118,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({
             onCpfChange={setCpf}
             onSubmit={handleUpdateProfile}
             onLogout={onLogout}
+            onDeleteAccount={handleDeleteAccount}
           />
         )}
 
