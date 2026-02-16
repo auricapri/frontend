@@ -30,6 +30,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [referralCode, setReferralCode] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Read referral code from URL on mount
   useEffect(() => {
@@ -364,7 +365,29 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                      <input type="password" className="w-full px-6 py-4 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none" value={password} onChange={e => setPassword(e.target.value)} required />
                    </div>
                    
-                   <button type="submit" disabled={isLoading || !!socialLoading} className="w-full bg-neutral-900 text-white py-5 rounded-2xl text-xs font-bold uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center justify-center shadow-lg disabled:opacity-50">
+                   {authMode === 'register' && (
+                     <label className="flex items-start gap-3 cursor-pointer group">
+                       <input
+                         type="checkbox"
+                         checked={acceptedTerms}
+                         onChange={e => setAcceptedTerms(e.target.checked)}
+                         className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-black focus:ring-black accent-black"
+                       />
+                       <span className="text-[10px] text-neutral-500 leading-relaxed">
+                         Li e aceito a{' '}
+                         <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-neutral-900 font-bold">
+                           Politica de Privacidade
+                         </a>{' '}
+                         e os{' '}
+                         <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline text-neutral-900 font-bold">
+                           Termos de Uso
+                         </a>
+                         . Autorizo o tratamento dos meus dados pessoais conforme a LGPD.
+                       </span>
+                     </label>
+                   )}
+
+                   <button type="submit" disabled={isLoading || !!socialLoading || (authMode === 'register' && !acceptedTerms)} className="w-full bg-neutral-900 text-white py-5 rounded-2xl text-xs font-bold uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center justify-center shadow-lg disabled:opacity-50">
                      {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>{authMode === 'login' ? t('auth.login') : t('auth.signup')}</span>}
                    </button>
                 </form>

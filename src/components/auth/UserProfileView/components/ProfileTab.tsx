@@ -1,8 +1,8 @@
 /// Profile Tab Component
 /// Profile form and logout section
 
-import React from 'react';
-import { Phone, Loader2, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { Phone, Loader2, LogOut, Trash2 } from 'lucide-react';
 import { UserProfile } from '../../../../types';
 import { Locale } from '../../../../i18n';
 import { supabase } from '../../../../utils/supabase';
@@ -20,6 +20,7 @@ interface ProfileTabProps {
   onCpfChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   onLogout?: () => void;
+  onDeleteAccount?: () => void;
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
@@ -32,12 +33,25 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   onCpfChange,
   onSubmit,
   onLogout,
+  onDeleteAccount,
 }) => {
   const { fullName, phone, cpf, isUpdating } = formState;
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     onLogout?.();
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      onDeleteAccount?.();
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   return (
@@ -108,6 +122,50 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           <LogOut className="w-5 h-5" />
           <span>{t('auth.logout')}</span>
         </button>
+      )}
+
+      {/* Delete Account */}
+      {onDeleteAccount && (
+        <div className="mt-4">
+          {showDeleteConfirm ? (
+            <div className="p-6 bg-red-50 border border-red-200 rounded-2xl space-y-4 animate-in fade-in duration-300">
+              <p className="text-sm text-red-700 font-medium text-center">
+                Tem certeza? Todos os seus dados serao excluidos permanentemente.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeleting}
+                  className="flex-1 py-4 bg-white text-neutral-600 border border-neutral-200 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-neutral-50 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={isDeleting}
+                  className="flex-1 py-4 bg-red-600 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] shadow-lg hover:bg-red-700 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      <span>Excluir Permanentemente</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full py-5 bg-white text-red-400 border border-red-100 rounded-[2rem] text-[9px] font-black uppercase tracking-[0.4em] hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all flex items-center justify-center gap-3 active:scale-95"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Excluir Conta</span>
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

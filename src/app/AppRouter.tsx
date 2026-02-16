@@ -81,7 +81,7 @@ export function AppRouter(props: {
   if (app.currentView === 'receipt' && lastSuccessOrder) {
     return (
       <Suspense fallback={<LoadingFallback />}>
-        <OrderReceipt order={lastSuccessOrder} onBack={() => app.onNavigate('home')} t={app.t} locale={app.locale} />
+        <OrderReceipt order={lastSuccessOrder} onBack={() => app.onNavigate('home')} t={app.t} locale={app.locale} taxId={storeConfig?.tax_id} />
       </Suspense>
     );
   }

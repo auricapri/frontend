@@ -150,19 +150,19 @@ export class TrackingService {
 
   getConsent(): ConsentState {
     const raw = localStorage.getItem('tracking_consent');
-    if (!raw) return { analytics: true, geolocation: false };
+    if (!raw) return { analytics: false, geolocation: false };
     try {
       const parsed = JSON.parse(raw) as unknown;
       if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        return { analytics: true, geolocation: false };
+        return { analytics: false, geolocation: false };
       }
       const obj = parsed as Record<string, unknown>;
       return {
-        analytics: obj.analytics !== false,
+        analytics: obj.analytics === true,
         geolocation: obj.geolocation === true,
       };
     } catch {
-      return { analytics: true, geolocation: false };
+      return { analytics: false, geolocation: false };
     }
   }
 
