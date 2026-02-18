@@ -435,28 +435,20 @@ export class TrackingService {
     }
   }
 
-  // Desabilitado para reduzir requisições ao Supabase
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  trackProductView(_productId: string, _metadata?: Record<string, unknown>): void {
-    // Desabilitado - usar apenas page_view e purchase
+  trackProductView(productId: string, metadata?: Record<string, unknown>): void {
+    void this.trackEvent({ event: 'product_view', productId, metadata });
   }
 
-  // Desabilitado para reduzir requisições ao Supabase
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  trackCartAdd(_productId: string, _variantId: string, _quantity: number): void {
-    // Desabilitado - usar apenas page_view e purchase
+  trackCartAdd(productId: string, variantId: string, quantity: number): void {
+    void this.trackEvent({ event: 'cart_add', productId, metadata: { variantId, quantity } });
   }
 
-  // Desabilitado para reduzir requisições ao Supabase
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  trackCartRemove(_productId: string, _variantId: string): void {
-    // Desabilitado - usar apenas page_view e purchase
+  trackCartRemove(productId: string, variantId: string): void {
+    void this.trackEvent({ event: 'cart_remove', productId, metadata: { variantId } });
   }
 
-  // Desabilitado para reduzir requisições ao Supabase
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  trackCheckoutStart(_total: number, _itemsCount: number): void {
-    // Desabilitado - usar apenas page_view e purchase
+  trackCheckoutStart(total: number, itemsCount: number): void {
+    void this.trackEvent({ event: 'checkout_start', metadata: { total, itemsCount }, preferBeacon: true });
   }
 
   trackPurchase(orderId: string, total: number, items: Array<{ product_id: string; variant_id: string; quantity: number; price: number }>): void {
