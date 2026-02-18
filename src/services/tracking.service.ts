@@ -1,6 +1,8 @@
 import { logger } from '../utils/logger';
 import ReactGA from 'react-ga4';
 
+declare function fbq(...args: unknown[]): void;
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 const PIXEL_URL = `${API_BASE_URL}/tracking/pixel.gif`;
 const EVENT_URL = `${API_BASE_URL}/tracking/event`;
@@ -129,11 +131,12 @@ export class TrackingService {
   private lastEventHash: string | null = null;
   private lastEventTs = 0;
   private ga4Initialized = false;
+  private fbPixelInitialized = false;
 
   constructor() {
     // Initialize GA4 if Measurement ID is provided
     const gaId = import.meta.env.VITE_GA4_MEASUREMENT_ID;
-    if (gaId && typeof gaId === 'string' && gaId.trim().length > 0) {
+    if (gaId && typeof gaId === 'string' && gaId.trim().length > 0 && !gaId.includes('XXXXXXXX')) {
       try {
         ReactGA.initialize(gaId, {
           gtagOptions: { send_page_view: false }, // We'll manually track page views
@@ -144,7 +147,21 @@ export class TrackingService {
         logger.error('GA4 initialization failed:', error);
       }
     } else {
-      logger.warn('GA4 Measurement ID not found in environment variables');
+      logger.warn('GA4 Measurement ID not configured');
+    }
+
+    // Initialize Facebook Pixel if ID is provided
+    const fbPixelId = import.meta.env.VITE_FB_PIXEL_ID;
+    if (fbPixelId && typeof fbPixelId === 'string' && fbPixelId.trim().length > 0) {
+      try {
+        if (typeof fbq !== 'undefined') {
+          fbq('init', fbPixelId);
+          this.fbPixelInitialized = true;
+          logger.info('Facebook Pixel initialized with ID:', fbPixelId);
+        }
+      } catch (error) {
+        logger.error('Facebook Pixel initialization failed:', error);
+      }
     }
   }
 
@@ -179,6 +196,19 @@ export class TrackingService {
         }
       } catch (error) {
         logger.warn('GA4 consent update failed:', error);
+      }
+    }
+
+    // Facebook Pixel: revoke consent by disabling tracking
+    if (this.fbPixelInitialized && typeof fbq !== 'undefined') {
+      try {
+        if (consent.analytics) {
+          fbq('consent', 'grant');
+        } else {
+          fbq('consent', 'revoke');
+        }
+      } catch (error) {
+        logger.warn('FB Pixel consent update failed:', error);
       }
     }
   }
@@ -394,6 +424,15 @@ export class TrackingService {
         logger.warn('GA4 pageview failed:', error);
       }
     }
+
+    // Send to Facebook Pixel if initialized and consent given
+    if (this.fbPixelInitialized && this.getConsent().analytics) {
+      try {
+        fbq('track', 'PageView');
+      } catch (error) {
+        logger.warn('FB Pixel pageview failed:', error);
+      }
+    }
   }
 
   // Desabilitado para reduzir requisições ao Supabase
@@ -440,6 +479,24 @@ export class TrackingService {
         });
       } catch (error) {
         logger.warn('GA4 purchase event failed:', error);
+      }
+    }
+
+    // Send to Facebook Pixel if initialized and consent given
+    if (this.fbPixelInitialized && this.getConsent().analytics) {
+      try {
+        fbq('track', 'Purchase', {
+          value: total,
+          currency: 'BRL',
+          content_type: 'product',
+          contents: items.map((item) => ({
+            id: item.variant_id,
+            quantity: item.quantity,
+          })),
+          num_items: items.reduce((sum, i) => sum + i.quantity, 0),
+        });
+      } catch (error) {
+        logger.warn('FB Pixel purchase event failed:', error);
       }
     }
   }
