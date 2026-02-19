@@ -63,20 +63,22 @@ export const CookieBanner: React.FC<CookieBannerProps> = ({ onNavigatePrivacy })
           <div className="flex items-center gap-3 flex-shrink-0">
             <button
               onClick={handleReject}
-              className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-neutral-400 border border-neutral-600 rounded-full hover:text-white hover:border-neutral-400 transition-colors"
+              aria-label="Rejeitar cookies"
+              className="px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-neutral-400 border border-neutral-600 rounded-full hover:text-white hover:border-neutral-400 transition-colors min-h-[44px]"
             >
               Rejeitar
             </button>
             <button
               onClick={handleAccept}
-              className="px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-black bg-white rounded-full hover:bg-neutral-200 transition-colors"
+              aria-label="Aceitar cookies"
+              className="px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-black bg-white rounded-full hover:bg-neutral-200 transition-colors min-h-[44px]"
             >
               Aceitar
             </button>
             <button
               onClick={handleReject}
-              aria-label="Fechar"
-              className="p-1 text-neutral-500 hover:text-white transition-colors md:hidden"
+              aria-label="Fechar banner de cookies"
+              className="p-2.5 text-neutral-500 hover:text-white transition-colors md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <X className="w-4 h-4" />
             </button>

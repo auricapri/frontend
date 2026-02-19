@@ -41,11 +41,10 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
         `}
       </style>
 
-      <img
-        src="/logo-auricapri.svg"
-        alt="Carregando..."
-        className={`${sizeClasses[size]} logo-pulse`}
-      />
+      <span
+        className={`logo-pulse font-light tracking-[0.3em] uppercase text-black ${size === 'sm' ? 'text-base' : size === 'lg' ? 'text-2xl' : 'text-xl'}`}
+        aria-label="Carregando..."
+      >AURICAPRI</span>
 
       {message && (
         <p className="mt-8 text-xs text-neutral-500 font-light tracking-[0.15em] uppercase">

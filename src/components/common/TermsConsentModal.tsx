@@ -31,7 +31,8 @@ export function TermsConsentModal({
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-neutral-400 hover:text-black transition-colors"
+          aria-label="Fechar"
+          className="absolute top-4 right-4 p-2 text-neutral-400 hover:text-black transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <X className="w-5 h-5" />
         </button>
@@ -74,7 +75,7 @@ export function TermsConsentModal({
           </button>
 
           {/* Skip text */}
-          <p className="mt-4 text-[10px] text-neutral-400">
+          <p className="mt-4 text-xs text-neutral-500">
             Ao realizar uma compra você também concorda com os termos.
           </p>
         </div>
