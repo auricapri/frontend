@@ -144,7 +144,7 @@ export class CartApi {
   async mergeCart(sessionId: string): Promise<CartSession> {
     const headers = await getCartHeaders();
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
-    
+
     const response = await fetch(`${baseUrl}/cart/merge`, {
       method: 'POST',
       headers: {
@@ -157,6 +157,27 @@ export class CartApi {
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: { message: `HTTP ${response.status}: ${response.statusText}` } }));
       throw new Error(error.error.message);
+    }
+
+    return response.json();
+  }
+
+  async loadCartByToken(cartToken: string): Promise<{
+    items: CartItem[];
+    customer: Record<string, unknown> | null;
+    address: Record<string, unknown> | null;
+    cart_total: number;
+    discount_amount: number;
+  }> {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
+
+    const response = await fetch(`${baseUrl}/cart/sessions/${cartToken}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Cart session not found or expired');
     }
 
     return response.json();
