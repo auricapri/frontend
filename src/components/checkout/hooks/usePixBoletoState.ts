@@ -81,13 +81,13 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
           expiresAtDate = expiresAtValue;
         } else {
           // Fallback: 10 minutes from now
-          console.warn('[PIX] unrecognized expiresAt format, using 10 min fallback');
+          // unrecognized format fallback
           expiresAtDate = new Date(Date.now() + 10 * 60 * 1000);
         }
 
         // Validate if date is valid and in the future
         if (isNaN(expiresAtDate.getTime())) {
-          console.warn('[PIX] invalid expiration date, using 10 min fallback');
+          // invalid date fallback
           expiresAtDate = new Date(Date.now() + 10 * 60 * 1000);
         }
 
@@ -99,16 +99,12 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         });
         return true;
       } else {
-        console.error('[PIX] Incomplete response:', {
-          hasQrCodeImage: !!response.qrCodeImage,
-          hasQrCodePayload: !!response.qrCodePayload,
-          hasExpiresAt: !!response.expiresAt
-        });
+        // PIX response incomplete
         setPixError('QR Code não foi gerado corretamente. Tente novamente.');
         return false;
       }
     } catch (error) {
-      console.error('[PIX] Error creating charge:', error);
+      // PIX charge error handled below
       const errorMsg = error instanceof Error ? error.message : 'Erro ao gerar PIX';
       setPixError(errorMsg);
       return false;
@@ -164,7 +160,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
     if (sessionError || !session) {
-      console.error('[Checkout] Session check failed:', { sessionError, hasSession: !!session });
+      // Session expired
       throw new Error('Sua sessão expirou. Por favor, faça login novamente para continuar.');
     }
 
@@ -223,7 +219,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
           await usersApi.updateProfile({ cpf: cpf.replace(/\D/g, '') });
         } catch {
           // Silent - don't block checkout if saving CPF fails
-          console.warn('Failed to save CPF to profile');
+          // Silent - CPF save failed, non-blocking
         }
       }
 
@@ -261,7 +257,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
 
       return order;
     } catch (error) {
-      console.error('Error completing order:', error);
+      // Order error handled below
       const errorMsg = error instanceof Error ? error.message : 'Erro ao processar pedido';
       if (effectivePaymentMethod === PaymentMethod.PIX) {
         setPixError(errorMsg);

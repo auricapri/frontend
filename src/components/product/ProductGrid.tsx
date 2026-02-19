@@ -302,17 +302,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       })[0] || null;
   }, [collections]);
 
-  // Debug: log to see if collections have time fields
-  useEffect(() => {
-    if (collections.length > 0) {
-      console.log('[ProductGrid] Collections with time fields:', collections.map(c => ({
-        name: c.name,
-        starts_at: c.starts_at,
-        ends_at: c.ends_at
-      })));
-      console.log('[ProductGrid] Urgent collection:', urgentCollection);
-    }
-  }, [collections, urgentCollection]);
 
   return (
     <section id="collection" className="w-full bg-white flex flex-col pt-4 md:pt-20 pb-4">

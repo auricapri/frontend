@@ -34,13 +34,11 @@ class ApiClient {
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error) {
-        console.error('[Auth Error]', error);
         return null;
       }
 
       return session?.access_token || null;
-    } catch (err) {
-      console.error('[Auth Exception]', err);
+    } catch (_) {
       return null;
     }
   }
