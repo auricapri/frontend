@@ -1,5 +1,5 @@
-
 import React from 'react';
+import DOMPurify from 'dompurify';
 import { StoreConfig } from '../../types';
 import { Locale } from '../../i18n';
 import { ArrowLeft } from 'lucide-react';
@@ -53,7 +53,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ config, locale, onBack }) => {
               
               <div className="prose prose-lg prose-neutral max-w-none text-neutral-600 font-medium leading-relaxed">
                 {text ? (
-                  <div dangerouslySetInnerHTML={{ __html: text }} />
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }} />
                 ) : (
                   <p className="opacity-50">
                     A história da marca ainda está sendo escrita.

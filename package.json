@@ -54,6 +54,8 @@
     "@tiptap/pm": "^3.17.1",
     "@tiptap/react": "^3.17.1",
     "@tiptap/starter-kit": "^3.17.1",
+    "@types/dompurify": "^3.0.5",
+    "dompurify": "^3.3.1",
     "html2canvas": "^1.4.1",
     "lucide-react": "0.462.0",
     "react": "19.0.0",
