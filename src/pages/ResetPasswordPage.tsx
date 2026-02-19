@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Lock, Eye, EyeOff, Check, Loader2, ArrowLeft } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { Locale } from '../i18n';
@@ -117,8 +118,11 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _l
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-6 py-24">
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <div className="max-w-md w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        
+
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto">

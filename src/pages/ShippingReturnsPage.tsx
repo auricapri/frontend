@@ -1,4 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
+import { SEOHead } from '../components/seo/SEOHead';
 import type { Locale } from '../i18n';
 
 interface ShippingReturnsPageProps {
@@ -9,6 +10,12 @@ interface ShippingReturnsPageProps {
 export function ShippingReturnsPage({ locale, onBack }: ShippingReturnsPageProps) {
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead
+        title="Envios e Devoluções | Auricapri"
+        description="Saiba tudo sobre envios, trocas e devoluções na Auricapri. Frete gratis acima de R$ 299, trocas gratuitas em ate 30 dias e politica de devolucao transparente."
+        keywords="envios, devoluções, trocas, frete, politica de envio, auricapri"
+        url="https://www.auricapri.com.br/shipping-returns"
+      />
       <header className="sticky top-0 z-10 bg-white border-b border-neutral-100">
         <div className="w-full px-4 py-4 flex items-center gap-4">
           <button

@@ -1,0 +1,22 @@
+{
+  "name": "Auricapri",
+  "short_name": "Auricapri",
+  "description": "Moda feminina com estilo e elegancia",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#FFFFFF",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { SEOHead } from '../components/seo/SEOHead';
 import { Collection } from '../types';
 import { Locale } from '../i18n';
 import { createGetLoc } from '../utils/localization';
@@ -112,6 +113,12 @@ export function NewArrivalsPage({
 
   return (
     <div className="min-h-full flex flex-col bg-white">
+      <SEOHead
+        title="Novidades | Auricapri"
+        description="Descubra as novidades da Auricapri. Novas colecoes, pecas exclusivas e as ultimas tendencias em moda feminina."
+        keywords="novidades, colecoes novas, moda feminina, auricapri, lancamentos"
+        url="https://www.auricapri.com.br/new-arrivals"
+      />
       {/* Header */}
       <div className="max-w-7xl mx-auto w-full px-6 md:px-12 pt-24 pb-8">
         <button
