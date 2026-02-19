@@ -1,7 +1,4 @@
-import React, { useState } from 'react';
-
-// Logo do public folder - Vite serve arquivos do public na raiz
-const logoImg = '/logo-auricapri.svg';
+import React from 'react';
 
 interface LoadingModalProps {
   isOpen: boolean;
@@ -14,8 +11,6 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
   message = 'Aguarde...',
   subMessage
 }) => {
-  const [imageError, setImageError] = useState(false);
-
   if (!isOpen) return null;
 
   return (
@@ -67,20 +62,11 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
           `}
         </style>
 
-        {/* Logo com pulse - com fallback para texto */}
+        {/* Logo texto com pulse */}
         <div className="loading-logo-pulse">
-          {!imageError ? (
-            <img
-              src={logoImg}
-              alt="Auricapri"
-              className="w-24 h-24 object-contain filter brightness-0 invert"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <span className="text-2xl font-light text-white tracking-[0.3em] uppercase">
-              AURICAPRI
-            </span>
-          )}
+          <span className="text-2xl font-light text-white tracking-[0.3em] uppercase">
+            AURICAPRI
+          </span>
         </div>
 
         {/* Mensagem principal */}

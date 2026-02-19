@@ -542,12 +542,11 @@ export function AppLayout(props: {
               }
             `}
           </style>
-          <img
-            src="/logo-auricapri.svg"
-            alt="Carregando..."
-            className="w-16 h-16 mb-6"
+          <span
+            className="text-xl font-light tracking-[0.3em] uppercase text-black mb-6"
             style={{ animation: 'logo-pulse 1.5s ease-in-out infinite' }}
-          />
+            aria-label="Carregando..."
+          >AURICAPRI</span>
           <h3 className="text-xl font-black uppercase tracking-tighter">Processando Pedido</h3>
           <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mt-2">Não feche esta janela...</p>
         </div>
