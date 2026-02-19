@@ -1,4 +1,6 @@
+import { Helmet } from 'react-helmet-async';
 import { ArrowLeft } from 'lucide-react';
+import { SEOHead } from '../components/seo/SEOHead';
 import type { StoreConfig } from '../types';
 import type { Locale } from '../i18n';
 
@@ -14,6 +16,14 @@ export function PrivacyPolicyPage({ config, locale, onBack }: PrivacyPolicyPageP
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead
+        title="Politica de Privacidade | Auricapri"
+        description="Politica de privacidade da loja Auricapri."
+        url="https://www.auricapri.com.br/privacy"
+      />
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <header className="sticky top-0 z-10 bg-white border-b border-neutral-100">
         <div className="w-full px-4 py-4 flex items-center gap-4">
           <button

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { CollectionDetail } from '../components/product';
 import { Collection, Product, Category, UserMode } from '../types';
 import { Locale } from '../i18n';
-import { SEOHead, createCollectionSchema } from '../components/seo';
+import { SEOHead, createCollectionSchema, createBreadcrumbSchema } from '../components/seo';
 
 interface CollectionPageProps {
   collection: Collection;
@@ -54,6 +54,17 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({
     );
   }, [collectionName, collectionDescription, products.length]);
 
+  // Build breadcrumb schema: Home > Collection
+  const breadcrumbSchema = useMemo(() => {
+    return createBreadcrumbSchema([
+      { name: 'Home', url: 'https://www.auricapri.com.br/' },
+      { name: collectionName, url: `https://www.auricapri.com.br/collection/${collection.slug}` },
+    ]);
+  }, [collectionName, collection.slug]);
+
+  // Combine schemas into array
+  const schemas = useMemo(() => [collectionSchema, breadcrumbSchema], [collectionSchema, breadcrumbSchema]);
+
   // Generate SEO metadata
   const seoTitle = t ? t('seo.collection.titleTemplate').replace('{collectionName}', collectionName) : `${collectionName} | Auricapri`;
   const seoDescription = t ? t('seo.collection.descriptionTemplate').replace('{collectionName}', collectionName) : collectionDescription;
@@ -68,7 +79,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({
         image={collectionImage}
         type="website"
         locale={locale}
-        schema={collectionSchema}
+        schema={schemas}
       />
       <CollectionDetail
         collection={collection}

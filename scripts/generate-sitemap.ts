@@ -171,7 +171,12 @@ async function generateSitemap() {
 }
 
 // Run the generator
+// NOTE: Exits gracefully (code 0) on failure so it doesn't block the build.
+// The existing static sitemap.xml in /public serves as fallback.
+// To create og:image: open /public/og-image-template.html in a browser and screenshot at 1200x630px,
+// then save as /public/og-image.png (or .jpg). Update SEOHead.tsx default to match.
 generateSitemap().catch((error) => {
-  console.error('❌ Sitemap generation failed:', error);
-  process.exit(1);
+  console.error('Sitemap generation failed (non-blocking):', error);
+  console.log('The existing sitemap.xml (if any) will be used as fallback.');
+  process.exit(0);
 });

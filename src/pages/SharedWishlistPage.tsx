@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { wishlistApi, productsApi } from '../api/instances';
+import { SEOHead } from '../components/seo/SEOHead';
 import { Product, CartItem, AddressData, InternalLogisticsInfo } from '../types';
 import { Locale } from '../i18n';
 import CheckoutView from '../components/checkout/CheckoutViewV2';
@@ -246,6 +248,13 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
 
   return (
     <div className="min-h-screen bg-white pt-24 pb-20 relative">
+      <SEOHead
+        title="Lista de Desejos | Auricapri"
+        description="Confira esta lista de desejos compartilhada da Auricapri."
+      />
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       {isProcessing && (
         <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm flex items-center justify-center">
           <div className="text-center space-y-4">

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import ProductDetail from '../components/product/ProductDetail';
 import { Product, Coupon, UserMode, UserProfile, SizeGuide } from '../types';
 import { Locale } from '../i18n';
-import { SEOHead, createProductSchema } from '../components/seo';
+import { SEOHead, createProductSchema, createBreadcrumbSchema } from '../components/seo';
 
 interface ProductPageProps {
   product: Product;
@@ -60,6 +60,23 @@ export const ProductPage: React.FC<ProductPageProps> = ({
     return createProductSchema(product, defaultVariant, locale);
   }, [product, defaultVariant, locale]);
 
+  // Build breadcrumb schema: Home > Product Name
+  const breadcrumbSchema = useMemo(() => {
+    const productSlug = getLoc(product.slug);
+    return createBreadcrumbSchema([
+      { name: 'Home', url: 'https://www.auricapri.com.br/' },
+      { name: productName, url: `https://www.auricapri.com.br/product/${productSlug}` },
+    ]);
+  }, [productName, product.slug, locale]);
+
+  // Combine schemas into array
+  const schemas = useMemo(() => {
+    const result = [];
+    if (productSchema) result.push(productSchema);
+    result.push(breadcrumbSchema);
+    return result;
+  }, [productSchema, breadcrumbSchema]);
+
   // Generate SEO title and description
   const seoTitle = t('seo.product.titleTemplate').replace('{productName}', productName);
   const seoDescription = t('seo.product.descriptionTemplate')
@@ -76,7 +93,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({
         image={productImage}
         type="product"
         locale={locale}
-        schema={productSchema}
+        schema={schemas}
       />
       <ProductDetail 
       product={product} 

@@ -1,10 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Product, UserMode } from '../types';
 import { Locale } from '../i18n';
 import { searchProducts } from '../utils/productFilters';
 import { createGetLoc } from '../utils/localization';
 import { unslugify } from '../utils/urlUtils';
 import { ArrowLeft, ArrowRight, SlidersHorizontal, X } from 'lucide-react';
+import { SEOHead } from '../components/seo/SEOHead';
 import { useProductFilters } from '../hooks/useProductFilters';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { FilterSidebar } from '../components/product/FilterSidebar';
@@ -90,6 +92,13 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
 
   return (
     <div className="bg-white pt-2 pb-4">
+      <SEOHead
+        title={`Busca: ${searchQuery} | Auricapri`}
+        description={`Resultados de busca para "${searchQuery}" na Auricapri.`}
+      />
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       {/* Header + Filters */}
       <div className="bg-white">
         {/* Header */}

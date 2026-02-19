@@ -1,4 +1,4 @@
-import type { Product, ProductVariant } from '../../types';
+import type { Product, ProductVariant, ProductReview } from '../../types';
 import type { LocalizedText } from '../../types/common';
 
 /**
@@ -55,15 +55,35 @@ export const websiteSchema = {
  * @param product - Product data from API
  * @param variant - Selected variant with price and stock
  * @param locale - Current language (en, pt, es, fr)
+ * @param reviews - Optional array of product reviews for individual Review schema items
  */
 export function createProductSchema(
   product: Product,
   variant: ProductVariant,
-  locale: string
+  locale: string,
+  reviews?: ProductReview[]
 ) {
   const productName = getLocalizedValue(product.name, locale);
   const productDescription = getLocalizedValue(product.description, locale);
   const productImage = variant.variant_images?.[0] || product.base_images?.[0] || product.default_image_url;
+
+  // Build individual Review items from review data (max 5 for schema size)
+  const reviewItems = reviews?.length
+    ? reviews.slice(0, 5).map(review => ({
+        "@type": "Review" as const,
+        "author": {
+          "@type": "Person" as const,
+          "name": review.user_name || 'Cliente Auricapri'
+        },
+        "datePublished": review.created_at.split('T')[0],
+        "reviewRating": {
+          "@type": "Rating" as const,
+          "ratingValue": review.rating,
+          "bestRating": 5
+        },
+        ...(review.comment ? { "reviewBody": review.comment } : {})
+      }))
+    : undefined;
 
   return {
     "@context": "https://schema.org",
@@ -95,7 +115,8 @@ export function createProductSchema(
         "ratingValue": product.average_rating,
         "reviewCount": product.total_reviews || 0
       }
-    })
+    }),
+    ...(reviewItems && { "review": reviewItems })
   };
 }
 

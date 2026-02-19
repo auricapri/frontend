@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { X, ChevronDown, HelpCircle, Loader2 } from 'lucide-react';
 import { FAQItem } from '../../types';
 import { faqApi } from '../../api/instances';
 import { Locale } from '../../i18n';
+import { createFAQSchema } from '../seo/schemas';
 
 interface FAQModalProps {
   isOpen: boolean;
@@ -33,10 +35,30 @@ const FAQModal: React.FC<FAQModalProps> = ({ isOpen, onClose, locale, t }) => {
     }
   }, [isOpen]);
 
+  // Build FAQ schema for structured data when FAQs are loaded
+  const faqSchema = useMemo(() => {
+    if (!faqs.length) return null;
+    return createFAQSchema(
+      faqs.map(faq => ({
+        question: getLoc(faq.question),
+        answer: getLoc(faq.answer),
+      }))
+    );
+  }, [faqs, locale]);
+
   if (!isOpen) return null;
 
   return (
     <>
+      {/* FAQ Schema for Google rich results */}
+      {faqSchema && (
+        <Helmet>
+          <script type="application/ld+json">
+            {JSON.stringify(faqSchema)}
+          </script>
+        </Helmet>
+      )}
+
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] transition-opacity animate-in fade-in duration-300"

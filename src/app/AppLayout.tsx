@@ -22,7 +22,7 @@ import { trackingService } from '../services/tracking.service';
 import { ChatProduct } from '../api/ai-chat.api';
 import { Gender } from '../constants/enums';
 import { UserMode, type Category, type Collection, type Coupon, type Order, type Product, type SizeGuide, type StoreConfig, type UserProfile } from '../types';
-import { SEOHead, organizationSchema, websiteSchema, createProductSchema, createCollectionSchema } from '../components/seo';
+import { SEOHead, organizationSchema, websiteSchema, createProductSchema, createCollectionSchema, createBreadcrumbSchema } from '../components/seo';
 
 // Lazy load páginas e componentes pesados para melhor performance
 const ProductGrid = React.lazy(() => import('../components/product/ProductGrid'));
@@ -135,15 +135,39 @@ export function AppLayout(props: {
     const activeVariants = product.variants?.filter((v: any) => v.is_active) || [];
     const defaultVariant = activeVariants[0] || product.variants?.[0];
     const productName = getLoc(product.name);
+    const productSlug = getLoc(product.slug);
     const productImage = defaultVariant?.variant_images?.[0] || product.base_images?.[0] || product.default_image_url;
     const seoTitle = app.t('seo.product.titleTemplate').replace('{productName}', productName);
     const seoDescription = app.t('seo.product.descriptionTemplate')
       .replace('{productName}', productName)
       .replace('{category}', productName);
     const seoKeywords = app.t('seo.product.keywords').replace('{category}', productName);
-    const schema = defaultVariant ? createProductSchema(product, defaultVariant, app.locale) : undefined;
-    return { seoTitle, seoDescription, seoKeywords, productImage, schema };
-  }, [app.currentView, app.activeProduct, app.locale]);
+    const productSchema = defaultVariant ? createProductSchema(product, defaultVariant, app.locale) : undefined;
+
+    // Build breadcrumb: Home > [Collection] > Product
+    const breadcrumbItems: Array<{ name: string; url: string }> = [
+      { name: 'Home', url: 'https://www.auricapri.com.br/' },
+    ];
+    // Find the first collection this product belongs to
+    const parentCollection = product.collection_ids?.length
+      ? app.collections.find((c: Collection) => product.collection_ids!.includes(c.id))
+      : undefined;
+    if (parentCollection) {
+      const collectionName = getLoc(parentCollection.name);
+      breadcrumbItems.push({
+        name: collectionName,
+        url: `https://www.auricapri.com.br/collection/${parentCollection.slug}`,
+      });
+    }
+    breadcrumbItems.push({
+      name: productName,
+      url: `https://www.auricapri.com.br/product/${productSlug}`,
+    });
+    const breadcrumbSchema = createBreadcrumbSchema(breadcrumbItems);
+
+    const schemas = productSchema ? [productSchema, breadcrumbSchema] : [breadcrumbSchema];
+    return { seoTitle, seoDescription, seoKeywords, productImage, schemas };
+  }, [app.currentView, app.activeProduct, app.locale, app.collections]);
 
   // Collection SEO schema (memoized)
   const collectionSEO = useMemo(() => {
@@ -157,8 +181,16 @@ export function AppLayout(props: {
     const seoTitle = app.t('seo.collection.titleTemplate').replace('{collectionName}', collectionName);
     const seoDescription = app.t('seo.collection.descriptionTemplate').replace('{collectionName}', collectionName);
     const seoKeywords = app.t('seo.collection.keywords').replace('{collectionName}', collectionName);
-    const schema = createCollectionSchema(collectionName, collectionDescription, window.location.href, collectionProducts.length);
-    return { seoTitle, seoDescription, seoKeywords, collectionImage, schema };
+    const collectionSchema = createCollectionSchema(collectionName, collectionDescription, window.location.href, collectionProducts.length);
+
+    // Build breadcrumb: Home > Collection
+    const breadcrumbSchema = createBreadcrumbSchema([
+      { name: 'Home', url: 'https://www.auricapri.com.br/' },
+      { name: collectionName, url: `https://www.auricapri.com.br/collection/${app.activeCollection.slug}` },
+    ]);
+
+    const schemas = [collectionSchema, breadcrumbSchema];
+    return { seoTitle, seoDescription, seoKeywords, collectionImage, schemas };
   }, [app.currentView, app.activeCollection, app.locale, app.products]);
 
   // Handle selecting a product from chat
@@ -303,7 +335,7 @@ export function AppLayout(props: {
                 image={productSEO.productImage}
                 type="product"
                 locale={app.locale}
-                schema={productSEO.schema}
+                schema={productSEO.schemas}
               />
             )}
             <Suspense fallback={<LoadingFallback />}>
@@ -353,7 +385,7 @@ export function AppLayout(props: {
                 image={collectionSEO.collectionImage}
                 type="website"
                 locale={app.locale}
-                schema={collectionSEO.schema}
+                schema={collectionSEO.schemas}
               />
             )}
             <Suspense fallback={<LoadingFallback />}>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!--
+  OG Image Template for Auricapri
+  ================================
+  This file is NOT served to users. It is a template to create the og:image.
+
+  Instructions:
+  1. Open this file in a browser
+  2. Take a screenshot at exactly 1200x630px
+     - Chrome DevTools: Ctrl+Shift+I > toggle device toolbar > set to 1200x630
+     - Or use a screenshot tool set to those dimensions
+  3. Save the screenshot as /public/og-image.png (or .jpg)
+  4. Update SEOHead.tsx default ogImage path if needed:
+     const ogImage = image || `${BASE_URL}/og-image.png`;
+  5. Deploy and test with https://developers.facebook.com/tools/debug/
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1200">
+  <title>Auricapri OG Image Template</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      background: #000000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .brand {
+      color: #FFFFFF;
+      font-size: 72px;
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 0.6em;
+      /* Offset the letter-spacing so text appears visually centered */
+      padding-left: 0.6em;
+    }
+
+    .separator {
+      width: 128px;
+      height: 1px;
+      background: #FFFFFF;
+      margin: 40px 0;
+    }
+
+    .subtitle {
+      color: #FFFFFF;
+      font-size: 24px;
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 0.4em;
+      padding-left: 0.4em;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="brand">AURICAPRI</div>
+  <div class="separator"></div>
+  <div class="subtitle">Moda Feminina</div>
+</body>
+</html>
