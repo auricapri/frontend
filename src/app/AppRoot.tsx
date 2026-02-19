@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { calculatePrice } from '../utils/product';
 import { trackingService } from '../services/tracking.service';
 import { useStoreData } from '../hooks/useStoreData';
@@ -65,6 +65,19 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
     onNavigate: appState.handleNavigate as (view: string) => void,
     onShowToast: appState.showToast,
   });
+
+  // Auto-navigate to checkout when a WhatsApp cart token is loaded
+  useEffect(() => {
+    const handleCartToken = () => {
+      // Small delay to let cart state update
+      setTimeout(() => {
+        appState.handleNavigate('checkout');
+      }, 500);
+    };
+
+    window.addEventListener('cart-token-loaded', handleCartToken);
+    return () => window.removeEventListener('cart-token-loaded', handleCartToken);
+  }, [appState]);
 
   const handleCheckoutIntent = useCallback(() => {
     const stockCheck = validateStock();

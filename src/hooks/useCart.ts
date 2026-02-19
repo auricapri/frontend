@@ -62,6 +62,44 @@ export const useCart = (products: Product[], assets: Asset[]) => {
     }
   }, [loadCart]);
 
+  // Load cart from WhatsApp token (if present in URL)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cartToken = params.get('cart_token');
+
+    if (cartToken && cartToken.startsWith('cs_')) {
+      const tokenApi = new CartApi();
+      tokenApi.loadCartByToken(cartToken)
+        .then(session => {
+          if (session.items && session.items.length > 0) {
+            setCartItems(session.items);
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(session.items));
+
+            // Store pre-fill data for checkout
+            if (session.customer || session.address) {
+              localStorage.setItem('auricapri_checkout_prefill', JSON.stringify({
+                customer: session.customer,
+                address: session.address,
+              }));
+            }
+
+            // Clean URL
+            const url = new URL(window.location.href);
+            url.searchParams.delete('cart_token');
+            window.history.replaceState({}, '', url.pathname);
+
+            // Dispatch event for navigation
+            window.dispatchEvent(new CustomEvent('cart-token-loaded', {
+              detail: { items: session.items, customer: session.customer, address: session.address }
+            }));
+          }
+        })
+        .catch(err => {
+          logger.error('Failed to load WhatsApp cart', err, { context: 'useCart' });
+        });
+    }
+  }, []); // Run once on mount
+
   // Persistir carrinho no localStorage sempre que mudar
   useEffect(() => {
     try {
