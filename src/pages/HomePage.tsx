@@ -86,14 +86,17 @@ export const HomePage: React.FC<HomePageProps> = ({
         onNavigate={onNavigate}
       />
       
-      <a 
-        href="https://wa.me/AURICAPRI" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="fixed bottom-10 right-6 p-5 bg-neutral-900 text-white rounded-full shadow-2xl z-40 border border-white/10 hover:scale-110 active:scale-95 transition-all flex items-center justify-center animate-in slide-in-from-bottom-10 duration-700"
-      >
-        <MessageCircle className="w-6 h-6" />
-      </a>
+      {storeConfig.support_phone && (
+        <a
+          href={`https://wa.me/${storeConfig.support_phone.replace(/\D/g, '')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={locale === 'pt' ? 'Contato via WhatsApp' : 'Contact via WhatsApp'}
+          className="fixed bottom-10 right-6 p-5 bg-neutral-900 text-white rounded-full shadow-2xl z-40 border border-white/10 hover:scale-110 active:scale-95 transition-all flex items-center justify-center animate-in slide-in-from-bottom-10 duration-700"
+        >
+          <MessageCircle className="w-6 h-6" />
+        </a>
+      )}
     </div>
   );
 };

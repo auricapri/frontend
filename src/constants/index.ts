@@ -1,6 +1,17 @@
 // Application constants (no mocks)
 
-export const WHATSAPP_LINK = 'https://wa.me/AURICAPRI';
+/**
+ * Build a WhatsApp link from a phone number.
+ * The phone number comes from storeConfig.support_phone (Supabase).
+ * Returns empty string if no phone is provided.
+ */
+export function getWhatsAppLink(phone?: string): string {
+  if (!phone) return '';
+  return `https://wa.me/${phone.replace(/\D/g, '')}`;
+}
+
+/** @deprecated Use getWhatsAppLink(storeConfig.support_phone) instead */
+export const WHATSAPP_LINK = '';
 
 export const DEFAULT_LOCALE = 'pt' as const;
 

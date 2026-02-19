@@ -5,9 +5,10 @@ import type { Locale } from '../i18n';
 interface ShippingReturnsPageProps {
   locale: Locale;
   onBack: () => void;
+  onNavigateReturns?: () => void;
 }
 
-export function ShippingReturnsPage({ locale, onBack }: ShippingReturnsPageProps) {
+export function ShippingReturnsPage({ locale, onBack, onNavigateReturns }: ShippingReturnsPageProps) {
   return (
     <div className="min-h-screen bg-white">
       <SEOHead
@@ -89,12 +90,21 @@ export function ShippingReturnsPage({ locale, onBack }: ShippingReturnsPageProps
             Como Solicitar
           </h2>
           <ol className="space-y-3 text-sm text-neutral-700 leading-relaxed list-decimal list-inside">
-            <li>Entre em contato pelo WhatsApp ou e-mail.</li>
-            <li>Informe o número do pedido e o motivo.</li>
-            <li>Enviaremos as instruções e a etiqueta de devolução.</li>
-            <li>Despache o produto no ponto de coleta mais próximo.</li>
+            <li>Acesse o formulario de devolucao online ou entre em contato pelo WhatsApp/e-mail.</li>
+            <li>Informe o numero do pedido e o motivo.</li>
+            <li>Enviaremos as instrucoes e a etiqueta de devolucao.</li>
+            <li>Despache o produto no ponto de coleta mais proximo.</li>
             <li>Assim que recebermos, processamos a troca ou reembolso.</li>
           </ol>
+
+          {onNavigateReturns && (
+            <button
+              onClick={onNavigateReturns}
+              className="mt-6 px-8 py-4 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-colors"
+            >
+              Solicitar Devolucao Online
+            </button>
+          )}
         </section>
 
       </main>
