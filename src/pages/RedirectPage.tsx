@@ -22,9 +22,15 @@ const RedirectPage: React.FC<RedirectPageProps> = ({ url, onNavigate, locale: _l
       return;
     }
 
-    // Basic validation
+    // Validate URL and restrict to allowed domains only (prevent open redirect)
+    const ALLOWED_DOMAINS = ['auricapri.com.br', 'www.auricapri.com.br', 'auricapri.com', 'www.auricapri.com'];
     try {
-      new URL(url);
+      const parsed = new URL(url);
+      if (!ALLOWED_DOMAINS.includes(parsed.hostname)) {
+        setStatus('error');
+        setError('Redirecionamento para domínios externos não é permitido.');
+        return;
+      }
     } catch (_e) {
       setStatus('error');
       setError('URL inválida.');

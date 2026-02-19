@@ -2,6 +2,7 @@
 /// Expandable product presentation content
 
 import React from 'react';
+import DOMPurify from 'dompurify';
 import { Plus, Minus } from 'lucide-react';
 
 interface PresentationSectionProps {
@@ -49,7 +50,7 @@ export function PresentationSection({
         >
           <div
             className="prose prose-lg max-w-none prose-headings:font-light prose-headings:tracking-tight prose-headings:uppercase prose-p:text-neutral-600 prose-p:leading-relaxed prose-img:rounded-2xl prose-img:shadow-lg prose-a:text-black prose-a:font-bold prose-strong:text-black"
-            dangerouslySetInnerHTML={{ __html: content }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
           />
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { SEOHead } from '../components/seo/SEOHead';
 import type { StoreConfig } from '../types';
 import type { Locale } from '../i18n';
@@ -44,7 +45,7 @@ export function PrivacyPolicyPage({ config, locale, onBack }: PrivacyPolicyPageP
       <main className="w-full px-4 py-8">
         <div
           className="prose prose-neutral max-w-none"
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
         />
       </main>
     </div>

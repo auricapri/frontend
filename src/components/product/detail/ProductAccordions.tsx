@@ -2,6 +2,7 @@
 /// Description and composition expandable sections
 
 import React from 'react';
+import DOMPurify from 'dompurify';
 import { Plus, Minus } from 'lucide-react';
 
 interface AccordionSection {
@@ -44,7 +45,7 @@ export function ProductAccordions({
             >
               <div
                 className="prose prose-sm max-w-sm text-neutral-500 prose-p:text-[12px] prose-p:leading-relaxed prose-p:font-medium prose-headings:text-neutral-700 prose-headings:text-sm prose-strong:text-neutral-700"
-                dangerouslySetInnerHTML={{ __html: section.content }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(section.content) }}
               />
             </div>
           </div>
