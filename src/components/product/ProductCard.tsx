@@ -7,6 +7,7 @@ import { calculatePrice } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
 import { getDisplayPrice as getProductDisplayPrice } from '../../utils/coupon';
 import { getProductColors } from '../../utils/variant';
+import { getOptimizedImageUrl, generateSrcSet, generateSizes } from '../../utils/image';
 
 export interface ProductCardProps {
   product: Product;
@@ -161,7 +162,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Image Container */}
       <div className={`relative ${getImageAspect()} overflow-hidden bg-neutral-50`}>
         <img
-          src={displayImg}
+          src={getOptimizedImageUrl(displayImg, aspectRatio === 'portrait' ? 'small' : 'thumbnail')}
+          srcSet={generateSrcSet(displayImg, ['thumbnail', 'small', 'medium'])}
+          sizes={generateSizes()}
           alt={getLoc(product.name)}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"

@@ -3,6 +3,7 @@ import { ShoppingBag, Eye, Truck } from 'lucide-react';
 import { ChatProduct } from '../../api/ai-chat.api';
 import { formatCurrency } from '../../utils/currency';
 import { Locale } from '../../i18n';
+import { getOptimizedImageUrl } from '../../utils/image';
 
 interface ChatProductCardProps {
   product: ChatProduct;
@@ -31,9 +32,10 @@ export const ChatProductCard: React.FC<ChatProductCardProps> = ({
       >
         {mainImage ? (
           <img
-            src={mainImage}
+            src={getOptimizedImageUrl(mainImage, 'thumbnail')}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-neutral-300">
