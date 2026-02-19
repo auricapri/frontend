@@ -3,6 +3,7 @@ import { Star, X, Upload, Loader2 } from 'lucide-react';
 import { ProductReview, ProductReviewMedia, OrderItemForReview } from '../../types';
 import { ProductReviewsApi } from '../../api/product-reviews.api';
 import { supabase } from '../../utils/supabase';
+import { getOptimizedImageUrl } from '../../utils/image';
 
 interface ProductReviewFormProps {
   orderId: string;
@@ -153,10 +154,11 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex items-center gap-4 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-        <img 
-          src={orderItem.image} 
+        <img
+          src={getOptimizedImageUrl(orderItem.image, 'thumbnail')}
           alt={getLoc(orderItem.product_name)}
           className="w-16 h-16 object-cover rounded-lg"
+          loading="lazy"
         />
         <div className="flex-1">
           <h4 className="font-medium text-sm">{getLoc(orderItem.product_name)}</h4>

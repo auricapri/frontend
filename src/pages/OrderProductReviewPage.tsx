@@ -8,6 +8,7 @@ import { ProductReviewForm } from '../components/orders/ProductReviewForm';
 import { ProductReviewsList } from '../components/orders/ProductReviewsList';
 import { supabase } from '../utils/supabase';
 import { formatCurrency } from '../utils/currency';
+import { getOptimizedImageUrl } from '../utils/image';
 
 interface OrderProductReviewPageProps {
   orderId: string;
@@ -218,10 +219,11 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
                     />
                   ) : (
                     <div className="flex items-center gap-4">
-                      <img 
-                        src={item.image} 
+                      <img
+                        src={getOptimizedImageUrl(item.image, 'thumbnail')}
                         alt={getLoc(item.product_name)}
                         className="w-20 h-20 object-cover rounded-lg"
+                        loading="lazy"
                       />
                       <div className="flex-1">
                         <h3 className="font-medium">{getLoc(item.product_name)}</h3>
@@ -255,10 +257,11 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
               {reviewedItems.map((item) => (
                 <div key={item.order_item_id} className="border border-neutral-200 rounded-lg p-6">
                   <div className="flex items-center gap-4 mb-4">
-                    <img 
-                      src={item.image} 
+                    <img
+                      src={getOptimizedImageUrl(item.image, 'thumbnail')}
                       alt={getLoc(item.product_name)}
                       className="w-16 h-16 object-cover rounded-lg"
+                      loading="lazy"
                     />
                     <div className="flex-1">
                       <h3 className="font-medium">{getLoc(item.product_name)}</h3>
