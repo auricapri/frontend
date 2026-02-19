@@ -6,15 +6,19 @@ Este diretório contém todos os componentes React da aplicação, organizados p
 
 ```
 components/
-├── admin/          # Componentes administrativos
-├── auth/           # Autenticação
-├── cart/           # Carrinho de compras
-├── checkout/       # Checkout
-├── layout/         # Layout (Navbar, Footer)
-├── orders/         # Pedidos
-├── product/        # Produtos
-├── shared/         # Componentes compartilhados
-└── ui/             # Componentes UI primitivos
+├── admin/          # Painel administrativo (lazy loaded)
+├── auth/           # Autenticacao e perfil do usuario
+├── cart/           # Carrinho e desconto progressivo
+├── chat/           # Chat IA e cards de produto
+├── checkout/       # Checkout multistep
+├── common/         # CookieBanner, TermsConsentModal
+├── layout/         # Navbar, Footer
+├── orders/         # Pedidos e avaliacoes
+├── product/        # Catalogo de produtos
+├── returns/        # Devolucoes self-service
+├── seo/            # SEOHead e JSON-LD schemas
+├── shared/         # Hero, LoyaltyBanner
+└── ui/             # OptimizedImage, Input, Toast, Modal
 ```
 
 ## Organização por Funcionalidade
@@ -99,6 +103,34 @@ Componentes UI primitivos:
 - `Input` - Input
 - Outros componentes base
 
+### Chat (`chat/`)
+
+Componentes do chat com IA:
+
+- `ChatDrawer` - Drawer do assistente virtual (lazy loaded)
+- `ChatProductCard` - Card de produto recomendado pelo chat
+
+### Common (`common/`)
+
+Componentes comuns a toda aplicacao:
+
+- `CookieBanner` - Banner de consentimento de cookies (LGPD)
+- `TermsConsentModal` - Modal de termos de uso
+
+### Returns (`returns/`)
+
+Componentes de devolucoes self-service:
+
+- `ReturnRequestForm` - Formulario de solicitacao de devolucao
+- `MyReturnsView` - Lista de devolucoes do usuario
+
+### SEO (`seo/`)
+
+Componentes de otimizacao para motores de busca:
+
+- `SEOHead` - Meta tags dinamicas via React Helmet (title, description, OG, canonical, hreflang, JSON-LD)
+- `schemas.ts` - Schemas JSON-LD (Organization, WebSite, Product, BreadcrumbList, CollectionPage, FAQPage)
+
 ## Padrões
 
 ### Estrutura de Componente
@@ -155,18 +187,23 @@ import { useCartContext } from '../context/CartContext';
 
 ## Exports
 
-Cada subpasta tem um `index.ts` que exporta os componentes:
+**IMPORTANTE**: Componentes lazy-loaded NAO devem ser exportados em barrel exports (`index.ts`).
+Ver [LAZY_LOADING_RULES.md](../../LAZY_LOADING_RULES.md) para regras detalhadas.
+
+Componentes pequenos e sempre usados podem usar barrel exports:
 
 ```typescript
-// components/product/index.ts
-export { ProductCard } from './ProductCard';
-export { ProductGrid } from './ProductGrid';
+// components/ui/index.ts — OK (componentes pequenos)
+export { OptimizedImage } from './OptimizedImage';
+export { Toast } from './Toast';
 ```
 
-Isso permite imports limpos:
+Componentes lazy-loaded devem usar import direto:
 
 ```typescript
-import { ProductCard, ProductGrid } from '../components/product';
+// CORRETO — import direto
+const CartDrawer = React.lazy(() => import('./cart/CartDrawer'));
+const ChatDrawer = React.lazy(() => import('./chat/ChatDrawer'));
 ```
 
 ## Adicionando Novos Componentes
