@@ -2,7 +2,7 @@
 /// Displays order history with review buttons
 
 import React from 'react';
-import { Loader2, ShoppingBag, ChevronRight, Star, DollarSign } from 'lucide-react';
+import { Loader2, ShoppingBag, ChevronRight, Star, DollarSign, RotateCcw } from 'lucide-react';
 import { Order } from '../../../../types';
 import { Locale } from '../../../../i18n';
 import { formatCurrency } from '../../../../utils/currency';
@@ -137,6 +137,20 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
           </div>
         );
       })}
+
+      {/* Returns link */}
+      <div className="pt-6 border-t border-neutral-100">
+        <button
+          onClick={() => {
+            window.history.pushState({ view: 'my-returns' }, '', '/my-returns');
+            window.location.href = '/my-returns';
+          }}
+          className="w-full flex items-center justify-center gap-3 py-4 border border-neutral-200 rounded-[2rem] hover:bg-neutral-50 transition-all text-[10px] font-black uppercase tracking-widest group"
+        >
+          <RotateCcw className="w-4 h-4 group-hover:rotate-[-45deg] transition-transform" />
+          Minhas Devolucoes
+        </button>
+      </div>
     </div>
   );
 };
