@@ -69,7 +69,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
         .setLngLat(coords)
         .addTo(pickerMapRef.current);
     } catch (e) {
-      console.error('Error updating picker marker:', e);
+      void e;
     }
   }, [mapboxLoaded]);
 
@@ -84,7 +84,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
     const mapboxgl = win.mapboxgl;
     
     if (!mapboxgl) {
-      console.error('Mapbox GL JS not available');
+      // Mapbox not available
       return;
     }
 
@@ -112,7 +112,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
           try { 
             if(pickerMapRef.current) pickerMapRef.current.resize(); 
           } catch(e) {
-            console.error('Error resizing picker map:', e);
+            void e;
           }
         }, 500);
       });
@@ -127,13 +127,13 @@ export const MapPicker: React.FC<MapPickerProps> = ({
             await parseAndSetAddress(data.features[0]);
           }
         } catch(err) { 
-          console.error('Geocoding error:', err); 
+          void err;
         }
       };
       
       picker.on('click', handleMapClick);
     } catch (err) {
-      console.error('Failed to initialize picker map:', err);
+      void err;
     }
     
     return () => {
@@ -176,7 +176,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
           return;
         }
       } catch (err) {
-        console.error('Error fetching CEP from ViaCEP:', err);
+        void err;
       }
     }
     
@@ -233,7 +233,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
           }
         }
       } catch (err) {
-        console.error('Error fetching CEP from ViaCEP:', err);
+        void err;
       }
     }
     
