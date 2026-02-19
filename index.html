@@ -108,6 +108,35 @@
       }
     </style>
 
+    <!-- Structured Data for search engines (static fallback — SPA injects dynamic schemas via React Helmet) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "Auricapri",
+          "url": "https://www.auricapri.com.br",
+          "logo": "https://www.auricapri.com.br/logo.png",
+          "sameAs": [
+            "https://www.instagram.com/auricapri",
+            "https://www.facebook.com/auricapri"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "name": "Auricapri",
+          "url": "https://www.auricapri.com.br",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://www.auricapri.com.br/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RC7NRK3PNN"></script>
     <script>

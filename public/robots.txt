@@ -8,6 +8,11 @@ Disallow: /admin/*
 Disallow: /checkout
 Disallow: /receipt
 Disallow: /api/
+Disallow: /reset-password
+Disallow: /delivery
+Disallow: /delivery-login
+Disallow: /order-review
+Disallow: /request-return
 
 # Allow product images
 Allow: /*.jpg$
