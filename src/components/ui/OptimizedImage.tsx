@@ -82,7 +82,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         });
       },
       {
-        rootMargin: '300px 0px',
+        rootMargin: '150px 0px',
         threshold: 0.01,
       }
     );
@@ -151,6 +151,8 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           srcSet={srcSet}
           sizes={useSrcSet ? defaultSizes : undefined}
           alt={alt}
+          width={IMAGE_SIZES[size].width}
+          height={IMAGE_SIZES[size].height}
           loading={priority ? 'eager' : 'lazy'}
           decoding={priority ? 'sync' : 'async'}
           fetchPriority={priority ? 'high' : 'auto'}

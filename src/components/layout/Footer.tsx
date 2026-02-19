@@ -50,7 +50,7 @@ const Footer: React.FC<FooterProps> = ({
         <div className="space-y-8">
           <div className="space-y-4">
             <h3 className="text-2xl font-light tracking-[0.2em] uppercase text-white">{storeConfig.brand_name}</h3>
-            <p className="text-xs text-neutral-400 leading-relaxed max-w-xs">{t('footer.tagline')}</p>
+            <p className="text-xs text-neutral-300 leading-relaxed max-w-xs">{t('footer.tagline')}</p>
           </div>
 
           <div id="footer-contact" className="space-y-3 pt-4 border-t border-white/10">
