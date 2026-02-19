@@ -76,11 +76,11 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, t, banners, locale, isLoading }
         <p className="text-[10px] md:text-[11px] font-black tracking-[0.6em] mb-10 uppercase text-white/80 order-1">
           {t('hero.subtitle')}
         </p>
-        <a 
+        <a
           href="#collection"
           onClick={handleClick}
           aria-label={t('hero.cta')}
-          className="inline-flex items-center space-x-8 text-[10px] tracking-[0.4em] border border-white/20 bg-white/5 backdrop-blur-md px-16 py-6 hover:bg-white hover:text-black transition-all duration-700 uppercase font-black rounded-sm"
+          className="inline-flex items-center space-x-8 text-[10px] tracking-[0.4em] border border-white/20 bg-white/5 backdrop-blur-md px-16 py-6 hover:bg-white hover:text-black transition-all duration-700 uppercase font-black rounded-sm order-3"
         >
           <span>{t('hero.cta')}</span>
           <ArrowRight className="w-4 h-4" aria-hidden="true" />
