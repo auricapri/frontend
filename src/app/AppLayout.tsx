@@ -2,13 +2,8 @@ import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
-import FAQModal from '../components/layout/FAQModal';
 import Hero from '../components/shared/Hero';
 import LoyaltyBanner from '../components/shared/LoyaltyBanner';
-import CartDrawer from '../components/cart/CartDrawer';
-import WishlistDrawer from '../components/cart/WishlistDrawer';
-import CouponsDrawer from '../components/cart/CouponsDrawer';
-import AuthDrawer from '../components/auth/AuthDrawer';
 import Toast from '../components/ui/Toast';
 import { LoadingFallback } from '../components/ui/LoadingFallback';
 import { TestBanner } from '../components/common/TestBanner';
@@ -34,6 +29,11 @@ const OrderReviewPage = React.lazy(() => import('../pages/OrderReviewPage').then
 const NewArrivalsPage = React.lazy(() => import('../pages/NewArrivalsPage'));
 const SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').then(m => ({ default: m.SearchResultsPage })));
 const ChatDrawer = React.lazy(() => import('../components/chat/ChatDrawer').then(m => ({ default: m.ChatDrawer })));
+const CartDrawer = React.lazy(() => import('../components/cart/CartDrawer'));
+const WishlistDrawer = React.lazy(() => import('../components/cart/WishlistDrawer'));
+const CouponsDrawer = React.lazy(() => import('../components/cart/CouponsDrawer'));
+const AuthDrawer = React.lazy(() => import('../components/auth/AuthDrawer'));
+const FAQModal = React.lazy(() => import('../components/layout/FAQModal'));
 
 export function AppLayout(props: {
   app: {
@@ -566,61 +566,69 @@ export function AppLayout(props: {
         </Suspense>
       )}
 
-      <CartDrawer
-        isOpen={app.isCartOpen}
-        onClose={() => app.setIsCartOpen(false)}
-        items={app.cartItems}
-        userMode={app.userMode}
-        onUpdateQuantity={app.handleUpdateQuantity}
-        onRemoveItem={(id) => {
-          const removed = app.cartItems.find((i: any) => i.variant_id === id);
-          app.setCartItems(app.cartItems.filter((i: any) => i.variant_id !== id));
-          if (removed) {
-            trackingService.trackCartRemove(removed.product_id, removed.variant_id);
-          }
-        }}
-        onCheckout={app.handleCheckoutIntent}
-        t={app.t}
-        locale={app.locale}
-      />
+      <Suspense fallback={null}>
+        <CartDrawer
+          isOpen={app.isCartOpen}
+          onClose={() => app.setIsCartOpen(false)}
+          items={app.cartItems}
+          userMode={app.userMode}
+          onUpdateQuantity={app.handleUpdateQuantity}
+          onRemoveItem={(id) => {
+            const removed = app.cartItems.find((i: any) => i.variant_id === id);
+            app.setCartItems(app.cartItems.filter((i: any) => i.variant_id !== id));
+            if (removed) {
+              trackingService.trackCartRemove(removed.product_id, removed.variant_id);
+            }
+          }}
+          onCheckout={app.handleCheckoutIntent}
+          t={app.t}
+          locale={app.locale}
+        />
+      </Suspense>
 
-      <AuthDrawer
-        isOpen={app.isAuthOpen}
-        onClose={() => {
-          app.setIsAuthOpen(false);
-          app.setPendingCheckout(false);
-        }}
-        user={app.currentUser}
-        onLogin={async () => {
-          return;
-        }}
-        onLogout={async () => {
-          await app.signOut();
-        }}
-        t={app.t}
-        locale={app.locale}
-        storeConfig={app.storeConfig}
-      />
+      <Suspense fallback={null}>
+        <AuthDrawer
+          isOpen={app.isAuthOpen}
+          onClose={() => {
+            app.setIsAuthOpen(false);
+            app.setPendingCheckout(false);
+          }}
+          user={app.currentUser}
+          onLogin={async () => {
+            return;
+          }}
+          onLogout={async () => {
+            await app.signOut();
+          }}
+          t={app.t}
+          locale={app.locale}
+          storeConfig={app.storeConfig}
+        />
+      </Suspense>
 
-      <WishlistDrawer
-        currentUserId={app.currentUser?.id}
-        isOpen={app.isWishlistOpen}
-        onClose={() => app.setIsWishlistOpen(false)}
-        items={filterProductsForMode(app.products.filter((p) => app.wishlistIds.includes(p.id)), app.userMode)}
-        userMode={app.userMode}
-        onRemoveItem={async (id) => {
-          await app.toggleWishlist(id);
-        }}
-        onSelectProduct={(p) => {
-          app.setActiveProduct(p);
-          app.onNavigate('product', undefined, p);
-        }}
-        onBuyAll={app.handleBuyAllWishlist}
-        t={app.t}
-        locale={app.locale}
-      />
+      <Suspense fallback={null}>
+        <WishlistDrawer
+          currentUserId={app.currentUser?.id}
+          isOpen={app.isWishlistOpen}
+          onClose={() => app.setIsWishlistOpen(false)}
+          items={filterProductsForMode(app.products.filter((p) => app.wishlistIds.includes(p.id)), app.userMode)}
+          userMode={app.userMode}
+          onRemoveItem={async (id) => {
+            await app.toggleWishlist(id);
+          }}
+          onSelectProduct={(p) => {
+            app.setActiveProduct(p);
+            app.onNavigate('product', undefined, p);
+          }}
+          onBuyAll={app.handleBuyAllWishlist}
+          t={app.t}
+          locale={app.locale}
+        />
+      </Suspense>
 
-      <CouponsDrawer isOpen={app.isCouponsOpen} onClose={() => app.setIsCouponsOpen(false)} t={app.t} />
+      <Suspense fallback={null}>
+        <CouponsDrawer isOpen={app.isCouponsOpen} onClose={() => app.setIsCouponsOpen(false)} t={app.t} />
+      </Suspense>
 
       <Suspense fallback={null}>
         <ChatDrawer
@@ -641,12 +649,14 @@ export function AppLayout(props: {
         onNavigatePrivacy={() => { closeTermsModal(); app.onNavigate('privacy'); }}
       />
 
-      <FAQModal
-        isOpen={isFAQOpen}
-        onClose={() => setIsFAQOpen(false)}
-        locale={app.locale}
-        t={app.t}
-      />
+      <Suspense fallback={null}>
+        <FAQModal
+          isOpen={isFAQOpen}
+          onClose={() => setIsFAQOpen(false)}
+          locale={app.locale}
+          t={app.t}
+        />
+      </Suspense>
 
       <CookieBanner onNavigatePrivacy={() => app.onNavigate('privacy')} />
     </div>

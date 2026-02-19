@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MAPBOX_TOKEN, getMapboxStyle } from '../../../utils/mapbox';
+import { loadMapbox } from '../../../utils/loadMapbox';
 import { maskCep, normalizeCepDigits } from '../../../utils/masks';
 import type { MapboxFeature, ManualAddressState, UseMapPickerParams, UseMapPickerReturn } from './types';
 
@@ -58,37 +59,20 @@ export function useMapPicker(params: UseMapPickerParams): UseMapPickerReturn {
     return null;
   };
 
-  // Check if Mapbox is loaded
+  // Load Mapbox dynamically on mount
   useEffect(() => {
-    const checkMapbox = () => {
-      const win = window as any;
-      if (win.mapboxgl) {
+    let cancelled = false;
+    loadMapbox()
+      .then((mapboxgl) => {
+        if (cancelled) return;
+        mapboxgl.accessToken = MAPBOX_TOKEN;
         setMapboxLoaded(true);
-        win.mapboxgl.accessToken = MAPBOX_TOKEN;
-        return true;
-      }
-      return false;
-    };
-
-    if (checkMapbox()) return;
-
-    const interval = setInterval(() => {
-      if (checkMapbox()) {
-        clearInterval(interval);
-      }
-    }, 100);
-
-    const timeout = setTimeout(() => {
-      clearInterval(interval);
-      if (!checkMapbox()) {
+      })
+      .catch(() => {
+        if (cancelled) return;
         setMapError(true);
-      }
-    }, 5000);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
+      });
+    return () => { cancelled = true; };
   }, []);
 
   // Initialize mini map for manual address display

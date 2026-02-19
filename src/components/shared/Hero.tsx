@@ -62,20 +62,20 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, t, banners, locale, isLoading }
           size="xlarge"
           priority
           objectFit="cover"
-          placeholder="none"
+          placeholder="blur"
           useSrcSet
           srcSetSizes={['medium', 'large', 'xlarge']}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
       </div>
 
-      <div className="relative z-10 text-center text-white px-6 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-        <h2 className="text-[10px] md:text-[11px] font-black tracking-[0.6em] mb-10 uppercase text-white/80">
-          {t('hero.subtitle')}
-        </h2>
-        <h1 className="text-5xl md:text-[8rem] lg:text-[10rem] font-light tracking-tighter mb-20 whitespace-pre-line leading-[0.82] uppercase">
+      <div className="relative z-10 text-center text-white px-6 animate-in fade-in slide-in-from-bottom-10 duration-1000 flex flex-col">
+        <h1 className="text-5xl md:text-[8rem] lg:text-[10rem] font-light tracking-tighter mb-20 whitespace-pre-line leading-[0.82] uppercase order-2">
           {mainBanner.title}
         </h1>
+        <p className="text-[10px] md:text-[11px] font-black tracking-[0.6em] mb-10 uppercase text-white/80 order-1">
+          {t('hero.subtitle')}
+        </p>
         <a 
           href="#collection"
           onClick={handleClick}

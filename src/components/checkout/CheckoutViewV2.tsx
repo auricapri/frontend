@@ -58,14 +58,14 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
               <div key={s.id} className="flex items-center gap-4">
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
-                    checkout.step >= s.id ? 'bg-black text-white border-black' : 'border-neutral-100 text-neutral-300'
+                    checkout.step >= s.id ? 'bg-black text-white border-black' : 'border-neutral-100 text-neutral-500'
                   }`}
                 >
                   <s.icon className="w-4 h-4" />
                 </div>
                 <span
                   className={`text-[10px] font-black uppercase tracking-widest hidden lg:block ${
-                    checkout.step >= s.id ? 'text-black' : 'text-neutral-300'
+                    checkout.step >= s.id ? 'text-black' : 'text-neutral-500'
                   }`}
                 >
                   {s.title}
