@@ -50,7 +50,7 @@ interface CollectionCardProps {
   locale: Locale;
 }
 
-const CollectionCard: React.FC<CollectionCardProps> = ({ collection, getLoc, onSelect, locale }) => {
+const CollectionCard: React.FC<CollectionCardProps> = React.memo(({ collection, getLoc, onSelect, locale }) => {
   const { isAvailable, isExpired } = useCollectionAvailability(collection.starts_at, collection.ends_at);
 
   // Don't render expired collections at all (after refresh)
@@ -130,7 +130,7 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection, getLoc, onS
       )}
     </div>
   );
-};
+});
 
 const ProductGrid: React.FC<ProductGridProps> = ({
   products,

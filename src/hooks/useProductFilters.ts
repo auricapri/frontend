@@ -113,36 +113,33 @@ export function useProductFilters({
   const isInitialMount = useRef(true);
   const lastUrlUpdate = useRef<string>('');
 
-  const categoryFilteredProducts = useMemo(() => {
-    return products;
-  }, [products]);
-
   const availableSizes = useMemo(() => {
-    return getAvailableSizes(categoryFilteredProducts);
-  }, [categoryFilteredProducts]);
+    return getAvailableSizes(products);
+  }, [products]);
 
   // Color families present in the current product set (preserves canonical order)
   // Uses DB color_family when available, falls back to runtime classification
   const availableColorFamilies = useMemo(() => {
     const presentFamilies = new Set<string>();
-    for (const product of categoryFilteredProducts) {
+    for (const product of products) {
       for (const v of product.variants || []) {
         const family = v.color_family || (v.color_hex ? getColorFamilyId(v.color_hex, v.color_name) : null);
         if (family) presentFamilies.add(family);
       }
     }
     return COLOR_FAMILIES.filter(f => presentFamilies.has(f.id));
-  }, [categoryFilteredProducts]);
+  }, [products]);
 
   const priceBounds = useMemo(() => {
-    return getPriceMinMax(categoryFilteredProducts, userMode);
-  }, [categoryFilteredProducts, userMode]);
+    return getPriceMinMax(products, userMode);
+  }, [products, userMode]);
 
   // Sincronizar estado com URL quando categoria/bounds mudam
   // NÃO chamar updateUrlParams aqui para evitar loop
   useEffect(() => {
     const params = parseUrlParams();
-    const validSizes = params.sizes.filter(size => availableSizes.includes(size));
+    const availableSizeSet = new Set(availableSizes);
+    const validSizes = params.sizes.filter(size => availableSizeSet.has(size));
 
     let validPriceMin = params.priceMin;
     let validPriceMax = params.priceMax;
@@ -204,21 +201,23 @@ export function useProductFilters({
   }, [availableSizes, priceBounds]);
 
   const sizeCounts = useMemo(() => {
-    return getSizeCounts(categoryFilteredProducts);
-  }, [categoryFilteredProducts]);
+    return getSizeCounts(products);
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
-    let result = categoryFilteredProducts;
+    let result = products;
 
     if (selectedSizes.length > 0) {
       result = filterProductsBySize(result, selectedSizes);
     }
 
     if (selectedColorFamilies.length > 0) {
+      // Use Set for O(1) lookups
+      const familySet = new Set(selectedColorFamilies);
       result = result.filter(product =>
         product.variants?.some(v => {
           const family = v.color_family || (v.color_hex ? getColorFamilyId(v.color_hex, v.color_name) : null);
-          return family && selectedColorFamilies.includes(family);
+          return family && familySet.has(family);
         })
       );
     }
@@ -226,7 +225,7 @@ export function useProductFilters({
     result = filterProductsByPriceMinMax(result, priceMin, priceMax, userMode);
 
     return result;
-  }, [categoryFilteredProducts, selectedSizes, selectedColorFamilies, priceMin, priceMax, userMode]);
+  }, [products, selectedSizes, selectedColorFamilies, priceMin, priceMax, userMode]);
 
   const filteredAndSortedProducts = useMemo(() => {
     return sortProducts(filteredProducts, sortBy, userMode);
