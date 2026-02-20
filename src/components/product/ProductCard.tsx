@@ -48,6 +48,9 @@ export interface ProductCardProps {
 
   // Active color family filter — used to pick the matching variant image
   selectedColorFamilies?: string[];
+
+  // Priority loading for above-the-fold cards (first ~6)
+  priority?: boolean;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -69,7 +72,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onClick,
   className = '',
   categoryName,
-  selectedColorFamilies
+  selectedColorFamilies,
+  priority = false
 }) => {
   const getLoc = createGetLoc(locale);
 
@@ -183,7 +187,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           sizes={generateSizes()}
           alt={getLoc(product.name)}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : 'auto'}
+          decoding={priority ? 'sync' : 'async'}
           width={400}
           height={aspectRatio === 'portrait' ? 533 : 400}
         />

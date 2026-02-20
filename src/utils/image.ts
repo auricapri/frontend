@@ -31,7 +31,14 @@ function transformSupabaseUrl(url: string, options: ImageTransformOptions): stri
     return url;
   }
 
-  const urlObj = new URL(url);
+  // Supabase image transformations require /render/image/public/ endpoint.
+  // The /object/public/ endpoint ignores all transform params and serves the raw file.
+  const renderUrl = url.replace(
+    '/storage/v1/object/public/',
+    '/storage/v1/render/image/public/'
+  );
+
+  const urlObj = new URL(renderUrl);
   const params = new URLSearchParams();
 
   if (options.width) {
@@ -111,7 +118,7 @@ export function generateSrcSet(
 
 export function generateSizes(breakpoints: Record<string, string> = {}): string {
   const defaultBreakpoints = {
-    '(max-width: 640px)': '100vw',
+    // Product grid is always 2+ columns — 100vw was wrong and caused oversized downloads
     '(max-width: 768px)': '50vw',
     '(max-width: 1024px)': '33vw',
     default: '25vw',
