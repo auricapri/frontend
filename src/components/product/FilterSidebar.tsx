@@ -4,7 +4,7 @@ import { FilterAccordion } from './FilterAccordion';
 import { Locale } from '../../i18n';
 import { formatCurrency, getCurrencySymbol } from '../../utils/currency';
 import { useDebounce } from '../../hooks/useDebounce';
-import type { ColorOption } from '../../utils/variant';
+import type { ColorFamily } from '../../utils/colorFamilies';
 
 interface FilterSidebarProps {
   isOpen: boolean;
@@ -14,10 +14,10 @@ interface FilterSidebarProps {
   selectedSizes: string[];
   sizeCounts: Record<string, number>;
   toggleSize: (size: string) => void;
-  // Color filters
-  availableColors: ColorOption[];
-  selectedColors: string[];
-  toggleColor: (hex: string) => void;
+  // Color family filters
+  availableColorFamilies: ColorFamily[];
+  selectedColorFamilies: string[];
+  toggleColorFamily: (id: string) => void;
   // Price filters
   priceBounds: { min: number; max: number };
   priceMin: number | null;
@@ -43,9 +43,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   selectedSizes,
   sizeCounts,
   toggleSize,
-  availableColors,
-  selectedColors,
-  toggleColor,
+  availableColorFamilies,
+  selectedColorFamilies,
+  toggleColorFamily,
   priceBounds,
   priceMin,
   priceMax,
@@ -131,56 +131,48 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </button>
         )}
 
-        {/* Color Filter */}
-        {availableColors.length > 0 && (
+        {/* Color Family Filter */}
+        {availableColorFamilies.length > 0 && (
           <FilterAccordion
             title="Cores"
-            defaultOpen={selectedColors.length > 0}
-            count={selectedColors.length}
+            defaultOpen={selectedColorFamilies.length > 0}
+            count={selectedColorFamilies.length}
           >
-            <div className="flex flex-wrap gap-2">
-              {availableColors.map(color => {
-                const isSelected = selectedColors.includes(color.hex);
+            <div className="flex flex-wrap gap-x-4 gap-y-4">
+              {availableColorFamilies.map(family => {
+                const isSelected = selectedColorFamilies.includes(family.id);
                 return (
                   <button
-                    key={color.hex}
-                    onClick={() => toggleColor(color.hex)}
-                    className={`w-8 h-8 rounded-full border-2 p-0.5 transition-all ${
-                      isSelected
-                        ? 'border-neutral-900 scale-110 shadow-md'
-                        : 'border-transparent hover:scale-105 hover:border-neutral-400'
-                    }`}
+                    key={family.id}
+                    onClick={() => toggleColorFamily(family.id)}
+                    className="flex flex-col items-center gap-1.5 group"
                     aria-pressed={isSelected}
-                    title={typeof color.name === 'string' ? color.name : color.name?.pt || ''}
                   >
                     <div
-                      className="w-full h-full rounded-full border border-neutral-200"
-                      style={
-                        color.image
-                          ? { backgroundImage: `url(${color.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                          : { backgroundColor: color.hex }
-                      }
-                    />
+                      className={`w-8 h-8 rounded-full border-2 p-0.5 transition-all ${
+                        isSelected
+                          ? 'border-neutral-900 scale-110 shadow-md'
+                          : 'border-transparent group-hover:border-neutral-400 group-hover:scale-105'
+                      }`}
+                    >
+                      <div
+                        className="w-full h-full rounded-full border border-neutral-300"
+                        style={{ backgroundColor: family.hex }}
+                      />
+                    </div>
+                    <span
+                      className={`text-[9px] uppercase tracking-wider leading-none transition-colors ${
+                        isSelected ? 'font-bold text-neutral-900' : 'text-neutral-500 group-hover:text-neutral-700'
+                      }`}
+                    >
+                      {family.label}
+                    </span>
                   </button>
                 );
               })}
             </div>
           </FilterAccordion>
         )}
-
-        {/* Availability Filter - Placeholder for future */}
-        {/* <FilterAccordion title="Disponibilidade" defaultOpen>
-          <div className="space-y-2">
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <input type="checkbox" className="w-4 h-4 rounded border-neutral-300" />
-              <span className="text-[12px] text-neutral-700 group-hover:text-neutral-900">Em estoque</span>
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <input type="checkbox" className="w-4 h-4 rounded border-neutral-300" />
-              <span className="text-[12px] text-neutral-700 group-hover:text-neutral-900">Fora de estoque</span>
-            </label>
-          </div>
-        </FilterAccordion> */}
 
         {/* Size Filter */}
         {availableSizes.length > 0 && (
@@ -206,7 +198,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                   >
                     {size}
                     {count > 0 && (
-                      <span className={`ml-1 text-[9px] ${isSelected ? 'text-neutral-400' : 'text-neutral-400'}`}>
+                      <span className="ml-1 text-[9px] text-neutral-400">
                         ({count})
                       </span>
                     )}
