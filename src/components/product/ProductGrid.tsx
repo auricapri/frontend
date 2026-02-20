@@ -460,11 +460,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         </div>
       </div>
 
-      {/* Main Content Area - Sidebar + Products */}
+      {/* Main Content Area */}
       <div className="">
-        <div className="flex">
-          {/* Sidebar - Unificado Mobile/Desktop */}
-          <FilterSidebar
+        {/* Sidebar — fixed overlay, does not affect grid layout */}
+        <FilterSidebar
             isOpen={isFiltersOpen}
             onClose={() => setIsFiltersOpen(false)}
             availableSizes={availableSizes}
@@ -488,8 +487,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             t={t}
           />
 
-          {/* Product Grid */}
-          <div className="flex-1 min-w-0">
+        {/* Product Grid — full width, sidebar is an overlay and doesn't affect layout */}
+        <div>
             {/* Results Count */}
             <div className="mb-6 flex items-center justify-between px-6 md:px-12">
               <p className="text-[11px] text-neutral-500 uppercase tracking-wider font-medium">
@@ -511,11 +510,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               </div>
             ) : (
               <div className={`grid ${
-                isFiltersOpen
+                currentProducts.length <= 3
                   ? 'grid-cols-2 md:grid-cols-3'
-                  : currentProducts.length <= 3
-                    ? 'grid-cols-2 md:grid-cols-3'
-                    : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+                  : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
               }`}>
                 {!isLoading && currentProducts.map((p, index) => (
                   <ProductCard
@@ -566,7 +563,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 </button>
               </div>
             )}
-          </div>
         </div>
       </div>
 
