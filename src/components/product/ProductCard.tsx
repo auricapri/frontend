@@ -81,7 +81,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const displayVariant = React.useMemo(() => {
     if (selectedColorFamilies?.length && product.variants?.length) {
       const match = product.variants.find(v =>
-        v.color_hex && selectedColorFamilies.includes(getColorFamilyId(v.color_hex))
+        v.color_hex && selectedColorFamilies.includes(getColorFamilyId(v.color_hex, v.color_name))
       );
       if (match) return match;
     }

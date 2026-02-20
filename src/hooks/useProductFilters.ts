@@ -127,7 +127,7 @@ export function useProductFilters({
     for (const product of categoryFilteredProducts) {
       for (const v of product.variants || []) {
         if (v.color_hex) {
-          presentFamilies.add(getColorFamilyId(v.color_hex));
+          presentFamilies.add(getColorFamilyId(v.color_hex, v.color_name));
         }
       }
     }
@@ -217,7 +217,7 @@ export function useProductFilters({
     if (selectedColorFamilies.length > 0) {
       result = result.filter(product =>
         product.variants?.some(v =>
-          v.color_hex && selectedColorFamilies.includes(getColorFamilyId(v.color_hex))
+          v.color_hex && selectedColorFamilies.includes(getColorFamilyId(v.color_hex, v.color_name))
         )
       );
     }
