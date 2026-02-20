@@ -6,7 +6,7 @@ import { Ruler, Shirt } from 'lucide-react';
 
 interface ProductVariantsProps {
   getLoc: (obj: any) => string;
-  colors: Array<{ hex: string; name: string }>;
+  colors: Array<{ hex: string; name: string; image?: string }>;
   selectedColorHex: string;
   onSelectColor: (hex: string) => void;
   activeColorName?: any;
@@ -42,12 +42,12 @@ export function ProductVariants({
           <label className="text-[10px] uppercase font-black tracking-[0.3em] text-neutral-400">
             Paleta — {getLoc(activeColorName)}
           </label>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex overflow-x-auto no-scrollbar gap-3 pb-1">
             {colors.map((c) => (
               <button
                 key={c.hex}
                 onClick={() => onSelectColor(c.hex)}
-                className={`w-12 h-12 rounded-full border-2 p-1 transition-all duration-500 ${
+                className={`flex-shrink-0 w-12 h-12 rounded-full border-2 p-1 transition-all duration-500 ${
                   selectedColorHex === c.hex
                     ? 'border-black scale-110 shadow-lg'
                     : 'border-transparent hover:scale-105'
@@ -55,7 +55,11 @@ export function ProductVariants({
               >
                 <div
                   className="w-full h-full rounded-full shadow-inner border border-neutral-100"
-                  style={{ backgroundColor: c.hex }}
+                  style={
+                    c.image
+                      ? { backgroundImage: `url(${c.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                      : { backgroundColor: c.hex }
+                  }
                 />
               </button>
             ))}

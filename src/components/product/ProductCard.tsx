@@ -253,7 +253,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               <div
                 key={color.hex}
                 className="w-2 h-2 rounded-full border border-neutral-300"
-                style={{ backgroundColor: color.hex }}
+                style={
+                  color.image
+                    ? { backgroundImage: `url(${color.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                    : { backgroundColor: color.hex }
+                }
                 title={getLoc(color.name)}
               />
             ))}
