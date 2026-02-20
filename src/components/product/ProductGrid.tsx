@@ -534,6 +534,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     onAddToCart={onAddToCart}
                     onQuickAdd={(product) => setQuickAddProduct(product)}
                     onClick={() => onSelectProduct(p)}
+                    selectedColorFamilies={selectedColorFamilies.length > 0 ? selectedColorFamilies : undefined}
                   />
                 ))}
               </div>
