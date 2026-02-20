@@ -9,7 +9,7 @@ import {
   sortProducts,
   SortOption
 } from '../utils/productFilters';
-import { getProductColors, type ColorOption } from '../utils/variant';
+import { COLOR_FAMILIES, type ColorFamily, getColorFamilyId } from '../utils/colorFamilies';
 import { useDebounce } from './useDebounce';
 
 interface UseProductFiltersParams {
@@ -20,17 +20,17 @@ interface UseProductFiltersParams {
 
 interface UseProductFiltersReturn {
   selectedSizes: string[];
-  selectedColors: string[];
+  selectedColorFamilies: string[];
   priceMin: number | null;
   priceMax: number | null;
   sortBy: SortOption;
   availableSizes: string[];
-  availableColors: ColorOption[];
+  availableColorFamilies: ColorFamily[];
   priceBounds: { min: number; max: number };
   sizeCounts: Record<string, number>;
   filteredAndSortedProducts: Product[];
   toggleSize: (size: string) => void;
-  toggleColor: (hex: string) => void;
+  toggleColorFamily: (id: string) => void;
   setPriceRange: (min: number | null, max: number | null) => void;
   setSortBy: (sort: SortOption) => void;
   clearFilters: () => void;
@@ -46,7 +46,7 @@ function parseUrlParams(): {
   if (typeof window === 'undefined') {
     return { sizes: [], priceMin: null, priceMax: null, sort: 'relevance' };
   }
-  
+
   const params = new URLSearchParams(window.location.search);
   const sizes = params.get('sizes')?.split(',').filter(Boolean) || [];
   const priceMinParam = params.get('priceMin');
@@ -54,7 +54,7 @@ function parseUrlParams(): {
   const priceMin = priceMinParam ? parseFloat(priceMinParam) : null;
   const priceMax = priceMaxParam ? parseFloat(priceMaxParam) : null;
   const sort = (params.get('sort') as SortOption) || 'relevance';
-  
+
   return { sizes, priceMin, priceMax, sort };
 }
 
@@ -65,33 +65,33 @@ function updateUrlParams(
   sort: SortOption
 ): void {
   if (typeof window === 'undefined') return;
-  
+
   const params = new URLSearchParams(window.location.search);
-  
+
   if (sizes.length > 0) {
     params.set('sizes', sizes.join(','));
   } else {
     params.delete('sizes');
   }
-  
+
   if (priceMin !== null) {
     params.set('priceMin', priceMin.toString());
   } else {
     params.delete('priceMin');
   }
-  
+
   if (priceMax !== null) {
     params.set('priceMax', priceMax.toString());
   } else {
     params.delete('priceMax');
   }
-  
+
   if (sort !== 'relevance') {
     params.set('sort', sort);
   } else {
     params.delete('sort');
   }
-  
+
   const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
   window.history.pushState({}, '', newUrl);
 }
@@ -104,7 +104,7 @@ export function useProductFilters({
   const urlParams = parseUrlParams();
 
   const [selectedSizes, setSelectedSizes] = useState<string[]>(urlParams.sizes);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [selectedColorFamilies, setSelectedColorFamilies] = useState<string[]>([]);
   const [priceMin, setPriceMin] = useState<number | null>(urlParams.priceMin);
   const [priceMax, setPriceMax] = useState<number | null>(urlParams.priceMax);
   const [sortBy, setSortByState] = useState<SortOption>(urlParams.sort);
@@ -112,30 +112,32 @@ export function useProductFilters({
   // Ref para evitar sync de URL no mount inicial
   const isInitialMount = useRef(true);
   const lastUrlUpdate = useRef<string>('');
-  
+
   const categoryFilteredProducts = useMemo(() => {
     return products;
   }, [products]);
-  
+
   const availableSizes = useMemo(() => {
     return getAvailableSizes(categoryFilteredProducts);
   }, [categoryFilteredProducts]);
 
-  // Distinct colors from all products in current view (deduped by hex)
-  const availableColors = useMemo(() => {
-    const colorMap = new Map<string, ColorOption>();
+  // Color families present in the current product set (preserves canonical order)
+  const availableColorFamilies = useMemo(() => {
+    const presentFamilies = new Set<string>();
     for (const product of categoryFilteredProducts) {
-      for (const c of getProductColors(product.variants)) {
-        if (!colorMap.has(c.hex)) colorMap.set(c.hex, c);
+      for (const v of product.variants || []) {
+        if (v.color_hex) {
+          presentFamilies.add(getColorFamilyId(v.color_hex));
+        }
       }
     }
-    return Array.from(colorMap.values());
+    return COLOR_FAMILIES.filter(f => presentFamilies.has(f.id));
   }, [categoryFilteredProducts]);
-  
+
   const priceBounds = useMemo(() => {
     return getPriceMinMax(categoryFilteredProducts, userMode);
   }, [categoryFilteredProducts, userMode]);
-  
+
   // Sincronizar estado com URL quando categoria/bounds mudam
   // NÃO chamar updateUrlParams aqui para evitar loop
   useEffect(() => {
@@ -180,17 +182,17 @@ export function useProductFilters({
     const handlePopState = () => {
       const params = parseUrlParams();
       const validSizes = params.sizes.filter(size => availableSizes.includes(size));
-      
+
       let validPriceMin = params.priceMin;
       let validPriceMax = params.priceMax;
-      
+
       if (validPriceMin !== null && (validPriceMin < priceBounds.min || validPriceMin > priceBounds.max)) {
         validPriceMin = null;
       }
       if (validPriceMax !== null && (validPriceMax < priceBounds.min || validPriceMax > priceBounds.max)) {
         validPriceMax = null;
       }
-      
+
       setSelectedSizes(validSizes);
       setPriceMin(validPriceMin);
       setPriceMax(validPriceMax);
@@ -200,11 +202,11 @@ export function useProductFilters({
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [availableSizes, priceBounds]);
-  
+
   const sizeCounts = useMemo(() => {
     return getSizeCounts(categoryFilteredProducts);
   }, [categoryFilteredProducts]);
-  
+
   const filteredProducts = useMemo(() => {
     let result = categoryFilteredProducts;
 
@@ -212,21 +214,23 @@ export function useProductFilters({
       result = filterProductsBySize(result, selectedSizes);
     }
 
-    if (selectedColors.length > 0) {
+    if (selectedColorFamilies.length > 0) {
       result = result.filter(product =>
-        product.variants?.some(v => v.color_hex && selectedColors.includes(v.color_hex))
+        product.variants?.some(v =>
+          v.color_hex && selectedColorFamilies.includes(getColorFamilyId(v.color_hex))
+        )
       );
     }
 
     result = filterProductsByPriceMinMax(result, priceMin, priceMax, userMode);
 
     return result;
-  }, [categoryFilteredProducts, selectedSizes, selectedColors, priceMin, priceMax, userMode]);
-  
+  }, [categoryFilteredProducts, selectedSizes, selectedColorFamilies, priceMin, priceMax, userMode]);
+
   const filteredAndSortedProducts = useMemo(() => {
     return sortProducts(filteredProducts, sortBy, userMode);
   }, [filteredProducts, sortBy, userMode]);
-  
+
   // Funções que apenas atualizam estado - URL sync é feito pelo effect debounced
   const toggleSize = useCallback((size: string) => {
     setSelectedSizes(prev =>
@@ -236,11 +240,11 @@ export function useProductFilters({
     );
   }, []);
 
-  const toggleColor = useCallback((hex: string) => {
-    setSelectedColors(prev =>
-      prev.includes(hex)
-        ? prev.filter(c => c !== hex)
-        : [...prev, hex]
+  const toggleColorFamily = useCallback((id: string) => {
+    setSelectedColorFamilies(prev =>
+      prev.includes(id)
+        ? prev.filter(f => f !== id)
+        : [...prev, id]
     );
   }, []);
 
@@ -255,29 +259,29 @@ export function useProductFilters({
 
   const clearFilters = useCallback(() => {
     setSelectedSizes([]);
-    setSelectedColors([]);
+    setSelectedColorFamilies([]);
     setPriceMin(null);
     setPriceMax(null);
     setSortByState('relevance');
   }, []);
-  
+
   const hasActiveFilters = useMemo(() => {
-    return selectedSizes.length > 0 || selectedColors.length > 0 || priceMin !== null || priceMax !== null || sortBy !== 'relevance';
-  }, [selectedSizes, selectedColors, priceMin, priceMax, sortBy]);
-  
+    return selectedSizes.length > 0 || selectedColorFamilies.length > 0 || priceMin !== null || priceMax !== null || sortBy !== 'relevance';
+  }, [selectedSizes, selectedColorFamilies, priceMin, priceMax, sortBy]);
+
   return {
     selectedSizes,
-    selectedColors,
+    selectedColorFamilies,
     priceMin,
     priceMax,
     sortBy,
     availableSizes,
-    availableColors,
+    availableColorFamilies,
     priceBounds,
     sizeCounts,
     filteredAndSortedProducts,
     toggleSize,
-    toggleColor,
+    toggleColorFamily,
     setPriceRange,
     setSortBy,
     clearFilters,

@@ -250,17 +250,17 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   const {
     selectedSizes,
-    selectedColors,
+    selectedColorFamilies,
     priceMin,
     priceMax,
     sortBy,
     availableSizes,
-    availableColors,
+    availableColorFamilies,
     priceBounds,
     sizeCounts,
     filteredAndSortedProducts,
     toggleSize,
-    toggleColor,
+    toggleColorFamily,
     setPriceRange,
     setSortBy,
     clearFilters,
@@ -273,7 +273,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeCategory, selectedSizes, selectedColors, priceMin, priceMax, sortBy]);
+  }, [activeCategory, selectedSizes, selectedColorFamilies, priceMin, priceMax, sortBy]);
 
   const totalPages = Math.ceil(filteredAndSortedProducts.length / ITEMS_PER_PAGE);
   const currentProducts = useMemo(() => {
@@ -281,7 +281,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   }, [currentPage, filteredAndSortedProducts]);
 
   // Count active filters for badge
-  const activeFilterCount = selectedSizes.length + selectedColors.length + (priceMin !== null || priceMax !== null ? 1 : 0);
+  const activeFilterCount = selectedSizes.length + selectedColorFamilies.length + (priceMin !== null || priceMax !== null ? 1 : 0);
 
   // Find most urgent limited collection (has ends_at or starts_at, not expired)
   const urgentCollection = useMemo(() => {
@@ -471,9 +471,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             selectedSizes={selectedSizes}
             sizeCounts={sizeCounts}
             toggleSize={toggleSize}
-            availableColors={availableColors}
-            selectedColors={selectedColors}
-            toggleColor={toggleColor}
+            availableColorFamilies={availableColorFamilies}
+            selectedColorFamilies={selectedColorFamilies}
+            toggleColorFamily={toggleColorFamily}
             priceBounds={priceBounds}
             priceMin={priceMin}
             priceMax={priceMax}
