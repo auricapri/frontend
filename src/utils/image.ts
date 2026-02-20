@@ -31,14 +31,7 @@ function transformSupabaseUrl(url: string, options: ImageTransformOptions): stri
     return url;
   }
 
-  // Supabase image transformations require /render/image/public/ endpoint.
-  // The /object/public/ endpoint ignores all transform params and serves the raw file.
-  const renderUrl = url.replace(
-    '/storage/v1/object/public/',
-    '/storage/v1/render/image/public/'
-  );
-
-  const urlObj = new URL(renderUrl);
+  const urlObj = new URL(url);
   const params = new URLSearchParams();
 
   if (options.width) {

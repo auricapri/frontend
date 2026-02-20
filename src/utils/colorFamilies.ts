@@ -1,5 +1,8 @@
 // Color family classification — maps any hex color to a named color family
 // Used in the filter sidebar to group similar shades together
+//
+// Strategy: keyword match on color_name first (most reliable — uses supplier label),
+// fall back to HSL analysis only when no name match is found.
 
 export interface ColorFamily {
   id: string;
@@ -23,6 +26,53 @@ export const COLOR_FAMILIES: ColorFamily[] = [
   { id: 'azul',     label: 'Azul',     hex: '#2563b0' },
   { id: 'roxo',     label: 'Roxo',     hex: '#7c3aad' },
 ];
+
+// Keywords per family — iteration ORDER matters: more specific families must come before
+// broader ones (e.g. marinho before azul, vinho before vermelho, lilas before roxo).
+// The first family whose keyword is found in the color name wins.
+const COLOR_FAMILY_KEYWORDS: Record<string, string[]> = {
+  preto:    ['preto', 'preta', 'black', 'carvao', 'onix', 'ebano'],
+  branco:   ['branco', 'branca', 'white', 'off white', 'offwhite', 'creme', 'cream', 'neve', 'marfim', 'perola', 'gelo'],
+  cinza:    ['cinza', 'mescla', 'chumbo', 'grey', 'gray', 'prata', 'grafite', 'fume', 'pedra'],
+  bege:     ['bege', 'nude', 'areia', 'palha', 'camel', 'sand', 'beige', 'natural', 'bone', 'aveia', 'linho', 'champagne'],
+  marrom:   ['marrom', 'cafe', 'chocolate', 'terra', 'tabaco', 'brown', 'caramelo', 'amendoa', 'capuccino', 'canela', 'nozes'],
+  vinho:    ['vinho', 'bordo', 'marsala', 'burgundy', 'oxigenio', 'bordeaux', 'ruby', 'rubi'],
+  vermelho: ['vermelho', 'vermelha', 'red', 'tomate', 'scarlet', 'cereja', 'coral vermelho'],
+  rosa:     ['rosa', 'pink', 'blush', 'flamingo', 'coral', 'quartzo', 'salmao', 'salmon', 'goiaba', 'ballet', 'rose', 'pitaya'],
+  laranja:  ['laranja', 'orange', 'tangerina', 'abobora', 'cenoura', 'ferrugem'],
+  amarelo:  ['amarelo', 'amarela', 'yellow', 'mostarda', 'ouro', 'dourado', 'dourada', 'gold', 'mel', 'limao', 'banana'],
+  verde:    ['verde', 'green', 'militar', 'oliva', 'olive', 'musgo', 'menta', 'esmeralda', 'turquesa', 'tiffany', 'sage', 'floresta', 'aqua', 'pistache', 'kaki'],
+  marinho:  ['marinho', 'navy', 'naval'],
+  azul:     ['azul', 'blue', 'celeste', 'jeans', 'indigo', 'serenity', 'klein', 'bic', 'aco'],
+  roxo:     ['roxo', 'lilas', 'purple', 'lavanda', 'lavender', 'violeta', 'uva', 'berinjela', 'ametista', 'orquidea'],
+};
+
+function normalize(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function extractNameStr(colorName: unknown): string {
+  if (!colorName) return '';
+  if (typeof colorName === 'string') return colorName;
+  if (typeof colorName === 'object' && colorName !== null) {
+    const obj = colorName as Record<string, string>;
+    return obj.pt || obj.en || obj.es || '';
+  }
+  return '';
+}
+
+function matchByName(nameStr: string): string | null {
+  if (!nameStr) return null;
+  const normalized = normalize(nameStr);
+  for (const [familyId, keywords] of Object.entries(COLOR_FAMILY_KEYWORDS)) {
+    for (const kw of keywords) {
+      if (normalized.includes(normalize(kw))) {
+        return familyId;
+      }
+    }
+  }
+  return null;
+}
 
 function hexToHsl(hex: string): [number, number, number] {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -50,57 +100,45 @@ function hexToHsl(hex: string): [number, number, number] {
   return [h * 360, s * 100, l * 100];
 }
 
-export function getColorFamilyId(hex: string): string {
-  if (!hex || !hex.startsWith('#') || hex.length < 7) return 'outro';
-
+function classifyByHsl(hex: string): string {
   try {
     const [h, s, l] = hexToHsl(hex);
 
-    // Achromatics (by lightness + saturation)
     if (l < 15) return 'preto';
     if (l > 85 && s < 20) return 'branco';
-    // Cinza: strict threshold — only truly achromatic/near-neutral colors
-    // s < 8 avoids pulling muted roses, mauves, warm beiges into gray
-    if (s < 8) return 'cinza';
+    if (s < 10) return 'cinza';
 
-    // Brown: warm dark-medium tones
     if (h >= 15 && h <= 50 && l < 38 && s > 20) return 'marrom';
+    if (h >= 20 && h <= 55 && l >= 55 && s < 45) return 'bege';
 
-    // Beige/Nude: warm, light, desaturated-medium
-    if (h >= 20 && h <= 55 && l >= 55 && s < 50) return 'bege';
-
-    // Wine: red hue, dark + saturated
     if ((h < 20 || h > 330) && l < 35 && s > 25) return 'vinho';
-
-    // Red (hue wraps around 0°/360°)
     if (h < 15 || h > 345) return 'vermelho';
 
-    // Pink: 300–345° (bright/light reds/magentas)
     if (h >= 300 && h <= 345) return 'rosa';
-
-    // Purple-pink boundary 280–300: light → rosa, dark → roxo
     if (h >= 280 && h < 300) return l > 60 ? 'rosa' : 'roxo';
 
-    // Orange
     if (h >= 15 && h < 45) return 'laranja';
-
-    // Yellow
     if (h >= 45 && h < 70) return 'amarelo';
-
-    // Green (includes teal/turquoise)
     if (h >= 70 && h < 200) return 'verde';
-
-    // Navy: dark blue
     if (h >= 200 && h < 265 && l < 30) return 'marinho';
-
-    // Blue
     if (h >= 200 && h < 265) return 'azul';
-
-    // Purple/Lilac
     if (h >= 265 && h < 300) return 'roxo';
 
     return 'outro';
   } catch {
     return 'outro';
   }
+}
+
+// colorName accepts LocalizedText object or plain string
+export function getColorFamilyId(hex: string, colorName?: unknown): string {
+  if (!hex || !hex.startsWith('#') || hex.length < 7) return 'outro';
+
+  // 1. Try keyword match on color name — most reliable
+  const nameStr = extractNameStr(colorName);
+  const byName = matchByName(nameStr);
+  if (byName) return byName;
+
+  // 2. Fall back to HSL analysis
+  return classifyByHsl(hex);
 }
