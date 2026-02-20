@@ -122,13 +122,13 @@ export function useProductFilters({
   }, [categoryFilteredProducts]);
 
   // Color families present in the current product set (preserves canonical order)
+  // Uses DB color_family when available, falls back to runtime classification
   const availableColorFamilies = useMemo(() => {
     const presentFamilies = new Set<string>();
     for (const product of categoryFilteredProducts) {
       for (const v of product.variants || []) {
-        if (v.color_hex) {
-          presentFamilies.add(getColorFamilyId(v.color_hex, v.color_name));
-        }
+        const family = v.color_family || (v.color_hex ? getColorFamilyId(v.color_hex, v.color_name) : null);
+        if (family) presentFamilies.add(family);
       }
     }
     return COLOR_FAMILIES.filter(f => presentFamilies.has(f.id));
@@ -216,9 +216,10 @@ export function useProductFilters({
 
     if (selectedColorFamilies.length > 0) {
       result = result.filter(product =>
-        product.variants?.some(v =>
-          v.color_hex && selectedColorFamilies.includes(getColorFamilyId(v.color_hex, v.color_name))
-        )
+        product.variants?.some(v => {
+          const family = v.color_family || (v.color_hex ? getColorFamilyId(v.color_hex, v.color_name) : null);
+          return family && selectedColorFamilies.includes(family);
+        })
       );
     }
 
