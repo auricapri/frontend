@@ -517,10 +517,11 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     ? 'grid-cols-2 md:grid-cols-3'
                     : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
               }`}>
-                {!isLoading && currentProducts.map(p => (
+                {!isLoading && currentProducts.map((p, index) => (
                   <ProductCard
                     key={p.id}
                     product={p}
+                    priority={index < 6}
                     userMode={userMode}
                     locale={locale}
                     coupons={coupons}

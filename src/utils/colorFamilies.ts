@@ -58,8 +58,10 @@ export function getColorFamilyId(hex: string): string {
 
     // Achromatics (by lightness + saturation)
     if (l < 15) return 'preto';
-    if (l > 85 && s < 25) return 'branco';
-    if (s < 15) return 'cinza';
+    if (l > 85 && s < 20) return 'branco';
+    // Cinza: strict threshold — only truly achromatic/near-neutral colors
+    // s < 8 avoids pulling muted roses, mauves, warm beiges into gray
+    if (s < 8) return 'cinza';
 
     // Brown: warm dark-medium tones
     if (h >= 15 && h <= 50 && l < 38 && s > 20) return 'marrom';
