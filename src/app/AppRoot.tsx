@@ -24,7 +24,28 @@ interface StoreDataProps {
   refetchStoreData: () => void;
 }
 
+// Reload broken images when the page comes back to the foreground.
+// Mobile browsers cancel in-flight lazy-load requests when the screen locks.
+// On resume, those <img> elements are left blank — resetting src triggers a retry.
+function useImageReloadOnVisible() {
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') return;
+      document.querySelectorAll<HTMLImageElement>('img').forEach(img => {
+        if (!img.complete || img.naturalWidth === 0) {
+          const src = img.src;
+          img.src = '';
+          img.src = src;
+        }
+      });
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+}
+
 function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
+  useImageReloadOnVisible();
   const {
     products,
     categories,
