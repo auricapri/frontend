@@ -169,7 +169,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2">
                   Cor
                 </label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1">
                   {colors.map((color) => (
                     <button
                       key={color.hex}
@@ -177,7 +177,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                         setSelectedColorHex(color.hex);
                         setSelectedSize(null);
                       }}
-                      className={`w-10 h-10 rounded-full border-2 p-0.5 transition-all ${
+                      className={`flex-shrink-0 w-10 h-10 rounded-full border-2 p-0.5 transition-all ${
                         selectedColorHex === color.hex
                           ? 'border-neutral-900 scale-110'
                           : 'border-transparent hover:scale-105'
@@ -185,7 +185,11 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                     >
                       <div
                         className="w-full h-full rounded-full border border-neutral-200"
-                        style={{ backgroundColor: color.hex }}
+                        style={
+                          color.image
+                            ? { backgroundImage: `url(${color.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                            : { backgroundColor: color.hex }
+                        }
                       />
                     </button>
                   ))}

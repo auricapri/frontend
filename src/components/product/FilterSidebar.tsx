@@ -4,6 +4,7 @@ import { FilterAccordion } from './FilterAccordion';
 import { Locale } from '../../i18n';
 import { formatCurrency, getCurrencySymbol } from '../../utils/currency';
 import { useDebounce } from '../../hooks/useDebounce';
+import type { ColorOption } from '../../utils/variant';
 
 interface FilterSidebarProps {
   isOpen: boolean;
@@ -13,6 +14,10 @@ interface FilterSidebarProps {
   selectedSizes: string[];
   sizeCounts: Record<string, number>;
   toggleSize: (size: string) => void;
+  // Color filters
+  availableColors: ColorOption[];
+  selectedColors: string[];
+  toggleColor: (hex: string) => void;
   // Price filters
   priceBounds: { min: number; max: number };
   priceMin: number | null;
@@ -38,6 +43,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   selectedSizes,
   sizeCounts,
   toggleSize,
+  availableColors,
+  selectedColors,
+  toggleColor,
   priceBounds,
   priceMin,
   priceMax,
@@ -121,6 +129,43 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           >
             {t('grid.clearFilters')}
           </button>
+        )}
+
+        {/* Color Filter */}
+        {availableColors.length > 0 && (
+          <FilterAccordion
+            title="Cores"
+            defaultOpen={selectedColors.length > 0}
+            count={selectedColors.length}
+          >
+            <div className="flex flex-wrap gap-2">
+              {availableColors.map(color => {
+                const isSelected = selectedColors.includes(color.hex);
+                return (
+                  <button
+                    key={color.hex}
+                    onClick={() => toggleColor(color.hex)}
+                    className={`w-8 h-8 rounded-full border-2 p-0.5 transition-all ${
+                      isSelected
+                        ? 'border-neutral-900 scale-110 shadow-md'
+                        : 'border-transparent hover:scale-105 hover:border-neutral-400'
+                    }`}
+                    aria-pressed={isSelected}
+                    title={typeof color.name === 'string' ? color.name : color.name?.pt || ''}
+                  >
+                    <div
+                      className="w-full h-full rounded-full border border-neutral-200"
+                      style={
+                        color.image
+                          ? { backgroundImage: `url(${color.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                          : { backgroundColor: color.hex }
+                      }
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </FilterAccordion>
         )}
 
         {/* Availability Filter - Placeholder for future */}

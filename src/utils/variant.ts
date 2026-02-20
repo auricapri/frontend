@@ -14,6 +14,8 @@ export interface ColorOption {
   hex: string;
   /** Localized color name */
   name: LocalizedText;
+  /** First variant image for this color (use as swatch background when it's a pattern/print) */
+  image?: string;
 }
 
 /**
@@ -40,15 +42,18 @@ export interface SizeOption {
 export function getProductColors(variants: ProductVariant[] | undefined): ColorOption[] {
   if (!variants?.length) return [];
 
-  const colorMap = new Map<string, LocalizedText>();
+  const colorMap = new Map<string, { name: LocalizedText; image?: string }>();
 
   for (const variant of variants) {
     if (variant.color_hex && !colorMap.has(variant.color_hex)) {
-      colorMap.set(variant.color_hex, variant.color_name);
+      colorMap.set(variant.color_hex, {
+        name: variant.color_name,
+        image: variant.variant_images?.[0],
+      });
     }
   }
 
-  return Array.from(colorMap.entries()).map(([hex, name]) => ({ hex, name }));
+  return Array.from(colorMap.entries()).map(([hex, { name, image }]) => ({ hex, name, image }));
 }
 
 /**

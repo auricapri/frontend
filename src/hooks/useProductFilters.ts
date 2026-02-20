@@ -9,6 +9,7 @@ import {
   sortProducts,
   SortOption
 } from '../utils/productFilters';
+import { getProductColors, type ColorOption } from '../utils/variant';
 import { useDebounce } from './useDebounce';
 
 interface UseProductFiltersParams {
@@ -19,14 +20,17 @@ interface UseProductFiltersParams {
 
 interface UseProductFiltersReturn {
   selectedSizes: string[];
+  selectedColors: string[];
   priceMin: number | null;
   priceMax: number | null;
   sortBy: SortOption;
   availableSizes: string[];
+  availableColors: ColorOption[];
   priceBounds: { min: number; max: number };
   sizeCounts: Record<string, number>;
   filteredAndSortedProducts: Product[];
   toggleSize: (size: string) => void;
+  toggleColor: (hex: string) => void;
   setPriceRange: (min: number | null, max: number | null) => void;
   setSortBy: (sort: SortOption) => void;
   clearFilters: () => void;
@@ -100,6 +104,7 @@ export function useProductFilters({
   const urlParams = parseUrlParams();
 
   const [selectedSizes, setSelectedSizes] = useState<string[]>(urlParams.sizes);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [priceMin, setPriceMin] = useState<number | null>(urlParams.priceMin);
   const [priceMax, setPriceMax] = useState<number | null>(urlParams.priceMax);
   const [sortBy, setSortByState] = useState<SortOption>(urlParams.sort);
@@ -114,6 +119,17 @@ export function useProductFilters({
   
   const availableSizes = useMemo(() => {
     return getAvailableSizes(categoryFilteredProducts);
+  }, [categoryFilteredProducts]);
+
+  // Distinct colors from all products in current view (deduped by hex)
+  const availableColors = useMemo(() => {
+    const colorMap = new Map<string, ColorOption>();
+    for (const product of categoryFilteredProducts) {
+      for (const c of getProductColors(product.variants)) {
+        if (!colorMap.has(c.hex)) colorMap.set(c.hex, c);
+      }
+    }
+    return Array.from(colorMap.values());
   }, [categoryFilteredProducts]);
   
   const priceBounds = useMemo(() => {
@@ -191,15 +207,21 @@ export function useProductFilters({
   
   const filteredProducts = useMemo(() => {
     let result = categoryFilteredProducts;
-    
+
     if (selectedSizes.length > 0) {
       result = filterProductsBySize(result, selectedSizes);
     }
-    
+
+    if (selectedColors.length > 0) {
+      result = result.filter(product =>
+        product.variants?.some(v => v.color_hex && selectedColors.includes(v.color_hex))
+      );
+    }
+
     result = filterProductsByPriceMinMax(result, priceMin, priceMax, userMode);
-    
+
     return result;
-  }, [categoryFilteredProducts, selectedSizes, priceMin, priceMax, userMode]);
+  }, [categoryFilteredProducts, selectedSizes, selectedColors, priceMin, priceMax, userMode]);
   
   const filteredAndSortedProducts = useMemo(() => {
     return sortProducts(filteredProducts, sortBy, userMode);
@@ -214,6 +236,14 @@ export function useProductFilters({
     );
   }, []);
 
+  const toggleColor = useCallback((hex: string) => {
+    setSelectedColors(prev =>
+      prev.includes(hex)
+        ? prev.filter(c => c !== hex)
+        : [...prev, hex]
+    );
+  }, []);
+
   const setPriceRange = useCallback((min: number | null, max: number | null) => {
     setPriceMin(min);
     setPriceMax(max);
@@ -225,25 +255,29 @@ export function useProductFilters({
 
   const clearFilters = useCallback(() => {
     setSelectedSizes([]);
+    setSelectedColors([]);
     setPriceMin(null);
     setPriceMax(null);
     setSortByState('relevance');
   }, []);
   
   const hasActiveFilters = useMemo(() => {
-    return selectedSizes.length > 0 || priceMin !== null || priceMax !== null || sortBy !== 'relevance';
-  }, [selectedSizes, priceMin, priceMax, sortBy]);
+    return selectedSizes.length > 0 || selectedColors.length > 0 || priceMin !== null || priceMax !== null || sortBy !== 'relevance';
+  }, [selectedSizes, selectedColors, priceMin, priceMax, sortBy]);
   
   return {
     selectedSizes,
+    selectedColors,
     priceMin,
     priceMax,
     sortBy,
     availableSizes,
+    availableColors,
     priceBounds,
     sizeCounts,
     filteredAndSortedProducts,
     toggleSize,
+    toggleColor,
     setPriceRange,
     setSortBy,
     clearFilters,
