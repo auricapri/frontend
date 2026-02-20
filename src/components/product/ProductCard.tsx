@@ -78,11 +78,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const getLoc = createGetLoc(locale);
 
   // When a color family filter is active, prefer the variant that matches it
+  // Uses DB color_family when available, falls back to runtime classification
   const displayVariant = React.useMemo(() => {
     if (selectedColorFamilies?.length && product.variants?.length) {
-      const match = product.variants.find(v =>
-        v.color_hex && selectedColorFamilies.includes(getColorFamilyId(v.color_hex, v.color_name))
-      );
+      const match = product.variants.find(v => {
+        const family = v.color_family || (v.color_hex ? getColorFamilyId(v.color_hex, v.color_name) : null);
+        return family && selectedColorFamilies.includes(family);
+      });
       if (match) return match;
     }
     return product.variants?.[0];

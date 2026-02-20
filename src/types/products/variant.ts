@@ -23,4 +23,5 @@ export interface ProductVariant {
   composition?: LocalizedText;
   care_instructions?: LocalizedText;
   size_guide_id?: string;
+  color_family?: string;
 }
