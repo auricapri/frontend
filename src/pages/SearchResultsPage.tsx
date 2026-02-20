@@ -50,14 +50,17 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
   // Apply additional filters (size, price, sort)
   const {
     selectedSizes,
+    selectedColorFamilies,
     priceMin,
     priceMax,
     sortBy,
     availableSizes,
+    availableColorFamilies,
     priceBounds,
     sizeCounts,
     filteredAndSortedProducts,
     toggleSize,
+    toggleColorFamily,
     setPriceRange,
     setSortBy,
     clearFilters,
@@ -164,8 +167,8 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
       )}
 
       {/* Desktop + Mobile Layout */}
-      <div className="flex px-6 md:px-12 mt-4">
-        {/* Desktop: Sidebar */}
+      <div className="px-6 md:px-12 mt-4">
+        {/* Desktop: Sidebar (fixed overlay) */}
         {!isMobile && (
           <FilterSidebar
             isOpen={isFiltersOpen}
@@ -174,6 +177,9 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
             selectedSizes={selectedSizes}
             sizeCounts={sizeCounts}
             toggleSize={toggleSize}
+            availableColorFamilies={availableColorFamilies}
+            selectedColorFamilies={selectedColorFamilies}
+            toggleColorFamily={toggleColorFamily}
             priceBounds={priceBounds}
             priceMin={priceMin}
             priceMax={priceMax}
@@ -190,7 +196,7 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
         )}
 
         {/* Product Grid */}
-        <div className="flex-1 min-w-0">
+        <div>
           {/* Results count + clear filters */}
           <div className="mb-6 flex items-center justify-between">
             <p className="text-[11px] text-neutral-500 uppercase tracking-wider font-medium">
@@ -208,11 +214,7 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
 
           {/* Grid */}
           {currentProducts.length > 0 ? (
-            <div className={`grid ${
-              isFiltersOpen && !isMobile
-                ? 'grid-cols-3'
-                : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
-            }`}>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {currentProducts.map((product) => (
                 <ProductCard
                   key={product.id}
