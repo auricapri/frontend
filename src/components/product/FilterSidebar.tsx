@@ -131,42 +131,33 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </button>
         )}
 
-        {/* Color Family Filter */}
+        {/* Color Family Filter — compact dots + inline label on selection */}
         {availableColorFamilies.length > 0 && (
           <FilterAccordion
             title="Cores"
             defaultOpen={selectedColorFamilies.length > 0}
             count={selectedColorFamilies.length}
           >
-            <div className="flex flex-wrap gap-x-4 gap-y-4">
+            <div className="flex flex-wrap gap-2">
               {availableColorFamilies.map(family => {
                 const isSelected = selectedColorFamilies.includes(family.id);
                 return (
                   <button
                     key={family.id}
                     onClick={() => toggleColorFamily(family.id)}
-                    className="flex flex-col items-center gap-1.5 group"
+                    title={family.label}
                     aria-pressed={isSelected}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-full border transition-all text-[10px] font-medium ${
+                      isSelected
+                        ? 'border-neutral-900 bg-neutral-900 text-white'
+                        : 'border-neutral-200 hover:border-neutral-400 text-neutral-600'
+                    }`}
                   >
-                    <div
-                      className={`w-8 h-8 rounded-full border-2 p-0.5 transition-all ${
-                        isSelected
-                          ? 'border-neutral-900 scale-110 shadow-md'
-                          : 'border-transparent group-hover:border-neutral-400 group-hover:scale-105'
-                      }`}
-                    >
-                      <div
-                        className="w-full h-full rounded-full border border-neutral-300"
-                        style={{ backgroundColor: family.hex }}
-                      />
-                    </div>
                     <span
-                      className={`text-[9px] uppercase tracking-wider leading-none transition-colors ${
-                        isSelected ? 'font-bold text-neutral-900' : 'text-neutral-500 group-hover:text-neutral-700'
-                      }`}
-                    >
-                      {family.label}
-                    </span>
+                      className="w-3 h-3 rounded-full border border-white/40 flex-shrink-0"
+                      style={{ backgroundColor: family.hex }}
+                    />
+                    {family.label}
                   </button>
                 );
               })}
