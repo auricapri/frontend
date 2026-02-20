@@ -8,6 +8,7 @@ import { createGetLoc } from '../../utils/localization';
 import { getDisplayPrice as getProductDisplayPrice } from '../../utils/coupon';
 import { getProductColors } from '../../utils/variant';
 import { getOptimizedImageUrl, generateSrcSet, generateSizes } from '../../utils/image';
+import { getColorFamilyId } from '../../utils/colorFamilies';
 
 export interface ProductCardProps {
   product: Product;
@@ -44,6 +45,9 @@ export interface ProductCardProps {
 
   // Category name for display
   categoryName?: string;
+
+  // Active color family filter — used to pick the matching variant image
+  selectedColorFamilies?: string[];
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -64,20 +68,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onQuickAdd,
   onClick,
   className = '',
-  categoryName
+  categoryName,
+  selectedColorFamilies
 }) => {
   const getLoc = createGetLoc(locale);
 
+  // When a color family filter is active, prefer the variant that matches it
+  const displayVariant = React.useMemo(() => {
+    if (selectedColorFamilies?.length && product.variants?.length) {
+      const match = product.variants.find(v =>
+        v.color_hex && selectedColorFamilies.includes(getColorFamilyId(v.color_hex))
+      );
+      if (match) return match;
+    }
+    return product.variants?.[0];
+  }, [product.variants, selectedColorFamilies]);
+
   // Calculate price and discount
-  const mainVariant = product.variants?.[0];
+  const mainVariant = displayVariant;
   const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode, product) : 0;
   const priceResult = getProductDisplayPrice(rawPrice, product.id, coupons);
   const { original, final, hasDiscount } = priceResult;
   // Strip leading dash from discountDisplay for badge format ("10% OFF" not "-10% OFF")
   const discountDisplay = priceResult.discountDisplay?.replace(/^-/, '') || '';
 
-  // Image and colors
-  const displayImg = product.default_image_url || product.base_images[0];
+  // Image: use matching variant's image when available, fallback to product image
+  const displayImg = displayVariant?.variant_images?.[0] || product.default_image_url || product.base_images[0];
   const colors = getProductColors(product.variants);
   const hasMultipleVariants = (product.variants?.length || 0) > 1;
 
