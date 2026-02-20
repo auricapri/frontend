@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Product, UserMode, Coupon } from '../../types';
 import { Heart, ShoppingBag, Truck } from 'lucide-react';
 import { Locale } from '../../i18n';
@@ -7,7 +7,7 @@ import { calculatePrice } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
 import { getDisplayPrice as getProductDisplayPrice } from '../../utils/coupon';
 import { getProductColors } from '../../utils/variant';
-import { getOptimizedImageUrl, generateSrcSet, generateSizes } from '../../utils/image';
+import { getOptimizedImageUrl, generateSrcSet, CARD_SIZES } from '../../utils/image';
 import { getColorFamilyId } from '../../utils/colorFamilies';
 
 export interface ProductCardProps {
@@ -53,7 +53,25 @@ export interface ProductCardProps {
   priority?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({
+// ── Pure style helpers (module-level, never recreated) ──────────────────────
+
+function getCardStyles(_variant: string): string {
+  return 'border border-neutral-200 hover:border-neutral-300';
+}
+
+function getImageAspect(aspectRatio: string): string {
+  return aspectRatio === 'portrait' ? 'aspect-[3/4]' : 'aspect-square';
+}
+
+const TEXT_SIZES = {
+  large: { name: 'text-[12px] md:text-[13px]', price: 'text-[13px] md:text-[14px]', priceOriginal: 'text-[11px]' },
+  compact: { name: 'text-[10px]', price: 'text-[11px]', priceOriginal: 'text-[9px]' },
+  grid: { name: 'text-[11px]', price: 'text-[12px]', priceOriginal: 'text-[10px]' },
+} as const;
+
+// ── Component ───────────────────────────────────────────────────────────────
+
+const ProductCardInner: React.FC<ProductCardProps> = ({
   product,
   userMode,
   locale,
@@ -95,7 +113,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const rawPrice = mainVariant ? calculatePrice(mainVariant, userMode, product) : 0;
   const priceResult = getProductDisplayPrice(rawPrice, product.id, coupons);
   const { original, final, hasDiscount } = priceResult;
-  // Strip leading dash from discountDisplay for badge format ("10% OFF" not "-10% OFF")
   const discountDisplay = priceResult.discountDisplay?.replace(/^-/, '') || '';
 
   // Image: use matching variant's image when available, fallback to product image
@@ -106,8 +123,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   // Free shipping: use product flag or fallback to price >= 299
   const hasFreeShipping = product.has_free_shipping === true || final >= 299;
 
-  // Handle quick add
-  const handleQuickAdd = (e: React.MouseEvent) => {
+  const textSize = TEXT_SIZES[variant] ?? TEXT_SIZES.grid;
+
+  // Stable handlers — won't break React.memo on children
+  const handleQuickAdd = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (hasMultipleVariants && onQuickAdd) {
       onQuickAdd(product);
@@ -126,67 +145,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         sku: mainVariant.sku
       });
     }
-  };
+  }, [hasMultipleVariants, onQuickAdd, product, mainVariant, onAddToCart, displayImg, final, hasDiscount, original]);
 
-  // Handle wishlist toggle
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     onToggleWishlist?.(product.id);
-  };
-
-  // Variant-specific styles
-  const getCardStyles = () => {
-    switch (variant) {
-      case 'compact':
-        return 'border border-neutral-200 hover:border-neutral-300';
-      case 'large':
-        return 'border border-neutral-200 hover:border-neutral-300';
-      default: // grid
-        return 'border border-neutral-200 hover:border-neutral-300';
-    }
-  };
-
-  const getImageAspect = () => {
-    if (aspectRatio === 'portrait') return 'aspect-[3/4]';
-    return 'aspect-square';
-  };
-
-  const getTextSize = () => {
-    switch (variant) {
-      case 'large':
-        return {
-          name: 'text-[12px] md:text-[13px]',
-          price: 'text-[13px] md:text-[14px]',
-          priceOriginal: 'text-[11px]'
-        };
-      case 'compact':
-        return {
-          name: 'text-[10px]',
-          price: 'text-[11px]',
-          priceOriginal: 'text-[9px]'
-        };
-      default: // grid
-        return {
-          name: 'text-[11px]',
-          price: 'text-[12px]',
-          priceOriginal: 'text-[10px]'
-        };
-    }
-  };
-
-  const textSize = getTextSize();
+  }, [onToggleWishlist, product.id]);
 
   return (
     <div
       onClick={onClick}
-      className={`cursor-pointer group flex flex-col relative transition-colors ${getCardStyles()} ${className}`}
+      className={`cursor-pointer group flex flex-col relative transition-colors ${getCardStyles(variant)} ${className}`}
     >
       {/* Image Container */}
-      <div className={`relative ${getImageAspect()} overflow-hidden bg-neutral-50`}>
+      <div className={`relative ${getImageAspect(aspectRatio)} overflow-hidden bg-neutral-50`}>
         <img
           src={getOptimizedImageUrl(displayImg, aspectRatio === 'portrait' ? 'small' : 'thumbnail')}
           srcSet={generateSrcSet(displayImg, ['thumbnail', 'small', 'medium'])}
-          sizes={generateSizes()}
+          sizes={CARD_SIZES}
           alt={getLoc(product.name)}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading={priority ? 'eager' : 'lazy'}
@@ -297,4 +273,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   );
 };
 
+// React.memo — skips re-render when props are shallowly equal
+// Critical: prevents all 12+ cards from re-rendering on every filter change
+export const ProductCard = React.memo(ProductCardInner);
 export default ProductCard;

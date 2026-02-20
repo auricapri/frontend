@@ -157,13 +157,11 @@ export function filterProductsBySize(
   sizes: string[]
 ): Product[] {
   if (sizes.length === 0) return products;
-  
-  return products.filter(product => {
-    return product.variants?.some(variant => {
-      if (!variant.size) return false;
-      return sizes.includes(variant.size.trim());
-    });
-  });
+  // Set for O(1) lookup instead of O(n) array includes
+  const sizeSet = new Set(sizes);
+  return products.filter(product =>
+    product.variants?.some(v => v.size && sizeSet.has(v.size.trim()))
+  );
 }
 
 export function filterProductsByPriceRange(
@@ -204,23 +202,23 @@ export function getPriceMinMax(
   userMode: UserMode
 ): { min: number; max: number } {
   if (products.length === 0) return { min: 0, max: 0 };
-  
-  const prices: number[] = [];
-  
-  products.forEach(product => {
-    product.variants?.forEach(variant => {
+
+  let min = Infinity;
+  let max = -Infinity;
+
+  for (const product of products) {
+    if (!product.variants) continue;
+    for (const variant of product.variants) {
       const price = calculatePrice(variant, userMode, product);
       if (price > 0) {
-        prices.push(price);
+        if (price < min) min = price;
+        if (price > max) max = price;
       }
-    });
-  });
-  
-  if (prices.length === 0) return { min: 0, max: 0 };
-  
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
-  
+    }
+  }
+
+  if (min === Infinity) return { min: 0, max: 0 };
+
   return {
     min: Math.floor(min / 10) * 10,
     max: Math.ceil(max / 10) * 10
@@ -233,53 +231,42 @@ export function sortProducts(
   userMode: UserMode
 ): Product[] {
   const sorted = [...products];
-  
+
   switch (sortBy) {
-    case 'relevance': {
+    case 'relevance':
       return sorted.sort((a, b) => {
         if (a.is_highlight && !b.is_highlight) return -1;
         if (!a.is_highlight && b.is_highlight) return 1;
         return 0;
       });
-    }
-    
-    case 'price-asc': {
-      return sorted.sort((a, b) => {
-        const aPrice = getMinProductPrice(a, userMode);
-        const bPrice = getMinProductPrice(b, userMode);
-        return aPrice - bPrice;
-      });
-    }
-    
+
+    case 'price-asc':
     case 'price-desc': {
-      return sorted.sort((a, b) => {
-        const aPrice = getMinProductPrice(a, userMode);
-        const bPrice = getMinProductPrice(b, userMode);
-        return bPrice - aPrice;
-      });
+      // Pre-compute min price per product once — avoids O(n²) recalculation during sort
+      const priceMap = new Map<string, number>();
+      for (const p of sorted) {
+        priceMap.set(p.id, getMinProductPrice(p, userMode));
+      }
+      const dir = sortBy === 'price-asc' ? 1 : -1;
+      return sorted.sort((a, b) => dir * ((priceMap.get(a.id) ?? Infinity) - (priceMap.get(b.id) ?? Infinity)));
     }
-    
-    case 'popularity': {
-      return sorted.sort((a, b) => {
-        const aReviews = a.total_reviews || 0;
-        const bReviews = b.total_reviews || 0;
-        return bReviews - aReviews;
-      });
-    }
-    
+
+    case 'popularity':
+      return sorted.sort((a, b) => (b.total_reviews || 0) - (a.total_reviews || 0));
+
     default:
       return sorted;
   }
 }
 
 function getMinProductPrice(product: Product, userMode: UserMode): number {
-  if (!product.variants || product.variants.length === 0) return Infinity;
-
-  const prices = product.variants
-    .map(variant => calculatePrice(variant, userMode, product))
-    .filter(price => price > 0);
-
-  return prices.length > 0 ? Math.min(...prices) : Infinity;
+  if (!product.variants?.length) return Infinity;
+  let min = Infinity;
+  for (const v of product.variants) {
+    const price = calculatePrice(v, userMode, product);
+    if (price > 0 && price < min) min = price;
+  }
+  return min;
 }
 
 export function searchProducts(

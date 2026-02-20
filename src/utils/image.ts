@@ -109,9 +109,14 @@ export function generateSrcSet(
     .join(', ');
 }
 
+// Pre-computed sizes string for product cards in the grid (2-col mobile, 3-col tablet, 4-col desktop)
+// Exported as constant — no rebuilding on every render
+export const CARD_SIZES = '(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw';
+
 export function generateSizes(breakpoints: Record<string, string> = {}): string {
-  const defaultBreakpoints = {
-    // Product grid is always 2+ columns — 100vw was wrong and caused oversized downloads
+  if (Object.keys(breakpoints).length === 0) return CARD_SIZES;
+
+  const defaultBreakpoints: Record<string, string> = {
     '(max-width: 768px)': '50vw',
     '(max-width: 1024px)': '33vw',
     default: '25vw',
