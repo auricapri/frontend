@@ -648,6 +648,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           userMode={userMode}
           locale={locale}
           getLoc={getLoc}
+          coupons={coupons}
         />
       )}
     </section>
