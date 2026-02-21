@@ -159,7 +159,8 @@ export function NewArrivalsPage({
               <img
                 src={collection.image_url || '/placeholder-collection.jpg'}
                 alt={getLoc(collection.name)}
-                loading="lazy"
+                loading={index < 4 ? 'eager' : 'lazy'}
+                fetchPriority={index < 4 ? 'high' : 'auto'}
                 className="absolute inset-0 w-full h-full object-cover
                   transition-transform duration-700 ease-out group-hover:scale-110"
               />

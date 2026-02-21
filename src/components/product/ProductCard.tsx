@@ -170,6 +170,11 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
           decoding={priority ? 'sync' : 'async'}
           width={400}
           height={aspectRatio === 'portrait' ? 533 : 400}
+          onError={(e) => {
+            const img = e.currentTarget;
+            img.onerror = null;
+            img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23f5f5f5' width='100%25' height='100%25'/%3E%3C/svg%3E";
+          }}
         />
 
         {/* Discount Badge - Domino Style */}
