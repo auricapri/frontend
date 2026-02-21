@@ -100,7 +100,7 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                     onClick={onClear}
                     className="text-[12px] font-semibold text-red-500 active:text-red-600 underline underline-offset-2"
                   >
-                    Limpar tudo
+                    {t('grid.clearFilters')}
                   </button>
                 )}
               </div>

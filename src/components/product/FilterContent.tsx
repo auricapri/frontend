@@ -2,6 +2,7 @@ import React from 'react';
 import { Locale } from '../../i18n';
 import { FilterAccordion } from './FilterAccordion';
 import { PriceRangeSlider } from './PriceRangeSlider';
+import type { ColorFamily } from '../../utils/colorFamilies';
 
 interface FilterContentProps {
   availableSizes: string[];
@@ -14,6 +15,10 @@ interface FilterContentProps {
   toggleSize: (size: string) => void;
   setPriceRange: (min: number | null, max: number | null) => void;
   setSortBy: (sort: 'relevance' | 'price-asc' | 'price-desc' | 'popularity') => void;
+  // Color family filters (optional — not all contexts have them)
+  availableColorFamilies?: ColorFamily[];
+  selectedColorFamilies?: string[];
+  toggleColorFamily?: (id: string) => void;
   locale: Locale;
   t: (key: string) => string;
   isMobile?: boolean;
@@ -30,6 +35,9 @@ export const FilterContent: React.FC<FilterContentProps> = ({
   toggleSize,
   setPriceRange,
   setSortBy,
+  availableColorFamilies = [],
+  selectedColorFamilies = [],
+  toggleColorFamily,
   locale,
   t,
   isMobile = false
@@ -43,6 +51,40 @@ export const FilterContent: React.FC<FilterContentProps> = ({
 
   return (
     <div className="space-y-0">
+      {/* Color Family Filter */}
+      {availableColorFamilies.length > 0 && toggleColorFamily && (
+        <FilterAccordion
+          title="Cores"
+          defaultOpen={selectedColorFamilies.length > 0}
+          count={selectedColorFamilies.length > 0 ? selectedColorFamilies.length : undefined}
+        >
+          <div className="flex flex-wrap gap-2">
+            {availableColorFamilies.map(family => {
+              const isSelected = selectedColorFamilies.includes(family.id);
+              return (
+                <button
+                  key={family.id}
+                  onClick={() => toggleColorFamily(family.id)}
+                  title={family.label}
+                  aria-pressed={isSelected}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border transition-colors text-[11px] font-medium ${
+                    isSelected
+                      ? 'border-neutral-900 bg-neutral-900 text-white'
+                      : 'border-neutral-200 hover:border-neutral-400 active:bg-neutral-50 text-neutral-600'
+                  }`}
+                >
+                  <span
+                    className="w-3 h-3 rounded-full border border-white/40 flex-shrink-0"
+                    style={{ backgroundColor: family.hex }}
+                  />
+                  {family.label}
+                </button>
+              );
+            })}
+          </div>
+        </FilterAccordion>
+      )}
+
       {/* Size Filter */}
       {availableSizes.length > 0 && (
         <FilterAccordion

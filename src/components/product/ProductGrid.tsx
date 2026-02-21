@@ -12,6 +12,9 @@ import { QuickAddModal } from './QuickAddModal';
 import { ProductCard } from './ProductCard';
 import { CountdownBadge, useCollectionAvailability } from '../ui/CountdownBadge';
 import { useCartContext } from '../../context/CartContext';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { FilterBottomSheet } from './FilterBottomSheet';
+import { FilterContent } from './FilterContent';
 
 interface ProductGridProps {
   products: Product[];
@@ -41,6 +44,17 @@ const COMING_SOON_TEXT: Record<Locale, string> = {
   es: 'Próximamente',
   fr: 'Bientôt',
 };
+
+const SkeletonCard: React.FC = () => (
+  <div className="border border-neutral-100">
+    <div className="aspect-square bg-neutral-100 animate-pulse" />
+    <div className="p-3 space-y-2">
+      <div className="h-2.5 bg-neutral-100 rounded animate-pulse w-3/4" />
+      <div className="h-2.5 bg-neutral-100 rounded animate-pulse w-1/2" />
+      <div className="h-2 bg-neutral-100 rounded animate-pulse w-1/3 mt-1" />
+    </div>
+  </div>
+);
 
 // Collection Card with countdown and expiration handling
 interface CollectionCardProps {
@@ -77,6 +91,8 @@ const CollectionCard: React.FC<CollectionCardProps> = React.memo(({ collection, 
       <img
         src={collection.image_url}
         alt={getLoc(collection.name)}
+        loading="lazy"
+        decoding="async"
         className={`w-full h-full object-cover transition-all duration-1000 ${isAvailable ? 'group-hover:scale-105 group-active:scale-105' : 'grayscale'}`}
       />
 
@@ -159,6 +175,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [quickAddProduct, setQuickAddProduct] = useState<Product | null>(null);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [internalGender, setInternalGender] = useState<Gender>(Gender.FEMALE);
+  const isMobile = useIsMobile();
 
   // Use external gender if provided, otherwise use internal state
   const selectedGender = externalGender ?? internalGender;
@@ -462,8 +479,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
       {/* Main Content Area */}
       <div className="">
-        {/* Sidebar — fixed overlay, does not affect grid layout */}
-        <FilterSidebar
+        {/* Desktop: Sidebar overlay */}
+        {!isMobile && (
+          <FilterSidebar
             isOpen={isFiltersOpen}
             onClose={() => setIsFiltersOpen(false)}
             availableSizes={availableSizes}
@@ -486,6 +504,38 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             locale={locale}
             t={t}
           />
+        )}
+
+        {/* Mobile: Bottom Sheet */}
+        {isMobile && (
+          <FilterBottomSheet
+            isOpen={isFiltersOpen}
+            onClose={() => setIsFiltersOpen(false)}
+            hasActiveFilters={hasActiveFilters}
+            productCount={filteredAndSortedProducts.length}
+            onClear={clearFilters}
+            t={t}
+          >
+            <FilterContent
+              availableSizes={availableSizes}
+              selectedSizes={selectedSizes}
+              sizeCounts={sizeCounts}
+              toggleSize={toggleSize}
+              availableColorFamilies={availableColorFamilies}
+              selectedColorFamilies={selectedColorFamilies}
+              toggleColorFamily={toggleColorFamily}
+              priceBounds={priceBounds}
+              priceMin={priceMin}
+              priceMax={priceMax}
+              setPriceRange={setPriceRange}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              locale={locale}
+              t={t}
+              isMobile={true}
+            />
+          </FilterBottomSheet>
+        )}
 
         {/* Product Grid — full width, sidebar is an overlay and doesn't affect layout */}
         <div>
@@ -504,9 +554,28 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               )}
             </div>
 
-            {currentProducts.length === 0 && !isLoading ? (
-              <div className="py-20 text-center flex flex-col items-center px-6">
-                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-300">{t('grid.noItems')}</p>
+            {isLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : currentProducts.length === 0 ? (
+              <div className="py-20 text-center flex flex-col items-center px-6 gap-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-300">
+                  {hasActiveFilters
+                    ? (locale === 'pt' ? 'Nenhum produto com esses filtros' : locale === 'es' ? 'Sin productos con estos filtros' : 'No products match these filters')
+                    : t('grid.noItems')
+                  }
+                </p>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="px-5 py-2 border border-neutral-300 text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-600 hover:bg-neutral-900 hover:text-white hover:border-neutral-900 transition-all rounded-full"
+                  >
+                    {t('grid.clearFilters')}
+                  </button>
+                )}
               </div>
             ) : (
               <div className={`grid ${
@@ -514,7 +583,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                   ? 'grid-cols-2 md:grid-cols-3'
                   : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
               }`}>
-                {!isLoading && currentProducts.map((p, index) => (
+                {currentProducts.map((p, index) => (
                   <ProductCard
                     key={p.id}
                     product={p}
