@@ -25,7 +25,7 @@ export const BackToTop: React.FC = () => {
     <button
       onClick={scrollToTop}
       aria-label="Voltar ao topo"
-      className={`fixed bottom-20 md:bottom-8 right-4 md:right-8 z-40 w-10 h-10 bg-neutral-900 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-neutral-700 active:bg-neutral-600 transition-all duration-300 ${
+      className={`fixed bottom-36 md:bottom-8 right-4 md:right-8 z-40 w-10 h-10 bg-neutral-900 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-neutral-700 active:bg-neutral-600 transition-all duration-300 ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
       }`}
     >
