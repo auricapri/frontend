@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Product, UserMode, Coupon } from '../../types';
 import { Heart, ShoppingBag, Truck } from 'lucide-react';
 import { Locale } from '../../i18n';
@@ -124,6 +124,7 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
   const hasFreeShipping = product.has_free_shipping === true || final >= 299;
 
   const textSize = TEXT_SIZES[variant] ?? TEXT_SIZES.grid;
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   // Stable handlers — won't break React.memo on children
   const handleQuickAdd = useCallback((e: React.MouseEvent) => {
@@ -159,21 +160,27 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
     >
       {/* Image Container */}
       <div className={`relative ${getImageAspect(aspectRatio)} overflow-hidden bg-neutral-50`}>
+        {/* Shimmer placeholder while image loads */}
+        {!imgLoaded && (
+          <div className="absolute inset-0 bg-neutral-100 animate-pulse" />
+        )}
         <img
           src={getOptimizedImageUrl(displayImg, aspectRatio === 'portrait' ? 'small' : 'thumbnail')}
           srcSet={generateSrcSet(displayImg, ['thumbnail', 'small', 'medium'])}
           sizes={CARD_SIZES}
           alt={getLoc(product.name)}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : 'auto'}
           decoding={priority ? 'sync' : 'async'}
           width={400}
           height={aspectRatio === 'portrait' ? 533 : 400}
+          onLoad={() => setImgLoaded(true)}
           onError={(e) => {
             const img = e.currentTarget;
             img.onerror = null;
             img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23f5f5f5' width='100%25' height='100%25'/%3E%3C/svg%3E";
+            setImgLoaded(true);
           }}
         />
 
