@@ -124,6 +124,7 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
   const hasFreeShipping = product.has_free_shipping === true || final >= 299;
 
   const textSize = TEXT_SIZES[variant] ?? TEXT_SIZES.grid;
+  const imgSrcSet = generateSrcSet(displayImg, ['thumbnail', 'small', 'medium']);
   const [imgLoaded, setImgLoaded] = useState(false);
 
   // Stable handlers — won't break React.memo on children
@@ -166,8 +167,8 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
         )}
         <img
           src={getOptimizedImageUrl(displayImg, aspectRatio === 'portrait' ? 'small' : 'thumbnail')}
-          srcSet={generateSrcSet(displayImg, ['thumbnail', 'small', 'medium'])}
-          sizes={CARD_SIZES}
+          srcSet={imgSrcSet || undefined}
+          sizes={imgSrcSet ? CARD_SIZES : undefined}
           alt={getLoc(product.name)}
           className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
           loading={priority ? 'eager' : 'lazy'}

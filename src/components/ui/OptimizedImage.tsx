@@ -148,8 +148,8 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         <img
           ref={imgRef}
           src={optimizedSrc}
-          srcSet={srcSet}
-          sizes={useSrcSet ? defaultSizes : undefined}
+          srcSet={srcSet || undefined}
+          sizes={srcSet ? defaultSizes : undefined}
           alt={alt}
           width={IMAGE_SIZES[size].width}
           height={IMAGE_SIZES[size].height}

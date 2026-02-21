@@ -88,7 +88,7 @@ export function generateSrcSet(
   }
 
   if (!isSupabaseStorageUrl(url)) {
-    return url;
+    return '';
   }
 
   const qualityMap: Record<string, number> = {

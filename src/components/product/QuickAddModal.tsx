@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { X, Minus, Plus, ShoppingBag, Check } from 'lucide-react';
-import { Product, UserMode, LocalizedText } from '../../types';
+import { Product, UserMode, LocalizedText, Coupon } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { calculatePrice } from '../../utils/product';
+import { getDisplayPrice as getProductDisplayPrice } from '../../utils/coupon';
 
 interface QuickAddModalProps {
   product: Product;
@@ -13,6 +14,7 @@ interface QuickAddModalProps {
   userMode: UserMode;
   locale: Locale;
   getLoc: (text: LocalizedText | undefined) => string;
+  coupons?: Coupon[];
 }
 
 export const QuickAddModal: React.FC<QuickAddModalProps> = ({
@@ -22,7 +24,8 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
   onAddToCart,
   userMode,
   locale,
-  getLoc
+  getLoc,
+  coupons = []
 }) => {
   const [selectedColorHex, setSelectedColorHex] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -82,7 +85,9 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
     }
   }, [isOpen, colors]);
 
-  const price = activeVariant ? calculatePrice(activeVariant, userMode) : 0;
+  const rawPrice = activeVariant ? calculatePrice(activeVariant, userMode, product) : 0;
+  const priceResult = getProductDisplayPrice(rawPrice, product.id, coupons);
+  const { original, final: price, hasDiscount } = priceResult;
   const displayImg = activeVariant?.variant_images?.[0] || product.default_image_url || product.base_images?.[0];
   const inStock = (activeVariant?.stock_quantity || 0) > 0;
   const maxQty = activeVariant?.stock_quantity || 1;
@@ -99,6 +104,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
       color_name: activeVariant.color_name,
       color_hex: activeVariant.color_hex || '#000',
       price: price,
+      original_price: hasDiscount ? original : undefined,
       quantity: quantity,
       sku: activeVariant.sku
     });
@@ -147,9 +153,16 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                   {selectedSize && ` • ${selectedSize}`}
                 </p>
               )}
-              <p className="text-lg font-black text-neutral-900 mt-2">
-                {formatCurrency(price * quantity, locale)}
-              </p>
+              <div className="mt-2 flex items-baseline gap-2">
+                {hasDiscount && (
+                  <span className="text-sm text-neutral-400 line-through">
+                    {formatCurrency(original * quantity, locale)}
+                  </span>
+                )}
+                <span className={`text-lg font-black ${hasDiscount ? 'text-red-600' : 'text-neutral-900'}`}>
+                  {formatCurrency(price * quantity, locale)}
+                </span>
+              </div>
             </div>
 
             {/* Close Button */}
