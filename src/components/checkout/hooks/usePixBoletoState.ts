@@ -167,8 +167,8 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     // Use override payment method if provided (fixes race condition when setting state and calling immediately)
     const effectivePaymentMethod = overridePaymentMethod ?? paymentMethod;
 
-    // Validate CPF for Asaas (use profile CPF if available)
-    const cpfValue = currentUser?.cpf || cpf;
+    // Validate CPF - cpf do checkout tem prioridade sobre o do perfil
+    const cpfValue = cpf || currentUser?.cpf || '';
     const cleanCpf = cpfValue.replace(/\D/g, '');
     if (!cleanCpf || cleanCpf.length !== 11) {
       const errorMsg = 'CPF é obrigatório para processar o pagamento';
@@ -212,14 +212,15 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         finalAmount: finalTotal,
       });
 
-      // Save CPF to profile if user doesn't have CPF saved
-      const cpfToUse = currentUser?.cpf || cpf;
-      if (!currentUser?.cpf && cpf) {
+      // Salva CPF no perfil se foi alterado ou ainda não estava salvo
+      const cpfToUse = cpf || currentUser?.cpf || '';
+      const cleanCpfNew = cpf.replace(/\D/g, '');
+      const cleanCpfProfile = (currentUser?.cpf || '').replace(/\D/g, '');
+      if (cpf && cleanCpfNew !== cleanCpfProfile) {
         try {
-          await usersApi.updateProfile({ cpf: cpf.replace(/\D/g, '') });
+          await usersApi.updateProfile({ cpf: cleanCpfNew });
         } catch {
-          // Silent - don't block checkout if saving CPF fails
-          // Silent - CPF save failed, non-blocking
+          // Silent - não bloqueia o checkout se falhar
         }
       }
 
