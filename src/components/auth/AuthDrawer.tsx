@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { X, Loader2, ShoppingBag, Mail, ArrowLeft, Check } from 'lucide-react';
 import { UserProfile as UserType } from '../../types';
 import { Locale } from '../../i18n';
@@ -22,8 +22,7 @@ interface AuthDrawerProps {
 const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin, onLogout, t, locale, storeConfig }) => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isLoading, setIsLoading] = useState(false);
-  const [drawerHeight, setDrawerHeight] = useState<string>('100%');
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null);
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [passwordResetSent, setPasswordResetSent] = useState(false);
@@ -34,25 +33,25 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
   const [referralCode, setReferralCode] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
-  // Adjust drawer height when virtual keyboard appears (iOS Safari fix)
+  // Add bottom padding when virtual keyboard appears so content scrolls correctly (iOS Safari fix)
   useEffect(() => {
     if (!isOpen) return;
     const vv = window.visualViewport;
     if (!vv) return;
 
     const handleResize = () => {
-      setDrawerHeight(`${vv.height}px`);
-      // Scroll focused input into view after keyboard appears
+      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKeyboardHeight(kb);
       const focused = document.activeElement as HTMLElement;
       if (focused && focused.tagName === 'INPUT') {
-        setTimeout(() => focused.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+        setTimeout(() => focused.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
       }
     };
 
     vv.addEventListener('resize', handleResize);
     return () => {
       vv.removeEventListener('resize', handleResize);
-      setDrawerHeight('100%');
+      setKeyboardHeight(0);
     };
   }, [isOpen]);
 
@@ -185,7 +184,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
     <>
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]" onClick={onClose} />
 
-      <div className="fixed top-0 right-0 w-full md:w-[450px] bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 text-neutral-900" style={{ height: drawerHeight }}>
+      <div className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 text-neutral-900">
         <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-white">
           <h2 className="text-xl font-light tracking-widest uppercase text-neutral-900">
             {user 
@@ -216,7 +215,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
              </div>
            ) : forgotPasswordMode ? (
              /* FORGOT PASSWORD MODE */
-             <div className="p-8 bg-white h-full space-y-8 overflow-y-auto no-scrollbar">
+             <div className="p-8 bg-white h-full space-y-8 overflow-y-auto no-scrollbar" style={{ paddingBottom: keyboardHeight > 0 ? `${keyboardHeight + 32}px` : undefined }}>
                 {passwordResetSent ? (
                   /* SUCCESS MESSAGE */
                   <div className="flex flex-col items-center justify-center min-h-[400px] space-y-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -297,8 +296,8 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                 )}
              </div>
            ) : (
-             <div className="p-8 bg-white h-full space-y-8 overflow-y-auto no-scrollbar">
-                
+             <div className="p-8 bg-white h-full space-y-8 overflow-y-auto no-scrollbar" style={{ paddingBottom: keyboardHeight > 0 ? `${keyboardHeight + 32}px` : undefined }}>
+
                 {/* Checkout Context Indicator */}
                 <div className="bg-neutral-50 p-6 rounded-2xl border border-neutral-100 flex items-center gap-4">
                    <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center flex-none">
