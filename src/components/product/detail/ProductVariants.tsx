@@ -42,7 +42,7 @@ export function ProductVariants({
           <label className="text-[10px] uppercase font-black tracking-[0.3em] text-neutral-400">
             Paleta — {getLoc(activeColorName)}
           </label>
-          <div className="flex overflow-x-auto no-scrollbar gap-3 pb-1">
+          <div className="flex overflow-x-auto no-scrollbar gap-3 py-2">
             {colors.map((c) => (
               <button
                 key={c.hex}
