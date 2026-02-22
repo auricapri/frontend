@@ -55,13 +55,13 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
   // Ref for debounce
   const cepDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Update CPF when currentUser changes (e.g., after login)
+  // Update CPF when currentUser changes (e.g., after login or profile update)
   useEffect(() => {
-    if (currentUser?.cpf && !cpf) {
+    if (currentUser?.cpf) {
       setCpfInternal(currentUser.cpf);
-      setCpfError(null); // Pre-filled CPF from user profile - assume valid
+      setCpfError(null);
     }
-  }, [currentUser?.cpf, cpf]);
+  }, [currentUser?.cpf]);
 
   // Update phone when currentUser changes
   useEffect(() => {

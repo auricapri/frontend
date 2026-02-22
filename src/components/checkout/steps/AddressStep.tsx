@@ -382,18 +382,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
               />
             </div>
           )}
-          {currentUser?.cpf ? (
-            <div className="md:col-span-2 space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
-                CPF
-              </label>
-              <div className="w-full p-4 bg-neutral-50 border border-green-200 rounded-2xl font-black">
-                {maskCPF(currentUser.cpf)}
-              </div>
-              <p className="text-xs text-neutral-400 font-medium">Para alterar, acesse seu perfil</p>
-            </div>
-          ) : (
-            <div className="md:col-span-2 space-y-2">
+          <div className="md:col-span-2 space-y-2">
               <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
                 CPF <span className="text-red-500">*</span>
               </label>
@@ -412,7 +401,6 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                   : 'Obrigatório para emissão de nota fiscal'}
               </p>
             </div>
-          )}
         </div>
         <button
           onClick={() => address && setStep(2)}
