@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { X, Loader2, ShoppingBag, Mail, ArrowLeft, Check } from 'lucide-react';
+import { X, Loader2, Mail, ArrowLeft, Check } from 'lucide-react';
 import { UserProfile as UserType } from '../../types';
 import { Locale } from '../../i18n';
 import { supabase } from '../../utils/supabase';
@@ -296,83 +296,35 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                 )}
              </div>
            ) : (
-             <div className="p-8 bg-white h-full space-y-8 overflow-y-auto no-scrollbar" style={{ paddingBottom: keyboardHeight > 0 ? `${keyboardHeight + 32}px` : undefined }}>
+             <div className="px-6 pt-5 pb-6 bg-white h-full overflow-y-auto no-scrollbar" style={{ paddingBottom: keyboardHeight > 0 ? `${keyboardHeight + 24}px` : undefined }}>
 
-                {/* Checkout Context Indicator */}
-                <div className="bg-neutral-50 p-6 rounded-2xl border border-neutral-100 flex items-center gap-4">
-                   <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center flex-none">
-                      <ShoppingBag className="w-4 h-4" />
-                   </div>
-                   <p className="text-[10px] font-black uppercase tracking-widest text-neutral-600 leading-relaxed">
-                      Identifique-se para garantir a segurança da sua transação Auricapri.
-                   </p>
-                </div>
-
-                {/* Social Auth Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                   <button 
-                     onClick={() => handleSocialLogin('google')}
-                     disabled={!!socialLoading}
-                     className="flex-1 flex items-center justify-center gap-4 py-4 border border-neutral-100 rounded-2xl hover:border-neutral-900 transition-all active:scale-95 disabled:opacity-50"
-                   >
-                     {socialLoading === 'google' ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                       <svg className="w-4 h-4" viewBox="0 0 24 24">
-                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                         <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                         <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                       </svg>
-                     )}
-                     <span className="text-[10px] font-black uppercase tracking-widest">Google Login</span>
-                   </button>
-                   
-                   <button 
-                     onClick={() => handleSocialLogin('apple')}
-                     disabled={!!socialLoading}
-                     className="flex-1 flex items-center justify-center gap-4 py-4 border border-neutral-100 rounded-2xl hover:border-neutral-900 transition-all active:scale-95 disabled:opacity-50"
-                   >
-                     {socialLoading === 'apple' ? (
-                       <Loader2 className="w-4 h-4 animate-spin" />
-                     ) : (
-                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                         <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/>
-                       </svg>
-                     )}
-                     <span className="text-[10px] font-black uppercase tracking-widest">Apple Login</span>
-                   </button>
-                </div>
-
-                <div className="flex items-center gap-4 py-2">
-                   <div className="h-[1px] flex-1 bg-neutral-100"></div>
-                   <span className="text-[8px] font-black uppercase text-neutral-300 tracking-[0.4em]">OU</span>
-                   <div className="h-[1px] flex-1 bg-neutral-100"></div>
-                </div>
-
-                <form className="space-y-6" onSubmit={handleAuth}>
+                {/* Form: email/senha primeiro para aparecer imediatamente na tela */}
+                <form className="space-y-4" onSubmit={handleAuth}>
                    {authMode === 'register' && (
                      <>
-                       <div className="space-y-2">
+                       <div className="space-y-1.5">
                           <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">Nome Completo</label>
-                          <input className="w-full px-6 py-4 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none" value={fullName} onChange={e => setFullName(e.target.value)} required />
+                          <input className="w-full px-4 py-3.5 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none" value={fullName} onChange={e => setFullName(e.target.value)} required onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300)} />
                        </div>
-                       <div className="space-y-2">
+                       <div className="space-y-1.5">
                           <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">
                             Código de Indicação <span className="text-neutral-300 normal-case">(opcional)</span>
                           </label>
                           <input
-                            className="w-full px-6 py-4 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none placeholder:text-neutral-300"
+                            className="w-full px-4 py-3.5 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none placeholder:text-neutral-300"
                             value={referralCode}
                             onChange={e => setReferralCode(e.target.value.toUpperCase())}
                             placeholder="Ex: AUR-MARIA-AB12"
+                            onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300)}
                           />
                        </div>
                      </>
                    )}
-                   <div className="space-y-2">
+                   <div className="space-y-1.5">
                      <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">{t('auth.email')}</label>
-                     <input type="email" className="w-full px-6 py-4 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none placeholder:text-neutral-300" value={email} onChange={e => setEmail(e.target.value)} placeholder="voce@exemplo.com" required onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 400)} />
+                     <input type="email" className="w-full px-4 py-3.5 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none placeholder:text-neutral-300" value={email} onChange={e => setEmail(e.target.value)} placeholder="voce@exemplo.com" required onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300)} />
                    </div>
-                   <div className="space-y-2">
+                   <div className="space-y-1.5">
                      <div className="flex items-center justify-between">
                        <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">{t('auth.password')}</label>
                        {authMode === 'login' && (
@@ -385,11 +337,11 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                          </button>
                        )}
                      </div>
-                     <input type="password" className="w-full px-6 py-4 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none" value={password} onChange={e => setPassword(e.target.value)} required onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 400)} />
+                     <input type="password" className="w-full px-4 py-3.5 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none" value={password} onChange={e => setPassword(e.target.value)} required onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300)} />
                    </div>
-                   
+
                    {authMode === 'register' && (
-                     <label className="flex items-start gap-3 cursor-pointer group">
+                     <label className="flex items-start gap-3 cursor-pointer group pt-1">
                        <input
                          type="checkbox"
                          checked={acceptedTerms}
@@ -410,18 +362,58 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                      </label>
                    )}
 
-                   <button type="submit" disabled={isLoading || !!socialLoading || (authMode === 'register' && !acceptedTerms)} className="w-full bg-neutral-900 text-white py-5 rounded-2xl text-xs font-bold uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center justify-center shadow-lg disabled:opacity-50">
+                   <button type="submit" disabled={isLoading || !!socialLoading || (authMode === 'register' && !acceptedTerms)} className="w-full bg-neutral-900 text-white py-4 rounded-2xl text-xs font-bold uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center justify-center shadow-lg disabled:opacity-50">
                      {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>{authMode === 'login' ? t('auth.login') : t('auth.signup')}</span>}
                    </button>
                 </form>
-                
-                <div className="text-center pt-2">
+
+                <div className="text-center py-4">
                   <p className="text-xs text-neutral-400">
                     {authMode === 'login' ? t('auth.noAccount') : t('auth.haveAccount')}
                     <button onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')} className="font-bold text-neutral-900 underline ml-2 hover:text-black">
                       {authMode === 'login' ? t('auth.signup') : t('auth.login')}
                     </button>
                   </p>
+                </div>
+
+                <div className="flex items-center gap-4">
+                   <div className="h-[1px] flex-1 bg-neutral-100"></div>
+                   <span className="text-[8px] font-black uppercase text-neutral-300 tracking-[0.4em]">OU</span>
+                   <div className="h-[1px] flex-1 bg-neutral-100"></div>
+                </div>
+
+                {/* Social Auth Buttons — abaixo do formulário */}
+                <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                   <button
+                     onClick={() => handleSocialLogin('google')}
+                     disabled={!!socialLoading}
+                     className="flex-1 flex items-center justify-center gap-3 py-3.5 border border-neutral-100 rounded-2xl hover:border-neutral-900 transition-all active:scale-95 disabled:opacity-50"
+                   >
+                     {socialLoading === 'google' ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                       <svg className="w-4 h-4" viewBox="0 0 24 24">
+                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                         <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                         <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                       </svg>
+                     )}
+                     <span className="text-[10px] font-black uppercase tracking-widest">Google</span>
+                   </button>
+
+                   <button
+                     onClick={() => handleSocialLogin('apple')}
+                     disabled={!!socialLoading}
+                     className="flex-1 flex items-center justify-center gap-3 py-3.5 border border-neutral-100 rounded-2xl hover:border-neutral-900 transition-all active:scale-95 disabled:opacity-50"
+                   >
+                     {socialLoading === 'apple' ? (
+                       <Loader2 className="w-4 h-4 animate-spin" />
+                     ) : (
+                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                         <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/>
+                       </svg>
+                     )}
+                     <span className="text-[10px] font-black uppercase tracking-widest">Apple</span>
+                   </button>
                 </div>
              </div>
            )}
