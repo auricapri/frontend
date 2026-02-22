@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? 'AIzaSyBYn1ODpb2Qt_5II2Zoe6GwAvQyorfOg_c',
   authDomain: 'auricapri-868b7.firebaseapp.com',
   projectId: 'auricapri-868b7',
   storageBucket: 'auricapri-868b7.firebasestorage.app',
