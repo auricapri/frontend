@@ -91,8 +91,8 @@ const CollectionCard: React.FC<CollectionCardProps> = React.memo(({ collection, 
       <img
         src={collection.image_url}
         alt={getLoc(collection.name)}
-        loading="lazy"
-        decoding="async"
+        loading="eager"
+        decoding="auto"
         className={`w-full h-full object-cover transition-all duration-1000 ${isAvailable ? 'group-hover:scale-105 group-active:scale-105' : 'grayscale'}`}
       />
 
