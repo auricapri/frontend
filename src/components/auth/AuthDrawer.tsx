@@ -3,7 +3,8 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { X, Loader2, Mail, ArrowLeft, Check } from 'lucide-react';
 import { UserProfile as UserType } from '../../types';
 import { Locale } from '../../i18n';
-import { supabase } from '../../utils/supabase';
+import { auth, googleProvider, appleProvider } from '../../utils/firebase';
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile as updateFirebaseProfile } from 'firebase/auth';
 import { LoadingFallback } from '../ui/LoadingFallback';
 
 const UserProfileView = React.lazy(() => import('./UserProfileView'));
@@ -72,26 +73,17 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
 
     try {
       if (authMode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-
-        // Profile will be fetched automatically by useAuth hook
-        // Just close the drawer - the hook will update currentUser
+        await signInWithEmailAndPassword(auth, email, password);
+        // onAuthStateChanged in useAuth handles profile fetch and state update
         onClose();
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: fullName,
-              referred_by_code: referralCode || undefined
-            }
-          }
-        });
-        if (error) throw error;
-        alert('Cadastro realizado! Verifique seu email para confirmar.');
-        setAuthMode('login');
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        if (fullName) {
+          await updateFirebaseProfile(result.user, { displayName: fullName });
+        }
+        // onAuthStateChanged handles profile creation (with referred_by_code via POST /api/auth/profile)
+        alert('Cadastro realizado! Bem-vindo(a)!');
+        onClose();
       }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
@@ -104,43 +96,16 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
   const handleSocialLogin = async (provider: 'google' | 'apple') => {
     setSocialLoading(provider);
     try {
-      // Get redirect URL from environment variable
-      // In production, VITE_FRONTEND_URL must be set
-      // Fallback to window.location.origin only in development
-      const envRedirectUrl = import.meta.env.VITE_FRONTEND_URL;
-      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-
-      // Prefer environment variable, but validate it's not localhost in production
-      let redirectUrl = envRedirectUrl || currentOrigin;
-
-      // Safety check: if we're in production (not localhost) and env var is not set, warn
-      if (!envRedirectUrl && currentOrigin && !currentOrigin.includes('localhost')) {
-        console.warn('VITE_FRONTEND_URL not set in production. Using current origin:', currentOrigin);
-      }
-
-      // Ensure we have a valid URL
-      if (!redirectUrl) {
-        throw new Error('Redirect URL não configurada. Configure VITE_FRONTEND_URL no arquivo .env');
-      }
-
-      // Build OAuth options based on provider
-      const oauthOptions: { redirectTo: string; scopes?: string } = {
-        redirectTo: redirectUrl
-      };
-
-      // Apple requires specific scopes for email and name
-      if (provider === 'apple') {
-        oauthOptions.scopes = 'email name';
-      }
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: oauthOptions
-      });
-      if (error) throw error;
+      const firebaseProvider = provider === 'google' ? googleProvider : appleProvider;
+      await signInWithPopup(auth, firebaseProvider);
+      // onAuthStateChanged in useAuth handles profile creation and state update
+      onClose();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-      alert(`Erro no login social: ${errorMessage}`);
+      // Ignore user-cancelled popup errors
+      if (!errorMessage.includes('popup-closed-by-user') && !errorMessage.includes('cancelled-popup-request')) {
+        alert(`Erro no login social: ${errorMessage}`);
+      }
       setSocialLoading(null);
     }
   };
@@ -154,21 +119,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
 
     setIsLoading(true);
     try {
-      // Get redirect URL from environment variable
-      const envRedirectUrl = import.meta.env.VITE_FRONTEND_URL;
-      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-      const redirectUrl = envRedirectUrl || currentOrigin;
-      
-      if (!redirectUrl) {
-        throw new Error('Redirect URL não configurada. Configure VITE_FRONTEND_URL no arquivo .env');
-      }
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${redirectUrl}/reset-password`,
-      });
-
-      if (error) throw error;
-      
+      await sendPasswordResetEmail(auth, email);
       setPasswordResetSent(true);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
