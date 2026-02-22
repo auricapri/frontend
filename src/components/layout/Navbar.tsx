@@ -389,9 +389,9 @@ const Navbar: React.FC<NavbarProps> = ({
             </div>
             
             {/* Menu Content - Scrollable */}
-            <div className="flex-1 flex flex-col py-12 overflow-hidden">
+            <div className="flex-1 flex flex-col py-6 overflow-hidden">
               {/* Gender Toggle */}
-              <div className="mb-10 pb-8 border-b border-neutral-100 flex-shrink-0">
+              <div className="mb-5 pb-5 border-b border-neutral-100 flex-shrink-0">
                 <p className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4">Comprar por</p>
                 <div className="flex gap-3">
                   <button
@@ -399,7 +399,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       onGenderChange?.(Gender.FEMALE);
                       setIsMenuOpen(false);
                     }}
-                    className={`flex-1 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all ${
+                    className={`flex-1 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest transition-all ${
                       selectedGender === Gender.FEMALE
                         ? 'bg-black text-white'
                         : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200'
@@ -409,7 +409,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   </button>
                   <button
                     disabled
-                    className="flex-1 py-4 rounded-2xl text-sm font-black uppercase tracking-widest transition-all bg-neutral-100 text-neutral-500 opacity-50 cursor-not-allowed"
+                    className="flex-1 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest transition-all bg-neutral-100 text-neutral-500 opacity-50 cursor-not-allowed"
                   >
                     {t('gender.male')} (Em breve)
                   </button>
@@ -447,15 +447,15 @@ const Navbar: React.FC<NavbarProps> = ({
                         isCollectionsOpen ? 'max-h-[5000px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'
                       }`}
                     >
-                      <div className="pl-4 space-y-3 border-l-2 border-neutral-200">
+                      <div className="pl-4 space-y-2 border-l-2 border-neutral-200">
                         {collections.map((col) => (
                           <button
                             key={col.id}
                             onClick={() => handleSelectCollection(col)}
-                            className="w-full flex items-center gap-4 py-3 hover:opacity-70 transition-all text-left group"
+                            className="w-full flex items-center gap-4 py-2.5 hover:opacity-70 transition-all text-left group"
                           >
                             {col.image_url && (
-                              <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-100">
+                              <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-100">
                                 <img
                                   src={col.image_url}
                                   alt={getLoc(col.name)}
@@ -464,7 +464,7 @@ const Navbar: React.FC<NavbarProps> = ({
                                 />
                               </div>
                             )}
-                            <span className="text-lg font-medium text-neutral-700 group-hover:text-neutral-900">
+                            <span className="text-base font-medium text-neutral-700 group-hover:text-neutral-900">
                               {getLoc(col.name)}
                             </span>
                           </button>
@@ -549,25 +549,25 @@ const Navbar: React.FC<NavbarProps> = ({
               )}
 
               {/* Menu Footer */}
-              <div className="pt-10 border-t border-neutral-100 flex-shrink-0">
-                <div className="flex flex-wrap gap-4">
+              <div className="pt-4 border-t border-neutral-100 flex-shrink-0">
+                <div className="flex flex-wrap gap-3">
                   <button
                     onClick={() => {
                       setIsMenuOpen(false);
                       onOpenCoupons();
                     }}
-                    className="flex-1 min-w-[120px] p-5 bg-neutral-50 rounded-3xl flex items-center justify-between hover:opacity-95 transition-all active:scale-95"
+                    className="flex-1 min-w-[120px] p-3 bg-neutral-50 rounded-2xl flex items-center justify-between hover:opacity-95 transition-all active:scale-95"
                   >
-                    <div className="flex items-center gap-4">
-                      <Ticket className="w-6 h-6" strokeWidth={1} />
+                    <div className="flex items-center gap-3">
+                      <Ticket className="w-5 h-5" strokeWidth={1} />
                       <span className="text-[9px] font-black uppercase tracking-[0.3em]">{t('nav.coupons')}</span>
                     </div>
                     <ArrowLeft className="w-4 h-4 rotate-180" />
                   </button>
-                  
+
                   <button
                     onClick={onToggleMode}
-                    className="flex-1 min-w-[120px] p-5 border-2 border-neutral-100 rounded-3xl flex items-center justify-between hover:opacity-95 transition-all active:scale-95"
+                    className="flex-1 min-w-[120px] p-3 border-2 border-neutral-100 rounded-2xl flex items-center justify-between hover:opacity-95 transition-all active:scale-95"
                   >
                     <div className="flex flex-col items-start gap-1">
                       <span className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-400">Ambiente</span>
