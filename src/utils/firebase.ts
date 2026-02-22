@@ -3,10 +3,10 @@ import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: 'auricapri-fd9f9.firebaseapp.com',
-  projectId: 'auricapri-fd9f9',
-  storageBucket: 'auricapri-fd9f9.firebasestorage.app',
-  messagingSenderId: '208539222676',
+  authDomain: 'auricapri-868b7.firebaseapp.com',
+  projectId: 'auricapri-868b7',
+  storageBucket: 'auricapri-868b7.firebasestorage.app',
+  messagingSenderId: '317188491969',
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
