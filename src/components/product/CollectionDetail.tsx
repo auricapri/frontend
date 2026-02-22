@@ -2,7 +2,6 @@
 import React, { useMemo } from 'react';
 import { Collection, Product, UserMode, Category } from '../../types';
 import { Locale } from '../../i18n';
-import { ArrowLeft } from 'lucide-react';
 import { filterProductsForMode } from '../../utils/product';
 import { ProductCard } from './ProductCard';
 import { CountdownBadge, useCollectionAvailability } from '../ui/CountdownBadge';
@@ -115,20 +114,12 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
         </div>
 
-        {/* Back Button Overlay */}
-        <div className="absolute top-24 left-6 md:left-12 z-20">
-           <button onClick={onBack} className="flex items-center gap-3 text-white/80 hover:text-white transition-colors group">
-              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Voltar</span>
-           </button>
-        </div>
-
         <div className="relative z-10 h-full flex flex-col justify-end p-8 md:p-20 text-white animate-in fade-in slide-in-from-bottom-10 duration-1000">
           <span className="text-[10px] font-black uppercase tracking-[0.6em] mb-4 text-white/60">Coleção Exclusiva</span>
           <h1 className="text-5xl md:text-8xl font-light tracking-tighter uppercase leading-[0.85] mb-8">
             {getLoc(collection.name)}
           </h1>
-          {collection.description && (
+          {collection.description && getLoc(collection.description) !== getLoc(collection.name) && (
             <p className="max-w-2xl text-sm md:text-base font-medium text-white/80 leading-relaxed">
               {getLoc(collection.description)}
             </p>
@@ -137,8 +128,8 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
       </div>
 
       {/* Products Grid */}
-      <div className="px-6 md:px-12 py-24 md:py-32">
-        <div className="flex items-end justify-between mb-16 border-b border-neutral-100 pb-8">
+      <div className="px-6 md:px-12 py-10 md:py-20">
+        <div className="flex items-end justify-between mb-8 border-b border-neutral-100 pb-6">
            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">
              {collectionProducts.length} Peças Curadas
            </span>
