@@ -443,8 +443,8 @@ const Navbar: React.FC<NavbarProps> = ({
 
                     {/* Collections List - Smooth height animation */}
                     <div
-                      className={`overflow-visible transition-all duration-500 ease-out ${
-                        isCollectionsOpen ? 'max-h-[5000px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'
+                      className={`overflow-hidden transition-all duration-500 ease-out ${
+                        isCollectionsOpen ? 'max-h-[5000px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0 pointer-events-none'
                       }`}
                     >
                       <div className="pl-4 space-y-2 border-l-2 border-neutral-200">
