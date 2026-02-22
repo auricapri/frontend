@@ -182,7 +182,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2">
                   Cor
                 </label>
-                <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1">
+                <div className="flex flex-wrap gap-2">
                   {colors.map((color) => (
                     <button
                       key={color.hex}
