@@ -29,7 +29,7 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
   if (products.length === 0) return null;
 
   return (
-    <div className="w-full bg-white border-t border-neutral-100 pt-16 md:pt-24 pb-20 md:pb-32">
+    <div className="w-full bg-white border-t border-neutral-100 pt-16 md:pt-24 pb-32 md:pb-32">
       <div className="w-full">
         <div className="mb-8 md:mb-12 px-6 md:px-12">
           <h2 className="text-2xl md:text-3xl font-light tracking-tight uppercase mb-2">{t('product.related')}</h2>

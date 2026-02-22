@@ -87,8 +87,8 @@ const Navbar: React.FC<NavbarProps> = ({
 
   // Check if test banner is visible
   const showTestBanner = import.meta.env.VITE_SHOW_TEST_BANNER === 'true';
-  // Benefits bar hidden on mobile (md:hidden), so navbar starts at top-0 on mobile
-  const topOffset = showTestBanner ? 'top-12 md:top-20' : 'top-0 md:top-8';
+  // Benefits bar is always h-8 (32px = top-8), test banner adds h-12 (48px)
+  const topOffset = showTestBanner ? 'top-20' : 'top-8';
 
   const handleNav = (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals', target?: string) => {
     onNavigate(view, target);
