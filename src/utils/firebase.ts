@@ -7,7 +7,7 @@ const firebaseConfig = {
   projectId: 'auricapri-868b7',
   storageBucket: 'auricapri-868b7.firebasestorage.app',
   messagingSenderId: '317188491969',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID ?? '1:317188491969:web:71f625527265eea7c32240',
 };
 
 export const firebaseApp = initializeApp(firebaseConfig);
