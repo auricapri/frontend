@@ -173,7 +173,7 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
           className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : 'auto'}
-          decoding={priority ? 'sync' : 'async'}
+          decoding={priority ? 'sync' : 'auto'}
           width={400}
           height={aspectRatio === 'portrait' ? 533 : 400}
           onLoad={() => setImgLoaded(true)}
