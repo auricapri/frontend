@@ -37,7 +37,7 @@ export function BenefitsBar({ banners, locale = 'pt' }: BenefitsBarProps) {
   }, [banners, locale]);
 
   return (
-    <div className="hidden md:flex fixed top-0 left-0 w-full h-8 bg-black z-[51] overflow-hidden items-center">
+    <div className="fixed top-0 left-0 w-full h-8 bg-black z-[51] overflow-hidden flex items-center">
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
