@@ -447,15 +447,15 @@ const Navbar: React.FC<NavbarProps> = ({
                         isCollectionsOpen ? 'max-h-[5000px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'
                       }`}
                     >
-                      <div className="pl-4 space-y-2 border-l-2 border-neutral-200">
+                      <div className="pl-4 space-y-3 border-l-2 border-neutral-200">
                         {collections.map((col) => (
                           <button
                             key={col.id}
                             onClick={() => handleSelectCollection(col)}
-                            className="w-full flex items-center gap-4 py-2.5 hover:opacity-70 transition-all text-left group"
+                            className="w-full flex items-center gap-4 py-3 hover:opacity-70 transition-all text-left group"
                           >
                             {col.image_url && (
-                              <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-100">
+                              <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-neutral-100">
                                 <img
                                   src={col.image_url}
                                   alt={getLoc(col.name)}
@@ -464,7 +464,7 @@ const Navbar: React.FC<NavbarProps> = ({
                                 />
                               </div>
                             )}
-                            <span className="text-base font-medium text-neutral-700 group-hover:text-neutral-900">
+                            <span className="text-lg font-medium text-neutral-700 group-hover:text-neutral-900">
                               {getLoc(col.name)}
                             </span>
                           </button>
