@@ -27,17 +27,9 @@ class ApiClient {
   }
 
   private async getAuthToken(): Promise<string | null> {
-    // Get token from Supabase session (for now, we still use Supabase Auth)
-    // In the future, this could be stored in localStorage or context
     try {
-      const { supabase } = await import('../utils/supabase');
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error) {
-        return null;
-      }
-
-      return session?.access_token || null;
+      const { auth } = await import('../utils/firebase');
+      return (await auth.currentUser?.getIdToken()) ?? null;
     } catch (_) {
       return null;
     }
