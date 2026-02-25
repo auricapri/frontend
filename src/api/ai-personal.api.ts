@@ -195,9 +195,12 @@ export class AiPersonalApi {
   }
 
   private async getAuthToken(): Promise<string | null> {
-    const { supabase } = await import('../utils/supabase');
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || null;
+    const { auth } = await import('../utils/firebase');
+    try {
+      return await auth.currentUser?.getIdToken() ?? null;
+    } catch {
+      return null;
+    }
   }
 
   /**

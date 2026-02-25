@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Star, X, Upload, Loader2 } from 'lucide-react';
 import { ProductReview, ProductReviewMedia, OrderItemForReview } from '../../types';
 import { ProductReviewsApi } from '../../api/product-reviews.api';
-import { supabase } from '../../utils/supabase';
+import { auth } from '../../utils/firebase';
 import { getOptimizedImageUrl } from '../../utils/image';
 
 interface ProductReviewFormProps {
@@ -100,8 +100,7 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
     const api = new ProductReviewsApi();
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
+      const userId = auth.currentUser?.uid;
 
       let review: ProductReview;
 
