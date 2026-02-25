@@ -18,6 +18,7 @@ import { ChatProduct } from '../api/ai-chat.api';
 import { Gender } from '../constants/enums';
 import { UserMode, type Category, type Collection, type Coupon, type Order, type Product, type SizeGuide, type StoreConfig, type UserProfile } from '../types';
 import { SEOHead, organizationSchema, websiteSchema, createProductSchema, createCollectionSchema, createBreadcrumbSchema } from '../components/seo';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 
 // Lazy load páginas e componentes pesados para melhor performance
 const ProductGrid = React.lazy(() => import('../components/product/ProductGrid'));
@@ -243,6 +244,7 @@ export function AppLayout(props: {
         onGenderChange={setSelectedGender}
       />
 
+      <ErrorBoundary>
       <main
         id="main-content"
         ref={app.mainRef}
@@ -519,6 +521,7 @@ export function AppLayout(props: {
           </>
         )}
       </main>
+      </ErrorBoundary>
 
       <Toast message={app.toast.message} isVisible={app.toast.visible} onClose={app.closeToast} type={app.toast.type} />
 
