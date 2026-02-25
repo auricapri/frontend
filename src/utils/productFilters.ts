@@ -291,9 +291,6 @@ export function searchProducts(
     if (getLoc(product.name).includes(normalizedQuery)) return true;
     // Search in description
     if (getLoc(product.description).includes(normalizedQuery)) return true;
-    // Search in category
-    if (product.category && getLoc(product.category.name).includes(normalizedQuery)) return true;
-
     return false;
   });
 }

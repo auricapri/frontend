@@ -43,14 +43,18 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   // Product filters hook
   const {
     selectedSizes,
-    priceRange: { min: priceMin, max: priceMax },
-    selectedSort,
+    priceMin,
+    priceMax,
+    sortBy: selectedSort,
+    availableSizes,
+    sizeCounts,
+    priceBounds,
     toggleSize,
     setPriceRange,
-    setSort,
-    resetFilters,
+    setSortBy,
+    clearFilters: resetFilters,
     hasActiveFilters,
-  } = useProductFilters();
+  } = useProductFilters({ products, activeCategory: '', userMode });
 
   // Filter products for current user mode
   const modeFilteredProducts = useMemo(
@@ -102,10 +106,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         const priceB = calculatePrice(b.variants?.[0] || {} as any, userMode);
         return priceB - priceA;
       });
-    } else if (selectedSort === 'name-asc') {
-      result = [...result].sort((a, b) =>
-        getLoc(a.name).localeCompare(getLoc(b.name))
-      );
     }
 
     return result;
@@ -204,16 +204,16 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       {isFiltersOpen && (
         <div className="flex-shrink-0 border-b border-neutral-200 px-6 py-4 bg-neutral-50">
           <FilterContent
+            availableSizes={availableSizes}
             selectedSizes={selectedSizes}
-            priceRange={{ min: priceMin, max: priceMax }}
-            selectedSort={selectedSort}
-            onToggleSize={toggleSize}
-            onPriceChange={setPriceRange}
-            onSortChange={setSort}
-            onClear={resetFilters}
-            onApply={() => {}}
-            hasActiveFilters={hasActiveFilters}
-            productCount={filteredProducts.length}
+            sizeCounts={sizeCounts}
+            priceBounds={priceBounds}
+            priceMin={priceMin}
+            priceMax={priceMax}
+            sortBy={selectedSort}
+            toggleSize={toggleSize}
+            setPriceRange={setPriceRange}
+            setSortBy={setSortBy}
             locale={locale}
             t={t}
           />

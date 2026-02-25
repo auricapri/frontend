@@ -20,7 +20,7 @@ test('dispara pixel no page_view', async ({ page }) => {
   await page.goto('/');
 
   await expect.poll(() => pixelUrl, { timeout: 5000 }).not.toBeNull();
-  const url = new URL(pixelUrl as string);
+  const url = new URL(pixelUrl as unknown as string);
   expect(url.searchParams.get('event')).toBe('page_view');
 });
 

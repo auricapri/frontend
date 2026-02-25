@@ -55,11 +55,11 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
       <link rel="canonical" href={canonical} />
 
       {/* Hreflang tags for international SEO */}
-      <link rel="alternate" hreflang="pt" href={canonical} />
-      <link rel="alternate" hreflang="en" href={canonical} />
-      <link rel="alternate" hreflang="es" href={canonical} />
-      <link rel="alternate" hreflang="fr" href={canonical} />
-      <link rel="alternate" hreflang="x-default" href={canonical} />
+      <link rel="alternate" hrefLang="pt" href={canonical} />
+      <link rel="alternate" hrefLang="en" href={canonical} />
+      <link rel="alternate" hrefLang="es" href={canonical} />
+      <link rel="alternate" hrefLang="fr" href={canonical} />
+      <link rel="alternate" hrefLang="x-default" href={canonical} />
 
       {/* Schema Markup - supports single schema or array of schemas */}
       {schema && !Array.isArray(schema) && (

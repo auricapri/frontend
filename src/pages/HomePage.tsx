@@ -1,7 +1,7 @@
 import React from 'react';
 import { MessageCircle } from 'lucide-react';
 import { Hero } from '../components/shared';
-import { ProductGrid } from '../components/product';
+import ProductGrid from '../components/product/ProductGrid';
 import { Footer } from '../components/layout';
 import { SEOHead, organizationSchema, websiteSchema, clothingStoreSchema } from '../components/seo';
 import { Product, Category, Collection, Banner, Coupon, UserMode } from '../types';

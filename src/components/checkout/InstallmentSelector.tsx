@@ -2,6 +2,7 @@ import React from 'react';
 import { Check, ChevronDown, Loader2 } from 'lucide-react';
 import { formatCurrency } from '../../utils/currency';
 import type { InstallmentOption } from '../../types/payment.types';
+import type { Locale } from '../../i18n';
 
 interface InstallmentSelectorProps {
   options: InstallmentOption[];
@@ -9,7 +10,7 @@ interface InstallmentSelectorProps {
   onSelect: (installments: number, code: string) => void;
   baseAmount: number;
   isLoading?: boolean;
-  locale?: string;
+  locale?: Locale;
   compact?: boolean;
 }
 

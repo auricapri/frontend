@@ -102,7 +102,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({
       onAddToCart={onAddToCart}
       onBack={onBack}
       isWishlisted={isWishlisted}
-      onToggleWishlist={onToggleWishlist}
+      onToggleWishlist={() => onToggleWishlist(product.id)}
       t={t}
       locale={locale}
       currentUser={currentUser}

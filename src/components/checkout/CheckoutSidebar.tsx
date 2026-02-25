@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertCircle, Info, Loader2, ShieldCheck, ShoppingBag, Tag, Ticket, X } from 'lucide-react';
 import { PaymentMethod } from '../../constants/enums';
+import { UserMode } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { OptimizedImage } from '../ui';
 import { ShippingStep } from './steps/ShippingStep';
@@ -177,7 +178,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
             </div>
           )}
 
-          {userMode === 'atacado' ? (
+          {userMode === UserMode.ATACADO ? (
             <ShippingStep checkout={checkout} />
           ) : (
             <ShippingStep checkout={checkout} />

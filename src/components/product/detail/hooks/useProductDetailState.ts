@@ -32,9 +32,10 @@ export function useProductDetailState(
   }, [product.variants, userMode]);
 
   const colors = useMemo(() => {
-    const unique = new Map<string, unknown>();
+    const unique = new Map<string, typeof variants[0]['color_name']>();
     variants.forEach(v => {
-      if (!unique.has(v.color_hex)) unique.set(v.color_hex, v.color_name);
+      const hex = v.color_hex || '';
+      if (!unique.has(hex)) unique.set(hex, v.color_name);
     });
     return Array.from(unique.entries()).map(([hex, name]) => ({ hex, name }));
   }, [variants]);
@@ -80,7 +81,7 @@ export function useProductDetailState(
 
   useEffect(() => {
     if (selectedColorHex && sizes.length > 0 && !selectedSize) {
-      setSelectedSize(sizes[0]);
+      setSelectedSize(sizes[0] || '');
     }
   }, [selectedColorHex, sizes, selectedSize]);
 

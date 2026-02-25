@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Supplier, SupplierReview } from '../types';
+import { Supplier, SupplierReview } from '../types/suppliers';
 
 export class SuppliersApi {
   async getAll(activeOnly?: boolean): Promise<Supplier[]> {

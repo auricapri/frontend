@@ -307,7 +307,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               reviewsCount={reviews.length}
               rawPrice={rawPrice}
               finalPrice={finalPrice}
-              activeCoupon={activeCoupon}
+              activeCoupon={activeCoupon ?? null}
               stockQuantity={activeVariant?.stock_quantity}
             />
 

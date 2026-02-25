@@ -207,13 +207,13 @@ export class TaxCalculationService {
       }
 
       this.icmsRatesCache.clear();
-      data?.forEach(row => {
+      data?.forEach((row: Record<string, unknown>) => {
         const rate: ICMSRate = {
-          originState: row.origin_state,
-          destinationState: row.destination_state,
+          originState: row.origin_state as string,
+          destinationState: row.destination_state as string,
           rateInternal: Number(row.rate_internal),
           rateInterstate: Number(row.rate_interstate),
-          difalApplicable: row.difal_applicable
+          difalApplicable: Boolean(row.difal_applicable),
         };
         this.icmsRatesCache.set(`${rate.originState}-${rate.destinationState}`, rate);
       });

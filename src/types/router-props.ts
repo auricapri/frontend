@@ -1,5 +1,6 @@
 import { Product, Category, Collection, Banner, Coupon, UserMode, UserProfile, SizeGuide, CartItem, InternalLogisticsInfo, StoreConfig, Order, AddressData } from './index';
 import { Locale } from '../i18n';
+import { PaymentMethod } from '../constants/enums';
 
 export interface HomePageProps {
   products: Product[];
@@ -52,14 +53,16 @@ export interface CheckoutPageProps {
   items: CartItem[];
   currentUser: UserProfile | null;
   storeConfig?: StoreConfig;
+  userMode: UserMode;
   onBack: () => void;
   onComplete: (
     address: AddressData,
     logistics: InternalLogisticsInfo,
-    paymentMethod: 'credit_card' | 'pix',
+    paymentMethod: PaymentMethod,
     finalAmount: number,
     saveCard: boolean,
-    cardToken?: string
+    cardToken?: string,
+    phone?: string
   ) => void;
   t: (key: string) => string;
   locale: Locale;

@@ -34,8 +34,11 @@ export const useLoyalty = (currentUser: UserProfile | null, _storeConfig: StoreC
     // Clear pending reward via API
     try {
       const updatedLoyalty = {
-        ...currentUser.loyalty,
-        pending_reward_coupon: null
+        current_xp: currentUser.loyalty?.current_xp ?? 0,
+        current_level: currentUser.loyalty?.current_level ?? 0,
+        cashback_balance: currentUser.loyalty?.cashback_balance ?? 0,
+        last_seen_level: currentUser.loyalty?.last_seen_level,
+        pending_reward_coupon: null,
       };
       await usersApi.updateLoyalty(updatedLoyalty);
     } catch (err) {

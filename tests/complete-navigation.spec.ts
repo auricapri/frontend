@@ -248,7 +248,7 @@ async function scrollPageProgressively(page: any, routeName: string, screenshots
         currentScroll = totalHeight;
       }
       
-      await page.evaluate((scroll) => {
+      await page.evaluate((scroll: number) => {
         window.scrollTo({
           top: scroll,
           behavior: 'smooth'

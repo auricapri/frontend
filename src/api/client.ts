@@ -41,8 +41,8 @@ class ApiClient {
   ): Promise<T> {
     const token = await this.getAuthToken();
     
-    const headers: HeadersInit = {
-      ...options.headers,
+    const headers: Record<string, string> = {
+      ...(options.headers as Record<string, string>),
     };
 
     if (!headers['Content-Type'] && !(options.body instanceof FormData)) {
