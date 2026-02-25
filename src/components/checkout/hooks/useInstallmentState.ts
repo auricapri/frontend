@@ -36,9 +36,9 @@ export function useInstallmentState(params: UseInstallmentStateParams): UseInsta
   // Auto-split amounts when splitCards is toggled
   useEffect(() => {
     if (splitCards && finalTotal > 0) {
-      const half = Math.round((finalTotal / 2) * 100) / 100;
+      const half = parseFloat((finalTotal / 2).toFixed(2));
       setCard1Amount(half);
-      setCard2Amount(Math.round((finalTotal - half) * 100) / 100);
+      setCard2Amount(parseFloat((finalTotal - half).toFixed(2)));
     } else {
       setCard1Amount(finalTotal);
       setCard2Amount(0);
@@ -130,19 +130,19 @@ export function useInstallmentState(params: UseInstallmentStateParams): UseInsta
 
   // Handle card 1 amount change
   const handleCard1AmountChange = useCallback((amount: number) => {
-    setCard1Amount(Math.round(amount * 100) / 100);
+    setCard1Amount(parseFloat(amount.toFixed(2)));
   }, []);
 
   // Handle card 2 amount change
   const handleCard2AmountChange = useCallback((amount: number) => {
-    setCard2Amount(Math.round(amount * 100) / 100);
+    setCard2Amount(parseFloat(amount.toFixed(2)));
   }, []);
 
   // Validation for split cards
   const splitCardsValid = useMemo(() => {
     if (!splitCards) return true;
-    const difference = Math.abs((card1Amount + card2Amount) - finalTotal);
-    return difference < 0.01; // 1 centavo tolerance
+    const difference = Math.abs(parseFloat((card1Amount + card2Amount - finalTotal).toFixed(2)));
+    return difference < 0.02; // 2 centavos de tolerância
   }, [splitCards, card1Amount, card2Amount, finalTotal]);
 
   // Selected installment option
