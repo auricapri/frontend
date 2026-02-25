@@ -24,7 +24,7 @@ export function ImageGallery(props: {
   getLoc: (obj: any) => string;
   setZoomImgIndex: (idx: number) => void;
   setIsZoomOpen: (open: boolean) => void;
-  mobileGalleryRef: React.RefObject<HTMLDivElement>;
+  mobileGalleryRef: React.RefObject<HTMLDivElement | null>;
   handleMobileScroll: React.UIEventHandler<HTMLDivElement>;
   mobileActiveIdx: number;
   showFaceSwap?: boolean;

@@ -108,12 +108,12 @@ export function DeliverySupplierDetails(props: {
             )}
 
             {/* Phone button */}
-            {group.supplier?.phone && (
+            {group.supplier?.phones?.[0] && (
               <a
-                href={`tel:${normalizePhoneToTel(group.supplier.phone)}`}
+                href={`tel:${normalizePhoneToTel(group.supplier.phones?.[0] ?? '')}`}
                 className="p-2 bg-neutral-100 text-neutral-700 rounded-lg hover:bg-neutral-200 active:scale-[0.97] transition-all"
                 aria-label="Ligar"
-                title={group.supplier.phone}
+                title={group.supplier.phones?.[0] ?? ''}
               >
                 <Phone className="w-4 h-4" />
               </a>

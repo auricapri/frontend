@@ -21,7 +21,8 @@ import {
   GarmentTransferApi,
   GalleryItem,
 } from '../../api/garment-transfer.api';
-import { createGetLoc, Locale } from '../../i18n';
+import { Locale } from '../../i18n';
+import { createGetLoc } from '../../utils/localization';
 
 const api = new GarmentTransferApi();
 const CONSENT_KEY = 'garment_tryon_consent';
@@ -130,7 +131,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
   const [showConsent, setShowConsent] = useState(false);
   const [showZoom, setShowZoom] = useState(false);
   const [pendingInputRef, setPendingInputRef] =
-    useState<React.RefObject<HTMLInputElement> | null>(null);
+    useState<React.RefObject<HTMLInputElement | null> | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -162,7 +163,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
 
   const hasConsent = () => localStorage.getItem(CONSENT_KEY) === 'true';
 
-  const handleUploadClick = (inputRef: React.RefObject<HTMLInputElement>) => {
+  const handleUploadClick = (inputRef: React.RefObject<HTMLInputElement | null>) => {
     if (!hasConsent()) {
       setPendingInputRef(inputRef);
       setShowConsent(true);

@@ -3,10 +3,11 @@
 
 import React from 'react';
 import { Ruler, Shirt } from 'lucide-react';
+import type { LocalizedText } from '../../../types';
 
 interface ProductVariantsProps {
   getLoc: (obj: any) => string;
-  colors: Array<{ hex: string; name: string; image?: string }>;
+  colors: Array<{ hex: string; name: LocalizedText | string; image?: string }>;
   selectedColorHex: string;
   onSelectColor: (hex: string) => void;
   activeColorName?: any;

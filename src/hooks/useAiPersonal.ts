@@ -54,7 +54,7 @@ export interface UseAiPersonalReturn {
 
 export function useAiPersonal(options: UseAiPersonalOptions = {}): UseAiPersonalReturn {
   const { onComplete, onChunk, onImage, onStatus, onError } = options;
-  const { user } = useAuth();
+  const { currentUser: user } = useAuth();
 
   const [text, setText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);

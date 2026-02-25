@@ -44,10 +44,7 @@ export function useTabData<T>({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const lastFetchRef = useRef<number | null>(() => {
-    const cached = globalCache.get(key);
-    return cached ? cached.timestamp : null;
-  });
+  const lastFetchRef = useRef<number | null>(globalCache.get(key)?.timestamp ?? null);
 
   const fetchData = useCallback(async (force = false) => {
     const now = Date.now();

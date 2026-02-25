@@ -40,7 +40,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
   const [showConsent, setShowConsent] = useState(false);
   const [showZoom, setShowZoom] = useState(false);
   const [pendingInputRef, setPendingInputRef] =
-    useState<React.RefObject<HTMLInputElement> | null>(null);
+    useState<React.RefObject<HTMLInputElement | null> | null>(null);
 
   // Feedback states
   const [showFeedback, setShowFeedback] = useState(false);
@@ -65,7 +65,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
 
   const hasConsent = () => localStorage.getItem(CONSENT_KEY) === 'true';
 
-  const handleUploadClick = (inputRef: React.RefObject<HTMLInputElement>) => {
+  const handleUploadClick = (inputRef: React.RefObject<HTMLInputElement | null>) => {
     if (!hasConsent()) {
       setPendingInputRef(inputRef);
       setShowConsent(true);

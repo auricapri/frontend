@@ -2,6 +2,7 @@ import { logger } from '../utils/logger';
 import ReactGA from 'react-ga4';
 
 declare function fbq(...args: unknown[]): void;
+declare function gtag(...args: unknown[]): void;
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 const PIXEL_URL = `${API_BASE_URL}/tracking/pixel.gif`;

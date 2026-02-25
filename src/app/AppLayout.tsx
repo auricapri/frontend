@@ -102,6 +102,7 @@ export function AppLayout(props: {
 
     signOut: () => Promise<any>;
 
+    searchSlug: string;
     onNavigate: (view: any, targetSection?: string, product?: Product) => void;
   };
 }) {
@@ -474,7 +475,7 @@ export function AppLayout(props: {
               onBack={() => app.onNavigate('home')}
               onChangeLocale={app.setLocale}
               storeConfig={app.storeConfig}
-              onOpenLegal={app.setLegalView}
+              onOpenLegal={(view) => view && app.onNavigate(view)}
               onNavigate={app.onNavigate}
             />
           </Suspense>

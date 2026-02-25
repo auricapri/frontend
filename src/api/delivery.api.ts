@@ -1,5 +1,6 @@
 import { apiClient } from './client';
-import { type Order, type Supplier } from '../types';
+import { type Order } from '../types';
+import { type Supplier } from '../types/suppliers';
 
 export interface DeliveryOrderItem {
   order_id: string;

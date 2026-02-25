@@ -82,7 +82,6 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
         user_name: user.full_name,
         rating,
         comment,
-        is_verified_purchase: true,
       });
       setIsWriting(false);
       setComment('');

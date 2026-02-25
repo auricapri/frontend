@@ -198,11 +198,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                     >
                       <div
                         className="w-full h-full rounded-full border border-neutral-200"
-                        style={
-                          color.image
-                            ? { backgroundImage: `url(${color.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                            : { backgroundColor: color.hex }
-                        }
+                        style={{ backgroundColor: color.hex }}
                       />
                     </button>
                   ))}

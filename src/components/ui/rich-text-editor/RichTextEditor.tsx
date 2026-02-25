@@ -65,7 +65,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           : currentContent;
 
       if (normalizedValue !== normalizedCurrent) {
-        editor.commands.setContent(normalizedValue, false);
+        editor.commands.setContent(normalizedValue, { emitUpdate: false });
       }
     }
   }, [value, editor]);

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { CollectionDetail } from '../components/product';
+import CollectionDetail from '../components/product/CollectionDetail';
 import { Collection, Product, Category, UserMode } from '../types';
 import { Locale } from '../i18n';
 import { SEOHead, createCollectionSchema, createBreadcrumbSchema } from '../components/seo';

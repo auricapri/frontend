@@ -1,5 +1,6 @@
 import { apiClient } from './client';
-import { DreamBoard, DreamCard, DreamComment, BoardColumn, Product, Collection, DiagramData } from '../types';
+import { Product, Collection } from '../types';
+import { DreamBoard, DreamCard, DreamComment, BoardColumn, DiagramData } from '../types/dream';
 
 export class DreamApi {
   async getAllBoards(): Promise<DreamBoard[]> {

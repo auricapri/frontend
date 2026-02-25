@@ -3,6 +3,7 @@ import { CreditCard, ArrowLeftRight, AlertCircle, GripVertical } from 'lucide-re
 import { formatCurrency } from '../../utils/currency';
 import { InstallmentSelector } from './InstallmentSelector';
 import type { InstallmentOption } from '../../types/payment.types';
+import type { Locale } from '../../i18n';
 
 interface SplitCardAmountProps {
   totalAmount: number;
@@ -17,7 +18,7 @@ interface SplitCardAmountProps {
   card2Options: InstallmentOption[];
   onCard2InstallmentsChange: (installments: number, code: string) => void;
   isLoading?: boolean;
-  locale?: string;
+  locale?: Locale;
 }
 
 export function SplitCardAmount({

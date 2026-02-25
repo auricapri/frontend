@@ -182,8 +182,8 @@ export class AppError extends Error {
       code: Object.values(ErrorCode).includes(code) ? code : ErrorCode.UNKNOWN_ERROR,
       message: errorData.message || 'Unknown error',
       userMessage: errorData.userMessage,
-      context: errorData.context,
-      validationErrors: errorData.validationErrors,
+      context: (errorData as { context?: Record<string, unknown> }).context,
+      validationErrors: (errorData as { validationErrors?: ValidationError[] }).validationErrors,
       cause: response,
     });
   }

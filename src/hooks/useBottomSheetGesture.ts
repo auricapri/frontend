@@ -13,8 +13,8 @@ interface UseBottomSheetGestureReturn {
   state: BottomSheetState;
   translateY: number;
   isDragging: boolean;
-  handleRef: React.RefObject<HTMLDivElement>;
-  contentRef: React.RefObject<HTMLDivElement>;
+  handleRef: React.RefObject<HTMLDivElement | null>;
+  contentRef: React.RefObject<HTMLDivElement | null>;
   handleTouchStart: (e: React.TouchEvent) => void;
   handleTouchMove: (e: React.TouchEvent) => void;
   handleTouchEnd: () => void;
