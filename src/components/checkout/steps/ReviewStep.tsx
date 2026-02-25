@@ -14,34 +14,32 @@ export function ReviewStep({ checkout }: { checkout: CheckoutState }) {
     boletoError
   } = checkout;
 
-  // Local flag to prevent double-submission on credit card path.
-  // For PIX/Boleto, paymentProcessing (from usePixBoletoState) already handles this.
-  // For credit card, handleCompleteOrder() is synchronous and triggers isProcessingOrder
-  // in the parent app layer — by the time the UI re-renders the button is already clickable again.
-  const [creditCardSubmitted, setCreditCardSubmitted] = useState(false);
+  // isSubmitting is set synchronously on the very first click, before any async work,
+  // closing the race window that existed with paymentProcessing (which was only set
+  // after the async call started). This prevents double-submission on all payment paths.
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConfirmOrder = async () => {
-    // Prevent any re-entrancy regardless of payment method
-    if (paymentProcessing || creditCardSubmitted) return;
+    // Synchronous guard — blocks any second click before React re-renders
+    if (isSubmitting || paymentProcessing) return;
+    setIsSubmitting(true);
 
-    if (paymentMethod === PaymentMethod.PIX || paymentMethod === PaymentMethod.BOLETO) {
-      try {
+    try {
+      if (paymentMethod === PaymentMethod.PIX || paymentMethod === PaymentMethod.BOLETO) {
         await completeOrderWithPayment();
         // The function will redirect to step 2 to show QR code / boleto
-      } catch (error) {
-        console.error('Error completing order:', error);
-        // Error is already set in the state by completeOrderWithPayment
+      } else {
+        // Credit card: handleCompleteOrder triggers isProcessingOrder overlay in the
+        // parent app layer. isSubmitting stays true for the lifetime of this handler.
+        payment.handleCompleteOrder();
       }
-    } else {
-      // Credit card: lock the button immediately to prevent double-click.
-      // The parent app layer (AppLayout) shows isProcessingOrder overlay,
-      // but there is a render gap between click and that overlay appearing.
-      setCreditCardSubmitted(true);
-      payment.handleCompleteOrder();
+    } catch (error) {
+      console.error('Error completing order:', error);
+      // Error is already set in the state by completeOrderWithPayment;
+      // release the lock so the user can retry.
+      setIsSubmitting(false);
     }
   };
-
-  const isSubmitting = paymentProcessing || creditCardSubmitted;
   const error = pixError || boletoError;
 
   return (
