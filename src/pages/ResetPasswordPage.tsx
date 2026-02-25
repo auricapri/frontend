@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Lock, Eye, EyeOff, Check, Loader2, ArrowLeft } from 'lucide-react';
-import { supabase } from '../utils/supabase';
 import { Locale } from '../i18n';
+import { auth } from '../utils/firebase';
+import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
 
 interface ResetPasswordPageProps {
   locale: Locale;
-  onNavigate: (view: 'home' | 'product' | 'collection' | 'admin' | 'checkout' | 'receipt' | 'about', target?: string) => void;
+  onNavigate: (view: 'home' | 'product' | 'collection' | 'checkout' | 'receipt' | 'about', target?: string) => void;
   t: (key: string) => any;
 }
 
@@ -19,36 +20,20 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _l
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isValidatingToken, setIsValidatingToken] = useState(true);
+  const [oobCode, setOobCode] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if we have a valid session/token from the hash
-    const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          // Try to get session from URL hash
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          const type = hashParams.get('type');
-          
-          if (type === 'recovery' && accessToken) {
-            // Session will be set automatically by Supabase
-            // Wait a bit for it to process
-            setTimeout(() => setIsValidatingToken(false), 1000);
-          } else {
-            setError('Link de recuperação inválido ou expirado.');
-            setIsValidatingToken(false);
-          }
-        } else {
-          setIsValidatingToken(false);
-        }
-      } catch {
-        setError('Erro ao validar o link de recuperação.');
-        setIsValidatingToken(false);
-      }
-    };
-
-    checkSession();
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('oobCode');
+    const mode = params.get('mode');
+    if (mode === 'resetPassword' && code) {
+      verifyPasswordResetCode(auth, code)
+        .then(() => { setOobCode(code); setIsValidatingToken(false); })
+        .catch(() => { setError('Link de recuperação inválido ou expirado.'); setIsValidatingToken(false); });
+    } else {
+      setError('Link de recuperação inválido ou expirado.');
+      setIsValidatingToken(false);
+    }
   }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -65,23 +50,25 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _l
       return;
     }
 
+    if (!oobCode) {
+      setError('Link de recuperação inválido. Solicite um novo link.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: password
-      });
-
-      if (updateError) throw updateError;
-
+      await confirmPasswordReset(auth, oobCode, password);
       setSuccess(true);
-      
-      // Redirect to login after 2 seconds
-      setTimeout(() => {
-        onNavigate('home');
-      }, 2000);
+      setTimeout(() => onNavigate('home'), 3000);
     } catch (err: any) {
-      setError(err.message || 'Erro ao redefinir a senha. Tente novamente.');
+      if (err.code === 'auth/expired-action-code') {
+        setError('Link de recuperação expirado. Solicite um novo link.');
+      } else if (err.code === 'auth/invalid-action-code') {
+        setError('Link de recuperação inválido ou já utilizado.');
+      } else {
+        setError('Erro ao redefinir a senha. Tente novamente.');
+      }
     } finally {
       setIsLoading(false);
     }
