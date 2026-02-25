@@ -252,6 +252,19 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
           {getLoc(product.name)}
         </h3>
 
+        {/* Rating */}
+        {product.average_rating !== undefined && (product.total_reviews ?? 0) > 0 && (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] text-yellow-500">★</span>
+            <span className={`${textSize.name} text-neutral-600`}>
+              {product.average_rating.toFixed(1)}
+            </span>
+            <span className="text-[9px] text-neutral-400">
+              ({product.total_reviews})
+            </span>
+          </div>
+        )}
+
         {/* Price */}
         <div className="flex items-center gap-2">
           {hasDiscount && (
