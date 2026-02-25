@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Minus, Plus, Trash2, ArrowRight } from 'lucide-react';
 import { CartItem, UserMode } from '../../types';
 import { Locale } from '../../i18n';
@@ -14,7 +14,7 @@ interface CartDrawerProps {
   userMode: UserMode;
   onUpdateQuantity: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
-  onCheckout: () => void;
+  onCheckout: () => void | Promise<void>;
   t: (key: string) => any;
   locale: Locale;
 }
@@ -30,6 +30,8 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
   t, 
   locale 
 }) => {
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
   const getLoc = (obj: any) => {
     if (!obj) return "";
     if (typeof obj === 'string') return obj;
@@ -171,10 +173,20 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
             )}
             <div className="mb-8 mt-4" />
             <button 
-              onClick={onCheckout}
-              className="w-full bg-black text-white py-8 rounded-[2rem] flex items-center justify-between px-10 hover:bg-neutral-800 transition-all shadow-2xl active:scale-95 group"
+              onClick={async () => {
+                setIsCheckingOut(true);
+                try {
+                  await onCheckout();
+                } finally {
+                  setIsCheckingOut(false);
+                }
+              }}
+              disabled={isCheckingOut}
+              className="w-full bg-black text-white py-8 rounded-[2rem] flex items-center justify-between px-10 hover:bg-neutral-800 transition-all shadow-2xl active:scale-95 group disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <span className="uppercase tracking-[0.4em] text-[11px] font-black">{t('cart.checkout')}</span>
+              <span className="uppercase tracking-[0.4em] text-[11px] font-black">
+                {isCheckingOut ? 'Aguarde...' : t('cart.checkout')}
+              </span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
             </button>
           </div>

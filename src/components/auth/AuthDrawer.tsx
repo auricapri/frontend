@@ -27,6 +27,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
   const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null);
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [passwordResetSent, setPasswordResetSent] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -69,6 +70,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError(null);
     setIsLoading(true);
 
     try {
@@ -82,12 +84,11 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
           await updateFirebaseProfile(result.user, { displayName: fullName });
         }
         // onAuthStateChanged handles profile creation (with referred_by_code via POST /api/auth/profile)
-        alert('Cadastro realizado! Bem-vindo(a)!');
         onClose();
       }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-      alert(`Erro: ${errorMessage}`);
+      setAuthError(`Erro: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -104,7 +105,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
       // Ignore user-cancelled popup errors
       if (!errorMessage.includes('popup-closed-by-user') && !errorMessage.includes('cancelled-popup-request')) {
-        alert(`Erro no login social: ${errorMessage}`);
+        setAuthError(`Erro no login social: ${errorMessage}`);
       }
       setSocialLoading(null);
     }
@@ -113,7 +114,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      alert('Por favor, insira seu email.');
+      setAuthError('Por favor, insira seu email.');
       return;
     }
 
@@ -123,7 +124,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
       setPasswordResetSent(true);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-      alert(`Erro: ${errorMessage}`);
+      setAuthError(`Erro: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -313,6 +314,11 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                      </label>
                    )}
 
+                   {authError && (
+                     <p style={{ color: '#c00', fontSize: '13px', marginTop: '8px', textAlign: 'center' }}>
+                       {authError}
+                     </p>
+                   )}
                    <button type="submit" disabled={isLoading || !!socialLoading || (authMode === 'register' && !acceptedTerms)} className="w-full bg-neutral-900 text-white py-4 rounded-2xl text-xs font-bold uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center justify-center shadow-lg disabled:opacity-50">
                      {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>{authMode === 'login' ? t('auth.login') : t('auth.signup')}</span>}
                    </button>
