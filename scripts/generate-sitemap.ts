@@ -29,6 +29,7 @@ interface Product {
   slug?: LocalizedText | string | null;
   updated_at?: string;
   name?: LocalizedText | string;
+  is_active?: boolean;
 }
 
 interface Collection {
@@ -36,6 +37,7 @@ interface Collection {
   slug?: LocalizedText | string | null;
   updated_at?: string;
   name?: LocalizedText | string;
+  deleted_at?: string | null;
 }
 
 function getLocalizedValue(value: LocalizedText | string | null | undefined): string {
@@ -45,36 +47,54 @@ function getLocalizedValue(value: LocalizedText | string | null | undefined): st
   return value.pt || value.en || value.es || value.fr || '';
 }
 
-async function fetchProducts(): Promise<Product[]> {
-  try {
-    const response = await fetch(`${API_URL}/products`);
-    if (!response.ok) {
-      console.warn('Failed to fetch products from API, using empty array');
-      return [];
+async function fetchAllPaginated<T>(endpoint: string, pageSize = 100): Promise<T[]> {
+  const all: T[] = [];
+  let offset = 0;
+  while (true) {
+    const url = `${API_URL}${endpoint}?limit=${pageSize}&offset=${offset}`;
+    let res: Response;
+    try {
+      res = await fetch(url);
+    } catch (error) {
+      if (offset === 0) {
+        console.warn(`Failed to fetch ${endpoint} (page 0), returning empty array:`, error);
+        return [];
+      }
+      console.warn(`Fetch error at ${url}, stopping pagination:`, error);
+      break;
     }
-    const data = await response.json();
-    // Handle both direct array and wrapped response
-    return Array.isArray(data) ? data : (data.data || data.products || []);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    return [];
+    if (!res.ok) {
+      if (offset === 0) {
+        console.warn(`API returned ${res.status} for ${endpoint} (page 0), returning empty array`);
+        return [];
+      }
+      console.warn(`API returned ${res.status} at ${url}, stopping pagination`);
+      break;
+    }
+    let data: unknown;
+    try {
+      data = await res.json();
+    } catch (error) {
+      console.warn(`Failed to parse JSON from ${url}:`, error);
+      break;
+    }
+    const items = Array.isArray(data) ? data : [];
+    if (items.length === 0) break;
+    all.push(...(items as T[]));
+    if (items.length < pageSize) break;
+    offset += pageSize;
   }
+  return all;
+}
+
+async function fetchProducts(): Promise<Product[]> {
+  const products = await fetchAllPaginated<Product>('/products');
+  return products.filter(p => p && p.is_active === true);
 }
 
 async function fetchCollections(): Promise<Collection[]> {
-  try {
-    const response = await fetch(`${API_URL}/collections`);
-    if (!response.ok) {
-      console.warn('Failed to fetch collections from API, using empty array');
-      return [];
-    }
-    const data = await response.json();
-    // Handle both direct array and wrapped response
-    return Array.isArray(data) ? data : (data.data || data.collections || []);
-  } catch (error) {
-    console.error('Error fetching collections:', error);
-    return [];
-  }
+  const collections = await fetchAllPaginated<Collection>('/collections');
+  return collections.filter(c => c && c.deleted_at == null);
 }
 
 function formatDate(date?: string): string {
@@ -99,7 +119,7 @@ ${urlEntries}
 }
 
 async function generateSitemap() {
-  console.log('🔍 Generating sitemap...');
+  console.log('Generating sitemap...');
   console.log(`   Base URL: ${BASE_URL}`);
   console.log(`   API URL: ${API_URL}`);
 
@@ -114,14 +134,13 @@ async function generateSitemap() {
     { loc: `${BASE_URL}/terms`, priority: 0.3, changefreq: 'yearly' },
   ];
 
-  console.log(`✓ Added ${staticUrls.length} static routes`);
+  console.log(`Added ${staticUrls.length} static routes`);
 
-  // Fetch and add product URLs
+  // Fetch and add product URLs (paginated, active only)
   const products = await fetchProducts();
   const productUrls: SitemapUrl[] = products
-    .filter(p => p && (p.slug || p.id)) // Filter out invalid products
+    .filter(p => p && (p.slug || p.id))
     .map(p => {
-      // Get localized slug, fallback to ID
       const slugValue = getLocalizedValue(p.slug);
       const identifier = slugValue || p.id;
 
@@ -133,14 +152,13 @@ async function generateSitemap() {
       };
     });
 
-  console.log(`✓ Added ${productUrls.length} product URLs`);
+  console.log(`Added ${productUrls.length} product URLs`);
 
-  // Fetch and add collection URLs
+  // Fetch and add collection URLs (paginated, not deleted)
   const collections = await fetchCollections();
   const collectionUrls: SitemapUrl[] = collections
-    .filter(c => c && (c.slug || c.id)) // Filter out invalid collections
+    .filter(c => c && (c.slug || c.id))
     .map(c => {
-      // Get localized slug, fallback to ID
       const slugValue = getLocalizedValue(c.slug);
       const identifier = slugValue || c.id;
 
@@ -152,11 +170,11 @@ async function generateSitemap() {
       };
     });
 
-  console.log(`✓ Added ${collectionUrls.length} collection URLs`);
+  console.log(`Added ${collectionUrls.length} collection URLs`);
 
   // Combine all URLs
   const allUrls = [...staticUrls, ...productUrls, ...collectionUrls];
-  console.log(`📊 Total URLs: ${allUrls.length}`);
+  console.log(`Total URLs: ${allUrls.length}`);
 
   // Generate XML
   const xml = generateSitemapXML(allUrls);
@@ -165,7 +183,7 @@ async function generateSitemap() {
   const publicPath = join(__dirname, '../public/sitemap.xml');
   writeFileSync(publicPath, xml, 'utf-8');
 
-  console.log('✅ Sitemap generated successfully!');
+  console.log('Sitemap generated successfully!');
   console.log(`   Output: ${publicPath}`);
   console.log(`   Submit to: https://search.google.com/search-console`);
 }
@@ -173,8 +191,6 @@ async function generateSitemap() {
 // Run the generator
 // NOTE: Exits gracefully (code 0) on failure so it doesn't block the build.
 // The existing static sitemap.xml in /public serves as fallback.
-// To create og:image: open /public/og-image-template.html in a browser and screenshot at 1200x630px,
-// then save as /public/og-image.png (or .jpg). Update SEOHead.tsx default to match.
 generateSitemap().catch((error) => {
   console.error('Sitemap generation failed (non-blocking):', error);
   console.log('The existing sitemap.xml (if any) will be used as fallback.');
