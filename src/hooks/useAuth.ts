@@ -37,6 +37,7 @@ export const useAuth = () => {
             }
           } catch (error) {
             logger.error('Error merging cart on login', error, { context: 'useAuth' });
+            window.dispatchEvent(new CustomEvent('cart-merge-failed'));
           }
         }
 
