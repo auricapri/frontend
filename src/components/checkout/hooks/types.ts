@@ -208,6 +208,8 @@ export interface UseAddressStateReturn {
   setComplement: (complement: string) => void;
 
   // Contact info
+  recipientName: string;
+  setRecipientName: (name: string) => void;
   phone: string;
   setPhone: (phone: string) => void;
   cpf: string;
