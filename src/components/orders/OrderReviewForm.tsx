@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Star, X, Upload, Loader2 } from 'lucide-react';
 import { OrderReview, OrderReviewMedia } from '../../types';
 import { OrderReviewsApi } from '../../api/order-reviews.api';
-import { supabase } from '../../utils/supabase';
+import { auth } from '../../utils/firebase';
 
 interface OrderReviewFormProps {
   orderId: string;
@@ -91,8 +91,7 @@ export const OrderReviewForm: React.FC<OrderReviewFormProps> = ({
     const api = new OrderReviewsApi();
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
+      const userId = auth.currentUser?.uid;
 
       let review: OrderReview;
 

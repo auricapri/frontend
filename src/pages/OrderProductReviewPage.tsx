@@ -6,7 +6,7 @@ import { ProductReviewsApi } from '../api/product-reviews.api';
 import { OrdersApi } from '../api/orders.api';
 import { ProductReviewForm } from '../components/orders/ProductReviewForm';
 import { ProductReviewsList } from '../components/orders/ProductReviewsList';
-import { supabase } from '../utils/supabase';
+import { auth } from '../utils/firebase';
 import { formatCurrency } from '../utils/currency';
 import { getOptimizedImageUrl } from '../utils/image';
 
@@ -54,17 +54,10 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
   };
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setCurrentUser({ id: session.user.id });
-        }
-      } catch {
-        setCurrentUser(null);
-      }
-    };
-    checkAuth();
+    const user = auth.currentUser;
+    if (user) {
+      setCurrentUser({ id: user.uid });
+    }
   }, []);
 
   useEffect(() => {

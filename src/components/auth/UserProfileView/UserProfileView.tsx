@@ -23,8 +23,9 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { LoadingFallback } from '../../ui/LoadingFallback';
 import { UserProfileViewProps, TabId } from './types';
 import { useProfileState, useOrders, useAddresses, createGetLoc } from './hooks';
+import { signOut } from 'firebase/auth';
 import { apiClient } from '../../../api/client';
-import { supabase } from '../../../utils/supabase';
+import { auth } from '../../../utils/firebase';
 import {
   TabNavigation,
   ProfileTab,
@@ -70,7 +71,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({
   const handleDeleteAccount = async () => {
     try {
       await apiClient.delete('/users/account');
-      await supabase.auth.signOut();
+      await signOut(auth);
       onLogout?.();
     } catch (error) {
       console.error('[DeleteAccount]', error);
