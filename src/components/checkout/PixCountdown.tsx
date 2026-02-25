@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { Clock, AlertTriangle } from 'lucide-react';
 
 interface PixCountdownProps {
@@ -8,6 +8,14 @@ interface PixCountdownProps {
 
 export function PixCountdown({ expiresAt, onExpired }: PixCountdownProps) {
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Garantir que expiresAt é uma Date válida
   const validExpiresAt = useMemo(() => {
@@ -41,6 +49,7 @@ export function PixCountdown({ expiresAt, onExpired }: PixCountdownProps) {
 
     setTimeLeft(calculateTimeLeft());
     const interval = setInterval(() => {
+      if (!isMountedRef.current) return;
       const left = calculateTimeLeft();
       setTimeLeft(left);
       if (left <= 0) {

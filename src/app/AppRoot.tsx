@@ -101,6 +101,15 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
     return () => window.removeEventListener('cart-token-loaded', handleCartToken);
   }, [appState]);
 
+  // Notify user when anonymous cart merge fails on login
+  useEffect(() => {
+    const handleCartMergeFailed = () => {
+      appState.showToast('Nao foi possivel recuperar seu carrinho. Alguns itens podem ter sido perdidos.', 'error');
+    };
+    window.addEventListener('cart-merge-failed', handleCartMergeFailed);
+    return () => window.removeEventListener('cart-merge-failed', handleCartMergeFailed);
+  }, [appState]);
+
   const handleCheckoutIntent = useCallback(() => {
     const stockCheck = validateStock();
     if (!stockCheck.valid) {
