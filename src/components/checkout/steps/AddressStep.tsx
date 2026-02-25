@@ -21,6 +21,8 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
     manualAddress,
     num,
     complement,
+    recipientName,
+    setRecipientName,
     phone,
     cpf,
     setCpf,
@@ -365,7 +367,8 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             <input
               className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-white focus:border-black transition-all font-black uppercase"
               placeholder="Nome Completo"
-              defaultValue={currentUser?.full_name}
+              value={recipientName}
+              onChange={(e) => setRecipientName(e.target.value)}
             />
           </div>
           {(!currentUser?.phone || !currentUser.phone.trim()) && (

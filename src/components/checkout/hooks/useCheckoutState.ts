@@ -190,6 +190,8 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     setNum: addressState.setNum,
     complement: addressState.complement,
     setComplement: addressState.setComplement,
+    recipientName: addressState.recipientName,
+    setRecipientName: addressState.setRecipientName,
     phone: addressState.phone,
     setPhone: addressState.setPhone,
     cpf: addressState.cpf,

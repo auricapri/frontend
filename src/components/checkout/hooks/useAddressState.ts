@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { UsersApi } from '../../../api/users.api';
-import { maskCep, normalizeCepDigits, validateCPF } from '../../../utils/masks';
+import { maskCep, maskCPF, normalizeCepDigits, validateCPF } from '../../../utils/masks';
 import type { AddressData, SavedAddress, UseAddressStateParams, UseAddressStateReturn } from './types';
 
 export function useAddressState(params: UseAddressStateParams): UseAddressStateReturn {
@@ -24,6 +24,7 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
   const [complement, setComplement] = useState('');
 
   // Contact info
+  const [recipientName, setRecipientName] = useState('');
   const [phone, setPhone] = useState('');
   const [cpf, setCpfInternal] = useState(currentUser?.cpf || '');
   const [cpfError, setCpfError] = useState<string | null>(null);
@@ -58,10 +59,18 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
   // Update CPF when currentUser changes (e.g., after login or profile update)
   useEffect(() => {
     if (currentUser?.cpf) {
-      setCpfInternal(currentUser.cpf);
+      // Apply mask so field shows formatted CPF (e.g. 000.000.000-00)
+      setCpfInternal(maskCPF(currentUser.cpf));
       setCpfError(null);
     }
   }, [currentUser?.cpf]);
+
+  // Pre-fill recipient name from user profile
+  useEffect(() => {
+    if (currentUser?.full_name && !recipientName) {
+      setRecipientName(currentUser.full_name);
+    }
+  }, [currentUser?.full_name]);
 
   // Update phone when currentUser changes
   useEffect(() => {
@@ -406,6 +415,8 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
     setComplement,
 
     // Contact info
+    recipientName,
+    setRecipientName,
     phone,
     setPhone,
     cpf,
