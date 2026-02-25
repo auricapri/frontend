@@ -3,7 +3,7 @@ import { MessageCircle } from 'lucide-react';
 import { Hero } from '../components/shared';
 import { ProductGrid } from '../components/product';
 import { Footer } from '../components/layout';
-import { SEOHead, organizationSchema, websiteSchema } from '../components/seo';
+import { SEOHead, organizationSchema, websiteSchema, clothingStoreSchema } from '../components/seo';
 import { Product, Category, Collection, Banner, Coupon, UserMode } from '../types';
 import { Locale } from '../i18n';
 import { StoreConfig } from '../types';
@@ -55,7 +55,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         keywords={t('seo.home.keywords')}
         type="website"
         locale={locale}
-        schema={[organizationSchema, websiteSchema]}
+        schema={[clothingStoreSchema, organizationSchema, websiteSchema]}
       />
       <Hero 
         onNavigate={onNavigate as any} 

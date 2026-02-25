@@ -11,6 +11,32 @@ function getLocalizedValue(text: LocalizedText | string | undefined, locale: str
 }
 
 /**
+ * ClothingStore Schema (Homepage)
+ * Use this on the homepage to identify the site as a clothing store
+ */
+export const clothingStoreSchema = {
+  "@context": "https://schema.org",
+  "@type": "ClothingStore",
+  "name": "Auricapri",
+  "url": "https://www.auricapri.com.br",
+  "description": "Loja de moda feminina",
+  "logo": "https://www.auricapri.com.br/logo.png",
+  "image": "https://www.auricapri.com.br/logo.png",
+  "priceRange": "$$",
+  "currenciesAccepted": "BRL",
+  "paymentAccepted": "Credit Card, Debit Card, PIX, Boleto",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "BR",
+    "addressRegion": "SP"
+  },
+  "sameAs": [
+    "https://www.instagram.com/auricapri",
+    "https://www.facebook.com/auricapri"
+  ]
+};
+
+/**
  * Organization Schema (Global)
  * Use this on all pages to establish site authority
  */
@@ -65,7 +91,13 @@ export function createProductSchema(
 ) {
   const productName = getLocalizedValue(product.name, locale);
   const productDescription = getLocalizedValue(product.description, locale);
-  const productImage = variant.variant_images?.[0] || product.base_images?.[0] || product.default_image_url;
+
+  // Build full image array: variant images first, then base images, deduped
+  const variantImages = variant.variant_images || [];
+  const baseImages = product.base_images || [];
+  const allImages = [...new Set([...variantImages, ...baseImages].filter(Boolean))];
+  if (!allImages.length && product.default_image_url) allImages.push(product.default_image_url);
+  const productImages = allImages.length > 1 ? allImages : (allImages[0] || product.default_image_url);
 
   // Build individual Review items from review data (max 5 for schema size)
   const reviewItems = reviews?.length
@@ -89,7 +121,7 @@ export function createProductSchema(
     "@context": "https://schema.org",
     "@type": "Product",
     "name": productName,
-    "image": productImage,
+    "image": productImages,
     "description": productDescription,
     "sku": variant.sku,
     "brand": {

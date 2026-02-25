@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -25,6 +25,11 @@
     <meta property="og:url" content="https://www.auricapri.com.br/" />
     <meta property="og:site_name" content="Auricapri" />
     <meta property="og:locale" content="pt_BR" />
+    <meta property="og:image" content="https://www.auricapri.com.br/logo.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Auricapri — Moda Feminina" />
+    <meta name="twitter:description" content="Moda feminina com estilo e elegancia. Vestidos, blusas, saias e acessorios com frete gratis para todo o Brasil." />
+    <meta name="twitter:image" content="https://www.auricapri.com.br/logo.png" />
 
     <!-- Preconnect para Supabase (imagens) — sem crossorigin pois <img> carrega sem crossorigin attribute -->
     <link rel="preconnect" href="https://zbrunudbdyuebtpxfnkd.supabase.co">
@@ -113,6 +118,26 @@
     {
       "@context": "https://schema.org",
       "@graph": [
+        {
+          "@type": "ClothingStore",
+          "name": "Auricapri",
+          "url": "https://www.auricapri.com.br",
+          "description": "Loja de moda feminina",
+          "logo": "https://www.auricapri.com.br/logo.png",
+          "image": "https://www.auricapri.com.br/logo.png",
+          "priceRange": "$$",
+          "currenciesAccepted": "BRL",
+          "paymentAccepted": "Credit Card, Debit Card, PIX, Boleto",
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "BR",
+            "addressRegion": "SP"
+          },
+          "sameAs": [
+            "https://www.instagram.com/auricapri",
+            "https://www.facebook.com/auricapri"
+          ]
+        },
         {
           "@type": "Organization",
           "name": "Auricapri",
