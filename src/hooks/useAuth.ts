@@ -137,6 +137,10 @@ export const useAuth = () => {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
+      // Clear cart from localStorage immediately after logout so a subsequent
+      // user on the same machine does not see the previous user's cart items.
+      localStorage.removeItem('auricapri_cart_items');
+      localStorage.removeItem('auricapri_cart_last_sync');
       return { success: true };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
