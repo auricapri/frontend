@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { PaymentMethod } from '../../../constants/enums';
 import { type CheckoutState } from '../hooks/useCheckoutState';
@@ -14,8 +14,16 @@ export function ReviewStep({ checkout }: { checkout: CheckoutState }) {
     boletoError
   } = checkout;
 
+  // Local flag to prevent double-submission on credit card path.
+  // For PIX/Boleto, paymentProcessing (from usePixBoletoState) already handles this.
+  // For credit card, handleCompleteOrder() is synchronous and triggers isProcessingOrder
+  // in the parent app layer — by the time the UI re-renders the button is already clickable again.
+  const [creditCardSubmitted, setCreditCardSubmitted] = useState(false);
+
   const handleConfirmOrder = async () => {
-    // For PIX and Boleto, use the new flow that creates order + payment
+    // Prevent any re-entrancy regardless of payment method
+    if (paymentProcessing || creditCardSubmitted) return;
+
     if (paymentMethod === PaymentMethod.PIX || paymentMethod === PaymentMethod.BOLETO) {
       try {
         await completeOrderWithPayment();
@@ -25,11 +33,15 @@ export function ReviewStep({ checkout }: { checkout: CheckoutState }) {
         // Error is already set in the state by completeOrderWithPayment
       }
     } else {
-      // For credit card, use the existing flow
+      // Credit card: lock the button immediately to prevent double-click.
+      // The parent app layer (AppLayout) shows isProcessingOrder overlay,
+      // but there is a render gap between click and that overlay appearing.
+      setCreditCardSubmitted(true);
       payment.handleCompleteOrder();
     }
   };
 
+  const isSubmitting = paymentProcessing || creditCardSubmitted;
   const error = pixError || boletoError;
 
   return (
@@ -52,17 +64,17 @@ export function ReviewStep({ checkout }: { checkout: CheckoutState }) {
         <div className="flex gap-4 w-full max-w-sm px-4">
           <button
             onClick={() => setStep(2)}
-            disabled={paymentProcessing}
+            disabled={isSubmitting}
             className="flex-1 px-8 py-6 border border-neutral-200 rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-neutral-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Editar
           </button>
           <button
             onClick={handleConfirmOrder}
-            disabled={paymentProcessing}
+            disabled={isSubmitting}
             className="flex-[2] py-8 bg-black text-white rounded-[2rem] text-[11px] font-black uppercase tracking-[0.5em] shadow-2xl hover:scale-[1.05] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
           >
-            {paymentProcessing ? (
+            {isSubmitting ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <span>PROCESSANDO...</span>

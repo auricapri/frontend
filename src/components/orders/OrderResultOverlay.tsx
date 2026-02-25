@@ -26,14 +26,19 @@ const OrderResultOverlay: React.FC<OrderResultOverlayProps> = ({
     // Reveal text
     const timer = setTimeout(() => setShowContent(true), 100);
 
-    // Auto-close after 5 seconds for both success and error
-    const closeTimer = setTimeout(() => {
-      onClose();
-    }, 5000);
+    // Auto-close after 5 seconds ONLY for success.
+    // On error, the customer must read the message and explicitly click "Try Again"
+    // or close the overlay — auto-closing would hide critical payment failure info.
+    let closeTimer: ReturnType<typeof setTimeout> | undefined;
+    if (status === 'success') {
+      closeTimer = setTimeout(() => {
+        onClose();
+      }, 5000);
+    }
 
     return () => {
       clearTimeout(timer);
-      clearTimeout(closeTimer);
+      if (closeTimer !== undefined) clearTimeout(closeTimer);
     };
   }, [status, onClose]);
 

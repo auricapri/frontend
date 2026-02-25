@@ -122,7 +122,9 @@ export function useOrderProcessing(params: {
               await usersApi.updateProfile({ phone: cleanedPhone });
             }
           } catch {
-            return;
+            // Phone save failure is non-fatal — continue processing the order.
+            // The phone can be updated later; we must not silently abort checkout.
+            logger.warn('Failed to save phone during checkout — continuing with order creation');
           }
         }
 
