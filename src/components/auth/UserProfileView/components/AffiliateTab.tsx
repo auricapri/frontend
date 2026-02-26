@@ -98,11 +98,11 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
             <h3 className="text-sm font-black uppercase tracking-tight">Programa de Afiliados</h3>
             <p className="text-xs text-neutral-500 mt-1 leading-relaxed max-w-xs mx-auto">
               Você ainda não faz parte do programa. Envie um e-mail para{' '}
-              <strong>parcerias@auricapri.com</strong> para se candidatar.
+              <strong>parceria@auricapri.com.br</strong> para se candidatar.
             </p>
           </div>
           <a
-            href="mailto:parcerias@auricapri.com?subject=Quero%20ser%20afiliado%20Auricapri"
+            href="mailto:parceria@auricapri.com.br?subject=Quero%20ser%20afiliado%20Auricapri"
             className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-neutral-800 transition-colors"
           >
             <ExternalLink className="w-3.5 h-3.5" />
@@ -120,7 +120,7 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
         <div className="p-6 bg-neutral-50 border border-neutral-200 rounded-2xl text-center space-y-2">
           <AlertCircle className="w-8 h-8 text-neutral-400 mx-auto" />
           <p className="text-sm font-bold text-neutral-600">Participação encerrada</p>
-          <p className="text-xs text-neutral-400">Sua participação no programa foi encerrada. Entre em contato: parcerias@auricapri.com</p>
+          <p className="text-xs text-neutral-400">Sua participação no programa foi encerrada. Entre em contato: parceria@auricapri.com.br</p>
         </div>
       </div>
     );
@@ -198,8 +198,8 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
       <div className="p-4 bg-neutral-50 border border-neutral-100 rounded-xl">
         <p className="text-[10px] text-neutral-500 leading-relaxed">
           Dúvidas sobre comissões, pagamentos ou termos? Entre em contato:{' '}
-          <a href="mailto:parcerias@auricapri.com" className="font-bold hover:underline">
-            parcerias@auricapri.com
+          <a href="mailto:parceria@auricapri.com.br" className="font-bold hover:underline">
+            parceria@auricapri.com.br
           </a>
         </p>
       </div>
@@ -223,7 +223,7 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
               <p><strong>Divulgação obrigatória (CONAR/CDC):</strong> Toda publicação com comissão deve ser identificada como publicidade (#publi ou "Parceria paga com"). Não identificar pode resultar em multa de até R$500.000.</p>
               <p><strong>Práticas proibidas:</strong> Autocompra, declarações falsas, uso não autorizado da marca.</p>
               <p><strong>Rescisão:</strong> Qualquer violação resulta em encerramento imediato. Prazo indeterminado, 30 dias de aviso para saída voluntária.</p>
-              <p className="text-[10px] text-neutral-400">Política completa disponível em parcerias@auricapri.com. Versão 1.0 — Fevereiro de 2026.</p>
+              <p className="text-[10px] text-neutral-400">Política completa disponível em parceria@auricapri.com.br. Versão 1.0 — Fevereiro de 2026.</p>
             </div>
 
             <label className="flex items-start gap-3 cursor-pointer">

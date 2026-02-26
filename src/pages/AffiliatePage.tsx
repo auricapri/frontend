@@ -97,7 +97,7 @@ export function AffiliatePage({ onBack }: AffiliatePageProps) {
           </h2>
           <ol className="space-y-4">
             {[
-              { step: '01', text: 'Você se cadastra enviando e-mail para parcerias@auricapri.com com seus dados e perfil.' },
+              { step: '01', text: 'Você se cadastra enviando e-mail para parceria@auricapri.com.br com seus dados e perfil.' },
               { step: '02', text: 'Após aprovação, recebe um link de rastreamento e um cupom exclusivo com 5% de desconto para seus seguidores.' },
               { step: '03', text: 'Divulga os produtos nos seus canais, identificando sempre como publicidade paga (#publi).' },
               { step: '04', text: 'Toda venda confirmada gera comissão — paga mensalmente após emissão de nota fiscal.' },
@@ -207,16 +207,16 @@ export function AffiliatePage({ onBack }: AffiliatePageProps) {
             Quero Participar
           </h2>
           <p className="text-sm text-neutral-700 leading-relaxed mb-6">
-            Envie um e-mail para <strong>parcerias@auricapri.com</strong> com seu nome, CNPJ,
+            Envie um e-mail para <strong>parceria@auricapri.com.br</strong> com seu nome, CNPJ,
             link do seu perfil principal e uma breve apresentação. Nossa equipe analisa e retorna
             em até 5 dias úteis.
           </p>
           <a
-            href="mailto:parcerias@auricapri.com?subject=Quero%20ser%20afiliado%20Auricapri"
+            href="mailto:parceria@auricapri.com.br?subject=Quero%20ser%20afiliado%20Auricapri"
             className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-colors"
           >
             <Mail className="w-4 h-4" />
-            parcerias@auricapri.com
+            parceria@auricapri.com.br
           </a>
           <p className="mt-3 text-[10px] text-neutral-400">
             Atendimento: segunda a sexta, das 9h às 18h (horário de Brasília)
@@ -232,7 +232,7 @@ export function AffiliatePage({ onBack }: AffiliatePageProps) {
             (Lei 14.382/2022, em vigor a partir de 18/03/2026). Parceiros com público
             predominantemente infantojuvenil devem observar as restrições do ECA Digital.
             A participação no programa é voluntária e não gera vínculo empregatício entre as partes.
-            Consulte a Política de Afiliados completa disponível em parcerias@auricapri.com.
+            Consulte a Política de Afiliados completa disponível em parceria@auricapri.com.br.
           </p>
         </section>
 
