@@ -91,10 +91,10 @@ export class LogisticsService {
     return [];
   }
 
-  async calculateExpressOption(cep: string): Promise<{ available: boolean; option: ShippingOption | null }> {
+  async calculateExpressOption(cep: string): Promise<{ available: boolean; option: InternalLogisticsInfo | null }> {
     const cleanCep = cep.replace(/\D/g, '');
     try {
-      const result = await apiClient.post<{ available: boolean; option: ShippingOption | null }>(
+      const result = await apiClient.post<{ available: boolean; option: InternalLogisticsInfo | null }>(
         '/logistics/express-option',
         { cep: cleanCep }
       );
