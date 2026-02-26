@@ -198,7 +198,7 @@ const Navbar: React.FC<NavbarProps> = ({
               >
                 <ShoppingBag className="w-5 h-5" strokeWidth={1.2} />
                 {cartCount > 0 && (
-                  <span className={`absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 rounded-full text-[7px] font-black flex items-center justify-center
+                  <span className={`absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 rounded-full text-[10px] font-black flex items-center justify-center
                     ${isSolid ? 'bg-black text-white' : 'bg-white text-black'}
                   `}>
                     {cartCount}
@@ -285,7 +285,7 @@ const Navbar: React.FC<NavbarProps> = ({
               >
                 <ShoppingBag className="w-5 h-5" strokeWidth={1.2} />
                 {cartCount > 0 && (
-                  <span className={`absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full text-[8px] font-black flex items-center justify-center
+                  <span className={`absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-black flex items-center justify-center
                     ${isSolid ? 'bg-black text-white' : 'bg-white text-black'}
                   `}>
                     {cartCount}
@@ -301,7 +301,7 @@ const Navbar: React.FC<NavbarProps> = ({
       {/* Search Bar - Slides down from navbar */}
       <div
         className={`fixed left-0 w-full z-40 transition-all duration-700 ease-out overflow-hidden
-          ${isSearchOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
+          ${isSearchOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}
           ${isSolid ? 'top-24 md:top-[5.5rem]' : 'top-40 md:top-32'}
         `}
         style={{ marginTop: showTestBanner ? '48px' : '0' }}

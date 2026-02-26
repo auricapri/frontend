@@ -48,10 +48,10 @@ export function BenefitsBar({ banners, locale = 'pt' }: BenefitsBarProps) {
         className="whitespace-nowrap flex items-center"
         style={{ animation: 'marquee 25s linear infinite' }}
       >
-        <span className="text-white text-[10px] uppercase tracking-wider font-medium px-4">
+        <span className="text-white text-[11px] uppercase tracking-wider font-medium px-4">
           {message}
         </span>
-        <span className="text-white text-[10px] uppercase tracking-wider font-medium px-4">
+        <span className="text-white text-[11px] uppercase tracking-wider font-medium px-4">
           {message}
         </span>
       </div>

@@ -186,7 +186,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
       />
 
       {/* Drawer */}
-      <div className="fixed top-0 right-0 h-full w-full md:w-[480px] bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
+      <div role="dialog" aria-modal="true" className="fixed top-0 right-0 h-full w-full md:w-[480px] bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-8 border-b border-gray-100 bg-white">
@@ -291,7 +291,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
 
         {/* Footer Actions */}
         {items.length > 0 && (
-          <div className="p-4 md:p-8 border-t border-gray-100 bg-white shadow-2xl">
+          <div className="p-4 md:p-8 border-t border-gray-100 bg-white shadow-2xl" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             <button
               onClick={onBuyAll}
               className="w-full bg-black text-white py-5 md:py-6 rounded-2xl flex items-center justify-between px-6 md:px-8 hover:bg-neutral-800 transition-all group shadow-xl active:scale-95"

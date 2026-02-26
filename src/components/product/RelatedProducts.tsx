@@ -37,8 +37,8 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
         </div>
 
         {/* Mobile: Horizontal Scroll Carousel */}
-        <div className="md:hidden overflow-x-auto no-scrollbar px-4">
-          <div className="flex gap-3" style={{ width: `${products.length * 180 + (products.length - 1) * 12}px` }}>
+        <div className="md:hidden overflow-x-auto overflow-y-hidden no-scrollbar px-4">
+          <div className="flex gap-3 flex-nowrap" style={{ width: `${products.length * 180 + (products.length - 1) * 12}px` }}>
             {products.map((p) => (
               <div key={p.id} className="flex-none w-[180px]">
                 <ProductCard

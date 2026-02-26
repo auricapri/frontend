@@ -27,6 +27,15 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const sizeClasses = {
@@ -42,7 +51,7 @@ export const Modal: React.FC<ModalProps> = ({
         className="fixed inset-0 bg-black/60 backdrop-blur-xl z-[200] animate-in fade-in duration-500"
         onClick={onClose}
       />
-      <div className="fixed inset-0 z-[201] flex items-start md:items-center justify-center p-4 md:p-12 overflow-y-auto">
+      <div role="dialog" aria-modal="true" className="fixed inset-0 z-[201] flex items-start md:items-center justify-center p-4 md:p-12 overflow-y-auto">
         <div
           className={`bg-white w-full ${
             sizeClasses[size]
