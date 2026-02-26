@@ -87,9 +87,14 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   });
 
   // Calculate shipping cost
-  const shippingCost = userMode === UserMode.ATACADO && shipping.selectedShippingOption
-    ? shipping.selectedShippingOption.display_price_was
-    : 0;
+  const shippingCost =
+    userMode === UserMode.ATACADO && shipping.selectedShippingOption
+      ? shipping.selectedShippingOption.display_price_was
+      : userMode !== UserMode.ATACADO &&
+        shipping.selectedVarejoShipping === 'express' &&
+        shipping.expressOption
+      ? shipping.expressOption.real_cost
+      : 0;
 
   // Totals
   const totals = useCheckoutTotals({
