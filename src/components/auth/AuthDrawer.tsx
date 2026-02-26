@@ -68,6 +68,23 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
     }
   }, []);
 
+  const getFirebaseErrorMessage = (err: unknown): string => {
+    const code = (err as any)?.code as string | undefined;
+    const map: Record<string, string> = {
+      'auth/invalid-credential':    'Email ou senha incorretos.',
+      'auth/user-not-found':        'Nenhuma conta encontrada com esse email.',
+      'auth/wrong-password':        'Senha incorreta.',
+      'auth/email-already-in-use':  'Este email já está cadastrado. Faça login.',
+      'auth/weak-password':         'Senha muito fraca. Use pelo menos 6 caracteres.',
+      'auth/invalid-email':         'Email inválido.',
+      'auth/network-request-failed':'Erro de conexão. Verifique sua internet.',
+      'auth/too-many-requests':     'Muitas tentativas. Tente novamente em alguns minutos.',
+      'auth/user-disabled':         'Esta conta foi desativada. Entre em contato.',
+      'auth/requires-recent-login': 'Por segurança, faça login novamente.',
+    };
+    return map[code ?? ''] || 'Ocorreu um erro. Tente novamente.';
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
@@ -87,8 +104,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
         onClose();
       }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-      setAuthError(`Erro: ${errorMessage}`);
+      setAuthError(getFirebaseErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -102,10 +118,10 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
       // onAuthStateChanged in useAuth handles profile creation and state update
       onClose();
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      const code = (err as any)?.code as string | undefined;
       // Ignore user-cancelled popup errors
-      if (!errorMessage.includes('popup-closed-by-user') && !errorMessage.includes('cancelled-popup-request')) {
-        setAuthError(`Erro no login social: ${errorMessage}`);
+      if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
+        setAuthError(getFirebaseErrorMessage(err));
       }
       setSocialLoading(null);
     }
@@ -123,8 +139,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
       await sendPasswordResetEmail(auth, email);
       setPasswordResetSent(true);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-      setAuthError(`Erro: ${errorMessage}`);
+      setAuthError(getFirebaseErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
