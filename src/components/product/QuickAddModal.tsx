@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { X, Minus, Plus, ShoppingBag, Check } from 'lucide-react';
+import { X, Minus, Plus, ShoppingBag, Check, ImageOff } from 'lucide-react';
 import { Product, UserMode, LocalizedText, Coupon } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
@@ -15,6 +15,7 @@ interface QuickAddModalProps {
   locale: Locale;
   getLoc: (text: LocalizedText | undefined) => string;
   coupons?: Coupon[];
+  initialColorHex?: string;
 }
 
 export const QuickAddModal: React.FC<QuickAddModalProps> = ({
@@ -25,7 +26,8 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
   userMode,
   locale,
   getLoc,
-  coupons = []
+  coupons = [],
+  initialColorHex,
 }) => {
   const [selectedColorHex, setSelectedColorHex] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -76,14 +78,17 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
     }
   }, [availableSizes, selectedSize]);
 
-  // Reset state when modal opens
+  // Reset state when modal opens — prefer initialColorHex from the card
   useEffect(() => {
     if (isOpen) {
       setQuantity(1);
       setIsAdded(false);
-      setSelectedColorHex(colors[0]?.hex || null);
+      const startColor = initialColorHex && colors.some(c => c.hex === initialColorHex)
+        ? initialColorHex
+        : colors[0]?.hex || null;
+      setSelectedColorHex(startColor);
     }
-  }, [isOpen, colors]);
+  }, [isOpen, colors, initialColorHex]);
 
   const rawPrice = activeVariant ? calculatePrice(activeVariant, userMode, product) : 0;
   const priceResult = getProductDisplayPrice(rawPrice, product.id, coupons);
@@ -135,11 +140,17 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
           <div className="flex items-start gap-4 p-4 border-b border-neutral-100">
             {/* Product Image */}
             <div className="w-20 h-24 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0">
-              <img
-                src={displayImg}
-                alt={getLoc(product.name)}
-                className="w-full h-full object-cover"
-              />
+              {displayImg ? (
+                <img
+                  src={displayImg}
+                  alt={getLoc(product.name)}
+                  className="w-full h-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('hidden'); }}
+                />
+              ) : null}
+              <div hidden={!!displayImg} className="w-full h-full flex items-center justify-center">
+                <ImageOff className="w-6 h-6 text-neutral-300" />
+              </div>
             </div>
 
             {/* Product Info */}

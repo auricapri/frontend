@@ -35,7 +35,7 @@ export interface ProductCardProps {
 
   // Quick add handler
   onAddToCart?: (item: any) => void;
-  onQuickAdd?: (product: Product) => void;
+  onQuickAdd?: (product: Product, initialColorHex?: string) => void;
 
   // Click handler
   onClick?: () => void;
@@ -131,7 +131,7 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
   const handleQuickAdd = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (hasMultipleVariants && onQuickAdd) {
-      onQuickAdd(product);
+      onQuickAdd(product, displayVariant?.color_hex || undefined);
     } else if (mainVariant && onAddToCart) {
       onAddToCart({
         variant_id: mainVariant.id,
