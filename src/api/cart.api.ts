@@ -29,8 +29,9 @@ async function getCartHeaders(): Promise<HeadersInit> {
   };
 
   try {
-    const { auth } = await import('../utils/firebase');
-    const token = await auth.currentUser?.getIdToken();
+    const { supabase } = await import('../utils/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token ?? null;
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }

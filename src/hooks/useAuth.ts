@@ -1,13 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { UserProfile, Order } from '../types';
-import { auth } from '../utils/firebase';
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  updateProfile as updateFirebaseProfile,
-} from 'firebase/auth';
+import { supabase } from '../utils/supabase';
 import { CartApi } from '../api/cart.api';
 import { logger } from '../utils/logger';
 
@@ -21,20 +14,17 @@ export const useAuth = () => {
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
         const previousUid = previousUidRef.current;
-        previousUidRef.current = firebaseUser.uid;
+        previousUidRef.current = session.user.id;
 
         try {
-          // STEP 1: Get token first (guarantees auth.currentUser is ready)
-          const token = await firebaseUser.getIdToken();
-
-          // STEP 2: Fetch/create Supabase profile via backend
-          const response = await fetch(`${apiBase}/auth/profile`, {
-            method: 'POST',
+          // Fetch full profile from backend (includes loyalty, saved_cards, etc.)
+          const response = await fetch(`${apiBase}/users/profile`, {
+            method: 'GET',
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${session.access_token}`,
               'Content-Type': 'application/json',
             },
           });
@@ -43,8 +33,8 @@ export const useAuth = () => {
           const profile = await response.json();
           setCurrentUser(profile as UserProfile);
 
-          // STEP 3: Merge cart AFTER profile exists (fire-and-forget, non-blocking)
-          if (!previousUid && firebaseUser.uid) {
+          // Merge cart on login (fire-and-forget)
+          if (!previousUid && session.user.id) {
             const STORAGE_KEY = 'auricapri_cart_session_id';
             const sessionId = localStorage.getItem(STORAGE_KEY);
             if (sessionId) {
@@ -61,11 +51,11 @@ export const useAuth = () => {
           }
         } catch (err) {
           logger.error('Error fetching profile', err, { context: 'useAuth' });
-          // Fallback profile (allows user to use the app even if profile fetch fails)
+          // Fallback profile
           const fallback: UserProfile = {
-            id: firebaseUser.uid,
-            email: firebaseUser.email || '',
-            full_name: firebaseUser.displayName || firebaseUser.email || '',
+            id: session.user.id,
+            email: session.user.email || '',
+            full_name: session.user.user_metadata?.full_name || session.user.email || '',
             role: 'customer',
             loyalty: { current_xp: 0, current_level: 0, cashback_balance: 0, pending_reward_coupon: null },
           };
@@ -75,11 +65,10 @@ export const useAuth = () => {
         previousUidRef.current = null;
         setCurrentUser(null);
       }
-
       setIsLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => subscription.unsubscribe();
   }, []);
 
   const fetchUserOrders = useCallback(async () => {
@@ -87,7 +76,6 @@ export const useAuth = () => {
       setUserOrders([]);
       return;
     }
-
     setIsLoadingOrders(true);
     try {
       const { OrdersApi } = await import('../api/orders.api');
@@ -112,40 +100,41 @@ export const useAuth = () => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged handles the rest
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { success: false, error: error.message };
       return { success: true };
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      return { success: false, error: message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   };
 
   const signUp = async (email: string, password: string, metadata?: Record<string, unknown>) => {
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      if (metadata?.full_name) {
-        await updateFirebaseProfile(result.user, { displayName: String(metadata.full_name) });
-      }
-      // onAuthStateChanged handles profile creation
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: String(metadata?.full_name || ''),
+            ...(metadata?.referred_by_code ? { referred_by_code: metadata.referred_by_code } : {}),
+          },
+        },
+      });
+      if (error) return { success: false, error: error.message };
       return { success: true };
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      return { success: false, error: message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   };
 
   const signOut = async () => {
     try {
-      await firebaseSignOut(auth);
-      // Clear cart from localStorage immediately after logout so a subsequent
-      // user on the same machine does not see the previous user's cart items.
+      await supabase.auth.signOut();
       localStorage.removeItem('auricapri_cart_items');
       localStorage.removeItem('auricapri_cart_last_sync');
       return { success: true };
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      return { success: false, error: message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   };
 

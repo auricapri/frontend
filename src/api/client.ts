@@ -28,8 +28,9 @@ class ApiClient {
 
   private async getAuthToken(): Promise<string | null> {
     try {
-      const { auth } = await import('../utils/firebase');
-      return (await auth.currentUser?.getIdToken()) ?? null;
+      const { supabase } = await import('../utils/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      return session?.access_token ?? null;
     } catch (_) {
       return null;
     }

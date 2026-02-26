@@ -3,8 +3,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { X, Loader2, Mail, ArrowLeft, Check } from 'lucide-react';
 import { UserProfile as UserType } from '../../types';
 import { Locale } from '../../i18n';
-import { auth, googleProvider, appleProvider } from '../../utils/firebase';
-import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile as updateFirebaseProfile } from 'firebase/auth';
+import { supabase } from '../../utils/supabase';
 import { LoadingFallback } from '../ui/LoadingFallback';
 
 const UserProfileView = React.lazy(() => import('./UserProfileView'));
@@ -68,21 +67,16 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
     }
   }, []);
 
-  const getFirebaseErrorMessage = (err: unknown): string => {
-    const code = (err as any)?.code as string | undefined;
-    const map: Record<string, string> = {
-      'auth/invalid-credential':    'Email ou senha incorretos.',
-      'auth/user-not-found':        'Nenhuma conta encontrada com esse email.',
-      'auth/wrong-password':        'Senha incorreta.',
-      'auth/email-already-in-use':  'Este email já está cadastrado. Faça login.',
-      'auth/weak-password':         'Senha muito fraca. Use pelo menos 6 caracteres.',
-      'auth/invalid-email':         'Email inválido.',
-      'auth/network-request-failed':'Erro de conexão. Verifique sua internet.',
-      'auth/too-many-requests':     'Muitas tentativas. Tente novamente em alguns minutos.',
-      'auth/user-disabled':         'Esta conta foi desativada. Entre em contato.',
-      'auth/requires-recent-login': 'Por segurança, faça login novamente.',
-    };
-    return map[code ?? ''] || 'Ocorreu um erro. Tente novamente.';
+  const getAuthErrorMessage = (message: string): string => {
+    if (message.includes('Invalid login credentials') || message.includes('invalid_credentials')) return 'Email ou senha incorretos.';
+    if (message.includes('Email not confirmed')) return 'Confirme seu email antes de fazer login.';
+    if (message.includes('User already registered') || message.includes('already been registered')) return 'Este email já está cadastrado. Faça login.';
+    if (message.includes('Password should be at least') || message.includes('weak_password')) return 'Senha muito fraca. Use pelo menos 6 caracteres.';
+    if (message.includes('Unable to validate email') || message.includes('invalid_email')) return 'Email inválido.';
+    if (message.includes('rate limit') || message.includes('over_email_send_rate_limit')) return 'Muitas tentativas. Tente novamente em alguns minutos.';
+    if (message.includes('network') || message.includes('fetch')) return 'Erro de conexão. Verifique sua internet.';
+    if (message.includes('disabled')) return 'Esta conta foi desativada. Entre em contato.';
+    return 'Ocorreu um erro. Tente novamente.';
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -92,19 +86,26 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
 
     try {
       if (authMode === 'login') {
-        await signInWithEmailAndPassword(auth, email, password);
-        // onAuthStateChanged in useAuth handles profile fetch and state update
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
         onClose();
       } else {
-        const result = await createUserWithEmailAndPassword(auth, email, password);
-        if (fullName) {
-          await updateFirebaseProfile(result.user, { displayName: fullName });
-        }
-        // onAuthStateChanged handles profile creation (with referred_by_code via POST /api/auth/profile)
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              ...(referralCode ? { referred_by_code: referralCode } : {}),
+            },
+          },
+        });
+        if (error) throw error;
         onClose();
       }
     } catch (err: unknown) {
-      setAuthError(getFirebaseErrorMessage(err));
+      const message = err instanceof Error ? err.message : (err as any)?.message || 'Ocorreu um erro.';
+      setAuthError(getAuthErrorMessage(message));
     } finally {
       setIsLoading(false);
     }
@@ -113,16 +114,18 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
   const handleSocialLogin = async (provider: 'google' | 'apple') => {
     setSocialLoading(provider);
     try {
-      const firebaseProvider = provider === 'google' ? googleProvider : appleProvider;
-      await signInWithPopup(auth, firebaseProvider);
-      // onAuthStateChanged in useAuth handles profile creation and state update
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (error) throw error;
+      // OAuth flow redirects the page — onAuthStateChange fires on return
       onClose();
     } catch (err: unknown) {
-      const code = (err as any)?.code as string | undefined;
-      // Ignore user-cancelled popup errors
-      if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
-        setAuthError(getFirebaseErrorMessage(err));
-      }
+      const message = err instanceof Error ? err.message : 'Ocorreu um erro.';
+      setAuthError(getAuthErrorMessage(message));
       setSocialLoading(null);
     }
   };
@@ -133,13 +136,16 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
       setAuthError('Por favor, insira seu email.');
       return;
     }
-
     setIsLoading(true);
     try {
-      await sendPasswordResetEmail(auth, email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
       setPasswordResetSent(true);
     } catch (err: unknown) {
-      setAuthError(getFirebaseErrorMessage(err));
+      const message = err instanceof Error ? err.message : 'Ocorreu um erro.';
+      setAuthError(getAuthErrorMessage(message));
     } finally {
       setIsLoading(false);
     }
