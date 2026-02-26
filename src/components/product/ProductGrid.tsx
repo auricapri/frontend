@@ -66,6 +66,7 @@ interface CollectionCardProps {
 
 const CollectionCard: React.FC<CollectionCardProps> = React.memo(({ collection, getLoc, onSelect, locale }) => {
   const { isAvailable, isExpired } = useCollectionAvailability(collection.starts_at, collection.ends_at);
+  const [imgError, setImgError] = React.useState(false);
 
   // Don't render expired collections at all (after refresh)
   if (isExpired) return null;
@@ -81,6 +82,8 @@ const CollectionCard: React.FC<CollectionCardProps> = React.memo(({ collection, 
     onSelect(collection);
   };
 
+  const hasImage = !!collection.image_url && !imgError;
+
   return (
     <div
       onClick={handleClick}
@@ -88,13 +91,20 @@ const CollectionCard: React.FC<CollectionCardProps> = React.memo(({ collection, 
         isAvailable ? 'cursor-pointer' : 'cursor-not-allowed opacity-75'
       }`}
     >
-      <img
-        src={collection.image_url}
-        alt={getLoc(collection.name)}
-        loading="eager"
-        decoding="auto"
-        className={`w-full h-full object-cover transition-all duration-1000 ${isAvailable ? 'group-hover:scale-105 group-active:scale-105' : 'grayscale'}`}
-      />
+      {hasImage ? (
+        <img
+          src={collection.image_url}
+          alt={getLoc(collection.name)}
+          loading="eager"
+          decoding="auto"
+          onError={() => setImgError(true)}
+          className={`w-full h-full object-cover transition-all duration-1000 ${isAvailable ? 'group-hover:scale-105 group-active:scale-105' : 'grayscale'}`}
+        />
+      ) : (
+        <div className={`w-full h-full bg-gradient-to-br from-neutral-200 to-neutral-300 flex items-center justify-center ${isAvailable ? 'group-hover:from-neutral-300 group-hover:to-neutral-400' : 'grayscale'}`}>
+          <span className="text-neutral-500 text-xs font-bold uppercase tracking-widest">{getLoc(collection.name)}</span>
+        </div>
+      )}
 
       {/* Base overlay with title */}
       <div className="absolute inset-0 bg-black/20 flex flex-col justify-end p-4 md:p-8 text-white">
