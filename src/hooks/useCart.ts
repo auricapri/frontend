@@ -25,6 +25,7 @@ export const useCart = (products: Product[], assets: Asset[]) => {
   const cartService = useMemo(() => new CartService(), []);
   const cartApi = useMemo(() => new CartApi(), []);
   const initialSyncDone = useRef(false);
+  const locallyModifiedRef = useRef(false);
 
   // Sync cart from server only on initial load or when explicitly requested
   const loadCart = useCallback(async (force = false) => {
@@ -41,9 +42,10 @@ export const useCart = (products: Product[], assets: Asset[]) => {
       setIsLoading(true);
       setError(null);
       const cart = await cartApi.getCart();
-      if (cart.items && cart.items.length > 0) {
+      if (cart.items && cart.items.length > 0 && !locallyModifiedRef.current) {
         setCartItems(cart.items);
       }
+      locallyModifiedRef.current = false;
       localStorage.setItem(CART_LAST_SYNC_KEY, Date.now().toString());
       setNeedsServerSync(false);
     } catch (err) {
@@ -136,6 +138,7 @@ export const useCart = (products: Product[], assets: Asset[]) => {
       return [...prev, cartItem];
     });
 
+    locallyModifiedRef.current = true;
     setNeedsServerSync(true);
     return { success: true };
   }, [products, cartItems]);
@@ -163,11 +166,13 @@ export const useCart = (products: Product[], assets: Asset[]) => {
       }).filter(i => i.quantity > 0);
     });
 
+    locallyModifiedRef.current = true;
     setNeedsServerSync(true);
   }, [products, cartItems]);
 
   const removeFromCart = useCallback((variantId: string) => {
     setCartItems(prev => prev.filter(item => item.variant_id !== variantId));
+    locallyModifiedRef.current = true;
     setNeedsServerSync(true);
   }, []);
 

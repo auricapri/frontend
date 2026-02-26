@@ -29,6 +29,15 @@ export const Drawer: React.FC<DrawerProps> = ({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const sideClasses = side === 'right' ? 'right-0' : 'left-0';
@@ -39,7 +48,7 @@ export const Drawer: React.FC<DrawerProps> = ({
         className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity animate-in fade-in duration-500"
         onClick={onClose}
       />
-      <div className={`fixed top-0 ${sideClasses} h-full ${width} bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-${side} duration-500`}>
+      <div role="dialog" aria-modal="true" className={`fixed top-0 ${sideClasses} h-full ${width} bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-${side} duration-500`}>
         {title && (
           <div className="flex items-center justify-between p-6 md:p-8 border-b border-gray-100">
             <h2 className="text-xl font-light tracking-widest uppercase">{title}</h2>

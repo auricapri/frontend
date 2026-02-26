@@ -64,7 +64,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
       />
 
       {/* Drawer */}
-      <div className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
+      <div role="dialog" aria-modal="true" className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
         
         {/* Header */}
         <div className="flex items-center justify-between p-6 md:p-8 border-b border-gray-100">
@@ -112,7 +112,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                           <p className="text-sm font-light">{formatCurrency(price * item.quantity, locale)}</p>
                         </div>
                       </div>
-                      <p className="text-[9px] text-gray-400 mt-1 uppercase font-bold tracking-widest">{getLoc(item.color_name)} / {item.size}</p>
+                      <p className="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-widest">{getLoc(item.color_name)} / {item.size}</p>
                     </div>
 
                     <div className="flex justify-between items-center">
@@ -147,7 +147,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
 
         {/* Footer / Checkout */}
         {items.length > 0 && (
-          <div className="p-8 md:p-10 border-t border-gray-100 bg-white">
+          <div className="p-8 md:p-10 border-t border-gray-100 bg-white" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}>
             <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] uppercase tracking-[0.3em] font-black text-neutral-400">{t('cart.subtotal')}</span>
               <div className="text-right">

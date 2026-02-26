@@ -148,6 +148,7 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
         appState.showToast(result.error || 'Erro ao adicionar ao carrinho.', 'error');
         return;
       }
+      appState.showToast('Produto adicionado à sacola!', 'info');
       appState.setIsCartOpen(true);
       trackingService.trackCartAdd(cartItem.product_id, cartItem.variant_id, cartItem.quantity);
     },
