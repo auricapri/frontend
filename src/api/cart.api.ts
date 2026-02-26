@@ -28,13 +28,14 @@ async function getCartHeaders(): Promise<HeadersInit> {
     'X-Session-Id': sessionId,
   };
 
-  const supabaseModule = await import('../utils/supabase').catch(() => null);
-  if (supabaseModule) {
-    const { supabase } = supabaseModule;
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) {
-      headers['Authorization'] = `Bearer ${session.access_token}`;
+  try {
+    const { auth } = await import('../utils/firebase');
+    const token = await auth.currentUser?.getIdToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
+  } catch (_) {
+    // Not authenticated — proceed without auth header
   }
 
   return headers;
