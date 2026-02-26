@@ -24,28 +24,13 @@ export const useAuth = () => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const previousUid = previousUidRef.current;
-
-        // Merge anonymous cart on first login
-        if (!previousUid && firebaseUser.uid) {
-          try {
-            const STORAGE_KEY = 'auricapri_cart_session_id';
-            const sessionId = localStorage.getItem(STORAGE_KEY);
-            if (sessionId) {
-              await cartApi.mergeCart(sessionId);
-              localStorage.removeItem(STORAGE_KEY);
-              window.dispatchEvent(new CustomEvent('cart-merged'));
-            }
-          } catch (error) {
-            logger.error('Error merging cart on login', error, { context: 'useAuth' });
-            window.dispatchEvent(new CustomEvent('cart-merge-failed'));
-          }
-        }
-
         previousUidRef.current = firebaseUser.uid;
 
-        // Fetch/create Supabase profile via backend
         try {
+          // STEP 1: Get token first (guarantees auth.currentUser is ready)
           const token = await firebaseUser.getIdToken();
+
+          // STEP 2: Fetch/create Supabase profile via backend
           const response = await fetch(`${apiBase}/auth/profile`, {
             method: 'POST',
             headers: {
@@ -55,12 +40,28 @@ export const useAuth = () => {
           });
 
           if (!response.ok) throw new Error(`Profile fetch failed: ${response.status}`);
-
           const profile = await response.json();
           setCurrentUser(profile as UserProfile);
+
+          // STEP 3: Merge cart AFTER profile exists (fire-and-forget, non-blocking)
+          if (!previousUid && firebaseUser.uid) {
+            const STORAGE_KEY = 'auricapri_cart_session_id';
+            const sessionId = localStorage.getItem(STORAGE_KEY);
+            if (sessionId) {
+              cartApi.mergeCart(sessionId)
+                .then(() => {
+                  localStorage.removeItem(STORAGE_KEY);
+                  window.dispatchEvent(new CustomEvent('cart-merged'));
+                })
+                .catch((error) => {
+                  logger.error('Error merging cart on login', error, { context: 'useAuth' });
+                  window.dispatchEvent(new CustomEvent('cart-merge-failed'));
+                });
+            }
+          }
         } catch (err) {
           logger.error('Error fetching profile', err, { context: 'useAuth' });
-          // Fallback profile
+          // Fallback profile (allows user to use the app even if profile fetch fails)
           const fallback: UserProfile = {
             id: firebaseUser.uid,
             email: firebaseUser.email || '',
