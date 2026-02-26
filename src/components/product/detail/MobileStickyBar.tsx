@@ -2,7 +2,7 @@
 /// Bottom sticky bar for mobile with actions and share popup
 
 import React from 'react';
-import { Heart, Share2, ChevronLeft, MessageCircle, Facebook, Twitter, Copy, Check } from 'lucide-react';
+import { Heart, Share2, ChevronLeft, ShoppingBag, MessageCircle, Facebook, Twitter, Copy, Check } from 'lucide-react';
 
 interface MobileStickyBarProps {
   isVisible: boolean;
@@ -13,6 +13,9 @@ interface MobileStickyBarProps {
   linkCopied: boolean;
   onShare: (platform: 'whatsapp' | 'facebook' | 'twitter' | 'copy') => void;
   onBack: () => void;
+  onAddToCart?: () => void;
+  addToCartLabel?: string;
+  addToCartDisabled?: boolean;
 }
 
 export function MobileStickyBar({
@@ -24,6 +27,9 @@ export function MobileStickyBar({
   linkCopied,
   onShare,
   onBack,
+  onAddToCart,
+  addToCartLabel,
+  addToCartDisabled,
 }: MobileStickyBarProps) {
   return (
     <div
@@ -37,35 +43,46 @@ export function MobileStickyBar({
       >
         <button
           onClick={onToggleWishlist}
-          className={`flex-1 flex items-center justify-center gap-2 rounded-xl border transition-all ${
+          className={`flex items-center justify-center rounded-xl border transition-all w-12 shrink-0 ${
             isWishlisted
               ? 'bg-black text-white border-black'
               : 'border-neutral-200 text-neutral-600 hover:border-black'
           }`}
         >
           <Heart className="w-4 h-4" fill={isWishlisted ? "currentColor" : "none"} />
-          <span className="text-[10px] font-bold uppercase tracking-wider">Favorito</span>
         </button>
 
         <button
           onClick={onToggleShare}
-          className={`flex-1 flex items-center justify-center gap-2 rounded-xl border transition-all ${
+          className={`flex items-center justify-center rounded-xl border transition-all w-12 shrink-0 ${
             isShareOpen
               ? 'bg-black text-white border-black'
               : 'border-neutral-200 text-neutral-600 hover:border-black'
           }`}
         >
           <Share2 className="w-4 h-4" />
-          <span className="text-[10px] font-bold uppercase tracking-wider">Compartilhar</span>
         </button>
 
-        <button
-          onClick={onBack}
-          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-black text-white transition-all hover:bg-neutral-800"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span className="text-[10px] font-bold uppercase tracking-wider">Voltar</span>
-        </button>
+        {onAddToCart ? (
+          <button
+            onClick={onAddToCart}
+            disabled={addToCartDisabled}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-black text-white transition-all hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">
+              {addToCartLabel || 'Adicionar à Bolsa'}
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={onBack}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-black text-white transition-all hover:bg-neutral-800"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Voltar</span>
+          </button>
+        )}
       </div>
 
       {isShareOpen && (

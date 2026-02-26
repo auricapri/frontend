@@ -95,7 +95,7 @@ export function ProductActions({
 
             {isShareOpen && (
               <div className="absolute bottom-[110%] right-0 min-w-[220px] bg-white rounded-[2rem] shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300 z-50">
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">
                   Compartilhar
                 </span>
 
@@ -153,15 +153,15 @@ export function ProductActions({
         <div className="flex flex-wrap items-center gap-4 pt-2">
           <div className="flex items-center gap-2 text-neutral-600">
             <RefreshCw className="w-4 h-4" />
-            <span className="text-[9px] font-black uppercase tracking-widest">Troca fácil</span>
+            <span className="text-[10px] font-black uppercase tracking-widest">Troca fácil</span>
           </div>
           <div className="flex items-center gap-2 text-neutral-600">
             <ShieldCheck className="w-4 h-4" />
-            <span className="text-[9px] font-black uppercase tracking-widest">Pagamento seguro</span>
+            <span className="text-[10px] font-black uppercase tracking-widest">Pagamento seguro</span>
           </div>
           <div className="flex items-center gap-2 text-neutral-600">
             <Truck className="w-4 h-4" />
-            <span className="text-[9px] font-black uppercase tracking-widest">Envio para todo Brasil</span>
+            <span className="text-[10px] font-black uppercase tracking-widest">Envio para todo Brasil</span>
           </div>
         </div>
       </div>
