@@ -10,7 +10,7 @@ type CachedShipping = {
   bestInternalShipping: InternalLogisticsInfo | null;
   shippingOptions: ShippingOption[];
   selectedShippingOption: ShippingOption | null;
-  expressOption: ShippingOption | null;
+  expressOption: InternalLogisticsInfo | null;
   timestamp: number;
 };
 const shippingCache = new Map<string, CachedShipping>();
@@ -45,7 +45,7 @@ export type ShippingCalculationState = {
   selectedShippingOption: ShippingOption | null;
   setSelectedShippingOption: (opt: ShippingOption | null) => void;
   // Express delivery (Mon–Thu)
-  expressOption: ShippingOption | null;
+  expressOption: InternalLogisticsInfo | null;
   selectedVarejoShipping: 'free' | 'express';
   setSelectedVarejoShipping: (choice: 'free' | 'express') => void;
   resetShipping: () => void;
@@ -65,7 +65,7 @@ export function useShippingCalculation(params: {
   const [bestInternalShipping, setBestInternalShipping] = useState<InternalLogisticsInfo | null>(null);
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
   const [selectedShippingOption, setSelectedShippingOption] = useState<ShippingOption | null>(null);
-  const [expressOption, setExpressOption] = useState<ShippingOption | null>(null);
+  const [expressOption, setExpressOption] = useState<InternalLogisticsInfo | null>(null);
   const [selectedVarejoShipping, setSelectedVarejoShippingState] = useState<'free' | 'express'>('free');
 
   // Holds the free shipping InternalLogisticsInfo so we can restore it when switching back
@@ -78,14 +78,8 @@ export function useShippingCalculation(params: {
   const setSelectedVarejoShipping = useCallback((choice: 'free' | 'express') => {
     setSelectedVarejoShippingState(choice);
     if (choice === 'express' && expressOption) {
-      setBestInternalShipping({
-        selected_carrier: expressOption.provider,
-        method: expressOption.method,
-        real_cost: expressOption.real_cost,
-        estimated_days: expressOption.estimated_days,
-        display_price_was: expressOption.display_price_was,
-        display_days_was: expressOption.display_days_was,
-      } as InternalLogisticsInfo);
+      // expressOption is already InternalLogisticsInfo with selected_carrier — use directly
+      setBestInternalShipping(expressOption);
     } else if (freeShippingInfoRef.current) {
       setBestInternalShipping(freeShippingInfoRef.current);
     }
@@ -149,7 +143,7 @@ export function useShippingCalculation(params: {
         let resultBestInternalShipping: InternalLogisticsInfo | null = null;
         let resultShippingOptions: ShippingOption[] = [];
         let resultSelectedShippingOption: ShippingOption | null = null;
-        let resultExpressOption: ShippingOption | null = null;
+        let resultExpressOption: InternalLogisticsInfo | null = null;
 
         if (userMode === UserMode.ATACADO) {
           const options = await logisticsService.calculateShippingOptions(cleanedCep, address || undefined);
