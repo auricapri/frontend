@@ -18,6 +18,7 @@ const SharedWishlistPage = React.lazy(() => import('../pages/SharedWishlistPage'
 const SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').then(m => ({ default: m.SearchResultsPage })));
 const MyReturnsPage = React.lazy(() => import('../pages/MyReturnsPage').then(m => ({ default: m.MyReturnsPage })));
 const ReturnRequestForm = React.lazy(() => import('../components/returns/ReturnRequestForm'));
+const AffiliatePage = React.lazy(() => import('../pages/AffiliatePage').then(m => ({ default: m.AffiliatePage })));
 
 export function AppRouter(props: {
   app: any;
@@ -140,6 +141,14 @@ export function AppRouter(props: {
           onBack={() => app.onNavigate('my-returns')}
           onSuccess={() => {}}
         />
+      </Suspense>
+    );
+  }
+
+  if (app.currentView === 'affiliates') {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <AffiliatePage locale={app.locale} onBack={() => app.onNavigate('home')} />
       </Suspense>
     );
   }

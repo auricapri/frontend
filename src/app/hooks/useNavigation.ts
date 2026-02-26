@@ -22,6 +22,7 @@ export type AppView =
   | 'privacy'
   | 'terms'
   | 'shipping'
+  | 'affiliates'
   | 'search-results'
   | 'marketplace-callback'
   | 'my-returns'
@@ -86,7 +87,7 @@ export function useNavigation(params: UseNavigationParams) {
     if (pathname === '/my-returns') return 'my-returns';
     if (pathname === '/request-return') return 'request-return';
     if (pathname === '/faq') return 'home';
-    if (pathname === '/affiliates') return 'home';
+    if (pathname === '/affiliates') return 'affiliates';
     if (pathname === '/products') return 'home';
     if (pathname === '/collections') return 'new-arrivals';
     if (pathname === '/admin/marketplace-callback') return 'marketplace-callback';
@@ -210,6 +211,7 @@ export function useNavigation(params: UseNavigationParams) {
             privacy: '/privacy',
             terms: '/terms',
             shipping: '/shipping',
+            affiliates: '/affiliates',
             'my-returns': '/my-returns',
             'request-return': '/request-return',
             'search-results': '/search',
