@@ -10,6 +10,7 @@ type CachedShipping = {
   bestInternalShipping: InternalLogisticsInfo | null;
   shippingOptions: ShippingOption[];
   selectedShippingOption: ShippingOption | null;
+  expressOption: ShippingOption | null;
   timestamp: number;
 };
 const shippingCache = new Map<string, CachedShipping>();
@@ -43,6 +44,10 @@ export type ShippingCalculationState = {
   shippingOptions: ShippingOption[];
   selectedShippingOption: ShippingOption | null;
   setSelectedShippingOption: (opt: ShippingOption | null) => void;
+  // Express delivery (Mon–Thu)
+  expressOption: ShippingOption | null;
+  selectedVarejoShipping: 'free' | 'express';
+  setSelectedVarejoShipping: (choice: 'free' | 'express') => void;
   resetShipping: () => void;
   calculateLogistics: (destCep: string) => void;
   calculateLogisticsImmediate: (destCep: string) => Promise<void>;
@@ -60,10 +65,31 @@ export function useShippingCalculation(params: {
   const [bestInternalShipping, setBestInternalShipping] = useState<InternalLogisticsInfo | null>(null);
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
   const [selectedShippingOption, setSelectedShippingOption] = useState<ShippingOption | null>(null);
+  const [expressOption, setExpressOption] = useState<ShippingOption | null>(null);
+  const [selectedVarejoShipping, setSelectedVarejoShippingState] = useState<'free' | 'express'>('free');
+
+  // Holds the free shipping InternalLogisticsInfo so we can restore it when switching back
+  const freeShippingInfoRef = useRef<InternalLogisticsInfo | null>(null);
 
   // Refs para debounce
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastCepRef = useRef<string>('');
+
+  const setSelectedVarejoShipping = useCallback((choice: 'free' | 'express') => {
+    setSelectedVarejoShippingState(choice);
+    if (choice === 'express' && expressOption) {
+      setBestInternalShipping({
+        selected_carrier: expressOption.provider,
+        method: expressOption.method,
+        real_cost: expressOption.real_cost,
+        estimated_days: expressOption.estimated_days,
+        display_price_was: expressOption.display_price_was,
+        display_days_was: expressOption.display_days_was,
+      } as InternalLogisticsInfo);
+    } else if (freeShippingInfoRef.current) {
+      setBestInternalShipping(freeShippingInfoRef.current);
+    }
+  }, [expressOption]);
 
   // Função que faz o cálculo real (sem debounce)
   const calculateLogisticsImmediate = useCallback(
@@ -88,6 +114,9 @@ export function useShippingCalculation(params: {
         setShippingDisplay(null);
         setShippingOptions([]);
         setSelectedShippingOption(null);
+        setExpressOption(null);
+        setSelectedVarejoShippingState('free');
+        freeShippingInfoRef.current = null;
         setCalculatingShipping(false);
         return;
       }
@@ -99,6 +128,9 @@ export function useShippingCalculation(params: {
         setBestInternalShipping(cached.bestInternalShipping);
         setShippingOptions(cached.shippingOptions);
         setSelectedShippingOption(cached.selectedShippingOption);
+        setExpressOption(cached.expressOption);
+        setSelectedVarejoShippingState('free');
+        freeShippingInfoRef.current = cached.bestInternalShipping;
         setCalculatingShipping(false);
         return;
       }
@@ -108,12 +140,16 @@ export function useShippingCalculation(params: {
       setBestInternalShipping(null);
       setShippingOptions([]);
       setSelectedShippingOption(null);
+      setExpressOption(null);
+      setSelectedVarejoShippingState('free');
+      freeShippingInfoRef.current = null;
 
       try {
         let resultShippingDisplay: ShippingDisplay = null;
         let resultBestInternalShipping: InternalLogisticsInfo | null = null;
         let resultShippingOptions: ShippingOption[] = [];
         let resultSelectedShippingOption: ShippingOption | null = null;
+        let resultExpressOption: ShippingOption | null = null;
 
         if (userMode === UserMode.ATACADO) {
           const options = await logisticsService.calculateShippingOptions(cleanedCep, address || undefined);
@@ -142,24 +178,36 @@ export function useShippingCalculation(params: {
             display_days_was: cheapest.display_days_was,
           };
         } else {
-          const logisticsInfo = await logisticsService.calculateShipping(cleanedCep, address || undefined);
+          // Varejo — fetch free shipping and express option in parallel
+          const [logisticsInfo, expressResult] = await Promise.all([
+            logisticsService.calculateShipping(cleanedCep, address || undefined),
+            logisticsService.calculateExpressOption(cleanedCep),
+          ]);
+
           resultShippingDisplay = {
             price: logisticsInfo.display_price_was,
             days: logisticsInfo.display_days_was,
           };
           // For varejo (retail) users, shipping is always free (displayed as GRÁTIS)
-          // Keep display_price_was for showing the "original" price crossed out
           resultBestInternalShipping = {
             ...logisticsInfo,
-            real_cost: 0, // Free shipping for varejo users
+            real_cost: 0,
           };
+
+          resultExpressOption = expressResult.available && expressResult.option
+            ? expressResult.option
+            : null;
         }
+
+        // Store free shipping info so user can switch back from express
+        freeShippingInfoRef.current = resultBestInternalShipping;
 
         // Atualiza estados
         setShippingDisplay(resultShippingDisplay);
         setBestInternalShipping(resultBestInternalShipping);
         setShippingOptions(resultShippingOptions);
         setSelectedShippingOption(resultSelectedShippingOption);
+        setExpressOption(resultExpressOption);
 
         // Salva no cache
         setCachedResult(cleanedCep, userMode, {
@@ -167,6 +215,7 @@ export function useShippingCalculation(params: {
           bestInternalShipping: resultBestInternalShipping,
           shippingOptions: resultShippingOptions,
           selectedShippingOption: resultSelectedShippingOption,
+          expressOption: resultExpressOption,
         });
       } catch {
         setBestInternalShipping({
@@ -206,6 +255,9 @@ export function useShippingCalculation(params: {
         setBestInternalShipping(cached.bestInternalShipping);
         setShippingOptions(cached.shippingOptions);
         setSelectedShippingOption(cached.selectedShippingOption);
+        setExpressOption(cached.expressOption);
+        setSelectedVarejoShippingState('free');
+        freeShippingInfoRef.current = cached.bestInternalShipping;
         return;
       }
 
@@ -222,6 +274,9 @@ export function useShippingCalculation(params: {
     setBestInternalShipping(null);
     setShippingOptions([]);
     setSelectedShippingOption(null);
+    setExpressOption(null);
+    setSelectedVarejoShippingState('free');
+    freeShippingInfoRef.current = null;
   }, []);
 
   return {
@@ -231,6 +286,9 @@ export function useShippingCalculation(params: {
     shippingOptions,
     selectedShippingOption,
     setSelectedShippingOption,
+    expressOption,
+    selectedVarejoShipping,
+    setSelectedVarejoShipping,
     resetShipping,
     calculateLogistics,
     calculateLogisticsImmediate,

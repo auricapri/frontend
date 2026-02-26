@@ -22,9 +22,17 @@ vi.mock('../../../src/api/users.api', () => ({
 // Mock shipping object passed as param
 const shippingMock = {
   calculateLogistics: vi.fn(),
+  calculateLogisticsImmediate: vi.fn(),
   resetShipping: vi.fn(),
   selectedShippingOption: null,
+  setSelectedShippingOption: vi.fn(),
   bestInternalShipping: null,
+  calculatingShipping: false,
+  shippingDisplay: null,
+  shippingOptions: [],
+  expressOption: null,
+  selectedVarejoShipping: 'free' as const,
+  setSelectedVarejoShipping: vi.fn(),
 };
 
 // ---------------------------------------------------------------------------

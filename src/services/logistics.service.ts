@@ -91,6 +91,22 @@ export class LogisticsService {
     return [];
   }
 
+  async calculateExpressOption(cep: string): Promise<{ available: boolean; option: ShippingOption | null }> {
+    const cleanCep = cep.replace(/\D/g, '');
+    try {
+      const result = await apiClient.post<{ available: boolean; option: ShippingOption | null }>(
+        '/logistics/express-option',
+        { cep: cleanCep }
+      );
+      if (result && typeof result.available === 'boolean') {
+        return result;
+      }
+    } catch (err) {
+      console.warn('Express option API error:', err);
+    }
+    return { available: false, option: null };
+  }
+
   async getFreightQuotes(input: FreightCalculationInput): Promise<FreightQuote[]> {
     try {
       const quotes = await apiClient.post<FreightQuote[]>('/logistics/freight-quotes', {

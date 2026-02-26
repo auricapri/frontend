@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Zap } from 'lucide-react';
 import { formatCurrency } from '../../../utils/currency';
 import { UserMode } from '../../../types';
 import { type CheckoutState } from '../hooks/useCheckoutState';
@@ -7,6 +7,7 @@ import { type CheckoutState } from '../hooks/useCheckoutState';
 export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
   const { locale, userMode, shipping } = checkout;
 
+  // ATACADO: show all shipping options
   if (userMode === UserMode.ATACADO && shipping.shippingOptions.length > 0) {
     return (
       <div className="space-y-3">
@@ -54,6 +55,70 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
     );
   }
 
+  // VAREJO with express option: show free vs express choice
+  if (
+    userMode !== UserMode.ATACADO &&
+    !shipping.calculatingShipping &&
+    shipping.expressOption &&
+    shipping.shippingDisplay
+  ) {
+    return (
+      <div className="space-y-2">
+        <div className="text-xs font-black uppercase tracking-widest text-neutral-600 mb-2">Opção de Entrega</div>
+
+        {/* Free shipping button */}
+        <button
+          onClick={() => shipping.setSelectedVarejoShipping('free')}
+          className={`w-full p-3 rounded-xl border-2 transition-all text-left ${
+            shipping.selectedVarejoShipping === 'free'
+              ? 'border-neutral-900 bg-neutral-50'
+              : 'border-neutral-100 hover:border-neutral-300'
+          }`}
+        >
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="text-[11px] font-black uppercase tracking-tight">Frete Grátis</div>
+              <div className="text-[10px] text-neutral-500 mt-0.5">{shipping.shippingDisplay.days} dias úteis</div>
+            </div>
+            <div className="text-right">
+              <div className="text-[11px] text-neutral-400 line-through decoration-red-500 decoration-2">
+                {formatCurrency(shipping.shippingDisplay.price, locale)}
+              </div>
+              <div className="text-[12px] font-black text-green-600">GRÁTIS</div>
+            </div>
+          </div>
+        </button>
+
+        {/* Express shipping button */}
+        <button
+          onClick={() => shipping.setSelectedVarejoShipping('express')}
+          className={`w-full p-3 rounded-xl border-2 transition-all text-left ${
+            shipping.selectedVarejoShipping === 'express'
+              ? 'border-neutral-900 bg-neutral-50'
+              : 'border-neutral-100 hover:border-neutral-300'
+          }`}
+        >
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="text-[11px] font-black uppercase tracking-tight flex items-center gap-1.5">
+                <Zap className="w-3 h-3 text-blue-600" />
+                Entrega Expressa
+                <span className="text-[9px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                  Mais Rápido
+                </span>
+              </div>
+              <div className="text-[10px] text-neutral-500 mt-0.5">{shipping.expressOption.estimated_days} dias úteis</div>
+            </div>
+            <div className="text-[12px] font-black tracking-tighter">
+              {formatCurrency(shipping.expressOption.real_cost, locale)}
+            </div>
+          </div>
+        </button>
+      </div>
+    );
+  }
+
+  // VAREJO default: show GRÁTIS or loading
   return (
     <>
       <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-neutral-600">
