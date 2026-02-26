@@ -173,6 +173,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [activeCategory, setActiveCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [quickAddProduct, setQuickAddProduct] = useState<Product | null>(null);
+  const [quickAddColorHex, setQuickAddColorHex] = useState<string | null>(null);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [internalGender, setInternalGender] = useState<Gender>(Gender.FEMALE);
   const isMobile = useIsMobile();
@@ -599,7 +600,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     isWishlisted={wishlistIds.includes(p.id)}
                     onToggleWishlist={onToggleWishlist}
                     onAddToCart={onAddToCart}
-                    onQuickAdd={(product) => setQuickAddProduct(product)}
+                    onQuickAdd={(product, colorHex) => { setQuickAddProduct(product); setQuickAddColorHex(colorHex || null); }}
                     onClick={() => onSelectProduct(p)}
                     selectedColorFamilies={selectedColorFamilies.length > 0 ? selectedColorFamilies : undefined}
                   />
@@ -640,15 +641,17 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         <QuickAddModal
           product={quickAddProduct}
           isOpen={!!quickAddProduct}
-          onClose={() => setQuickAddProduct(null)}
+          onClose={() => { setQuickAddProduct(null); setQuickAddColorHex(null); }}
           onAddToCart={(item) => {
             onAddToCart(item);
             setQuickAddProduct(null);
+            setQuickAddColorHex(null);
           }}
           userMode={userMode}
           locale={locale}
           getLoc={getLoc}
           coupons={coupons}
+          initialColorHex={quickAddColorHex || undefined}
         />
       )}
     </section>
