@@ -5,8 +5,7 @@ import React, { useState } from 'react';
 import { Phone, Loader2, LogOut, Trash2 } from 'lucide-react';
 import { UserProfile } from '../../../../types';
 import { Locale } from '../../../../i18n';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../../../utils/firebase';
+import { supabase } from '../../../../utils/supabase';
 import { maskPhone, maskCPF } from '../../../../utils/masks';
 import { ProfileFormState } from '../types';
 import { LoyaltyCard } from './LoyaltyCard';
@@ -41,7 +40,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await supabase.auth.signOut();
     onLogout?.();
   };
 

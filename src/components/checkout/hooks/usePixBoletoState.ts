@@ -156,11 +156,9 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     }
 
     // Check if user is still authenticated before creating order
-    const { auth } = await import('../../../utils/firebase');
-    const firebaseUser = auth.currentUser;
-
-    if (!firebaseUser) {
-      // Session expired
+    const { supabase } = await import('../../../utils/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
       throw new Error('Sua sessão expirou. Por favor, faça login novamente para continuar.');
     }
 
