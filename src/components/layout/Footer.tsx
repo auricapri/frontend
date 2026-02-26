@@ -9,7 +9,7 @@ interface FooterProps {
   currentLocale: Locale;
   onChangeLocale: (locale: Locale) => void;
   storeConfig: StoreConfig;
-  onNavigate: (view: 'home' | 'collection' | 'about' | 'privacy' | 'terms' | 'shipping', target?: string) => void;
+  onNavigate: (view: 'home' | 'collection' | 'about' | 'privacy' | 'terms' | 'shipping' | 'affiliates', target?: string) => void;
   onOpenFAQ?: () => void;
   onOpenAuth?: () => void;
 }
@@ -141,8 +141,9 @@ const Footer: React.FC<FooterProps> = ({
               </button>
             </li>
             <li>
-              <button onClick={onOpenAuth} className="hover:text-white transition-colors uppercase tracking-wide text-left">
-                Programa de Afiliados
+              <button onClick={() => onNavigate('affiliates')} className="hover:text-white transition-colors uppercase tracking-wide text-left flex flex-col items-start gap-0.5">
+                <span>Programa de Afiliados</span>
+                <span className="text-[9px] text-neutral-500 tracking-widest font-bold">A PARTIR DE 10%</span>
               </button>
             </li>
           </ul>
