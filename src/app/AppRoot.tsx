@@ -154,10 +154,14 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
   const handleToggleWishlist = useCallback(
     async (id: string) => {
       if (!currentUser) {
+        appState.showToast('Faça login para salvar favoritos', 'info');
         appState.setIsAuthOpen(true);
         return;
       }
-      await toggleWishlist(id);
+      const ok = await toggleWishlist(id);
+      if (!ok) {
+        appState.showToast('Erro ao atualizar favoritos. Tente novamente.', 'error');
+      }
     },
     [appState, currentUser, toggleWishlist]
   );

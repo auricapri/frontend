@@ -23,8 +23,8 @@ export const useWishlist = (userId?: string) => {
     fetchWishlist();
   }, [userId]);
 
-  const toggleWishlist = async (productId: string) => {
-    if (!userId) return;
+  const toggleWishlist = async (productId: string): Promise<boolean> => {
+    if (!userId) return false;
 
     const isWishlisted = wishlistIds.includes(productId);
 
@@ -36,8 +36,10 @@ export const useWishlist = (userId?: string) => {
         await wishlistApi.add(productId);
         setWishlistIds(prev => [...prev, productId]);
       }
+      return true;
     } catch (err) {
       console.error('Error toggling wishlist:', err);
+      return false;
     }
   };
 
