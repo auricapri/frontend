@@ -92,7 +92,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={locale === 'pt' ? 'Contato via WhatsApp' : 'Contact via WhatsApp'}
-          className="fixed bottom-10 right-6 p-5 bg-neutral-900 text-white rounded-full shadow-2xl z-40 border border-white/10 hover:scale-110 active:scale-95 transition-all flex items-center justify-center animate-in slide-in-from-bottom-10 duration-700"
+          className="fixed bottom-24 right-6 p-5 bg-neutral-900 text-white rounded-full shadow-2xl z-40 border border-white/10 hover:scale-110 active:scale-95 transition-all flex items-center justify-center animate-in slide-in-from-bottom-10 duration-700"
         >
           <MessageCircle className="w-6 h-6" />
         </a>
