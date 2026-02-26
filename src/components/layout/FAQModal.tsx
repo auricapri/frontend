@@ -154,14 +154,20 @@ const FAQModal: React.FC<FAQModalProps> = ({ isOpen, onClose, locale, t }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-6 md:p-8 border-t border-neutral-100 bg-neutral-50">
-          <p className="text-[10px] text-neutral-400 text-center font-medium">
+        <div className="p-6 md:p-8 border-t border-neutral-100 bg-neutral-50 text-center space-y-1">
+          <p className="text-[10px] text-neutral-400 font-medium">
             {locale === 'pt'
-              ? 'Não encontrou o que procurava? Entre em contato conosco.'
+              ? 'Não encontrou o que procurava?'
               : locale === 'es'
-              ? '¿No encontró lo que buscaba? Contáctenos.'
-              : "Didn't find what you were looking for? Contact us."}
+              ? '¿No encontró lo que buscaba?'
+              : "Didn't find what you were looking for?"}
           </p>
+          <a
+            href="mailto:faq@auricapri.com"
+            className="text-[10px] text-neutral-600 font-bold hover:text-black transition-colors"
+          >
+            faq@auricapri.com
+          </a>
         </div>
       </div>
     </>
