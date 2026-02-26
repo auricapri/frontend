@@ -113,7 +113,7 @@ const Navbar: React.FC<NavbarProps> = ({
       >
         {/* Background Layer - Smooth Opacity Fade */}
         <div
-          className={`absolute inset-0 transition-all duration-700 ease-out border-b
+          className={`absolute inset-0 pointer-events-none transition-all duration-700 ease-out border-b
             ${isSolid
               ? 'bg-white/90 backdrop-blur-xl opacity-100 border-neutral-100'
               : 'bg-white/0 backdrop-blur-0 opacity-0 border-transparent'}

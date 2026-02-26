@@ -44,7 +44,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, t, banners, locale, isLoading }
 
   if (isLoading || !mainBanner) {
     return (
-      <section className="w-full h-dvh snap-start relative bg-neutral-50 animate-shimmer overflow-hidden">
+      <section className="w-full h-[70vh] md:h-dvh snap-start relative bg-neutral-50 animate-shimmer overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-32 h-[1px] bg-neutral-200"></div>
         </div>
@@ -53,7 +53,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, t, banners, locale, isLoading }
   }
 
   return (
-    <section id="hero" className="w-full h-dvh snap-start relative flex items-center justify-center overflow-hidden bg-neutral-900">
+    <section id="hero" className="w-full h-[70vh] md:h-dvh snap-start relative flex items-center justify-center overflow-hidden bg-neutral-900">
       <div className="absolute inset-0 z-0">
         <OptimizedImage
           src={mainBanner.image}

@@ -441,6 +441,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         linkCopied={linkCopied}
         onShare={handleShare}
         onBack={() => window.history.back()}
+        onAddToCart={handleAddToCart}
+        addToCartLabel={activeVariant?.stock_quantity === 0 ? t('product.outOfStock') : t('product.addToCart')}
+        addToCartDisabled={!activeVariant || activeVariant.stock_quantity === 0}
       />
     </div>
   );

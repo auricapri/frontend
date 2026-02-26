@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { calculatePrice } from '../utils/product';
 import { trackingService } from '../services/tracking.service';
 import { useStoreData } from '../hooks/useStoreData';
@@ -75,6 +75,16 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
     isAuthLoading,
     onRefetchStoreData: refetchStoreData,
   });
+
+  // Show toast on login success
+  const prevUserRef = useRef(currentUser);
+  useEffect(() => {
+    if (!prevUserRef.current && currentUser) {
+      const firstName = currentUser.full_name?.split(' ')[0] || '';
+      appState.showToast(firstName ? `Bem-vinda, ${firstName}!` : 'Login realizado com sucesso!');
+    }
+    prevUserRef.current = currentUser;
+  }, [currentUser, appState]);
 
   const orderProcessing = useOrderProcessing({
     cartItems,

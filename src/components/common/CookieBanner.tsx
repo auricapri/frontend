@@ -41,7 +41,7 @@ export const CookieBanner: React.FC<CookieBannerProps> = ({ onNavigatePrivacy })
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[9998] animate-in slide-in-from-bottom duration-500">
+    <div className="fixed bottom-0 left-0 right-0 z-[200] animate-in slide-in-from-bottom duration-500">
       <div className="bg-neutral-900 border-t border-neutral-700 px-4 py-4 md:px-8 md:py-5">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center gap-4">
           <div className="flex-1 text-sm text-neutral-300 leading-relaxed">
