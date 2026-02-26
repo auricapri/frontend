@@ -10,7 +10,6 @@ import { useAppState } from './hooks/useAppState';
 import { useOrderProcessing } from './hooks/useOrderProcessing';
 import { AppProviders } from './AppProviders';
 import { AppRouter } from './AppRouter';
-import { BackToTop } from '../components/ui/BackToTop';
 
 interface StoreDataProps {
   products: Product[];
@@ -245,7 +244,6 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
         onSignOut={signOut}
         onSetCurrentView={appState.setCurrentView}
       />
-      <BackToTop />
     </>
   );
 }
