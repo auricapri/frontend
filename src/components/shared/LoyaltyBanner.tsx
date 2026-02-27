@@ -88,11 +88,11 @@ const LoyaltyBanner: React.FC<LoyaltyBannerProps> = ({
         
         {/* The Banner "Pill" */}
         <div 
-          className="pointer-events-auto relative w-full bg-neutral-900/95 backdrop-blur-xl text-white rounded-full p-2 pr-6 shadow-2xl border border-yellow-500/20 flex items-center gap-4 animate-in slide-in-from-top-10 zoom-in-95 duration-500 overflow-visible group"
+          className="pointer-events-auto relative w-full bg-neutral-900/95 backdrop-blur-xl text-white rounded-full p-2 pr-6 shadow-2xl border border-yellow-500/20 flex items-center gap-4 animate-in slide-in-from-top-10 zoom-in-95 duration-500 overflow-hidden group"
           style={{ boxShadow: '0 10px 40px -10px rgba(234, 179, 8, 0.3)' }}
         >
           {/* Confetti Container (Behind Banner) */}
-          <div className="absolute inset-0 overflow-visible pointer-events-none">
+          <div className="absolute inset-0 overflow-x-hidden overflow-y-visible pointer-events-none">
              {confetti.map(c => (
                <div key={c.id} className="confetti-piece" style={c.style} />
              ))}
