@@ -12,6 +12,7 @@ interface FooterProps {
   onNavigate: (view: 'home' | 'collection' | 'about' | 'privacy' | 'terms' | 'shipping' | 'affiliates', target?: string) => void;
   onOpenFAQ?: () => void;
   onOpenAuth?: () => void;
+  onOpenComplaint?: () => void;
 }
 
 /** Strips non-digit chars from phone for tel: links */
@@ -26,7 +27,8 @@ const Footer: React.FC<FooterProps> = ({
   storeConfig,
   onNavigate,
   onOpenFAQ,
-  onOpenAuth
+  onOpenAuth,
+  onOpenComplaint
 }) => {
   const handleScrollToContact = () => {
     const el = document.getElementById('footer-contact');
@@ -144,6 +146,11 @@ const Footer: React.FC<FooterProps> = ({
               <button onClick={() => onNavigate('affiliates')} className="hover:text-white transition-colors uppercase tracking-wide text-left flex flex-col items-start gap-0.5">
                 <span>Programa de Afiliados</span>
                 <span className="text-[9px] text-neutral-500 tracking-widest font-bold">A PARTIR DE 10%</span>
+              </button>
+            </li>
+            <li>
+              <button onClick={onOpenComplaint} className="hover:text-white transition-colors uppercase tracking-wide text-left">
+                Reclamação
               </button>
             </li>
           </ul>

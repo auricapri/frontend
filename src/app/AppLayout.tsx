@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -35,6 +35,7 @@ const WishlistDrawer = React.lazy(() => import('../components/cart/WishlistDrawe
 const CouponsDrawer = React.lazy(() => import('../components/cart/CouponsDrawer'));
 const AuthDrawer = React.lazy(() => import('../components/auth/AuthDrawer'));
 const FAQModal = React.lazy(() => import('../components/layout/FAQModal'));
+const ComplaintModal = React.lazy(() => import('../components/support/ComplaintModal'));
 
 export function AppLayout(props: {
   app: {
@@ -110,6 +111,7 @@ export function AppLayout(props: {
   const { app } = props;
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isFAQOpen, setIsFAQOpen] = useState(false);
+  const [isComplaintOpen, setIsComplaintOpen] = useState(false);
   const [selectedGender, setSelectedGender] = useState<Gender>(Gender.FEMALE);
   const { showModal: showTermsModal, acceptTerms, closeModal: closeTermsModal } = useTermsConsent();
 
@@ -194,6 +196,25 @@ export function AppLayout(props: {
     const schemas = [collectionSchema, breadcrumbSchema];
     return { seoTitle, seoDescription, seoKeywords, collectionImage, schemas };
   }, [app.currentView, app.activeCollection, app.locale, app.products]);
+
+  // Handle opening complaint modal (requires auth)
+  const handleOpenComplaint = useCallback(() => {
+    if (!app.currentUser) {
+      app.setIsAuthOpen(true);
+      // Store intent so we can open complaint after login
+      sessionStorage.setItem('pending_complaint', '1');
+      return;
+    }
+    setIsComplaintOpen(true);
+  }, [app.currentUser, app.setIsAuthOpen]);
+
+  // Check if we should open complaint modal after auth
+  useEffect(() => {
+    if (app.currentUser && sessionStorage.getItem('pending_complaint')) {
+      sessionStorage.removeItem('pending_complaint');
+      setIsComplaintOpen(true);
+    }
+  }, [app.currentUser]);
 
   // Handle selecting a product from chat
   const handleChatSelectProduct = (chatProduct: ChatProduct) => {
@@ -303,6 +324,7 @@ export function AppLayout(props: {
               onNavigate={app.onNavigate}
               onOpenFAQ={() => setIsFAQOpen(true)}
               onOpenAuth={() => app.setIsAuthOpen(true)}
+              onOpenComplaint={handleOpenComplaint}
             />
 
             {/* WhatsApp Button */}
@@ -374,6 +396,7 @@ export function AppLayout(props: {
               onNavigate={app.onNavigate}
               onOpenFAQ={() => setIsFAQOpen(true)}
               onOpenAuth={() => app.setIsAuthOpen(true)}
+              onOpenComplaint={handleOpenComplaint}
             />
           </>
         )}
@@ -415,6 +438,7 @@ export function AppLayout(props: {
               onNavigate={app.onNavigate}
               onOpenFAQ={() => setIsFAQOpen(true)}
               onOpenAuth={() => app.setIsAuthOpen(true)}
+              onOpenComplaint={handleOpenComplaint}
             />
           </>
         )}
@@ -517,6 +541,7 @@ export function AppLayout(props: {
               onNavigate={app.onNavigate}
               onOpenFAQ={() => setIsFAQOpen(true)}
               onOpenAuth={() => app.setIsAuthOpen(true)}
+              onOpenComplaint={handleOpenComplaint}
             />
           </>
         )}
@@ -658,6 +683,13 @@ export function AppLayout(props: {
           onClose={() => setIsFAQOpen(false)}
           locale={app.locale}
           t={app.t}
+        />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ComplaintModal
+          isOpen={isComplaintOpen}
+          onClose={() => setIsComplaintOpen(false)}
         />
       </Suspense>
 
