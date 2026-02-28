@@ -49,6 +49,7 @@ import { UserConsentsApi } from './user_consents.api';
 import { DreamApi } from './dream.api';
 import { AiChatApi } from './ai-chat.api';
 import { FaceSwapApi } from './face-swap.api';
+import { SupportApi } from './support.api';
 
 // Cached APIs (já têm cache interno)
 import { CachedProductsApi } from './cached.products.api';
@@ -107,6 +108,7 @@ export const userConsentsApi = new UserConsentsApi();
 export const dreamApi = new DreamApi();
 export const aiChatApi = new AiChatApi();
 export const faceSwapApi = new FaceSwapApi();
+export const supportApi = new SupportApi();
 
 // ============================================
 // SINGLETONS - Cached APIs (preferir estas!)
