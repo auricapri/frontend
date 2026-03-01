@@ -97,7 +97,7 @@ export function useProductImages(product: Product, variants: ProductVariant[]) {
 
     if (images.length === 0) {
       images.push({ 
-        url: 'https://via.placeholder.com/1200x1600?text=No+Image', 
+        url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1200' viewBox='0 0 800 1200'%3E%3Crect fill='%23f5f5f5' width='800' height='1200'/%3E%3Cg transform='translate(350,550)'%3E%3Cpath d='M50 0L100 50V80H0V50L25 25L40 40L50 0z' fill='%23d4d4d4'/%3E%3Crect y='80' width='100' height='5' fill='%23d4d4d4'/%3E%3C/g%3E%3C/svg%3E",
         variantId: 'base', 
         variantColor: '', 
         variantColorName: null,

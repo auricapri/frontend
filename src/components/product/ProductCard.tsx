@@ -7,7 +7,7 @@ import { calculatePrice } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
 import { getDisplayPrice as getProductDisplayPrice } from '../../utils/coupon';
 import { getProductColors } from '../../utils/variant';
-import { getOptimizedImageUrl, generateSrcSet, CARD_SIZES } from '../../utils/image';
+import { getOptimizedImageUrl, generateSrcSet, CARD_SIZES, PLACEHOLDER_IMAGE } from '../../utils/image';
 import { getColorFamilyId } from '../../utils/colorFamilies';
 
 export interface ProductCardProps {
@@ -115,8 +115,8 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
   const { original, final, hasDiscount } = priceResult;
   const discountDisplay = priceResult.discountDisplay?.replace(/^-/, '') || '';
 
-  // Image: use matching variant's image when available, fallback to product image
-  const displayImg = displayVariant?.variant_images?.[0] || product.default_image_url || product.base_images[0];
+  // Image: use matching variant's image when available, fallback to product image, then placeholder
+  const displayImg = displayVariant?.variant_images?.[0] || product.default_image_url || product.base_images?.[0] || PLACEHOLDER_IMAGE;
   const colors = getProductColors(product.variants);
   const hasMultipleVariants = (product.variants?.length || 0) > 1;
 
