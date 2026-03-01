@@ -65,7 +65,7 @@ function getImageAspect(aspectRatio: string): string {
 
 const TEXT_SIZES = {
   large: { name: 'text-[12px] md:text-[13px]', price: 'text-[13px] md:text-[14px]', priceOriginal: 'text-[11px]' },
-  compact: { name: 'text-[10px]', price: 'text-[11px]', priceOriginal: 'text-[9px]' },
+  compact: { name: 'text-[10px]', price: 'text-[11px]', priceOriginal: 'text-[10px]' },
   grid: { name: 'text-[11px]', price: 'text-[12px]', priceOriginal: 'text-[10px]' },
 } as const;
 
@@ -242,7 +242,7 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
       <div className="p-3 space-y-1">
         {/* Category */}
         {showCategory && categoryName && (
-          <p className="text-[9px] text-neutral-400 uppercase tracking-wider font-medium">
+          <p className="text-[10px] text-neutral-400 uppercase tracking-wider font-medium">
             {categoryName}
           </p>
         )}
@@ -259,7 +259,7 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
             <span className={`${textSize.name} text-neutral-600`}>
               {product.average_rating.toFixed(1)}
             </span>
-            <span className="text-[9px] text-neutral-400">
+            <span className="text-[10px] text-neutral-400">
               ({product.total_reviews})
             </span>
           </div>
@@ -293,7 +293,7 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
               />
             ))}
             {colors.length > 5 && (
-              <span className="text-[8px] text-neutral-500 font-medium ml-0.5">
+              <span className="text-[10px] text-neutral-500 font-medium ml-0.5">
                 +{colors.length - 5}
               </span>
             )}

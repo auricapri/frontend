@@ -75,7 +75,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
               <h5 className="text-[11px] font-black uppercase tracking-tight leading-tight mb-1">
                 {getLoc(item?.name)}
               </h5>
-              <p className="text-[9px] text-neutral-400 uppercase font-bold tracking-widest">
+              <p className="text-[10px] text-neutral-400 uppercase font-bold tracking-widest">
                 {getLoc(item?.color_name)} | {item?.size || 'N/A'}
               </p>
               <p className="text-[10px] font-black mt-2">Qtd: {item?.quantity || 0}</p>
@@ -125,12 +125,12 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
                       </div>
                       <div className="flex gap-2 mt-1">
                         {isCheapest && (
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-green-600 bg-green-50 px-2 py-0.5 rounded">
                             Mais Barato
                           </span>
                         )}
                         {isFastest && (
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
                             Mais Rápido
                           </span>
                         )}
@@ -140,7 +140,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
                       <div className="text-[12px] font-black tracking-tighter">
                         {formatCurrency(option.display_price_was, locale)}
                       </div>
-                      <div className="text-[8px] text-neutral-400 uppercase tracking-widest mt-0.5">
+                      <div className="text-[10px] text-neutral-400 uppercase tracking-widest mt-0.5">
                         {option.estimated_days} dias
                       </div>
                     </div>
@@ -172,7 +172,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
             </div>
             
             {shippingDisplay && !calculatingShipping && (
-              <div className="text-right text-[8px] font-bold text-neutral-400 uppercase tracking-widest">
+              <div className="text-right text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
                 Prazo Estimado: {shippingDisplay.days} dias úteis
               </div>
             )}
@@ -196,7 +196,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
       
       <div className="mt-12 p-8 bg-white rounded-3xl border border-neutral-100 flex items-center gap-5 shadow-sm">
         <ShieldCheck className="w-6 h-6 text-neutral-300" />
-        <span className="text-[8px] font-black uppercase tracking-widest text-neutral-400 leading-loose">
+        <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 leading-loose">
           Pagamento seguro via Asaas. Seus dados são protegidos com criptografia SSL 256 bits.
         </span>
       </div>

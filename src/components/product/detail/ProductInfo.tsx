@@ -33,7 +33,7 @@ export function ProductInfo(props: {
       {product.has_free_shipping && (
         <div className="flex items-center gap-1.5 mb-4 bg-emerald-500 text-white px-2.5 py-1 rounded-full w-fit">
           <Truck className="w-2.5 h-2.5" />
-          <span className="text-[8px] font-black uppercase tracking-widest">Frete Grátis</span>
+          <span className="text-[10px] font-black uppercase tracking-widest">Frete Grátis</span>
         </div>
       )}
 

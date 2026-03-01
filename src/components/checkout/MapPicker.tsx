@@ -296,7 +296,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
                   className="w-full p-4 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors"
                 >
                   <p className="text-[10px] font-black uppercase tracking-widest">{res.text}</p>
-                  <p className="text-[9px] text-neutral-400 truncate">{res.place_name}</p>
+                  <p className="text-[10px] text-neutral-400 truncate">{res.place_name}</p>
                 </button>
               ))}
             </div>
@@ -307,7 +307,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
         {(manualAddress.street && manualAddress.city) && (
           <div className="absolute bottom-6 left-6 right-6 z-10">
             <div className="bg-white rounded-2xl shadow-2xl p-4 mb-4">
-              <p className="text-[8px] font-black uppercase tracking-widest text-neutral-400 mb-1">Endereço Selecionado:</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">Endereço Selecionado:</p>
               <p className="text-xs font-black uppercase">
                 {manualAddress.street}
                 {manualAddress.neighborhood && `, ${manualAddress.neighborhood}`}

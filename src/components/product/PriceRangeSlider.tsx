@@ -104,12 +104,12 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
     <div className="w-full touch-none select-none px-6">
       <div className="flex justify-between items-center mb-4">
         <div className="flex flex-col">
-          <span className="text-[8px] uppercase tracking-widest font-bold text-neutral-400 mb-1">
+          <span className="text-[10px] uppercase tracking-widest font-bold text-neutral-400 mb-1">
             {formatCurrency(localMin, locale)}
           </span>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-[8px] uppercase tracking-widest font-bold text-neutral-400 mb-1">
+          <span className="text-[10px] uppercase tracking-widest font-bold text-neutral-400 mb-1">
             {formatCurrency(localMax, locale)}
           </span>
         </div>

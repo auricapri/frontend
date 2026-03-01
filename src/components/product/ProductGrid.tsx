@@ -122,7 +122,7 @@ const CollectionCard: React.FC<CollectionCardProps> = React.memo(({ collection, 
 
           {/* Countdown in center */}
           <div className="text-center">
-            <div className="text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] mb-2 md:mb-3 text-orange-400">
+            <div className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] mb-2 md:mb-3 text-orange-400">
               {notStartedYet
                 ? (locale === 'pt' ? 'Começa em' : locale === 'es' ? 'Comienza en' : 'Starts in')
                 : (locale === 'pt' ? 'Termina em' : locale === 'es' ? 'Termina en' : 'Ends in')
@@ -140,7 +140,7 @@ const CollectionCard: React.FC<CollectionCardProps> = React.memo(({ collection, 
 
           {/* Hint at bottom - different text for mobile */}
           <div className="absolute bottom-4 md:bottom-6 left-0 right-0 text-center">
-            <div className="text-[8px] md:text-[9px] font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-white/50">
+            <div className="text-[10px] md:text-[10px] font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-white/50">
               <span className="md:hidden">{locale === 'pt' ? 'Toque para ver' : locale === 'es' ? 'Toca para ver' : 'Tap to reveal'}</span>
               <span className="hidden md:inline">{locale === 'pt' ? 'Passe o mouse para ver' : locale === 'es' ? 'Pasa el mouse para ver' : 'Hover to reveal'}</span>
             </div>
@@ -349,7 +349,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <ShoppingBag className="w-5 h-5 text-stone-600" />
-                  <span className="absolute -top-1.5 -right-1.5 bg-rose-400 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-1.5 bg-rose-400 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {itemCount}
                   </span>
                 </div>
@@ -404,7 +404,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
       {/* Collections Section */}
       {collections.length > 0 && (
-        <div className="mb-4">
+        <div className="mb-4 overflow-hidden">
           <div className="px-6 md:px-12 mb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <h2 className="text-3xl font-light tracking-tight uppercase mb-2">{t('nav.collection')}</h2>
@@ -412,7 +412,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             </div>
           </div>
 
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 px-6 md:px-12 no-scrollbar">
+          <div className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory gap-6 px-6 md:px-12 no-scrollbar max-w-full">
             {!isLoading && collections.map((coll) => (
               <CollectionCard
                 key={coll.id}
@@ -435,7 +435,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           {/* Filter Toggle Button */}
           <button
             onClick={() => setIsFiltersOpen(prev => !prev)}
-            className={`flex-shrink-0 flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-[9px] md:text-[10px] uppercase tracking-[0.15em] md:tracking-[0.2em] font-bold transition-all ${
+            className={`flex-shrink-0 flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-[10px] md:text-[10px] uppercase tracking-[0.15em] md:tracking-[0.2em] font-bold transition-all ${
               isFiltersOpen
                 ? 'bg-neutral-900 text-white'
                 : 'text-neutral-700 hover:bg-neutral-100 active:bg-neutral-100'
@@ -451,7 +451,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             <span className="hidden sm:inline">{isFiltersOpen ? t('grid.hideFilters') || 'Ocultar' : t('grid.showFilters') || 'Filtros'}</span>
             <span className="sm:hidden">{isFiltersOpen ? 'Ocultar' : 'Filtros'}</span>
             {activeFilterCount > 0 && !isFiltersOpen && (
-              <span className="ml-0.5 w-4 h-4 md:w-5 md:h-5 flex items-center justify-center bg-neutral-900 text-white text-[8px] md:text-[9px] font-bold rounded-full">
+              <span className="ml-0.5 w-4 h-4 md:w-5 md:h-5 flex items-center justify-center bg-neutral-900 text-white text-[10px] md:text-[10px] font-bold rounded-full">
                 {activeFilterCount}
               </span>
             )}
@@ -461,7 +461,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           <div className="flex-1 flex overflow-x-auto no-scrollbar gap-1.5 md:gap-2">
             <button
               onClick={() => handleFilterClick("All")}
-              className={`flex-shrink-0 px-3 md:px-5 py-1.5 md:py-2 rounded-full text-[9px] md:text-[10px] uppercase tracking-[0.1em] md:tracking-[0.15em] font-bold transition-all border ${
+              className={`flex-shrink-0 px-3 md:px-5 py-1.5 md:py-2 rounded-full text-[10px] md:text-[10px] uppercase tracking-[0.1em] md:tracking-[0.15em] font-bold transition-all border ${
                 activeCategory === "All"
                   ? 'bg-neutral-900 text-white border-neutral-900'
                   : 'text-neutral-600 border-neutral-200 active:border-neutral-400'
@@ -474,7 +474,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <button
                 key={cat.id}
                 onClick={() => handleFilterClick(getLoc(cat.name))}
-                className={`flex-shrink-0 px-3 md:px-5 py-1.5 md:py-2 rounded-full text-[9px] md:text-[10px] uppercase tracking-[0.1em] md:tracking-[0.15em] font-bold transition-all border whitespace-nowrap ${
+                className={`flex-shrink-0 px-3 md:px-5 py-1.5 md:py-2 rounded-full text-[10px] md:text-[10px] uppercase tracking-[0.1em] md:tracking-[0.15em] font-bold transition-all border whitespace-nowrap ${
                   activeCategory === getLoc(cat.name)
                     ? 'bg-neutral-900 text-white border-neutral-900'
                     : 'text-neutral-600 border-neutral-200 active:border-neutral-400'
@@ -630,7 +630,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                   <ArrowLeft className="w-4 h-4" />
                 </button>
                 <div className="flex flex-col items-center">
-                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-1">{t('grid.page')}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-1">{t('grid.page')}</span>
                   <span className="text-lg font-light tabular-nums">{currentPage} <span className="text-neutral-300 text-sm">/ {totalPages}</span></span>
                 </div>
                 <button

@@ -48,7 +48,7 @@ export const LoyaltyCard: React.FC<LoyaltyCardProps> = ({ user, locale }) => {
         </div>
 
         <div className="space-y-2">
-          <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-white/60">
+          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/60">
             <span>{xp} XP</span>
             <span>{nextLevelXp} XP</span>
           </div>
@@ -58,7 +58,7 @@ export const LoyaltyCard: React.FC<LoyaltyCardProps> = ({ user, locale }) => {
               style={{ width: `${xpProgress}%` }}
             />
           </div>
-          <p className="text-[9px] text-white/40 text-center pt-2">
+          <p className="text-[10px] text-white/40 text-center pt-2">
             Continue comprando para subir de nível e ganhar cupons exclusivos.
           </p>
         </div>

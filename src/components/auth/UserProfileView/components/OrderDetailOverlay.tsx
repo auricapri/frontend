@@ -77,7 +77,7 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
           </div>
 
           {/* Progress Labels */}
-          <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-neutral-400">
+          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-neutral-400">
             <span>Processando</span>
             <span
               className={
@@ -109,7 +109,7 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
                 <h6 className="text-[11px] font-black uppercase tracking-tight">
                   {getLoc(item.name)}
                 </h6>
-                <p className="text-[9px] text-neutral-400 uppercase font-bold tracking-widest mt-1">
+                <p className="text-[10px] text-neutral-400 uppercase font-bold tracking-widest mt-1">
                   {getLoc(item.color_name)} | {item.size}
                 </p>
                 <p className="text-[10px] font-black mt-1">Qtd: {item.quantity}</p>

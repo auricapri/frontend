@@ -250,11 +250,11 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
                 <div className="text-xl font-black">{awaitingPickupOrders.length}</div>
-                <div className="text-[9px] font-bold uppercase tracking-widest text-amber-700">Aguardando</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-amber-700">Aguardando</div>
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
                 <div className="text-xl font-black">{collectedOrders.length}</div>
-                <div className="text-[9px] font-bold uppercase tracking-widest text-blue-700">Coletados</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-blue-700">Coletados</div>
               </div>
             </div>
 

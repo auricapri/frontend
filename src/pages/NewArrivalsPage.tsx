@@ -185,7 +185,7 @@ export function NewArrivalsPage({
 
                 {/* View Collection indicator */}
                 <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="text-white/60 text-[9px] uppercase tracking-widest font-bold">
+                  <span className="text-white/60 text-[10px] uppercase tracking-widest font-bold">
                     {locale === 'pt' ? 'Ver coleção' : locale === 'es' ? 'Ver colección' : 'View collection'}
                   </span>
                   <ArrowLeft className="w-3 h-3 text-white/60 rotate-180" strokeWidth={2} />

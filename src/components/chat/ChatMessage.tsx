@@ -90,7 +90,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
             </p>
             {!isTyping && (
               <span
-                className={`text-[9px] mt-1 block ${
+                className={`text-[10px] mt-1 block ${
                   isUser ? 'text-white/50' : 'text-neutral-400'
                 }`}
               >

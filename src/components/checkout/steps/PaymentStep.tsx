@@ -295,7 +295,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
                         }`}
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[8px] font-black uppercase tracking-widest text-neutral-700">
+                          <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-neutral-700">
                             {card.brand}
                           </div>
                           <div>
@@ -416,7 +416,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
                           }`}
                         >
                           <div className="flex items-center gap-4">
-                            <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[8px] font-black uppercase tracking-widest text-neutral-700">
+                            <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-neutral-700">
                               {card.brand}
                             </div>
                             <div>
@@ -547,7 +547,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
             <>
               {/* Código copia e cola */}
               <div className="w-full max-w-md bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10">
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/40 block mb-2">Código PIX (Copia e Cola)</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/40 block mb-2">Código PIX (Copia e Cola)</span>
                 <div className="bg-black/30 p-3 rounded-xl">
                   <p className="font-mono text-[10px] break-all text-white/70 leading-relaxed">
                     {pixData?.qrCodePayload?.substring(0, 80)}...

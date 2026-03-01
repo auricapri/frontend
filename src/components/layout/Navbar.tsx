@@ -146,7 +146,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   className="group flex items-center gap-2 py-1 -ml-2 hover:opacity-50 transition-all active:scale-95"
                 >
                   <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" strokeWidth={1.5} />
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em]">{t('nav.back')}</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('nav.back')}</span>
                 </button>
               ) : (
                 <button
@@ -221,7 +221,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 className="group flex items-center gap-3 py-2 -ml-2 hover:opacity-50 transition-all active:scale-95"
               >
                 <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" strokeWidth={1.5} />
-                <span className="text-[9px] font-black uppercase tracking-[0.3em]">{t('nav.back')}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">{t('nav.back')}</span>
               </button>
             ) : (
               <button
@@ -300,9 +300,9 @@ const Navbar: React.FC<NavbarProps> = ({
 
       {/* Search Bar - Slides down from navbar */}
       <div
-        className={`fixed left-0 w-full z-40 transition-all duration-700 ease-out overflow-hidden
+        className={`fixed left-0 w-full z-[55] transition-all duration-700 ease-out overflow-hidden
           ${isSearchOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}
-          ${isSolid ? 'top-24 md:top-[5.5rem]' : 'top-40 md:top-32'}
+          ${isSolid ? 'top-16 md:top-14' : 'top-32 md:top-24'}
         `}
         style={{ marginTop: showTestBanner ? '48px' : '0' }}
       >
@@ -392,7 +392,7 @@ const Navbar: React.FC<NavbarProps> = ({
             <div className="flex-1 flex flex-col py-6 overflow-hidden">
               {/* Gender Toggle */}
               <div className="mb-5 pb-5 border-b border-neutral-100 flex-shrink-0">
-                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4">Comprar por</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4">Comprar por</p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => {
@@ -560,7 +560,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   >
                     <div className="flex items-center gap-3">
                       <Ticket className="w-5 h-5" strokeWidth={1} />
-                      <span className="text-[9px] font-black uppercase tracking-[0.3em]">{t('nav.coupons')}</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em]">{t('nav.coupons')}</span>
                     </div>
                     <ArrowLeft className="w-4 h-4 rotate-180" />
                   </button>
@@ -570,7 +570,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     className="flex-1 min-w-[120px] p-3 border-2 border-neutral-100 rounded-2xl flex items-center justify-between hover:opacity-95 transition-all active:scale-95"
                   >
                     <div className="flex flex-col items-start gap-1">
-                      <span className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-400">Ambiente</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">Ambiente</span>
                       <span className="text-xs font-black uppercase tracking-wide">{userMode}</span>
                     </div>
                     <ArrowLeft className="w-4 h-4 rotate-180" />

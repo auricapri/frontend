@@ -145,7 +145,7 @@ const Footer: React.FC<FooterProps> = ({
             <li>
               <button onClick={() => onNavigate('affiliates')} className="hover:text-white transition-colors uppercase tracking-wide text-left flex flex-col items-start gap-0.5">
                 <span>Programa de Afiliados</span>
-                <span className="text-[9px] text-neutral-500 tracking-widest font-bold">A PARTIR DE 10%</span>
+                <span className="text-[10px] text-neutral-500 tracking-widest font-bold">A PARTIR DE 10%</span>
               </button>
             </li>
             <li>
@@ -161,17 +161,17 @@ const Footer: React.FC<FooterProps> = ({
           <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-200">{t('footer.secure')}</h4>
           <div className="flex items-center space-x-2 text-neutral-400">
              <Lock className="w-3 h-3" />
-             <span className="text-[9px] uppercase tracking-wider">{t('footer.ssl')}</span>
+             <span className="text-[10px] uppercase tracking-wider">{t('footer.ssl')}</span>
           </div>
           <div className="flex flex-wrap gap-2 pt-2">
             {/* Payment method badges */}
-            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Pix</span>
-            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Visa</span>
-            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Master</span>
-            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Elo</span>
-            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Boleto</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">Pix</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">Visa</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">Master</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">Elo</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">Boleto</span>
           </div>
-          <p className="text-[9px] text-neutral-600 leading-relaxed max-w-[180px]">
+          <p className="text-[10px] text-neutral-600 leading-relaxed max-w-[180px]">
             Pagamentos processados com segurança via Asaas. Dados protegidos com criptografia SSL.
           </p>
 
@@ -179,15 +179,15 @@ const Footer: React.FC<FooterProps> = ({
           <div className="flex flex-col gap-3 pt-4 border-t border-neutral-700">
             <div className="flex items-center gap-2 text-neutral-400">
               <RefreshCw className="w-3 h-3" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Troca fácil</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Troca fácil</span>
             </div>
             <div className="flex items-center gap-2 text-neutral-400">
               <ShieldCheck className="w-3 h-3" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Pagamento seguro</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Pagamento seguro</span>
             </div>
             <div className="flex items-center gap-2 text-neutral-400">
               <Truck className="w-3 h-3" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Envio para todo Brasil</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Envio para todo Brasil</span>
             </div>
           </div>
         </div>

@@ -120,7 +120,7 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
         <div className="flex items-center gap-3 md:gap-4">
           <button
             onClick={() => setIsFiltersOpen(prev => !prev)}
-            className={`flex-shrink-0 flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-[9px] md:text-[10px] uppercase tracking-[0.15em] md:tracking-[0.2em] font-bold transition-all ${
+            className={`flex-shrink-0 flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-[10px] md:text-[10px] uppercase tracking-[0.15em] md:tracking-[0.2em] font-bold transition-all ${
               isFiltersOpen
                 ? 'bg-neutral-900 text-white'
                 : 'text-neutral-700 hover:bg-neutral-100'
@@ -129,7 +129,7 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
             {isFiltersOpen ? <X className="w-3.5 h-3.5" /> : <SlidersHorizontal className="w-3.5 h-3.5" />}
             <span>{isFiltersOpen ? t('grid.hideFilters') : t('grid.showFilters')}</span>
             {activeFilterCount > 0 && !isFiltersOpen && (
-              <span className="ml-0.5 w-5 h-5 flex items-center justify-center bg-neutral-900 text-white text-[9px] font-bold rounded-full">
+              <span className="ml-0.5 w-5 h-5 flex items-center justify-center bg-neutral-900 text-white text-[10px] font-bold rounded-full">
                 {activeFilterCount}
               </span>
             )}
@@ -294,7 +294,7 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <div className="flex flex-col items-center">
-                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-1">
                   {t('grid.page')}
                 </span>
                 <span className="text-lg font-light tabular-nums">

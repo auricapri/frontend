@@ -103,7 +103,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
               <div className="text-[11px] font-black uppercase tracking-tight flex items-center gap-1.5">
                 <Zap className="w-3 h-3 text-blue-600" />
                 Entrega Expressa
-                <span className="text-[9px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
                   Mais Rápido
                 </span>
               </div>
