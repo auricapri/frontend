@@ -1,6 +1,6 @@
 /**
- * 22 — MOBILE EDGE CASES
- * Testa: MobileStickyBar, safe-area, teclado, overflow, orientação
+ * 22 --- MOBILE EDGE CASES
+ * Testa: MobileStickyBar, safe-area, teclado, overflow, orientacao
  */
 import { test, expect, Page } from '@playwright/test';
 
@@ -20,43 +20,54 @@ async function dismissOverlays(page: Page) {
   }
 }
 
-test.describe('Mobile — iPhone SE (375x667)', () => {
+async function scrollToActivateHeader(page: Page) {
+  await page.evaluate(() => window.scrollTo(0, 400));
+  await page.waitForTimeout(800);
+}
+
+test.describe('Mobile -- iPhone SE (375x667)', () => {
   test.use({ viewport: { width: 375, height: 667 } });
 
   test('Page loads without horizontal overflow', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/', { waitUntil: 'load', timeout: 30_000 });
     await dismissOverlays(page);
     await page.waitForTimeout(2000);
 
     const hasHorizontalOverflow = await page.evaluate(() => {
       return document.documentElement.scrollWidth > document.documentElement.clientWidth;
     });
-    console.log(`  📱 iPhone SE — overflow horizontal: ${hasHorizontalOverflow ? '❌ SIM' : '✅ NÃO'}`);
+    console.log(`  iPhone SE -- overflow horizontal: ${hasHorizontalOverflow ? 'SIM (problema)' : 'NAO (ok)'}`);
     expect(hasHorizontalOverflow).toBe(false);
   });
 
   test('Navigation is accessible on small screen', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/', { waitUntil: 'load', timeout: 30_000 });
     await dismissOverlays(page);
 
-    await page.evaluate(() => window.scrollTo(0, 400));
-    await page.waitForTimeout(800);
+    await scrollToActivateHeader(page);
 
-    // Check navbar buttons are visible
-    const cartBtn = page.locator('button[aria-label*="Carrinho"], button[aria-label*="Cart"]').first();
-    const hasCart = await cartBtn.isVisible({ timeout: 3_000 }).catch(() => false);
-    console.log(`  🛒 Botão carrinho em tela pequena: ${hasCart ? '✅' : '❌'}`);
+    // Navbar cart button: aria-label="Carrinho"
+    const cartBtn = page.locator('button[aria-label="Carrinho"]').first();
+    const hasCart = await cartBtn.isVisible({ timeout: 5_000 }).catch(() => false);
+    console.log(`  Botao carrinho em tela pequena: ${hasCart ? 'SIM' : 'NAO'}`);
+
+    // Also check auth button: aria-label="Entrar" or "Minha conta"
+    const authBtn = page.locator('button[aria-label="Entrar"], button[aria-label="Minha conta"]').first();
+    const hasAuth = await authBtn.isVisible({ timeout: 3_000 }).catch(() => false);
+    console.log(`  Botao auth em tela pequena: ${hasAuth ? 'SIM' : 'NAO'}`);
+
+    // Wishlist button: aria-label="Lista de desejos"
+    const wishBtn = page.locator('button[aria-label="Lista de desejos"]').first();
+    const hasWish = await wishBtn.isVisible({ timeout: 3_000 }).catch(() => false);
+    console.log(`  Botao wishlist em tela pequena: ${hasWish ? 'SIM' : 'NAO'}`);
   });
 
   test('Product images are not clipped', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/', { waitUntil: 'load', timeout: 30_000 });
     await dismissOverlays(page);
 
-    // Scroll to products
-    await page.evaluate(() => {
-      const main = document.querySelector('main');
-      if (main) main.scrollTo(0, 600);
-    });
+    // Scroll to products using window.scrollTo (more reliable)
+    await page.evaluate(() => window.scrollTo(0, 800));
     await page.waitForTimeout(2000);
 
     // Check if product images are within viewport
@@ -73,18 +84,15 @@ test.describe('Mobile — iPhone SE (375x667)', () => {
         }
       }
     }
-    console.log(`  🖼️ Imagens cortadas: ${clippedCount === 0 ? '✅ Nenhuma' : `❌ ${clippedCount} cortadas`}`);
+    console.log(`  Imagens cortadas: ${clippedCount === 0 ? 'Nenhuma' : `${clippedCount} cortadas`}`);
   });
 
-  test('Text is readable (min 12px)', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'load' });
+  test('Text is readable (min 9px)', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'load', timeout: 30_000 });
     await dismissOverlays(page);
 
     // Scroll to content
-    await page.evaluate(() => {
-      const main = document.querySelector('main');
-      if (main) main.scrollTo(0, 600);
-    });
+    await page.evaluate(() => window.scrollTo(0, 800));
     await page.waitForTimeout(2000);
 
     const smallTextCount = await page.evaluate(() => {
@@ -99,70 +107,72 @@ test.describe('Mobile — iPhone SE (375x667)', () => {
       });
       return small;
     });
-    console.log(`  🔤 Textos abaixo de 9px: ${smallTextCount === 0 ? '✅ Nenhum' : `⚠ ${smallTextCount} elementos`}`);
+    console.log(`  Textos abaixo de 9px: ${smallTextCount === 0 ? 'Nenhum' : `${smallTextCount} elementos`}`);
   });
 });
 
-test.describe('Mobile — iPhone 14 Pro Max (430x932)', () => {
+test.describe('Mobile -- iPhone 14 Pro Max (430x932)', () => {
   test.use({ viewport: { width: 430, height: 932 } });
 
   test('Page renders correctly on large phone', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/', { waitUntil: 'load', timeout: 30_000 });
     await dismissOverlays(page);
     await page.waitForTimeout(2000);
 
     const hasOverflow = await page.evaluate(() => {
       return document.documentElement.scrollWidth > document.documentElement.clientWidth;
     });
-    console.log(`  📱 iPhone 14 Pro Max — overflow: ${hasOverflow ? '❌' : '✅ OK'}`);
+    console.log(`  iPhone 14 Pro Max -- overflow: ${hasOverflow ? 'SIM (problema)' : 'NAO (ok)'}`);
     expect(hasOverflow).toBe(false);
   });
 
   test('Footer is accessible by scrolling', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/', { waitUntil: 'load', timeout: 30_000 });
     await dismissOverlays(page);
 
-    // Scroll to bottom
+    // Scroll to bottom using both main and window for reliability
     await page.evaluate(() => {
       const main = document.querySelector('main');
-      if (main) main.scrollTo(0, main.scrollHeight);
+      if (main && main.scrollHeight > main.clientHeight) {
+        main.scrollTo(0, main.scrollHeight);
+      }
+      window.scrollTo(0, document.body.scrollHeight);
     });
     await page.waitForTimeout(2000);
 
     const footer = page.locator('footer');
-    const footerVisible = await footer.isVisible({ timeout: 5_000 }).catch(() => false);
-    console.log(`  📱 Footer acessível: ${footerVisible ? '✅' : '⚠ Não visível'}`);
+    const footerVisible = await footer.isVisible({ timeout: 10_000 }).catch(() => false);
+    console.log(`  Footer acessivel: ${footerVisible ? 'SIM' : 'NAO'}`);
   });
 });
 
-test.describe('Mobile — Landscape', () => {
+test.describe('Mobile -- Landscape', () => {
   test.use({ viewport: { width: 812, height: 375 } });
 
   test('Landscape mode does not break layout', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/', { waitUntil: 'load', timeout: 30_000 });
     await dismissOverlays(page);
     await page.waitForTimeout(2000);
 
     const hasOverflow = await page.evaluate(() => {
       return document.documentElement.scrollWidth > document.documentElement.clientWidth;
     });
-    console.log(`  🔄 Landscape — overflow: ${hasOverflow ? '❌' : '✅ OK'}`);
+    console.log(`  Landscape -- overflow: ${hasOverflow ? 'SIM (problema)' : 'NAO (ok)'}`);
 
     // Check content is still accessible
     const bodyContent = await page.evaluate(() => document.body.innerText.length);
-    console.log(`  📝 Conteúdo em landscape: ${bodyContent > 100 ? '✅ Renderizou' : '⚠ Possível problema'}`);
+    console.log(`  Conteudo em landscape: ${bodyContent > 100 ? 'Renderizou' : 'Possivel problema'}`);
   });
 });
 
-test.describe('Mobile — Touch Targets', () => {
+test.describe('Mobile -- Touch Targets', () => {
   test.use({ viewport: { width: 375, height: 812 } });
 
-  test('Interactive elements have minimum 44x44 touch target', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'load' });
+  test('Interactive elements have minimum touch target size', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'load', timeout: 30_000 });
     await dismissOverlays(page);
 
-    await page.evaluate(() => window.scrollTo(0, 400));
-    await page.waitForTimeout(1000);
+    await scrollToActivateHeader(page);
 
     const tooSmall = await page.evaluate(() => {
       const interactive = document.querySelectorAll('button, a, input, select, textarea');
@@ -179,6 +189,6 @@ test.describe('Mobile — Touch Targets', () => {
       });
       return smallCount;
     });
-    console.log(`  👆 Elementos interativos < 30px: ${tooSmall === 0 ? '✅ Nenhum' : `⚠ ${tooSmall} elementos`}`);
+    console.log(`  Elementos interativos < 30px: ${tooSmall === 0 ? 'Nenhum' : `${tooSmall} elementos`}`);
   });
 });

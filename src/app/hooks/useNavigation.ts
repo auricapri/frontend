@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { trackingService } from '../../services/tracking.service';
 import { logger } from '../../utils/logger';
+import { CachedProductsApi } from '../../api/cached.products.api';
 import type { Locale } from '../../i18n';
 import type { Collection, Product, UserProfile } from '../../types';
+
+const productsApi = new CachedProductsApi();
 
 export type AppView =
   | 'home'
@@ -124,13 +127,27 @@ export function useNavigation(params: UseNavigationParams) {
   );
 
   const loadProductFromSlug = useCallback(
-    (slug: string) => {
+    async (slug: string) => {
       // Search in already-loaded products first
       const product = findProductBySlug(slug, products);
       if (product) {
         setActiveProduct(product);
-      } else if (!isStoreLoading && products.length > 0) {
-        // Products are loaded but slug not found - show 404
+        return;
+      }
+
+      if (!isStoreLoading && products.length > 0) {
+        // Products are loaded but slug not found locally.
+        // Fallback: try fetching from API by slug (handles products beyond bootstrap limit).
+        try {
+          const apiProduct = await productsApi.getBySlug(slug);
+          if (apiProduct) {
+            setActiveProduct(apiProduct);
+            return;
+          }
+        } catch (err) {
+          logger.warn('Failed to fetch product by slug from API:', slug, err);
+        }
+        // Product truly not found - show 404
         logger.warn('Product not found for slug:', slug);
         setCurrentView('404');
       }
