@@ -158,14 +158,14 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
               </div>
             </div>
             {boxDiscount > 0 && (
-              <p className="text-[9px] text-green-600 mb-2 text-right font-bold uppercase tracking-wider">
+              <p className="text-[10px] text-green-600 mb-2 text-right font-bold uppercase tracking-wider">
                 {locale === 'pt' ? `Economia de ${formatCurrency(boxDiscount, locale)}` :
                  locale === 'es' ? `Ahorro de ${formatCurrency(boxDiscount, locale)}` :
                  `Saving ${formatCurrency(boxDiscount, locale)}`}
               </p>
             )}
             {(originalSubtotal > subtotal) && (
-              <p className="text-[9px] text-green-600 mb-2 text-right font-bold uppercase tracking-wider">
+              <p className="text-[10px] text-green-600 mb-2 text-right font-bold uppercase tracking-wider">
                 {locale === 'pt' ? `Desconto de ${formatCurrency(originalSubtotal - subtotal, locale)}` :
                  locale === 'es' ? `Descuento de ${formatCurrency(originalSubtotal - subtotal, locale)}` :
                  `Discount of ${formatCurrency(originalSubtotal - subtotal, locale)}`}

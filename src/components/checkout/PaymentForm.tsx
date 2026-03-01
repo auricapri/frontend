@@ -62,7 +62,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
             <span className="text-[10px] font-black uppercase tracking-widest block mb-1">
               Cartão de Crédito
             </span>
-            <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest">
+            <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">
               Até 10x sem juros
             </span>
           </div>
@@ -83,7 +83,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
             <span className="text-[10px] font-black uppercase tracking-widest block mb-1">
               PIX Instantâneo
             </span>
-            <span className="text-[9px] text-green-500 font-black uppercase tracking-widest">
+            <span className="text-[10px] text-green-500 font-black uppercase tracking-widest">
               5% de desconto
             </span>
           </div>
@@ -110,14 +110,14 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[8px] font-black uppercase tracking-widest text-neutral-500">
+                      <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-neutral-500">
                         {card.brand}
                       </div>
                       <div>
                         <p className="text-sm font-mono font-bold tracking-widest">
                           •••• •••• •••• {card.last4}
                         </p>
-                        <p className="text-[9px] opacity-60 font-bold uppercase tracking-widest">
+                        <p className="text-[10px] opacity-60 font-bold uppercase tracking-widest">
                           Exp: {card.exp_month}/{card.exp_year}
                         </p>
                       </div>
@@ -141,7 +141,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
             <div className="space-y-8 bg-neutral-50/50 p-8 rounded-[2.5rem] border border-neutral-100">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
                     Número do Cartão
                   </label>
                   <input
@@ -150,7 +150,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
                     Nome no Cartão
                   </label>
                   <input
@@ -160,7 +160,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                 </div>
                 <div className="grid grid-cols-2 gap-6 md:col-span-2">
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
                       Validade
                     </label>
                     <input
@@ -169,7 +169,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
                       CVC
                     </label>
                     <input
@@ -197,7 +197,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                     <span className="text-[10px] font-black uppercase tracking-widest block">
                       Salvar Cartão
                     </span>
-                    <span className="text-[9px] text-neutral-400 block mt-0.5">
+                    <span className="text-[10px] text-neutral-400 block mt-0.5">
                       Armazenamento seguro criptografado para compras futuras.
                     </span>
                   </div>

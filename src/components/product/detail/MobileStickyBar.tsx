@@ -87,7 +87,7 @@ export function MobileStickyBar({
 
       {isShareOpen && (
         <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-2xl shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300">
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">
             Compartilhar
           </span>
 

@@ -176,7 +176,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
           </div>
           {result.rma_code && (
             <div className="bg-neutral-50 border border-neutral-200 rounded-2xl px-8 py-6 space-y-2">
-              <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+              <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
                 Codigo RMA
               </span>
               <p className="text-xl font-black tracking-tight">{result.rma_code}</p>
@@ -214,7 +214,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
 
           {/* Order selection */}
           <section className="space-y-3">
-            <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 block">
+            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block">
               Selecione o Pedido
             </label>
             {loadingOrders ? (
@@ -250,7 +250,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
           {/* Item selection */}
           {selectedOrder && (
             <section className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 block">
+              <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block">
                 Itens para Devolver
               </label>
               <div className="space-y-3">
@@ -280,7 +280,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
                         <p className="text-[11px] font-black uppercase tracking-tight truncate">
                           {getLoc(item.name)}
                         </p>
-                        <p className="text-[9px] text-neutral-400 uppercase tracking-widest mt-0.5">
+                        <p className="text-[10px] text-neutral-400 uppercase tracking-widest mt-0.5">
                           {getLoc(item.color_name)} | {item.size} | Qtd: {item.quantity}
                         </p>
                       </div>
@@ -297,7 +297,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
           {/* Reason selection */}
           {selectedOrder && (
             <section className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 block">
+              <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block">
                 Motivo
               </label>
               <select
@@ -316,7 +316,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
           {/* Details (optional) */}
           {selectedOrder && (
             <section className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 block">
+              <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 block">
                 Detalhes (Opcional)
               </label>
               <textarea

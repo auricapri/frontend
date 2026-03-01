@@ -352,7 +352,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                 <h2 className="text-xs font-bold uppercase tracking-wider">
                   Provador Virtual
                 </h2>
-                <p className="text-[9px] text-neutral-400">
+                <p className="text-[10px] text-neutral-400">
                   Experimente as roupas em você
                 </p>
               </div>
@@ -492,7 +492,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-bold">Sua foto</p>
-                    <p className="text-[9px] text-neutral-400">
+                    <p className="text-[10px] text-neutral-400">
                       Pronta para processar
                     </p>
                   </div>
@@ -587,7 +587,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                   </div>
                 )}
 
-                <p className="text-[8px] text-neutral-400 text-center">
+                <p className="text-[10px] text-neutral-400 text-center">
                   Processamento por IA - Suas fotos nao sao armazenadas
                 </p>
               </div>

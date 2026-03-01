@@ -191,7 +191,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
             </div>
             <div className="flex justify-between">
                <span className="uppercase font-bold text-neutral-400 print:text-black">MÉTODO</span>
-               <span className="bg-black text-white px-2 py-0.5 text-[9px] uppercase tracking-wider rounded-sm print:border print:border-black print:text-black print:bg-white">
+               <span className="bg-black text-white px-2 py-0.5 text-[10px] uppercase tracking-wider rounded-sm print:border print:border-black print:text-black print:bg-white">
                   {order.payment_method === 'pix' ? 'PIX' : 'CARTÃO CRÉDITO'}
                </span>
             </div>
@@ -206,7 +206,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
          <div className="border-b border-dashed border-neutral-300 mb-8 opacity-50 print:opacity-100 print:border-black"></div>
 
          <div className="space-y-6 mb-8">
-            <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4 print:text-black">Detalhamento</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4 print:text-black">Detalhamento</h3>
             {(order.items || []).map((item: OrderItem, idx) => (
                <div key={item.id || item.variant_id || idx} className="flex justify-between items-start">
                   <div className="flex-1 pr-4">
@@ -245,7 +245,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
 
          {order.tracking_code && (
              <div className="bg-neutral-900 text-white p-6 rounded-xl text-center mb-8 print:bg-white print:text-black print:border print:border-black">
-                <span className="block text-[9px] font-bold uppercase tracking-widest text-white/60 mb-2 print:text-black">Código de Rastreio</span>
+                <span className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-2 print:text-black">Código de Rastreio</span>
                 <span className="text-lg font-black font-mono tracking-widest select-all">{order.tracking_code}</span>
              </div>
          )}
@@ -259,7 +259,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
                     ))}
                 </div>
             </div>
-            <p className="text-[9px] uppercase tracking-widest text-neutral-400 leading-relaxed max-w-xs mx-auto print:text-black">
+            <p className="text-[10px] uppercase tracking-widest text-neutral-400 leading-relaxed max-w-xs mx-auto print:text-black">
                Este documento possui valor fiscal para fins de garantia. 
                <br/>Auricapri Global Inc.
             </p>

@@ -59,7 +59,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="md:col-span-2 space-y-4">
-          <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">CEP</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">CEP</label>
           <div className="relative">
             <input
               className={`w-full p-6 bg-neutral-50 border ${
@@ -125,7 +125,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
             
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
                   Número
                 </label>
                 <input
@@ -136,7 +136,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
                 />
               </div>
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
                   Complemento
                 </label>
                 <input
@@ -151,7 +151,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         )}
         
         <div className="md:col-span-2 space-y-3">
-          <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+          <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
             Nome do Destinatário
           </label>
           <input

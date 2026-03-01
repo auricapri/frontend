@@ -75,7 +75,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                   {item.emoji}
                 </span>
                 <span
-                  className={`text-[8px] font-bold uppercase tracking-wider ${
+                  className={`text-[10px] font-bold uppercase tracking-wider ${
                     rating === item.value ? 'text-white' : 'text-neutral-500'
                   }`}
                 >
@@ -119,7 +119,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
           )}
         </button>
 
-        <p className="text-[9px] text-neutral-400 text-center">
+        <p className="text-[10px] text-neutral-400 text-center">
           Seu feedback é anônimo e nos ajuda a melhorar a experiência
         </p>
       </div>

@@ -203,7 +203,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     >
                       {size}
                       {count > 0 && (
-                        <span className="ml-1 text-[9px] text-neutral-400">
+                        <span className="ml-1 text-[10px] text-neutral-400">
                           ({count})
                         </span>
                       )}

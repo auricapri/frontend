@@ -184,7 +184,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>{isFiltersOpen ? t('grid.hideFilters') : t('grid.showFilters')}</span>
             {activeFilterCount > 0 && !isFiltersOpen && (
-              <span className="ml-1 w-5 h-5 flex items-center justify-center bg-neutral-900 text-white text-[9px] font-bold rounded-full">
+              <span className="ml-1 w-5 h-5 flex items-center justify-center bg-neutral-900 text-white text-[10px] font-bold rounded-full">
                 {activeFilterCount}
               </span>
             )}

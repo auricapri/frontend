@@ -234,7 +234,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
                 <h2 className="text-xs font-bold uppercase tracking-wider">
                   Provador Virtual
                 </h2>
-                <p className="text-[9px] text-neutral-400 truncate max-w-[150px]">
+                <p className="text-[10px] text-neutral-400 truncate max-w-[150px]">
                   {getLoc(productName)}
                 </p>
               </div>
@@ -302,7 +302,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-bold">Sua foto</p>
-                <p className="text-[9px] text-neutral-400">
+                <p className="text-[10px] text-neutral-400">
                   Pronta para processar
                 </p>
               </div>
@@ -397,7 +397,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
               </div>
             )}
 
-            <p className="text-[8px] text-neutral-400 text-center">
+            <p className="text-[10px] text-neutral-400 text-center">
               {resultImage
                 ? 'Arraste a linha para comparar antes e depois'
                 : 'Processamento por IA • Suas fotos não são armazenadas'}
