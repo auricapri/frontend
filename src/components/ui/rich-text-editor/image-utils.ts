@@ -1,7 +1,9 @@
 /**
  * Image Utilities for Rich Text Editor
+ * Uploads through backend for dual-storage (Supabase + R2)
  */
-import { supabase } from '../../../utils/supabase';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
 /**
  * Compress image before upload
@@ -56,34 +58,50 @@ export const compressImage = async (
 };
 
 /**
- * Upload image to Supabase Storage
+ * Get auth token for backend requests
+ */
+async function getAuthToken(): Promise<string | null> {
+  try {
+    const { supabase } = await import('../../../utils/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Upload image via backend (dual-storage: Supabase + R2)
  */
 export const uploadImageToStorage = async (file: File): Promise<string> => {
   try {
     const compressedBlob = await compressImage(file);
+    const webpFile = new File([compressedBlob], 'image.webp', { type: 'image/webp' });
 
-    const timestamp = Date.now();
-    const randomId = Math.random().toString(36).substring(2, 8);
-    const fileName = `richtext/${timestamp}-${randomId}.webp`;
+    const formData = new FormData();
+    formData.append('file', webpFile);
+    formData.append('bucket', 'products');
+    formData.append('subfolder', 'richtext');
 
-    const { data, error } = await supabase.storage
-      .from('products')
-      .upload(fileName, compressedBlob, {
-        contentType: 'image/webp',
-        cacheControl: '31536000',
-        upsert: false,
-      });
-
-    if (error) {
-      console.error('Upload error:', error);
-      throw new Error(`Upload failed: ${error.message}`);
+    const token = await getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const { data: urlData } = supabase.storage
-      .from('products')
-      .getPublicUrl(data.path);
+    const response = await fetch(`${API_BASE_URL}/storage/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
 
-    return urlData.publicUrl;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData?.error?.message || `Upload failed (${response.status})`);
+    }
+
+    const data = await response.json();
+    return data.url;
   } catch (error) {
     console.error('Error uploading image:', error);
     throw error;
