@@ -111,19 +111,40 @@ function optimizeMetadata(
   return Object.keys(optimized).length > 0 ? optimized : null;
 }
 
+const QUEUE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+interface QueueEntry {
+  data: unknown[];
+  expiry: number;
+}
+
 function readQueue(): unknown[] {
   const raw = localStorage.getItem('tracking_event_queue');
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? parsed : [];
+    // Support legacy format (plain array) and new TTL-wrapped format
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      const entry = parsed as QueueEntry;
+      if (typeof entry.expiry === 'number' && entry.expiry < Date.now()) {
+        localStorage.removeItem('tracking_event_queue');
+        return [];
+      }
+      return Array.isArray(entry.data) ? entry.data : [];
+    }
+    return [];
   } catch {
     return [];
   }
 }
 
 function writeQueue(items: unknown[]): void {
-  localStorage.setItem('tracking_event_queue', JSON.stringify(items.slice(-200)));
+  const entry: QueueEntry = {
+    data: items.slice(-200),
+    expiry: Date.now() + QUEUE_TTL_MS,
+  };
+  localStorage.setItem('tracking_event_queue', JSON.stringify(entry));
 }
 
 export class TrackingService {
