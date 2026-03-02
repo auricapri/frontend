@@ -5,7 +5,7 @@ import { CartItem, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import BoxSavingsIndicator, { calculateQuantityDiscount } from './BoxSavingsIndicator';
-import { getOptimizedImageUrl } from '../../utils/image';
+import { getOptimizedImageUrl, handleImageError } from '../../utils/image';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -99,7 +99,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
               return (
                 <div key={`${item.variant_id}-${item.size}-${item.color_hex}`} className="flex space-x-6 animate-in fade-in slide-in-from-right duration-300">
                   <div className="w-24 h-32 bg-gray-100 flex-none overflow-hidden rounded-xl">
-                    <img src={getOptimizedImageUrl(item.image, 'thumbnail')} alt={getLoc(item.name)} className="w-full h-full object-cover" />
+                    <img src={getOptimizedImageUrl(item.image, 'thumbnail')} alt={getLoc(item.name)} className="w-full h-full object-cover" onError={handleImageError} />
                   </div>
                   <div className="flex-1 flex flex-col justify-between py-1">
                     <div>
