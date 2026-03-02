@@ -10,15 +10,31 @@ export interface CartSession {
   expires_at?: string | null;
 }
 
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+interface SessionEntry {
+  data: string;
+  expiry: number;
+}
+
 function getOrCreateSessionId(): string {
   const STORAGE_KEY = 'auricapri_cart_session_id';
-  let sessionId = localStorage.getItem(STORAGE_KEY);
-
-  if (!sessionId) {
-    sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-    localStorage.setItem(STORAGE_KEY, sessionId);
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const entry = JSON.parse(raw) as SessionEntry;
+      if (entry.expiry && entry.expiry > Date.now() && entry.data) {
+        return entry.data;
+      }
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
   }
 
+  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+  const entry: SessionEntry = { data: sessionId, expiry: Date.now() + SESSION_TTL_MS };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
   return sessionId;
 }
 

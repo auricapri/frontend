@@ -6,17 +6,44 @@ import { logger } from '../utils/logger';
 
 const CART_STORAGE_KEY = 'auricapri_cart_items';
 const CART_LAST_SYNC_KEY = 'auricapri_cart_last_sync';
+const CART_CHECKOUT_PREFILL_KEY = 'auricapri_checkout_prefill';
 const SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const CART_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+interface StorageEntry<T> {
+  data: T;
+  expiry: number;
+}
+
+function readWithTTL<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const entry = JSON.parse(raw) as StorageEntry<T>;
+    if (typeof entry.expiry === 'number' && entry.expiry < Date.now()) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return entry.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function writeWithTTL<T>(key: string, data: T, ttlMs: number): void {
+  try {
+    const entry: StorageEntry<T> = { data, expiry: Date.now() + ttlMs };
+    localStorage.setItem(key, JSON.stringify(entry));
+  } catch (err) {
+    logger.warn('Failed to write to localStorage with TTL', err, { context: 'useCart' });
+  }
+}
 
 export const useCart = (products: Product[], assets: Asset[]) => {
   // Inicializa com itens do localStorage para persistência
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(CART_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
+    const saved = readWithTTL<CartItem[]>(CART_STORAGE_KEY);
+    return saved ?? [];
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -31,8 +58,8 @@ export const useCart = (products: Product[], assets: Asset[]) => {
   const loadCart = useCallback(async (force = false) => {
     // Skip if already synced recently (unless forced)
     if (!force) {
-      const lastSync = localStorage.getItem(CART_LAST_SYNC_KEY);
-      if (lastSync && Date.now() - parseInt(lastSync) < SYNC_INTERVAL_MS) {
+      const lastSync = readWithTTL<number>(CART_LAST_SYNC_KEY);
+      if (lastSync && Date.now() - lastSync < SYNC_INTERVAL_MS) {
         setIsLoading(false);
         return;
       }
@@ -46,7 +73,7 @@ export const useCart = (products: Product[], assets: Asset[]) => {
         setCartItems(cart.items);
       }
       locallyModifiedRef.current = false;
-      localStorage.setItem(CART_LAST_SYNC_KEY, Date.now().toString());
+      writeWithTTL(CART_LAST_SYNC_KEY, Date.now(), CART_TTL_MS);
       setNeedsServerSync(false);
     } catch (err) {
       // On error, keep using localStorage cart - don't block user
@@ -75,14 +102,14 @@ export const useCart = (products: Product[], assets: Asset[]) => {
         .then(session => {
           if (session.items && session.items.length > 0) {
             setCartItems(session.items);
-            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(session.items));
+            writeWithTTL(CART_STORAGE_KEY, session.items, CART_TTL_MS);
 
             // Store pre-fill data for checkout
             if (session.customer || session.address) {
-              localStorage.setItem('auricapri_checkout_prefill', JSON.stringify({
+              writeWithTTL(CART_CHECKOUT_PREFILL_KEY, {
                 customer: session.customer,
                 address: session.address,
-              }));
+              }, CART_TTL_MS);
             }
 
             // Clean URL
@@ -104,11 +131,7 @@ export const useCart = (products: Product[], assets: Asset[]) => {
 
   // Persistir carrinho no localStorage sempre que mudar
   useEffect(() => {
-    try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
-    } catch (err) {
-      logger.warn('Failed to persist cart to localStorage', err, { context: 'useCart' });
-    }
+    writeWithTTL(CART_STORAGE_KEY, cartItems, CART_TTL_MS);
   }, [cartItems]);
 
   const addToCart = useCallback((cartItem: CartItem) => {
@@ -211,7 +234,7 @@ export const useCart = (products: Product[], assets: Asset[]) => {
         await cartApi.addItem(item);
       }
 
-      localStorage.setItem(CART_LAST_SYNC_KEY, Date.now().toString());
+      writeWithTTL(CART_LAST_SYNC_KEY, Date.now(), CART_TTL_MS);
       setNeedsServerSync(false);
       return { success: true };
     } catch (err) {
