@@ -506,7 +506,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       <button
                         onClick={() => {
                           setIsMenuOpen(false);
-                          // Navigate to account page
+                          onOpenAuth();
                         }}
                         className="w-full flex items-center gap-3 px-2 py-2.5 text-sm hover:bg-neutral-50 rounded-lg transition-colors"
                       >
@@ -517,7 +517,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       <button
                         onClick={() => {
                           setIsMenuOpen(false);
-                          // Navigate to orders
+                          onNavigate('my-orders' as any);
                         }}
                         className="w-full flex items-center gap-3 px-2 py-2.5 text-sm hover:bg-neutral-50 rounded-lg transition-colors"
                       >
@@ -528,7 +528,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       <button
                         onClick={() => {
                           setIsMenuOpen(false);
-                          // Navigate to wishlist
+                          onOpenWishlist();
                         }}
                         className="w-full flex items-center gap-3 px-2 py-2.5 text-sm hover:bg-neutral-50 rounded-lg transition-colors"
                       >
@@ -565,16 +565,18 @@ const Navbar: React.FC<NavbarProps> = ({
                     <ArrowLeft className="w-4 h-4 rotate-180" />
                   </button>
 
-                  <button
-                    onClick={onToggleMode}
-                    className="flex-1 min-w-[120px] p-3 border-2 border-neutral-100 rounded-2xl flex items-center justify-between hover:opacity-95 transition-all active:scale-95"
-                  >
-                    <div className="flex flex-col items-start gap-1">
-                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">Ambiente</span>
-                      <span className="text-xs font-black uppercase tracking-wide">{userMode}</span>
-                    </div>
-                    <ArrowLeft className="w-4 h-4 rotate-180" />
-                  </button>
+                  {currentUser?.role === 'admin' && (
+                    <button
+                      onClick={onToggleMode}
+                      className="flex-1 min-w-[120px] p-3 border-2 border-neutral-100 rounded-2xl flex items-center justify-between hover:opacity-95 transition-all active:scale-95"
+                    >
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">Ambiente</span>
+                        <span className="text-xs font-black uppercase tracking-wide">{userMode}</span>
+                      </div>
+                      <ArrowLeft className="w-4 h-4 rotate-180" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
