@@ -1,7 +1,16 @@
 /**
  * useCheckoutTotals - Pure calculation hook for all price-related derived state
  *
- * This hook contains no side effects, only pure calculations based on input parameters.
+ * Ordem correta dos descontos:
+ * 1. subtotal (soma dos itens a preços atuais)
+ * 2. − desconto cupom (incondicional → NF-e vDesc → reduz ICMS)
+ * 3. − desconto quantidade/caixa (incondicional → NF-e vDesc)
+ * 4. = discountedSubtotal (base para PIX)
+ * 5. − desconto PIX 5% (sobre discountedSubtotal, SEM frete)
+ * 6. + frete
+ * 7. = totalBeforeWallet
+ * 8. − cashback (crédito de compra anterior, fora da NF-e)
+ * 9. = finalTotal (valor que o cliente paga)
  */
 
 import { useMemo } from 'react';
@@ -50,39 +59,39 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
     return discountValue;
   }, [totalItemCount, subtotal]);
 
-  // Total before PIX discount and cashback (includes quantity discount)
-  const totalBeforeDiscounts = useMemo(() => {
-    return subtotal - manualCouponDiscount - quantityDiscount + shippingCost;
-  }, [subtotal, manualCouponDiscount, quantityDiscount, shippingCost]);
+  // Subtotal after coupon and quantity discounts (base for PIX discount, excludes shipping)
+  const discountedSubtotal = useMemo(() => {
+    return Math.max(0, subtotal - manualCouponDiscount - quantityDiscount);
+  }, [subtotal, manualCouponDiscount, quantityDiscount]);
 
-  // PIX discount (5% if payment method is PIX)
+  // PIX discount (5% applied on discountedSubtotal only — excludes shipping per SEFAZ-SP RC 28518/2023)
   const pixDiscount = useMemo(() => {
-    return paymentMethod === PaymentMethod.PIX ? totalBeforeDiscounts * 0.05 : 0;
-  }, [paymentMethod, totalBeforeDiscounts]);
+    return paymentMethod === PaymentMethod.PIX ? discountedSubtotal * 0.05 : 0;
+  }, [paymentMethod, discountedSubtotal]);
 
-  // Total after PIX discount
-  const totalAfterPix = useMemo(() => {
-    return totalBeforeDiscounts - pixDiscount;
-  }, [totalBeforeDiscounts, pixDiscount]);
+  // Total before wallet (after all unconditional discounts + shipping)
+  const totalBeforeWallet = useMemo(() => {
+    return discountedSubtotal - pixDiscount + shippingCost;
+  }, [discountedSubtotal, pixDiscount, shippingCost]);
 
   // Cashback used (limited to available balance and positive total)
   const cashbackUsed = useMemo(() => {
-    return useCashback ? Math.min(availableCashback, Math.max(0, totalAfterPix)) : 0;
-  }, [useCashback, availableCashback, totalAfterPix]);
+    return useCashback ? Math.min(availableCashback, Math.max(0, totalBeforeWallet)) : 0;
+  }, [useCashback, availableCashback, totalBeforeWallet]);
 
   // Final total (never negative)
   const finalTotal = useMemo(() => {
-    return Math.max(0, totalAfterPix - cashbackUsed);
-  }, [totalAfterPix, cashbackUsed]);
+    return Math.max(0, totalBeforeWallet - cashbackUsed);
+  }, [totalBeforeWallet, cashbackUsed]);
 
   return {
     subtotal,
     originalSubtotal,
     preAppliedDiscount,
     quantityDiscount,
-    totalBeforeDiscounts,
+    discountedSubtotal,
     pixDiscount,
-    totalAfterPix,
+    totalBeforeWallet,
     cashbackUsed,
     finalTotal,
   };

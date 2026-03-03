@@ -42,7 +42,8 @@ export type UseCheckoutStateParams = {
     finalAmount: number,
     saveCard: boolean,
     cardToken?: string,
-    phone?: string
+    phone?: string,
+    cashbackUsed?: number
   ) => void;
   locale: Locale;
 };
@@ -129,6 +130,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     items,
     subtotal: totals.subtotal,
     finalTotal: totals.finalTotal,
+    cashbackUsed: totals.cashbackUsed,
     shipping,
     userMode,
     paymentMethod,
@@ -155,6 +157,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     bestInternalShipping: shipping.bestInternalShipping,
     selectedShippingOption: shipping.selectedShippingOption,
     onComplete,
+    cashbackUsed: totals.cashbackUsed,
     pixData: pixBoleto.pixData,
     boletoData: pixBoleto.boletoData,
   });

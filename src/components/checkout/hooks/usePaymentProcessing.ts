@@ -32,8 +32,10 @@ export function usePaymentProcessing(params: {
     finalAmount: number,
     saveCard: boolean,
     cardToken?: string,
-    phone?: string
+    phone?: string,
+    cashbackUsed?: number
   ) => void;
+  cashbackUsed: number;
   pixData?: PixData | null;
   boletoData?: BoletoData | null;
 }): {
@@ -59,6 +61,7 @@ export function usePaymentProcessing(params: {
     bestInternalShipping,
     selectedShippingOption,
     onComplete,
+    cashbackUsed,
     pixData = null,
     boletoData = null,
   } = params;
@@ -108,10 +111,11 @@ export function usePaymentProcessing(params: {
     }
 
     const phoneToSave = phone || currentUser?.phone || '';
-    onComplete(finalAddress, shippingToUse, paymentMethod, finalTotal, saveCardForFuture, tokenToUse, phoneToSave);
+    onComplete(finalAddress, shippingToUse, paymentMethod, finalTotal, saveCardForFuture, tokenToUse, phoneToSave, cashbackUsed);
   }, [
     address,
     bestInternalShipping,
+    cashbackUsed,
     complement,
     currentUser,
     finalTotal,
