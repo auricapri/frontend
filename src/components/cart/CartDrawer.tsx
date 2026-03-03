@@ -171,7 +171,10 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                  `Discount of ${formatCurrency(originalSubtotal - subtotal, locale)}`}
               </p>
             )}
-            <div className="mb-8 mt-4" />
+            <div className="flex items-center gap-2 mt-4 mb-4 text-green-700">
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+              <span className="text-xs font-bold uppercase tracking-wider">Frete grátis para todo o Brasil</span>
+            </div>
             <button 
               onClick={async () => {
                 setIsCheckingOut(true);

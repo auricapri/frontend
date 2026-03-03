@@ -32,9 +32,9 @@ interface CheckoutViewProps {
 }
 
 const steps = [
-  { id: 1, title: 'Endereço', icon: MapPin },
-  { id: 2, title: 'Pagamento', icon: CreditCard },
-  { id: 3, title: 'Revisão', icon: ShieldCheck },
+  { id: 1, title: 'Endereço', shortTitle: 'End.', icon: MapPin },
+  { id: 2, title: 'Pagamento', shortTitle: 'Pag.', icon: CreditCard },
+  { id: 3, title: 'Revisão', shortTitle: 'Rev.', icon: ShieldCheck },
 ] as const;
 
 const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, userMode, onBack, onComplete, locale, t: _t }) => {
@@ -64,11 +64,12 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
                   <s.icon className="w-4 h-4" />
                 </div>
                 <span
-                  className={`text-[10px] font-black uppercase tracking-widest hidden lg:block ${
+                  className={`text-[10px] font-black uppercase tracking-widest ${
                     checkout.step >= s.id ? 'text-black' : 'text-neutral-500'
                   }`}
                 >
-                  {s.title}
+                  <span className="hidden lg:inline">{s.title}</span>
+                  <span className="lg:hidden">{s.shortTitle}</span>
                 </span>
                 {idx < steps.length - 1 && <div className="hidden lg:block w-8 h-[1px] bg-neutral-100" />}
               </div>

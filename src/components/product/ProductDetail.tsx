@@ -63,6 +63,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   coupons = [],
   userMode,
   onAddToCart,
+  onBack,
   isWishlisted,
   onToggleWishlist,
   t,
@@ -220,7 +221,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   // Composition text
   const compositionText = activeVariant?.composition
     ? `${getLoc(activeVariant.composition)}\n\n${getLoc(activeVariant.care_instructions)}`
-    : 'Sustainable luxury materials. Hand-finished in our atelier.';
+    : 'Materiais de alta qualidade. Acabamento artesanal.';
 
   // Breadcrumb schema for SEO
   const breadcrumbSchema = useMemo(() => {
@@ -260,13 +261,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       <nav aria-label="Breadcrumb" className="px-6 md:px-12 lg:px-16 pt-2 pb-1">
         <ol className="flex items-center gap-1.5 text-[11px] text-neutral-400">
           <li>
-            <button onClick={() => window.history.back()} className="hover:text-neutral-700 transition-colors">
+            <button onClick={onBack} className="hover:text-neutral-700 transition-colors">
               Home
             </button>
           </li>
           <li aria-hidden="true" className="select-none">&gt;</li>
           <li>
-            <span className="hover:text-neutral-700 transition-colors">Colecoes</span>
+            <button onClick={onBack} className="hover:text-neutral-700 transition-colors cursor-pointer">Coleções</button>
           </li>
           <li aria-hidden="true" className="select-none">&gt;</li>
           <li aria-current="page" className="text-neutral-700 font-medium truncate max-w-[200px]">
@@ -377,24 +378,22 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       )}
 
       {/* Reviews Section */}
-      {(reviews.length > 0 || isLoadingReviews) && (
-        <div id="reviews" className="w-full bg-white border-t border-neutral-100 pt-32 pb-40 px-8 md:px-24">
-          <div className="max-w-7xl mx-auto">
-            <ProductReviews
-              productId={product.id}
-              reviews={reviews}
-              user={currentUser}
-              userOrders={userOrders}
-              t={t}
-              isLoading={isLoadingReviews}
-              onAddReview={async (r) => {
-                const newReview: ProductReview = { ...r, id: `rev_${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), helpful_count: 0, cashback_awarded: false } as ProductReview;
-                setReviews(prev => [newReview, ...prev]);
-              }}
-            />
-          </div>
+      <div id="reviews" className="w-full bg-white border-t border-neutral-100 pt-32 pb-40 px-8 md:px-24">
+        <div className="max-w-7xl mx-auto">
+          <ProductReviews
+            productId={product.id}
+            reviews={reviews}
+            user={currentUser}
+            userOrders={userOrders}
+            t={t}
+            isLoading={isLoadingReviews}
+            onAddReview={async (r) => {
+              const newReview: ProductReview = { ...r, id: `rev_${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), helpful_count: 0, cashback_awarded: false } as ProductReview;
+              setReviews(prev => [newReview, ...prev]);
+            }}
+          />
         </div>
-      )}
+      </div>
 
       {/* Size Guide Modal */}
       <SizeGuideModal

@@ -46,11 +46,19 @@ export function ProductInfo(props: {
           {activeCoupon && <span className="text-lg font-bold text-neutral-400 line-through decoration-red-400 decoration-2">{formatCurrency(rawPrice, locale)}</span>}
           <span className={`text-2xl font-light tracking-tighter ${activeCoupon ? 'text-red-500' : 'text-black'}`}>{formatCurrency(finalPrice, locale)}</span>
         </div>
-        {finalPrice > 0 && (
-          <span className="text-xs text-neutral-500 mt-1">
-            ou <span className="font-bold text-black">6x de {formatCurrency(finalPrice / 6, locale)}</span> sem juros
-          </span>
-        )}
+        {finalPrice >= 10 && (() => {
+          const maxInstallments = Math.min(Math.floor(finalPrice / 10), 10);
+          const freeMax = Math.min(maxInstallments, 6);
+          if (freeMax >= 2) {
+            return (
+              <span className="text-xs text-neutral-500 mt-1">
+                ou <span className="font-bold text-black">{freeMax}x de {formatCurrency(finalPrice / freeMax, locale)}</span> sem juros
+                {maxInstallments > 6 && <span className="text-neutral-400"> | até {maxInstallments}x com juros</span>}
+              </span>
+            );
+          }
+          return null;
+        })()}
         {typeof stockQuantity === 'number' && stockQuantity <= 10 && stockQuantity > 0 && (
           <span className="text-[10px] font-bold uppercase tracking-widest text-red-500 mt-2 animate-pulse">Últimas {stockQuantity} unidades</span>
         )}
