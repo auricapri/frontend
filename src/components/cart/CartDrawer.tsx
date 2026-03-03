@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { X, Minus, Plus, Trash2, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Minus, Plus, Trash2, ArrowRight, Ticket, ChevronDown } from 'lucide-react';
 import { CartItem, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
@@ -31,6 +31,23 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
   locale 
 }) => {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isCouponOpen, setIsCouponOpen] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+
+  // Load saved coupon code from sessionStorage
+  useEffect(() => {
+    const saved = sessionStorage.getItem('cart_coupon_code');
+    if (saved) setCouponCode(saved);
+  }, [isOpen]);
+
+  const handleSaveCoupon = () => {
+    const code = couponCode.trim().toUpperCase();
+    if (code) {
+      sessionStorage.setItem('cart_coupon_code', code);
+    } else {
+      sessionStorage.removeItem('cart_coupon_code');
+    }
+  };
 
   const getLoc = (obj: any) => {
     if (!obj) return "";
@@ -171,10 +188,50 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                  `Discount of ${formatCurrency(originalSubtotal - subtotal, locale)}`}
               </p>
             )}
-            <div className="flex items-center gap-2 mt-4 mb-4 text-green-700">
+            <div className="flex items-center gap-2 mt-4 mb-3 text-green-700">
               <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
               <span className="text-xs font-bold uppercase tracking-wider">Frete grátis para todo o Brasil</span>
             </div>
+
+            {/* Coupon Code Input */}
+            <div className="mb-4">
+              <button
+                onClick={() => setIsCouponOpen(!isCouponOpen)}
+                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-black transition-colors"
+              >
+                <Ticket className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <span>Tem cupom de desconto?</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${isCouponOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isCouponOpen && (
+                <div className="flex gap-2 mt-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    onBlur={handleSaveCoupon}
+                    placeholder="DIGITE O CUPOM"
+                    className="flex-1 px-3 py-2 border border-neutral-200 rounded-lg text-xs uppercase tracking-wider font-bold focus:outline-none focus:border-black transition-colors"
+                  />
+                  <button
+                    onClick={handleSaveCoupon}
+                    disabled={!couponCode.trim()}
+                    className="px-4 py-2 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-30"
+                  >
+                    Aplicar
+                  </button>
+                </div>
+              )}
+              {couponCode && !isCouponOpen && (
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[10px] font-bold text-green-600 uppercase tracking-wider">Cupom: {couponCode}</span>
+                  <button onClick={() => { setCouponCode(''); sessionStorage.removeItem('cart_coupon_code'); }} className="text-[10px] text-neutral-400 hover:text-red-500 transition-colors">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button 
               onClick={async () => {
                 setIsCheckingOut(true);

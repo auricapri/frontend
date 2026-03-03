@@ -1,15 +1,10 @@
 /// Product Detail
 /// Main orchestrator component using modular sub-components
 
-// PROVADOR VIRTUAL DESATIVADO - ver docs/provador-virtual-desativado.md
-// TODO: Reativar quando o serviço estiver estável
-const PROVADOR_VIRTUAL_ENABLED = false;
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Product, UserMode, CartItem, UserProfile, Coupon, SizeGuide, Category, ProductReview } from '../../types';
 import { Locale } from '../../i18n';
 import ProductReviews from './ProductReviews';
-import { FaceSwapModal } from './FaceSwapModal';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
 import { getProductCoupon, applyCouponDiscount } from '../../utils/coupon';
@@ -20,6 +15,7 @@ import { useImageHotspots } from '../../hooks/useImageHotspots';
 import { useVariantSelection } from '../../hooks/useVariantSelection';
 import { useProductImages } from '../../hooks/useProductImages';
 import { useStickyBar } from '../../hooks/useStickyBar';
+import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
 import { RelatedProducts } from './RelatedProducts';
 import {
   ImageGallery,
@@ -96,7 +92,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [showFaceSwap, setShowFaceSwap] = useState(false);
   const [isPresentationExpanded, setIsPresentationExpanded] = useState(true);
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
@@ -249,6 +244,16 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     return [...sameCategory, ...otherProducts].slice(0, 5);
   }, [products, product.id, product.category_id, userMode]);
 
+  // Recently viewed products
+  const recentlyViewedIds = useRecentlyViewed(product.id);
+  const recentlyViewedProducts = useMemo(() => {
+    if (!products.length || !recentlyViewedIds.length) return [];
+    return recentlyViewedIds
+      .map(id => products.find(p => p.id === id))
+      .filter((p): p is Product => !!p && p.is_active)
+      .slice(0, 5);
+  }, [products, recentlyViewedIds]);
+
   return (
     <div className="relative w-full bg-white">
       {/* Breadcrumb JSON-LD Schema */}
@@ -289,8 +294,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           mobileGalleryRef={mobileGalleryRef}
           handleMobileScroll={handleMobileScroll}
           mobileActiveIdx={mobileActiveIdx}
-          showFaceSwap={PROVADOR_VIRTUAL_ENABLED && activeVariant?.face_swap_enabled}
-          onFaceSwapClick={() => setShowFaceSwap(true)}
+          showFaceSwap={false}
+          onFaceSwapClick={() => {}}
           hotspots={hotspots}
           onAddToCart={onAddToCart}
           onNavigateToProduct={onSelectProduct}
@@ -324,8 +329,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               activeSizeGuideImage={activeSizeGuideImage}
               onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
               isSelectedSizeAvailable={isSelectedSizeAvailable}
-              showProvador={PROVADOR_VIRTUAL_ENABLED && activeVariant?.face_swap_enabled}
-              onOpenProvador={() => setShowFaceSwap(true)}
+              showProvador={false}
+              onOpenProvador={() => {}}
             />
 
             <div ref={actionsRef}>
@@ -367,6 +372,22 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         getLoc={getLoc}
         t={t}
       />
+
+      {/* Recently Viewed Products */}
+      {recentlyViewedProducts.length > 0 && (
+        <RelatedProducts
+          products={recentlyViewedProducts}
+          userMode={userMode}
+          locale={locale}
+          coupons={coupons}
+          wishlistIds={wishlistIds}
+          onSelectProduct={onSelectProduct}
+          onToggleWishlist={onToggleWishlistProduct}
+          getLoc={getLoc}
+          t={t}
+          title="Vistos Recentemente"
+        />
+      )}
 
       {/* Presentation Section */}
       {product.presentation && getLoc(product.presentation) && (
@@ -412,23 +433,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         onClose={() => setIsZoomOpen(false)}
         onNavigate={setZoomImgIndex}
       />
-
-      {/* Face Swap Modal - DESATIVADO */}
-      {PROVADOR_VIRTUAL_ENABLED && activeVariant?.face_swap_enabled && (
-        <FaceSwapModal
-          isOpen={showFaceSwap}
-          onClose={() => setShowFaceSwap(false)}
-          variant={activeVariant}
-          productName={product.name}
-          productImage={
-            (activeVariant.variant_images?.length)
-              ? activeVariant.variant_images[0]
-              : (product.base_images?.length) ? product.base_images[0] : ''
-          }
-          userId={currentUser?.id || `guest_${Date.now()}`}
-          locale={locale}
-        />
-      )}
 
       {/* Mobile Sticky Bar */}
       <MobileStickyBar

@@ -263,6 +263,12 @@ export function AppLayout(props: {
         }}
         selectedGender={selectedGender}
         onGenderChange={setSelectedGender}
+        products={app.products}
+        onSelectProduct={(p) => {
+          app.setActiveProduct(p);
+          app.onNavigate('product');
+        }}
+        currentUser={app.currentUser}
       />
 
       <ErrorBoundary>
