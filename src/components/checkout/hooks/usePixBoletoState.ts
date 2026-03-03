@@ -27,6 +27,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     items,
     subtotal,
     finalTotal,
+    cashbackUsed,
     shipping,
     userMode,
     paymentMethod,
@@ -208,6 +209,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         paymentMethod: effectivePaymentMethod,
         subtotal: subtotal,
         finalAmount: finalTotal,
+        cashbackUsed: cashbackUsed > 0 ? cashbackUsed : undefined,
       });
 
       // Salva CPF no perfil se foi alterado ou ainda não estava salvo
@@ -251,7 +253,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
       } else if (effectivePaymentMethod === PaymentMethod.CREDIT_CARD) {
         // For credit card, we need card data
         // This will be handled by the original onComplete flow
-        onComplete(finalAddress, shippingToUse, effectivePaymentMethod, finalTotal, saveCardForFuture, undefined, phone);
+        onComplete(finalAddress, shippingToUse, effectivePaymentMethod, finalTotal, saveCardForFuture, undefined, phone, cashbackUsed);
       }
 
       return order;
@@ -279,6 +281,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     paymentMethod,
     subtotal,
     finalTotal,
+    cashbackUsed,
     currentUser,
     cpf,
     ordersApi,

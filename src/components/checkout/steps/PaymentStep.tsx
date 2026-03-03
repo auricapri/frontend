@@ -148,7 +148,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
           <CardIcon className="w-7 h-7" />
           <div className="text-center">
             <span className="text-xs font-black uppercase tracking-wider block mb-1">Cartão de Crédito</span>
-            <span className="text-xs text-neutral-600 font-bold uppercase tracking-widest">Até 12x</span>
+            <span className="text-xs text-neutral-600 font-bold uppercase tracking-widest">Até 10x</span>
           </div>
         </button>
         <button
@@ -181,34 +181,35 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
         </button>
       </div>
 
+      {/* Cashback toggle — available for ALL payment methods */}
+      {currentUser && availableCashback > 0 && (
+        <div className="flex items-center justify-between p-6 bg-gradient-to-r from-emerald-50 to-emerald-100/50 border border-emerald-200 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-[10px] font-black">R$</span>
+            </div>
+            <div>
+              <span className="text-xs font-black uppercase tracking-wider block text-emerald-900">Cashback Disponível</span>
+              <span className="text-lg font-light tracking-tighter text-emerald-700">
+                {formatCurrency(availableCashback, locale)}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => setUseCashback(!useCashback)}
+            className={`relative w-14 h-8 rounded-full transition-all duration-300 ${useCashback ? 'bg-emerald-600' : 'bg-neutral-300'}`}
+          >
+            <div
+              className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${
+                useCashback ? 'translate-x-6' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+      )}
+
       {paymentMethod === PaymentMethod.CREDIT_CARD && (
         <div className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-500">
-          {currentUser && availableCashback > 0 && (
-            <div className="flex items-center justify-between p-6 bg-gradient-to-r from-emerald-50 to-emerald-100/50 border border-emerald-200 rounded-2xl">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-[10px] font-black">R$</span>
-                </div>
-                <div>
-                  <span className="text-xs font-black uppercase tracking-wider block text-emerald-900">Cashback Disponível</span>
-                  <span className="text-lg font-light tracking-tighter text-emerald-700">
-                    {formatCurrency(availableCashback, locale)}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setUseCashback(!useCashback)}
-                className={`relative w-14 h-8 rounded-full transition-all duration-300 ${useCashback ? 'bg-emerald-600' : 'bg-neutral-300'}`}
-              >
-                <div
-                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${
-                    useCashback ? 'translate-x-6' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-          )}
-
           {finalTotal >= 500 && (
             <div className="flex items-center justify-between p-4 border-b border-neutral-100">
               <span className="text-xs font-black uppercase tracking-wider text-neutral-900">Dividir em dois cartões</span>
