@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ShoppingBag, Menu, X, Heart, ArrowLeft, Ticket, User, ChevronDown, Search } from 'lucide-react';
 import { UserMode, Collection, UserProfile, Product, Category } from '../../types';
 import { Gender } from '../../constants/enums';
 import { Locale } from '../../i18n';
 import { createGetLoc } from '../../utils/localization';
 import { slugify } from '../../utils/urlUtils';
+import { getOptimizedImageUrl } from '../../utils/image';
+import { formatCurrency } from '../../utils/currency';
 
 interface NavbarProps {
   cartCount: number;
@@ -73,6 +75,18 @@ const Navbar: React.FC<NavbarProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   const getLoc = React.useMemo(() => createGetLoc(currentLocale), [currentLocale]);
+
+  // Search autocomplete
+  const searchSuggestions = useMemo(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2 || !products.length) return [];
+    const q = searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return products
+      .filter(p => {
+        const name = getLoc(p.name).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return name.includes(q) && p.is_active;
+      })
+      .slice(0, 5);
+  }, [searchQuery, products, getLoc]);
 
   const handleSelectCollection = (collection: Collection) => {
     if (onSelectCollection) {
@@ -361,6 +375,39 @@ const Navbar: React.FC<NavbarProps> = ({
                 <span className="hidden md:inline">Buscar</span>
               </button>
             </div>
+
+            {/* Autocomplete Suggestions */}
+            {isSearchOpen && searchSuggestions.length > 0 && (
+              <div className="mt-2 bg-white rounded-lg border border-neutral-100 shadow-lg overflow-hidden">
+                {searchSuggestions.map((product) => {
+                  const img = product.variants?.[0]?.variant_images?.[0] || product.base_images?.[0];
+                  const price = product.variants?.[0]?.retail_price || 0;
+                  return (
+                    <button
+                      key={product.id}
+                      onClick={() => {
+                        onSelectProduct?.(product);
+                        setIsSearchOpen(false);
+                        setSearchQuery('');
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-neutral-50 transition-colors text-left"
+                    >
+                      {img && (
+                        <img
+                          src={getOptimizedImageUrl(img, 'thumbnail')}
+                          alt={getLoc(product.name)}
+                          className="w-10 h-12 object-cover rounded-md flex-shrink-0"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-neutral-800 truncate">{getLoc(product.name)}</p>
+                        {price > 0 && <p className="text-xs text-neutral-500">{formatCurrency(price, currentLocale)}</p>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>

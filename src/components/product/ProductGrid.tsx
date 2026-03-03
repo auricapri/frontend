@@ -6,6 +6,7 @@ import { Locale } from '../../i18n';
 import { Gender } from '../../constants/enums';
 import { filterProductsForMode } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
+import { getOptimizedImageUrl } from '../../utils/image';
 import { useProductFilters } from '../../hooks/useProductFilters';
 import { FilterSidebar } from './FilterSidebar';
 import { QuickAddModal } from './QuickAddModal';
@@ -93,10 +94,10 @@ const CollectionCard: React.FC<CollectionCardProps> = React.memo(({ collection, 
     >
       {hasImage ? (
         <img
-          src={collection.image_url}
+          src={getOptimizedImageUrl(collection.image_url, 'large')}
           alt={getLoc(collection.name)}
-          loading="eager"
-          decoding="auto"
+          loading="lazy"
+          decoding="async"
           onError={() => setImgError(true)}
           className={`w-full h-full object-cover transition-all duration-1000 ${isAvailable ? 'group-hover:scale-105 group-active:scale-105' : 'grayscale'}`}
         />
@@ -412,16 +413,36 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             </div>
           </div>
 
-          <div className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory gap-6 px-6 md:px-12 no-scrollbar max-w-full">
-            {!isLoading && collections.map((coll) => (
-              <CollectionCard
-                key={coll.id}
-                collection={coll}
-                getLoc={getLoc}
-                onSelect={onSelectCollection}
-                locale={locale}
-              />
-            ))}
+          <div className="relative group/scroll">
+            <div className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory gap-6 px-6 md:px-12 no-scrollbar max-w-full" id="collections-scroller">
+              {!isLoading && collections.map((coll) => (
+                <CollectionCard
+                  key={coll.id}
+                  collection={coll}
+                  getLoc={getLoc}
+                  onSelect={onSelectCollection}
+                  locale={locale}
+                />
+              ))}
+            </div>
+            {collections.length > 2 && (
+              <>
+                <button
+                  onClick={() => { const el = document.getElementById('collections-scroller'); if (el) el.scrollBy({ left: -300, behavior: 'smooth' }); }}
+                  className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-lg items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity hover:bg-white z-10"
+                  aria-label="Anterior"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => { const el = document.getElementById('collections-scroller'); if (el) el.scrollBy({ left: 300, behavior: 'smooth' }); }}
+                  className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-lg items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity hover:bg-white z-10"
+                  aria-label="Próximo"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
