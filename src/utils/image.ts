@@ -25,62 +25,25 @@ const IMAGE_SIZES: Record<string, ImageSize> = {
 
 const SUPABASE_STORAGE_URL_PATTERN = /supabase\.co\/storage\/v1\/object\/public\//;
 
-/** R2 CDN public URL (fallback when Supabase is down) */
-const R2_PUBLIC_URL = import.meta.env.VITE_R2_PUBLIC_URL || '';
-
 function isSupabaseStorageUrl(url: string): boolean {
   return SUPABASE_STORAGE_URL_PATTERN.test(url);
 }
 
 /**
- * Convert a Supabase Storage URL to its R2 fallback equivalent.
- * Supabase URL: https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>
- * R2 URL:       https://cdn.auricapri.com.br/<bucket>/<path>
- *
- * Returns empty string if R2 is not configured or URL is not a Supabase storage URL.
+ * @deprecated R2 fallback removed — all images served from Supabase Storage Pro.
+ * Kept for backwards compatibility — returns empty string.
  */
-export function getR2FallbackUrl(supabaseUrl: string): string {
-  if (!R2_PUBLIC_URL || !isSupabaseStorageUrl(supabaseUrl)) {
-    return '';
-  }
-
-  try {
-    const url = new URL(supabaseUrl);
-    // Extract bucket/path from: /storage/v1/object/public/<bucket>/<path>
-    const match = url.pathname.match(/\/storage\/v1\/object\/public\/(.+)/);
-    if (!match) return '';
-
-    const bucketAndPath = match[1]; // e.g. "products/richtext/123.webp"
-    const cleanBase = R2_PUBLIC_URL.replace(/\/$/, '');
-    return `${cleanBase}/${bucketAndPath}`;
-  } catch {
-    return '';
-  }
+export function getR2FallbackUrl(_supabaseUrl: string): string {
+  return '';
 }
 
 /**
- * Image onError handler — swaps to R2 fallback, then placeholder.
+ * Image onError handler — falls back to placeholder on error.
  * Use on <img> elements: onError={(e) => handleImageError(e)}
  */
 export function handleImageError(event: React.SyntheticEvent<HTMLImageElement, Event>): void {
   const img = event.currentTarget;
-  const currentSrc = img.src;
-
-  // Already tried R2 or placeholder — stop
-  if (currentSrc === PLACEHOLDER_IMAGE || currentSrc.startsWith('data:')) {
-    return;
-  }
-
-  // If current URL is Supabase, try R2 fallback
-  if (isSupabaseStorageUrl(currentSrc)) {
-    const r2Url = getR2FallbackUrl(currentSrc);
-    if (r2Url) {
-      img.src = r2Url;
-      return;
-    }
-  }
-
-  // Final fallback: placeholder
+  if (img.src === PLACEHOLDER_IMAGE || img.src.startsWith('data:')) return;
   img.src = PLACEHOLDER_IMAGE;
 }
 
