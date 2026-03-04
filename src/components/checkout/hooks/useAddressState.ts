@@ -156,6 +156,54 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
     }
   }, [userAddresses, shipping]);
 
+  // Load WhatsApp prefill data on mount (if no logged-in user with default address)
+  useEffect(() => {
+    if (address || addressLoaded || hasUserEditedCep) return;
+    if (currentUser?.default_address) return; // user's own address takes priority
+
+    try {
+      const raw = localStorage.getItem('auricapri_checkout_prefill');
+      if (!raw) return;
+      const entry = JSON.parse(raw);
+      const prefill = entry?.data || entry; // handles both TTL-wrapped and plain
+      if (!prefill?.address) return;
+
+      const a = prefill.address;
+      const cepValue = (a.postal_code || '').replace(/\D/g, '');
+      const formattedCep = cepValue.length === 8
+        ? cepValue.substring(0, 5) + '-' + cepValue.substring(5, 8)
+        : a.postal_code || '';
+
+      setAddress({
+        logradouro: a.street || '',
+        bairro: a.neighborhood || '',
+        localidade: a.city || '',
+        uf: a.state || '',
+        cep: formattedCep,
+      });
+      if (a.number) setNum(a.number);
+      if (a.complement) setComplement(a.complement);
+      if (formattedCep) setCep(formattedCep);
+      setAddressLoaded(true);
+
+      // Pre-fill customer info
+      if (prefill.customer) {
+        if (prefill.customer.name && !recipientName) setRecipientName(prefill.customer.name);
+        if (prefill.customer.phone && !phone) setPhone(prefill.customer.phone);
+      }
+
+      // Calculate shipping
+      if (cepValue.length === 8) {
+        setTimeout(() => shipping.calculateLogistics(cepValue), 100);
+      }
+
+      // Clean up prefill after use
+      localStorage.removeItem('auricapri_checkout_prefill');
+    } catch {
+      // Ignore parse errors
+    }
+  }, [address, addressLoaded, hasUserEditedCep, currentUser?.default_address, shipping]);
+
   // Load default address on mount
   useEffect(() => {
     if (currentUser?.default_address && !address && !addressLoaded && !hasUserEditedCep) {
