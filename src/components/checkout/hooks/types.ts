@@ -145,6 +145,7 @@ export interface UseCreditCardStateReturn {
 export interface UseInstallmentStateParams {
   finalTotal: number;
   paymentMethod: PaymentMethod;
+  isInfluencerCoupon: boolean;
 }
 
 export interface UseInstallmentStateReturn {
