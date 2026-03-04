@@ -85,9 +85,8 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
       try {
         // Pass PaymentMethod.PIX explicitly to avoid React state timing issues
         await completeOrderWithPayment(PaymentMethod.PIX);
-      } catch (error) {
-        console.error('Erro ao gerar PIX:', error);
-        // Error is handled by the state
+      } catch {
+        // Error stored in pixError state via usePixBoletoState
       }
     }
   };
@@ -100,9 +99,8 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
       try {
         // Pass PaymentMethod.BOLETO explicitly to avoid React state timing issues
         await completeOrderWithPayment(PaymentMethod.BOLETO);
-      } catch (error) {
-        console.error('Erro ao gerar boleto:', error);
-        // Error is handled by the state
+      } catch {
+        // Error stored in boletoError state via usePixBoletoState
       }
     }
   };
