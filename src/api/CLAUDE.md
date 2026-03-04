@@ -76,3 +76,21 @@ async getOrder(id: string): Promise<Order> {
   }
 }
 ```
+
+---
+
+## Changelog — Regra Global Obrigatória
+
+Após **qualquer alteração** finalizada (código, configuração, dependências):
+
+1. Atualizar `CHANGELOG.md` na raiz do repositório
+2. Incrementar versão seguindo **Semantic Versioning** (`MAJOR.MINOR.PATCH`):
+   - `PATCH` — bugfix, ajuste sem breaking change
+   - `MINOR` — nova feature ou melhoria retrocompatível
+   - `MAJOR` — breaking change, mudança de contrato de API ou refatoração arquitetural
+3. Manter `README.md` atualizado com mudanças de API, setup ou deploy
+
+**NUNCA** encerrar uma tarefa sem:
+- [ ] `CHANGELOG.md` atualizado com as alterações da sessão
+- [ ] Versão incrementada
+- [ ] `README.md` refletindo o estado atual do projeto
