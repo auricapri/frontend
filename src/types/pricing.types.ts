@@ -194,14 +194,14 @@ export const DEFAULT_COST_STRUCTURE: CostStructureConfig = {
 };
 
 export const DEFAULT_GATEWAY_CONFIG: PaymentGatewayConfig = {
-  provider: 'other',
+  provider: 'asaas',
   isActive: true,
-  feePercentage: 0.0399,
-  feeFixed: 0.50,
+  feePercentage: 0.0299,
+  feeFixed: 0.49,
   pixFeePercentage: 0.0099,
   pixFeeFixed: 0,
   boletoFeeFixed: 3.49,
   installmentFeePercentPerInstallment: 0.0199,
-  maxInstallments: 12
+  maxInstallments: 10
 };
 
