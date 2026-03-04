@@ -146,7 +146,7 @@ checkout/
 ├── steps/
 │   ├── AddressStep.tsx
 │   ├── ShippingStep.tsx
-│   └── PaymentStep.tsx
+│   └── PaymentStep.tsx      # ⚠ ARQUIVO GRANDE — dividir ao modificar (ver abaixo)
 └── hooks/
     ├── useCheckoutState.ts  # Estado central do checkout
     ├── useCheckoutTotals.ts # Cálculos de preço (PIX, cashback, parcelas)
@@ -155,3 +155,18 @@ checkout/
 ```
 
 **NUNCA** refatorar o fluxo do checkout sem entender todos os hooks acima.
+
+### PaymentStep.tsx — Refatoração Pendente
+
+`PaymentStep.tsx` tem ~781 linhas e **precisa ser dividido**. Ao modificar, extrair:
+
+```
+steps/payment/
+├── PaymentStep.tsx          # Orquestrador (~150 linhas)
+├── CreditCardForm.tsx        # Formulário de cartão
+├── PixPaymentSection.tsx     # Seção PIX + QR code
+├── BoletoSection.tsx         # Seção boleto
+└── CashbackToggle.tsx        # Toggle de cashback (funciona com PIX também)
+```
+
+Cashback deve ser visível para **todos** os métodos de pagamento, não apenas cartão.
