@@ -111,6 +111,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const installment = useInstallmentState({
     finalTotal: totals.finalTotal,
     paymentMethod,
+    isInfluencerCoupon: coupon.appliedCoupon?.is_influencer ?? false,
   });
 
   // Credit card state

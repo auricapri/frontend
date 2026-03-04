@@ -27,8 +27,9 @@ export class PaymentsApi {
   /**
    * Busca opções de parcelamento para um valor
    */
-  async getInstallmentOptions(amount: number): Promise<InstallmentOptionsResponse> {
-    return apiClient.get<InstallmentOptionsResponse>(`/payments/installment-options/${amount}`);
+  async getInstallmentOptions(amount: number, isInfluencerCoupon = false): Promise<InstallmentOptionsResponse> {
+    const query = isInfluencerCoupon ? '?isInfluencerCoupon=true' : '';
+    return apiClient.get<InstallmentOptionsResponse>(`/payments/installment-options/${amount}${query}`);
   }
 
   /**
