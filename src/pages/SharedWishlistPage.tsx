@@ -275,17 +275,17 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
         </div>
 
         {!currentUser && (
-          <div className="mb-10 rounded-2xl bg-neutral-950 text-white px-6 py-5 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <GiftIcon className="w-5 h-5 shrink-0 text-neutral-300" />
+          <div className="mb-10 rounded-2xl bg-neutral-950 text-white px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <GiftIcon className="w-5 h-5 shrink-0 text-neutral-300 mt-0.5" />
               <div>
                 <p className="text-[11px] font-black uppercase tracking-widest">Entre para presentear</p>
-                <p className="text-[10px] text-neutral-400 mt-0.5">Faça login ou crie sua conta para comprar qualquer item desta lista</p>
+                <p className="text-[10px] text-neutral-400 mt-1 leading-relaxed">Faça login ou crie sua conta para comprar qualquer item desta lista</p>
               </div>
             </div>
             <button
               onClick={onOpenAuth}
-              className="shrink-0 px-6 py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neutral-100 active:scale-95 transition-all whitespace-nowrap"
+              className="w-full sm:w-auto shrink-0 px-6 py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neutral-100 active:scale-95 transition-all"
             >
               Entrar / Criar conta
             </button>
