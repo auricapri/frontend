@@ -15,6 +15,7 @@ interface SharedWishlistPageProps {
   userMode: UserMode;
   currentUser: any;
   onNavigate: (view: string) => void;
+  onOpenAuth: () => void;
   slug: string;
 }
 
@@ -24,6 +25,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   userMode,
   currentUser,
   onNavigate,
+  onOpenAuth,
   slug
 }) => {
   const [wishlistData, setWishlistData] = useState<{ user_id: string; product_ids: string[] } | null>(null);
@@ -126,7 +128,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
 
   const handleBuyAll = () => {
     if (!currentUser) {
-      alert('Você precisa estar logado para comprar');
+      onOpenAuth();
       return;
     }
     setCheckoutItems(cartItems);
@@ -135,7 +137,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
 
   const handleBuyItem = (productId: string) => {
     if (!currentUser) {
-      alert('Você precisa estar logado para comprar');
+      onOpenAuth();
       return;
     }
     const item = cartItems.find(i => i.product_id === productId);
@@ -184,10 +186,9 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
         });
       }
 
-      alert('Pedido realizado com sucesso! O presente será enviado para o dono da wishlist.');
       onNavigate('home');
     } catch (err: any) {
-      alert(`Erro ao realizar pedido: ${err.message}`);
+      console.error('[SharedWishlistPage] handlePlaceOrder error:', err);
     } finally {
       setIsProcessing(false);
     }
@@ -273,6 +274,24 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
           </p>
         </div>
 
+        {!currentUser && (
+          <div className="mb-10 rounded-2xl bg-neutral-950 text-white px-6 py-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <GiftIcon className="w-5 h-5 shrink-0 text-neutral-300" />
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-widest">Entre para presentear</p>
+                <p className="text-[10px] text-neutral-400 mt-0.5">Faça login ou crie sua conta para comprar qualquer item desta lista</p>
+              </div>
+            </div>
+            <button
+              onClick={onOpenAuth}
+              className="shrink-0 px-6 py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neutral-100 active:scale-95 transition-all whitespace-nowrap"
+            >
+              Entrar / Criar conta
+            </button>
+          </div>
+        )}
+
         {!Array.isArray(products) || products.length === 0 ? (
           <div className="text-center py-20 bg-neutral-50 rounded-[3rem] border-2 border-dashed border-neutral-100">
             <p className="text-neutral-400 text-[10px] font-black uppercase tracking-widest">Esta wishlist está vazia</p>
@@ -312,13 +331,13 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
             <div className="flex justify-center border-t border-neutral-100 pt-20">
               <button
                 onClick={handleBuyAll}
-                disabled={!currentUser || !Array.isArray(cartItems) || cartItems.length === 0}
+                disabled={!!currentUser && (!Array.isArray(cartItems) || cartItems.length === 0)}
                 className="px-16 py-8 bg-black text-white rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-105 active:scale-95 disabled:opacity-20 transition-all flex items-center gap-4"
               >
                 {currentUser ? (
                   <>Comprar Toda a Curadoria <ArrowRight className="w-4 h-4" /></>
                 ) : (
-                  'Faça login para comprar'
+                  <>Entre e compre toda a curadoria <ArrowRight className="w-4 h-4" /></>
                 )}
               </button>
             </div>
@@ -328,6 +347,12 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
     </div>
   );
 };
+
+const GiftIcon = ({ className }: { className?: string }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 12 20 22 4 22 4 12" /><rect x="2" y="7" width="20" height="5" /><line x1="12" y1="22" x2="12" y2="7" /><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" /><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+  </svg>
+);
 
 const ArrowRight = ({ className }: { className?: string }) => (
   <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
