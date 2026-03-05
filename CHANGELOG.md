@@ -5,6 +5,17 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.1.1] - 2026-03-04
+
+### Corrigido
+- SharedWishlistPage: substituídos `alert()` por abertura do AuthDrawer ao tentar comprar sem login
+- SharedWishlistPage: removido `disabled` no botão principal para não-logados — agora abre login ao clicar
+- SharedWishlistPage: removidos `alert()` de erro/sucesso do pedido
+
+### Adicionado
+- SharedWishlistPage: banner de incentivo ao login para usuários não autenticados com botão "Entrar / Criar conta"
+- SharedWishlistPage: prop `onOpenAuth` passada via AppRouter usando `app.setIsAuthOpen(true)`
+
 ## [1.1.0] - 2026-02-19
 
 ### Performance

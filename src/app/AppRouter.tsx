@@ -158,7 +158,7 @@ export function AppRouter(props: {
     const slug = pathParts[pathParts.length - 1];
     return (
       <Suspense fallback={<LoadingFallback />}>
-        <SharedWishlistPage locale={app.locale} t={app.t} userMode={app.userMode} currentUser={app.currentUser} onNavigate={app.onNavigate} slug={slug} />
+        <SharedWishlistPage locale={app.locale} t={app.t} userMode={app.userMode} currentUser={app.currentUser} onNavigate={app.onNavigate} onOpenAuth={() => app.setIsAuthOpen(true)} slug={slug} />
       </Suspense>
     );
   }
