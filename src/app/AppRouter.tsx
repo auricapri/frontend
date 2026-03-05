@@ -19,6 +19,7 @@ const SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').
 const MyReturnsPage = React.lazy(() => import('../pages/MyReturnsPage').then(m => ({ default: m.MyReturnsPage })));
 const ReturnRequestForm = React.lazy(() => import('../components/returns/ReturnRequestForm'));
 const AffiliatePage = React.lazy(() => import('../pages/AffiliatePage').then(m => ({ default: m.AffiliatePage })));
+const AuthDrawer = React.lazy(() => import('../components/auth/AuthDrawer'));
 
 export function AppRouter(props: {
   app: any;
@@ -157,9 +158,23 @@ export function AppRouter(props: {
     const pathParts = window.location.pathname.split('/');
     const slug = pathParts[pathParts.length - 1];
     return (
-      <Suspense fallback={<LoadingFallback />}>
-        <SharedWishlistPage locale={app.locale} t={app.t} userMode={app.userMode} currentUser={app.currentUser} onNavigate={app.onNavigate} onOpenAuth={() => app.setIsAuthOpen(true)} slug={slug} />
-      </Suspense>
+      <>
+        <Suspense fallback={<LoadingFallback />}>
+          <SharedWishlistPage locale={app.locale} t={app.t} userMode={app.userMode} currentUser={app.currentUser} onNavigate={app.onNavigate} onOpenAuth={() => app.setIsAuthOpen(true)} slug={slug} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <AuthDrawer
+            isOpen={app.isAuthOpen}
+            onClose={() => { app.setIsAuthOpen(false); app.setPendingCheckout(false); }}
+            user={app.currentUser}
+            onLogin={async () => { return; }}
+            onLogout={async () => { await app.signOut(); }}
+            t={app.t}
+            locale={app.locale}
+            storeConfig={app.storeConfig}
+          />
+        </Suspense>
+      </>
     );
   }
 
