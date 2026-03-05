@@ -29,6 +29,8 @@ interface CheckoutViewProps {
   ) => void;
   locale: Locale;
   t: (key: string) => string;
+  initialStep?: number;
+  giftDeliveryLocation?: string;
 }
 
 const steps = [
@@ -37,8 +39,8 @@ const steps = [
   { id: 3, title: 'Revisão', shortTitle: 'Rev.', icon: ShieldCheck },
 ] as const;
 
-const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, userMode, onBack, onComplete, locale, t: _t }) => {
-  const checkout = useCheckoutState({ items, currentUser, storeConfig, userMode, onComplete, locale });
+const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, userMode, onBack, onComplete, locale, t: _t, initialStep, giftDeliveryLocation }) => {
+  const checkout = useCheckoutState({ items, currentUser, storeConfig, userMode, onComplete, locale, initialStep });
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans flex flex-col pt-24 pb-20 relative">
@@ -52,6 +54,11 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
               <ArrowLeft className="w-4 h-4" /> Voltar à Loja
             </button>
             <h1 className="text-4xl font-black tracking-tighter uppercase italic">Finalizar Pedido</h1>
+            {giftDeliveryLocation && (
+              <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                Presente para: <span className="text-black">{giftDeliveryLocation}</span>
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-10">
             {steps.map((s, idx) => (

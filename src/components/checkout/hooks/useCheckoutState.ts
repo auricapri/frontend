@@ -46,13 +46,14 @@ export type UseCheckoutStateParams = {
     cashbackUsed?: number
   ) => void;
   locale: Locale;
+  initialStep?: number;
 };
 
 export function useCheckoutState(params: UseCheckoutStateParams) {
-  const { items, currentUser, storeConfig, userMode, onComplete, locale } = params;
+  const { items, currentUser, storeConfig, userMode, onComplete, locale, initialStep } = params;
 
   // Step management
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(initialStep ?? 1);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CREDIT_CARD);
   const [useCashback, setUseCashback] = useState(false);
 
