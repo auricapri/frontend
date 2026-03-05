@@ -36,6 +36,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [itemsToCheckout, setCheckoutItems] = useState<CartItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [deliveryInfo, setDeliveryInfo] = useState<{ hasAddress: boolean; city?: string; state?: string } | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -57,6 +58,14 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
         }
 
         setWishlistData(data);
+
+        // Fetch delivery info (owner's address city/state)
+        try {
+          const info = await wishlistApi.getDeliveryInfo(slug);
+          if (isMounted.current) setDeliveryInfo(info);
+        } catch {
+          if (isMounted.current) setDeliveryInfo({ hasAddress: false });
+        }
 
         // Busca apenas os produtos da wishlist por IDs (muito mais eficiente!)
         const wishlistProducts = await productsApi.getByIds(data.product_ids);
@@ -131,6 +140,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       onOpenAuth();
       return;
     }
+    if (deliveryInfo && !deliveryInfo.hasAddress) return;
     setCheckoutItems(cartItems);
     setShowCheckout(true);
   };
@@ -140,6 +150,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       onOpenAuth();
       return;
     }
+    if (deliveryInfo && !deliveryInfo.hasAddress) return;
     const item = cartItems.find(i => i.product_id === productId);
     if (item) {
       setCheckoutItems([item]);
@@ -148,7 +159,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   };
 
   const handlePlaceOrder = async (
-    addressData: AddressData,
+    _addressData: AddressData,
     logisticsInfo: InternalLogisticsInfo,
     paymentMethod: any,
     finalAmount: number
@@ -160,31 +171,21 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       if (!Array.isArray(itemsToCheckout) || itemsToCheckout.length === 0) {
         throw new Error('Carrinho vazio');
       }
-      
+
       const subtotal = itemsToCheckout.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 0)), 0);
-      
-      // If buying all items, use the buyAll endpoint
-      if (itemsToCheckout.length === cartItems.length) {
-        await wishlistApi.buyAllFromSharedWishlist(slug, {
-          addressData,
-          logisticsInfo,
-          paymentMethod,
-          subtotal,
-          finalAmount
-        });
-      } else {
-        // For individual item, we might need a specific endpoint or just pass the ID
-        // Assuming buyAll handles a subset if we pass it, but let's check API
-        // For now, let's assume buyAll can take specific product IDs if we extend it
-        await wishlistApi.buyAllFromSharedWishlist(slug, {
-          addressData,
-          logisticsInfo,
-          paymentMethod,
-          subtotal,
-          finalAmount,
-          productIds: itemsToCheckout.map(i => i.product_id)
-        });
-      }
+      const productIds = itemsToCheckout.length < cartItems.length
+        ? itemsToCheckout.map(i => i.product_id)
+        : undefined;
+
+      // Backend fetches owner's address — addressData from buyer is intentionally ignored
+      await wishlistApi.buyAllFromSharedWishlist(slug, {
+        addressData: {},
+        logisticsInfo,
+        paymentMethod,
+        subtotal,
+        finalAmount,
+        productIds,
+      });
 
       onNavigate('home');
     } catch (err: any) {
@@ -234,6 +235,10 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   }
 
   if (showCheckout) {
+    const deliveryLocation = deliveryInfo?.hasAddress && deliveryInfo.city
+      ? `${deliveryInfo.city}${deliveryInfo.state ? `, ${deliveryInfo.state}` : ''}`
+      : undefined;
+
     return (
       <CheckoutView
         items={itemsToCheckout}
@@ -243,6 +248,8 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
         locale={locale}
         currentUser={currentUser}
         userMode={userMode}
+        initialStep={2}
+        giftDeliveryLocation={deliveryLocation}
       />
     );
   }
@@ -272,6 +279,19 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
           <p className="text-neutral-500 text-[10px] font-bold uppercase tracking-widest">
             Compre itens desta curadoria exclusiva como presente
           </p>
+          {deliveryInfo?.hasAddress && deliveryInfo.city && (
+            <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+              Entrega para:{' '}
+              <span className="text-black">
+                {deliveryInfo.city}{deliveryInfo.state ? `, ${deliveryInfo.state}` : ''}
+              </span>
+            </p>
+          )}
+          {deliveryInfo && !deliveryInfo.hasAddress && (
+            <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-red-500">
+              Atenção: o dono desta wishlist não possui endereço cadastrado. Compras não estão disponíveis no momento.
+            </p>
+          )}
         </div>
 
         {!currentUser && (

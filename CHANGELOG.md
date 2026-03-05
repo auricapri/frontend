@@ -5,6 +5,20 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.1.2] - 2026-03-04
+
+### Corrigido
+- AuthDrawer: OAuth redirect agora usa `window.location.href` em vez de `window.location.origin + '/'` — usuário retorna à wishlist após login com Google/Apple
+- SharedWishlistPage: botões de compra desabilitados quando dono da wishlist não tem endereço cadastrado
+
+### Adicionado
+- SharedWishlistPage: exibe cidade/estado de entrega (endereço do dono) acima dos produtos
+- SharedWishlistPage: aviso quando dono não tem endereço cadastrado
+- SharedWishlistPage: checkout inicia direto no passo de Pagamento (endereço vem do dono via backend)
+- CheckoutViewV2: props `initialStep` e `giftDeliveryLocation` para checkout de presente
+- WishlistDrawer: aviso de que o dono deve ter endereço cadastrado antes de compartilhar
+- wishlist.api.ts: método `getDeliveryInfo` para buscar cidade/estado do endereço do dono
+
 ## [1.1.1] - 2026-03-04
 
 ### Corrigido
