@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell, Check, RefreshCw } from 'lucide-react';
 import { notificationsApi } from '../../api/instances';
 import { type Notification } from '../../api/notifications.api';
 import { supabase } from '../../utils/supabase';
 
-// Throttle helper
+// Throttle helper — used only for the real-time subscription callback
 function useThrottle<T extends (...args: any[]) => any>(fn: T, delay: number): T {
   const lastRun = useRef(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -17,7 +18,6 @@ function useThrottle<T extends (...args: any[]) => any>(fn: T, delay: number): T
       lastRun.current = now;
       return fn(...args);
     } else {
-      // Agenda para rodar quando o delay terminar
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         lastRun.current = Date.now();
@@ -28,32 +28,16 @@ function useThrottle<T extends (...args: any[]) => any>(fn: T, delay: number): T
 }
 
 export function DeliveryNotificationsPanel() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [items, setItems] = useState<Notification[]>([]);
-  const [error, setError] = useState<string>('');
   const [userId, setUserId] = useState<string | null>(null);
-  const isFetchingRef = useRef(false);
+  const queryClient = useQueryClient();
 
-  const fetchAll = useCallback(async () => {
-    // Evita chamadas simultâneas
-    if (isFetchingRef.current) return;
-    isFetchingRef.current = true;
+  const { data: items = [], isLoading, error, refetch } = useQuery<Notification[]>({
+    queryKey: ['delivery', 'notifications'],
+    queryFn: () => notificationsApi.getAll(false),
+    staleTime: 30 * 1000,
+  });
 
-    setIsLoading(true);
-    setError('');
-    try {
-      const list = await notificationsApi.getAll(false);
-      setItems(list);
-    } catch (e: any) {
-      setError(e?.message || 'Falha ao carregar notificações');
-    } finally {
-      setIsLoading(false);
-      isFetchingRef.current = false;
-    }
-  }, []);
-
-  // Versão com throttle de 2s para o listener real-time
-  const throttledFetchAll = useThrottle(fetchAll, 2000);
+  const throttledRefetch = useThrottle(refetch, 2000);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -61,10 +45,7 @@ export function DeliveryNotificationsPanel() {
     });
   }, []);
 
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
-
+  // Real-time Supabase subscription — triggers a throttled refetch on changes
   useEffect(() => {
     if (!userId) return;
     const channel = supabase
@@ -77,22 +58,21 @@ export function DeliveryNotificationsPanel() {
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
         },
-        () => {
-          // Usa versão throttled para evitar múltiplas chamadas em rajada
-          throttledFetchAll();
-        }
+        () => throttledRefetch()
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [throttledFetchAll, userId]);
+  }, [throttledRefetch, userId]);
 
   const markRead = async (id: string) => {
     try {
       await notificationsApi.markAsRead(id);
-      setItems((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
+      queryClient.setQueryData<Notification[]>(['delivery', 'notifications'], (prev) =>
+        (prev ?? []).map((n) => (n.id === id ? { ...n, is_read: true } : n))
+      );
     } catch {
       return;
     }
@@ -101,7 +81,9 @@ export function DeliveryNotificationsPanel() {
   const markAll = async () => {
     try {
       await notificationsApi.markAllAsRead();
-      setItems((prev) => prev.map((n) => ({ ...n, is_read: true })));
+      queryClient.setQueryData<Notification[]>(['delivery', 'notifications'], (prev) =>
+        (prev ?? []).map((n) => ({ ...n, is_read: true }))
+      );
     } catch {
       return;
     }
@@ -119,7 +101,7 @@ export function DeliveryNotificationsPanel() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={fetchAll}
+            onClick={() => refetch()}
             className="p-3 rounded-xl bg-neutral-100 hover:bg-neutral-200 active:scale-[0.99] transition-all"
             aria-label="Atualizar"
           >
@@ -136,7 +118,7 @@ export function DeliveryNotificationsPanel() {
       </div>
 
       {error ? (
-        <div className="p-5 text-sm text-red-700">{error}</div>
+        <div className="p-5 text-sm text-red-700">{(error as Error).message || 'Falha ao carregar notificações'}</div>
       ) : null}
 
       {isLoading ? (

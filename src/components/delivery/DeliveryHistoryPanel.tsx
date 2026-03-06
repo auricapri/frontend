@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { DeliveryApi, type DeliveryPickup, type DeliveryReport } from '../../api/delivery.api';
 
@@ -8,30 +9,18 @@ type HistoryItem =
 
 export function DeliveryHistoryPanel() {
   const api = useMemo(() => new DeliveryApi(), []);
-  const [isLoading, setIsLoading] = useState(true);
-  const [items, setItems] = useState<HistoryItem[]>([]);
-  const [error, setError] = useState<string>('');
 
-  const fetchAll = useCallback(async () => {
-    setIsLoading(true);
-    setError('');
-    try {
+  const { data: items = [], isLoading, error, refetch } = useQuery<HistoryItem[]>({
+    queryKey: ['delivery', 'history'],
+    queryFn: async () => {
       const [pickups, reports] = await Promise.all([api.getPickups(), api.getReports()]);
-      const merged: HistoryItem[] = [
+      return [
         ...pickups.map((p) => ({ kind: 'pickup' as const, created_at: p.updated_at || p.created_at, pickup: p })),
         ...reports.map((r) => ({ kind: 'report' as const, created_at: r.reported_at || r.created_at, report: r })),
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      setItems(merged);
-    } catch (e: any) {
-      setError(e?.message || 'Falha ao carregar histórico');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [api]);
-
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    },
+    staleTime: 30 * 1000,
+  });
 
   return (
     <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
@@ -42,7 +31,7 @@ export function DeliveryHistoryPanel() {
         </div>
         <button
           type="button"
-          onClick={fetchAll}
+          onClick={() => refetch()}
           className="p-3 rounded-xl bg-neutral-100 hover:bg-neutral-200 active:scale-[0.99] transition-all"
           aria-label="Atualizar"
         >
@@ -51,7 +40,7 @@ export function DeliveryHistoryPanel() {
       </div>
 
       {error ? (
-        <div className="p-5 text-sm text-red-700">{error}</div>
+        <div className="p-5 text-sm text-red-700">{(error as Error).message || 'Falha ao carregar histórico'}</div>
       ) : null}
 
       {isLoading ? (

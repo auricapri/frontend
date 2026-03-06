@@ -5,6 +5,21 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.2.0] - 2026-03-05
+
+### Refatorado
+- **PaymentStep.tsx**: 779L → 289L + 4 subcomponentes (CreditCardForm, PixPaymentSection, BoletoSection, CashbackToggle)
+- **ProductGrid.tsx**: 692L → 332L + 6 subcomponentes (ProductFilters, ProductPagination, ProductGridSkeleton, ProductGridBody, CollectionCard, CartIncentiveBanner)
+- **Navbar.tsx**: 637L → 194L + 5 subcomponentes (NavbarMobileBar, NavbarDesktop, NavbarSearch, NavbarMobile, NavbarUserMenu)
+- **10 componentes** convertidos de useEffect+fetch para React Query (useQuery/useMutation com staleTime, queryKey, invalidation)
+  - CouponsDrawer, DeliveryHistoryPanel, DeliveryNotificationsPanel, DeliveryDashboard, OrderReceipt, GarmentTryOnModal, FaceSwapModal, ReturnRequestForm, useOrders, useAddresses
+
+### Melhorado
+- **20 arquivos** com imagens otimizadas: 9 com `getOptimizedImageUrl` (produto/colecao), 11 com `loading="lazy" decoding="async"`
+- **CashbackToggle** agora visivel para TODOS os metodos de pagamento (nao apenas cartao)
+- **UserProfileView**: queries ativadas sob demanda por tab (enabled flag)
+- **DeliveryNotificationsPanel**: updates otimistas via queryClient.setQueryData
+
 ## [1.1.2] - 2026-03-04
 
 ### Corrigido

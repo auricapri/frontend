@@ -341,7 +341,7 @@ const ComplaintModal: React.FC<ComplaintModalProps> = ({ isOpen, onClose }) => {
                 return (
                   <div key={key} className="relative group bg-neutral-50 rounded-xl border border-neutral-200 p-2 flex items-center gap-2 max-w-[200px]">
                     {preview ? (
-                      <img src={preview} alt={file.name} className="w-10 h-10 rounded-lg object-cover" />
+                      <img src={preview} alt={file.name} className="w-10 h-10 rounded-lg object-cover" loading="lazy" decoding="async" />
                     ) : (
                       <div className="w-10 h-10 rounded-lg bg-neutral-200 flex items-center justify-center">
                         <FileText className="w-5 h-5 text-neutral-500" />

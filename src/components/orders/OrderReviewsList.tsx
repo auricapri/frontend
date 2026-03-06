@@ -76,6 +76,8 @@ export const OrderReviewsList: React.FC<OrderReviewsListProps> = ({
                       src={media.media_url}
                       alt="Review"
                       className="w-24 h-24 object-cover rounded-lg"
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <video

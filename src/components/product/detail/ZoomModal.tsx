@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getOptimizedImageUrl } from '../../../utils/image';
 
 interface ZoomImage {
   url: string;
@@ -55,9 +56,11 @@ export function ZoomModal({
 
         <div className="w-full h-full flex items-center justify-center overflow-hidden">
           <img
-            src={displayImages[currentIndex]}
+            src={getOptimizedImageUrl(displayImages[currentIndex], 'xlarge')}
             className="max-h-full max-w-full object-contain cursor-crosshair transition-transform duration-700 hover:scale-150"
             alt=""
+            loading="lazy"
+            decoding="async"
           />
         </div>
 
@@ -83,7 +86,13 @@ export function ZoomModal({
                 : 'border-transparent opacity-40 hover:opacity-100'
             }`}
           >
-            <img src={imgData.url} className="w-full h-full object-contain" alt={`Miniatura ${i + 1}`} />
+            <img
+              src={getOptimizedImageUrl(imgData.url, 'thumbnail')}
+              className="w-full h-full object-contain"
+              alt={`Miniatura ${i + 1}`}
+              loading="lazy"
+              decoding="async"
+            />
           </button>
         ))}
       </div>

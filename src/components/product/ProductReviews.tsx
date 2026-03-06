@@ -233,6 +233,8 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
                                    src={media.media_url}
                                    alt="Review"
                                    className="w-32 h-32 object-cover rounded-lg border border-neutral-100"
+                                   loading="lazy"
+                                   decoding="async"
                                  />
                                ) : (
                                  <video

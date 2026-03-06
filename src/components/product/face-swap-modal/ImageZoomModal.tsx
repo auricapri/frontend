@@ -28,6 +28,8 @@ export const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
         alt="Zoom"
         className="max-w-[95vw] max-h-[95vh] object-contain"
         onClick={(e) => e.stopPropagation()}
+        loading="lazy"
+        decoding="async"
       />
     </div>
   );

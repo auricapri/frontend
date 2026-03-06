@@ -1,13 +1,15 @@
 /// ReturnRequestForm Component
 /// Allows customers to request returns for recent orders
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { ArrowLeft, CheckCircle, Loader2, Package, AlertCircle } from 'lucide-react';
 import { Order, OrderItem } from '../../types';
-import { ReturnsApi, Return } from '../../api/returns.api';
-import { OrdersApi } from '../../api/orders.api';
+import { Return } from '../../api/returns.api';
+import { ordersApi, returnsApi } from '../../api/instances';
 import type { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
+import { getOptimizedImageUrl } from '../../utils/image';
 
 const RETURN_REASONS = [
   { value: 'wrong_size', label: 'Tamanho errado' },
@@ -36,113 +38,101 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
   onBack,
   onSuccess,
 }) => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loadingOrders, setLoadingOrders] = useState(true);
   const [selectedOrderId, setSelectedOrderId] = useState('');
   const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>({});
   const [reason, setReason] = useState('');
   const [details, setDetails] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<Return | null>(null);
-  const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
 
-  const getLoc = useCallback((obj: any): string => {
+  const getLoc = useCallback((obj: unknown): string => {
     if (!obj) return '';
     if (typeof obj === 'string') return obj;
     if (typeof obj === 'object') {
-      return obj[locale] || obj['pt'] || obj['en'] || '';
+      const o = obj as Record<string, string>;
+      return o[locale] || o['pt'] || o['en'] || '';
     }
     return String(obj);
   }, [locale]);
 
-  // Fetch recent orders (last 7 days, delivered/shipped only)
-  useEffect(() => {
-    const fetchOrders = async () => {
-      setLoadingOrders(true);
-      try {
-        const ordersApi = new OrdersApi();
-        const allOrders = await ordersApi.getAll();
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const { data: orders = [], isLoading: loadingOrders } = useQuery<Order[]>({
+    queryKey: ['orders', 'returnable'],
+    queryFn: async () => {
+      const allOrders = await ordersApi.getAll();
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return allOrders.filter((order) => {
+        const orderDate = new Date(order.created_at);
+        const status = order.status?.toLowerCase();
+        return (
+          orderDate >= sevenDaysAgo &&
+          (status === 'delivered' || status === 'entregue' || status === 'shipped' || status === 'enviado')
+        );
+      });
+    },
+    staleTime: 2 * 60 * 1000,
+  });
 
-        const recentOrders = allOrders.filter(order => {
-          const orderDate = new Date(order.created_at);
-          const status = order.status?.toLowerCase();
-          return (
-            orderDate >= sevenDaysAgo &&
-            (status === 'delivered' || status === 'entregue' || status === 'shipped' || status === 'enviado')
-          );
-        });
+  const submitMutation = useMutation({
+    mutationFn: (payload: { order_id: string; reason: string; metadata: object }) =>
+      returnsApi.create(payload),
+    onSuccess: (returnData) => {
+      setResult(returnData);
+      onSuccess?.();
+    },
+    onError: (err: unknown) => {
+      setFormError((err as Error)?.message || 'Erro ao solicitar devolucao. Tente novamente.');
+    },
+  });
 
-        setOrders(recentOrders);
-      } catch (err) {
-        console.error('Error fetching orders:', err);
-      } finally {
-        setLoadingOrders(false);
-      }
-    };
-    fetchOrders();
-  }, []);
-
-  const selectedOrder = orders.find(o => o.id === selectedOrderId);
+  const selectedOrder = orders.find((o) => o.id === selectedOrderId);
 
   const handleToggleItem = (itemId: string) => {
-    setSelectedItems(prev => ({ ...prev, [itemId]: !prev[itemId] }));
+    setSelectedItems((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setFormError('');
 
     if (!selectedOrderId) {
-      setError('Selecione um pedido.');
+      setFormError('Selecione um pedido.');
       return;
     }
 
     const itemIds = Object.entries(selectedItems)
-      .filter(([_, checked]) => checked)
+      .filter(([, checked]) => checked)
       .map(([id]) => id);
 
     if (itemIds.length === 0) {
-      setError('Selecione pelo menos um item para devolucao.');
+      setFormError('Selecione pelo menos um item para devolucao.');
       return;
     }
 
     if (!reason) {
-      setError('Selecione um motivo.');
+      setFormError('Selecione um motivo.');
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const returnsApi = new ReturnsApi();
-      const items: SelectedItem[] = (selectedOrder?.items || [])
-        .filter(item => selectedItems[item.id || item.variant_id || item.product_id])
-        .map(item => ({
-          variant_id: item.variant_id || '',
-          product_id: item.product_id,
-          name: getLoc(item.name),
-          size: item.size,
-          quantity: item.quantity,
-        }));
+    const items: SelectedItem[] = (selectedOrder?.items || [])
+      .filter((item) => selectedItems[item.id || item.variant_id || item.product_id])
+      .map((item) => ({
+        variant_id: item.variant_id || '',
+        product_id: item.product_id,
+        name: getLoc(item.name),
+        size: item.size,
+        quantity: item.quantity,
+      }));
 
-      const returnData = await returnsApi.create({
-        order_id: selectedOrderId,
-        reason,
-        metadata: {
-          items,
-          details: details.trim() || undefined,
-        },
-      });
-
-      setResult(returnData);
-      onSuccess?.();
-    } catch (err: any) {
-      setError(err.message || 'Erro ao solicitar devolucao. Tente novamente.');
-    } finally {
-      setSubmitting(false);
-    }
+    submitMutation.mutate({
+      order_id: selectedOrderId,
+      reason,
+      metadata: { items, details: details.trim() || undefined },
+    });
   };
+
+  const submitting = submitMutation.isPending;
+  const error = formError;
 
   // Success state
   if (result) {
@@ -272,9 +262,11 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
                         className="w-4 h-4 accent-black"
                       />
                       <img
-                        src={item.image}
+                        src={getOptimizedImageUrl(item.image, 'thumbnail')}
                         alt=""
                         className="w-12 h-16 object-cover rounded-lg flex-none bg-neutral-100"
+                        loading="lazy"
+                        decoding="async"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] font-black uppercase tracking-tight truncate">

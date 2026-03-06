@@ -5,6 +5,7 @@ import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { calculatePrice } from '../../utils/product';
 import { getDisplayPrice as getProductDisplayPrice } from '../../utils/coupon';
+import { getOptimizedImageUrl } from '../../utils/image';
 
 interface QuickAddModalProps {
   product: Product;
@@ -142,9 +143,11 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
             <div className="w-20 h-24 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0">
               {displayImg ? (
                 <img
-                  src={displayImg}
+                  src={getOptimizedImageUrl(displayImg, 'small')}
                   alt={getLoc(product.name)}
                   className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                   onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('hidden'); }}
                 />
               ) : null}

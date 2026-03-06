@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Download, MessageCircle, Check, Loader2 } from 'lucide-react';
 import { Order, OrderItem, OrderReview } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
-import { OrdersApi } from '../../api/orders.api';
-import { OrderReviewsApi } from '../../api/order-reviews.api';
+import { ordersApi, orderReviewsApi } from '../../api/instances';
 import { OrderReviewForm } from './OrderReviewForm';
 import { OrderReviewsList } from './OrderReviewsList';
 import { useAuthContext } from '../../context/AuthContext';
@@ -21,20 +21,30 @@ interface OrderReceiptProps {
 
 const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, taxId }) => {
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
-  const [reviews, setReviews] = useState<OrderReview[]>([]);
-  const [userReview, setUserReview] = useState<OrderReview | null>(null);
   const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
-  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const { currentUser } = useAuthContext();
-  const ordersApi = new OrdersApi();
-  const reviewsApi = new OrderReviewsApi();
-  
+  const queryClient = useQueryClient();
+
+  const isDelivered =
+    order.status?.toLowerCase() === 'delivered' ||
+    order.status?.toLowerCase() === 'entregue';
+
+  const { data: reviews = [], isLoading: isLoadingReviews } = useQuery<OrderReview[]>({
+    queryKey: ['order-reviews', order.id],
+    queryFn: () => orderReviewsApi.getByOrderId(order.id),
+    enabled: isDelivered,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const userReview = currentUser
+    ? reviews.find((r) => r.user_id === currentUser.id) ?? null
+    : null;
+
   const handlePrint = async () => {
     setIsDownloadingPDF(true);
     try {
       await ordersApi.downloadReceiptPDF(order.id);
-    } catch (error: any) {
-      console.error('Error downloading PDF:', error);
+    } catch (error: unknown) {
       alert('Erro ao baixar PDF. Tente novamente.');
     } finally {
       setIsDownloadingPDF(false);
@@ -63,40 +73,12 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  useEffect(() => {
-    const loadReviews = async () => {
-      const orderStatus = order.status?.toLowerCase();
-      const isDelivered = orderStatus === 'delivered' || orderStatus === 'entregue';
-      if (!isDelivered) return;
-      
-      setIsLoadingReviews(true);
-      try {
-        const allReviews = await reviewsApi.getByOrderId(order.id);
-        setReviews(allReviews);
-        
-        if (currentUser) {
-          const userReview = allReviews.find(r => r.user_id === currentUser.id);
-          setUserReview(userReview || null);
-        }
-      } catch (error) {
-        console.error('Error loading reviews:', error);
-      } finally {
-        setIsLoadingReviews(false);
-      }
-    };
-
-    loadReviews();
-  }, [order.id, order.status, currentUser?.id]);
-
-  const handleReviewSuccess = async (review: OrderReview) => {
-    setUserReview(review);
+  const handleReviewSuccess = async (_review: OrderReview) => {
     setIsReviewFormOpen(false);
-    const allReviews = await reviewsApi.getByOrderId(order.id);
-    setReviews(allReviews);
+    await queryClient.invalidateQueries({ queryKey: ['order-reviews', order.id] });
   };
 
-  const handleEditReview = (review: OrderReview) => {
-    setUserReview(review);
+  const handleEditReview = (_review: OrderReview) => {
     setIsReviewFormOpen(true);
   };
 
@@ -319,10 +301,9 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
               <OrderReviewsList
                 reviews={reviews}
                 currentUserId={currentUser?.id}
-                onReviewUpdate={async () => {
-                  const allReviews = await reviewsApi.getByOrderId(order.id);
-                  setReviews(allReviews);
-                }}
+                onReviewUpdate={() =>
+                  queryClient.invalidateQueries({ queryKey: ['order-reviews', order.id] })
+                }
                 onEdit={handleEditReview}
               />
             ) : (

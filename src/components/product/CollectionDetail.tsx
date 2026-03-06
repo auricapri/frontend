@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import { Collection, Product, UserMode, Category } from '../../types';
 import { Locale } from '../../i18n';
 import { filterProductsForMode } from '../../utils/product';
+import { getOptimizedImageUrl } from '../../utils/image';
 import { ProductCard } from './ProductCard';
 import { CountdownBadge, useCollectionAvailability } from '../ui/CountdownBadge';
 
@@ -107,9 +108,11 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
       <div className="relative w-full h-[60vh] md:h-[70vh] bg-neutral-900 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src={collection.image_url}
+            src={getOptimizedImageUrl(collection.image_url, 'xlarge')}
             alt={getLoc(collection.name)}
             className="w-full h-full object-cover opacity-80"
+            loading="lazy"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
         </div>
