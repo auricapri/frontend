@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { X } from 'lucide-react';
+import { getOptimizedImageUrl } from '../../../utils/image';
 
 interface SizeGuideModalProps {
   isOpen: boolean;
@@ -29,9 +30,11 @@ export function SizeGuideModal({ isOpen, imageUrl, onClose }: SizeGuideModalProp
           <X className="w-5 h-5" />
         </button>
         <img
-          src={imageUrl}
+          src={getOptimizedImageUrl(imageUrl, 'xlarge')}
           className="w-full h-full object-contain max-h-[90vh]"
           alt="Size Guide"
+          loading="lazy"
+          decoding="async"
         />
       </div>
     </div>

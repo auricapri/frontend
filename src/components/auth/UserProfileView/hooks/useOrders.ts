@@ -1,33 +1,33 @@
 /// useOrders Hook
 /// Manages orders fetching and order selection state
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Order } from '../../../../types';
 import { OrdersState } from '../types';
 
 interface UseOrdersParams {
   userId: string;
+  enabled?: boolean;
 }
 
-export const useOrders = ({ userId }: UseOrdersParams) => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(false);
+export const useOrders = ({ userId, enabled = false }: UseOrdersParams) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [viewingReceiptOrder, setViewingReceiptOrder] = useState<Order | null>(null);
-  const [orderReviews, setOrderReviews] = useState<Record<string, boolean>>({});
 
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
-    try {
+  const { data: ordersData, isLoading: loading, refetch: fetchOrders } = useQuery<{
+    orders: Order[];
+    orderReviews: Record<string, boolean>;
+  }>({
+    queryKey: ['user-orders', userId],
+    queryFn: async () => {
       const { OrdersApi } = await import('../../../../api/orders.api');
       const { ProductReviewsApi } = await import('../../../../api/product-reviews.api');
       const ordersApi = new OrdersApi();
       const reviewsApi = new ProductReviewsApi();
       const fetchedOrders = await ordersApi.getByUserId(userId);
-      setOrders(fetchedOrders);
 
-      // Check reviews for delivered orders
-      const deliveredOrders = fetchedOrders.filter(o => {
+      const deliveredOrders = fetchedOrders.filter((o) => {
         const status = o.status?.toLowerCase();
         return status === 'delivered' || status === 'entregue';
       });
@@ -36,19 +36,20 @@ export const useOrders = ({ userId }: UseOrdersParams) => {
       for (const order of deliveredOrders) {
         try {
           const items = await reviewsApi.getOrderItemsForReview(order.id, userId);
-          const hasAllReviews = items.length > 0 && items.every(item => item.has_review);
-          reviewsMap[order.id] = hasAllReviews;
+          reviewsMap[order.id] = items.length > 0 && items.every((item) => item.has_review);
         } catch {
           reviewsMap[order.id] = false;
         }
       }
-      setOrderReviews(reviewsMap);
-    } catch (err: any) {
-      console.error('Erro ao buscar pedidos:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
+
+      return { orders: fetchedOrders, orderReviews: reviewsMap };
+    },
+    enabled,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const orders: Order[] = ordersData?.orders ?? [];
+  const orderReviews: Record<string, boolean> = ordersData?.orderReviews ?? {};
 
   const ordersState: OrdersState = {
     orders,

@@ -7,6 +7,7 @@ import { Order } from '../../../../types';
 import { Locale } from '../../../../i18n';
 import { formatCurrency } from '../../../../utils/currency';
 import { GetLocFn } from '../types';
+import { getOptimizedImageUrl } from '../../../../utils/image';
 
 interface OrderDetailOverlayProps {
   order: Order;
@@ -101,9 +102,11 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
               className="flex items-center gap-6 p-4 rounded-3xl border border-neutral-50 hover:border-neutral-200 transition-all"
             >
               <img
-                src={item.image}
+                src={getOptimizedImageUrl(item.image, 'thumbnail')}
                 className="w-16 h-20 object-cover rounded-xl flex-none bg-neutral-100"
                 alt=""
+                loading="lazy"
+                decoding="async"
               />
               <div className="flex-1">
                 <h6 className="text-[11px] font-black uppercase tracking-tight">

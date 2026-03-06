@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { X, Ticket, Copy, Check } from 'lucide-react';
 import { Coupon } from '../../types';
-import { CouponsApi } from '../../api/coupons.api';
+import { couponsApi } from '../../api/instances';
 
 interface CouponsDrawerProps {
   isOpen: boolean;
@@ -11,26 +12,13 @@ interface CouponsDrawerProps {
 
 const CouponsDrawer: React.FC<CouponsDrawerProps> = ({ isOpen, onClose, t }) => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const couponsApi = new CouponsApi();
 
-  useEffect(() => {
-    if (isOpen) {
-      const fetchCoupons = async () => {
-        setIsLoading(true);
-        try {
-          const data = await couponsApi.getAll();
-          setCoupons(data);
-        } catch (err) {
-          console.error('Error fetching coupons:', err);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchCoupons();
-    }
-  }, [isOpen]);
+  const { data: coupons = [], isLoading } = useQuery<Coupon[]>({
+    queryKey: ['coupons', 'public'],
+    queryFn: () => couponsApi.getAll(),
+    staleTime: 5 * 60 * 1000,
+    enabled: isOpen,
+  });
 
   const formatDiscount = (coupon: Coupon): string => {
     if (coupon.discount_type === 'percentage') {
