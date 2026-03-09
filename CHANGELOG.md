@@ -5,6 +5,13 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.2.1] - 2026-03-09
+
+### Adicionado
+- **index.tsx**: Banner de versão no console do browser — mostra `Auricapri v{version}` para verificar cache
+- **vite.config.ts**: `__APP_VERSION__` e `__APP_NAME__` injetados via Vite define na build
+- **src/vite-env.d.ts**: Declarações TypeScript para `__APP_VERSION__` e `__APP_NAME__`
+
 ## [1.2.0] - 2026-03-05
 
 ### Refatorado
