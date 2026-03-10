@@ -29,16 +29,18 @@ interface CheckoutViewProps {
   ) => void;
   locale: Locale;
   t: (key: string) => string;
+  initialStep?: number;
+  giftDeliveryLocation?: string;
 }
 
 const steps = [
-  { id: 1, title: 'Endereço', icon: MapPin },
-  { id: 2, title: 'Pagamento', icon: CreditCard },
-  { id: 3, title: 'Revisão', icon: ShieldCheck },
+  { id: 1, title: 'Endereço', shortTitle: 'End.', icon: MapPin },
+  { id: 2, title: 'Pagamento', shortTitle: 'Pag.', icon: CreditCard },
+  { id: 3, title: 'Revisão', shortTitle: 'Rev.', icon: ShieldCheck },
 ] as const;
 
-const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, userMode, onBack, onComplete, locale, t: _t }) => {
-  const checkout = useCheckoutState({ items, currentUser, storeConfig, userMode, onComplete, locale });
+const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, userMode, onBack, onComplete, locale, t: _t, initialStep, giftDeliveryLocation }) => {
+  const checkout = useCheckoutState({ items, currentUser, storeConfig, userMode, onComplete, locale, initialStep });
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans flex flex-col pt-24 pb-20 relative">
@@ -52,6 +54,11 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
               <ArrowLeft className="w-4 h-4" /> Voltar à Loja
             </button>
             <h1 className="text-4xl font-black tracking-tighter uppercase italic">Finalizar Pedido</h1>
+            {giftDeliveryLocation && (
+              <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                Presente para: <span className="text-black">{giftDeliveryLocation}</span>
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-10">
             {steps.map((s, idx) => (
@@ -64,11 +71,12 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
                   <s.icon className="w-4 h-4" />
                 </div>
                 <span
-                  className={`text-[10px] font-black uppercase tracking-widest hidden lg:block ${
+                  className={`text-[10px] font-black uppercase tracking-widest ${
                     checkout.step >= s.id ? 'text-black' : 'text-neutral-500'
                   }`}
                 >
-                  {s.title}
+                  <span className="hidden lg:inline">{s.title}</span>
+                  <span className="lg:hidden">{s.shortTitle}</span>
                 </span>
                 {idx < steps.length - 1 && <div className="hidden lg:block w-8 h-[1px] bg-neutral-100" />}
               </div>

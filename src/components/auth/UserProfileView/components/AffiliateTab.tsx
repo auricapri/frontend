@@ -140,7 +140,7 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
           <h3 className="text-lg md:text-xl font-black uppercase italic tracking-tighter leading-none">
             Auricapri Muse
           </h3>
-          <p className="text-[9px] text-white/50 uppercase tracking-widest font-black">
+          <p className="text-[10px] text-white/50 uppercase tracking-widest font-black">
             {TIER_LABELS[influencer.tier]} · {TIER_COMMISSION[influencer.tier]} comissão
           </p>
         </div>
@@ -166,7 +166,7 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
 
         {couponCode && influencer.status === 'active' && (
           <div className="relative z-10 space-y-2">
-            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/40">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
               Seu Cupom
             </span>
             <div className="bg-white/5 border border-white/10 p-3 md:p-4 rounded-xl flex items-center justify-between gap-3 group hover:border-white/40 transition-all">
@@ -181,7 +181,7 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
                 {copiedCode ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </button>
             </div>
-            <p className="text-[9px] text-white/30 font-medium">
+            <p className="text-[10px] text-white/30 font-medium">
               {copiedCode ? 'Link copiado!' : 'Clique para copiar o link de indicação'}
             </p>
           </div>

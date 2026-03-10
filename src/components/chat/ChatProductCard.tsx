@@ -46,7 +46,7 @@ export const ChatProductCard: React.FC<ChatProductCardProps> = ({
         {/* Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {product.highlight && (
-            <span className="px-2 py-1 bg-black text-white text-[8px] font-bold uppercase tracking-wider rounded-full">
+            <span className="px-2 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-full">
               Destaque
             </span>
           )}
@@ -83,7 +83,7 @@ export const ChatProductCard: React.FC<ChatProductCardProps> = ({
         <div className="flex flex-col gap-1.5">
           <button
             onClick={onView}
-            className="w-full py-2 border border-neutral-200 rounded-lg text-[9px] font-bold uppercase tracking-wider text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 transition-all flex items-center justify-center gap-1"
+            className="w-full py-2 border border-neutral-200 rounded-lg text-[10px] font-bold uppercase tracking-wider text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 transition-all flex items-center justify-center gap-1"
           >
             <Eye className="w-2.5 h-2.5" />
             Ver
@@ -91,7 +91,7 @@ export const ChatProductCard: React.FC<ChatProductCardProps> = ({
           <button
             onClick={onAddToCart}
             disabled={!hasStock}
-            className="w-full py-2 bg-neutral-900 text-white rounded-lg text-[9px] font-bold uppercase tracking-wider hover:bg-neutral-800 transition-all flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2 bg-neutral-900 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-neutral-800 transition-all flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ShoppingBag className="w-2.5 h-2.5" />
             {hasStock ? 'Adicionar' : 'Esgotado'}

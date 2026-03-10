@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   X,
   Camera,
@@ -94,6 +95,8 @@ const ImageZoomModal: React.FC<{
           alt="Zoom"
           className="max-w-full max-h-full object-contain rounded-xl"
           onClick={onClose}
+          loading="lazy"
+          decoding="async"
         />
         <button
           onClick={onClose}
@@ -116,11 +119,6 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
   initialGarmentId,
   locale,
 }) => {
-  // Gallery state
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
-  const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
-  const [isLoadingGallery, setIsLoadingGallery] = useState(true);
-
   // Try-on state
   const [userImage, setUserImage] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
@@ -132,34 +130,34 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
   const [showZoom, setShowZoom] = useState(false);
   const [pendingInputRef, setPendingInputRef] =
     useState<React.RefObject<HTMLInputElement | null> | null>(null);
+  const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const getLoc = createGetLoc(locale);
 
-  // Fetch gallery items
+  const { data: galleryItems = [], isLoading: isLoadingGallery } = useQuery<GalleryItem[]>({
+    queryKey: ['garment-gallery'],
+    queryFn: async () => {
+      const data = await api.listGallery(1, 50);
+      return data.items;
+    },
+    enabled: isOpen,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Set default selected item when gallery loads
   useEffect(() => {
-    if (isOpen) {
-      setIsLoadingGallery(true);
-      api.listGallery(1, 50)
-        .then(data => {
-          setGalleryItems(data.items);
-          // Select initial item or first available
-          if (initialGarmentId) {
-            const item = data.items.find(i => i.garment.id === initialGarmentId);
-            setSelectedItem(item || data.items[0] || null);
-          } else if (data.items.length > 0) {
-            setSelectedItem(data.items[0]);
-          }
-        })
-        .catch(err => {
-          console.error('Error loading gallery:', err);
-          setError('Erro ao carregar galeria');
-        })
-        .finally(() => setIsLoadingGallery(false));
+    if (!isOpen || galleryItems.length === 0 || selectedItem) return;
+    if (initialGarmentId) {
+      const match = galleryItems.find((i) => i.garment.id === initialGarmentId);
+      setSelectedItem(match ?? galleryItems[0] ?? null);
+    } else {
+      setSelectedItem(galleryItems[0] ?? null);
     }
-  }, [isOpen, initialGarmentId]);
+  }, [isOpen, galleryItems, initialGarmentId, selectedItem]);
+
 
   const hasConsent = () => localStorage.getItem(CONSENT_KEY) === 'true';
 
@@ -352,7 +350,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                 <h2 className="text-xs font-bold uppercase tracking-wider">
                   Provador Virtual
                 </h2>
-                <p className="text-[9px] text-neutral-400">
+                <p className="text-[10px] text-neutral-400">
                   Experimente as roupas em você
                 </p>
               </div>
@@ -392,6 +390,8 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                         src={resultImage}
                         alt="Resultado"
                         className="w-full h-full object-contain"
+                        loading="lazy"
+                        decoding="async"
                       />
                       <div className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full">
                         <ZoomIn className="w-4 h-4 text-neutral-600" />
@@ -406,6 +406,8 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                         src={selectedItem.result_url}
                         alt={selectedItem.garment.name}
                         className="w-full h-full object-contain"
+                        loading="lazy"
+                        decoding="async"
                       />
                       <div className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full">
                         <ZoomIn className="w-4 h-4 text-neutral-600" />
@@ -466,6 +468,8 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                           src={item.result_url}
                           alt={item.garment.name}
                           className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
                         />
                       </button>
                     ))}
@@ -492,7 +496,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-bold">Sua foto</p>
-                    <p className="text-[9px] text-neutral-400">
+                    <p className="text-[10px] text-neutral-400">
                       Pronta para processar
                     </p>
                   </div>
@@ -587,7 +591,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                   </div>
                 )}
 
-                <p className="text-[8px] text-neutral-400 text-center">
+                <p className="text-[10px] text-neutral-400 text-center">
                   Processamento por IA - Suas fotos nao sao armazenadas
                 </p>
               </div>

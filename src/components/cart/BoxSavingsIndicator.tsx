@@ -218,7 +218,7 @@ const BoxSavingsIndicator: React.FC<BoxSavingsIndicatorProps> = ({
 
           {/* Show current savings if partial */}
           {hasCurrentDiscount && !isBoxComplete && (
-            <p className="text-[8px] text-amber-600/80 mt-2 font-bold">
+            <p className="text-[10px] text-amber-600/80 mt-2 font-bold">
               {locale === 'pt' && `Você já tem ${currentDiscountText} de desconto`}
               {locale === 'es' && `Ya tienes ${currentDiscountText} de descuento`}
               {locale === 'en' && `You already have ${currentDiscountText} off`}

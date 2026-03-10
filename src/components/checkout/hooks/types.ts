@@ -29,7 +29,8 @@ export type OnCompleteCallback = (
   finalAmount: number,
   saveCard: boolean,
   cardToken?: string,
-  phone?: string
+  phone?: string,
+  cashbackUsed?: number
 ) => void;
 
 export interface CustomerPaymentInfo {
@@ -60,9 +61,9 @@ export interface UseCheckoutTotalsReturn {
   originalSubtotal: number;
   preAppliedDiscount: number;
   quantityDiscount: number;
-  totalBeforeDiscounts: number;
+  discountedSubtotal: number;
   pixDiscount: number;
-  totalAfterPix: number;
+  totalBeforeWallet: number;
   cashbackUsed: number;
   finalTotal: number;
 }
@@ -144,6 +145,7 @@ export interface UseCreditCardStateReturn {
 export interface UseInstallmentStateParams {
   finalTotal: number;
   paymentMethod: PaymentMethod;
+  isInfluencerCoupon: boolean;
 }
 
 export interface UseInstallmentStateReturn {
@@ -290,6 +292,7 @@ export interface UsePixBoletoStateParams {
   items: CartItem[];
   subtotal: number;
   finalTotal: number;
+  cashbackUsed: number;
   shipping: ShippingCalculationState;
   userMode: UserModeType;
   paymentMethod: PaymentMethod;

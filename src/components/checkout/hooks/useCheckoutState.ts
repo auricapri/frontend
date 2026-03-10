@@ -42,16 +42,18 @@ export type UseCheckoutStateParams = {
     finalAmount: number,
     saveCard: boolean,
     cardToken?: string,
-    phone?: string
+    phone?: string,
+    cashbackUsed?: number
   ) => void;
   locale: Locale;
+  initialStep?: number;
 };
 
 export function useCheckoutState(params: UseCheckoutStateParams) {
-  const { items, currentUser, storeConfig, userMode, onComplete, locale } = params;
+  const { items, currentUser, storeConfig, userMode, onComplete, locale, initialStep } = params;
 
   // Step management
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(initialStep ?? 1);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CREDIT_CARD);
   const [useCashback, setUseCashback] = useState(false);
 
@@ -110,6 +112,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const installment = useInstallmentState({
     finalTotal: totals.finalTotal,
     paymentMethod,
+    isInfluencerCoupon: coupon.appliedCoupon?.is_influencer ?? false,
   });
 
   // Credit card state
@@ -129,6 +132,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     items,
     subtotal: totals.subtotal,
     finalTotal: totals.finalTotal,
+    cashbackUsed: totals.cashbackUsed,
     shipping,
     userMode,
     paymentMethod,
@@ -155,6 +159,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     bestInternalShipping: shipping.bestInternalShipping,
     selectedShippingOption: shipping.selectedShippingOption,
     onComplete,
+    cashbackUsed: totals.cashbackUsed,
     pixData: pixBoleto.pixData,
     boletoData: pixBoleto.boletoData,
   });

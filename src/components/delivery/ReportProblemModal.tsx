@@ -195,7 +195,7 @@ export function ReportProblemModal(props: {
           <div className="grid grid-cols-3 gap-3">
             {previews.map((src, idx) => (
               <div key={idx} className="aspect-[4/5] rounded-2xl overflow-hidden bg-neutral-100">
-                <img src={src} alt="Evidência" className="w-full h-full object-cover" />
+                <img src={src} alt="Evidência" className="w-full h-full object-cover" loading="lazy" decoding="async" />
               </div>
             ))}
           </div>

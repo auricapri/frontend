@@ -29,7 +29,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
     return (
       <div className="py-20 flex flex-col items-center justify-center text-neutral-300 space-y-4">
         <Loader2 className="w-8 h-8 animate-spin" strokeWidth={1} />
-        <span className="text-[9px] font-black uppercase tracking-widest">
+        <span className="text-[10px] font-black uppercase tracking-widest">
           Carregando Histórico...
         </span>
       </div>
@@ -63,16 +63,16 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
             >
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
                     ID: {order.id.slice(0, 8)}
                   </span>
                   {order.wishlist_slug && (
-                    <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full">
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full">
                       Wishlist
                     </span>
                   )}
                   {order.gift_from_user_id && (
-                    <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">
                       Presente
                     </span>
                   )}

@@ -29,6 +29,24 @@ function isSupabaseStorageUrl(url: string): boolean {
   return SUPABASE_STORAGE_URL_PATTERN.test(url);
 }
 
+/**
+ * @deprecated R2 fallback removed — all images served from Supabase Storage Pro.
+ * Kept for backwards compatibility — returns empty string.
+ */
+export function getR2FallbackUrl(_supabaseUrl: string): string {
+  return '';
+}
+
+/**
+ * Image onError handler — falls back to placeholder on error.
+ * Use on <img> elements: onError={(e) => handleImageError(e)}
+ */
+export function handleImageError(event: React.SyntheticEvent<HTMLImageElement, Event>): void {
+  const img = event.currentTarget;
+  if (img.src === PLACEHOLDER_IMAGE || img.src.startsWith('data:')) return;
+  img.src = PLACEHOLDER_IMAGE;
+}
+
 function transformSupabaseUrl(url: string, options: ImageTransformOptions): string {
   if (!isSupabaseStorageUrl(url)) {
     return url;
@@ -162,4 +180,3 @@ export function getPlaceholderUrl(width: number = 300, height: number = 400): st
 
 export { IMAGE_SIZES, isSupabaseStorageUrl };
 export type { ImageTransformOptions, ImageSize };
-

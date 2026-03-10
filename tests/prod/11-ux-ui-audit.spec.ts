@@ -203,7 +203,7 @@ test.describe('UX — Página de Produto', () => {
       checks['preco'] = priceEl ? priceEl.getBoundingClientRect().top < vh : false;
 
       // Imagem
-      const img = document.querySelector('img[src*="supabase"], img[src*="storage"]');
+      const img = document.querySelector('img[src*="cloudfront"], img[src*="supabase"], img[src*="storage"]');
       checks['imagem'] = img ? img.getBoundingClientRect().top < vh : false;
 
       return checks;
@@ -262,7 +262,7 @@ test.describe('UX — Página de Produto', () => {
     await page.waitForTimeout(2000);
 
     // Quantas imagens do produto existem?
-    const productImages = page.locator('img[src*="supabase"], img[src*="storage"]');
+    const productImages = page.locator('img[src*="cloudfront"], img[src*="supabase"], img[src*="storage"]');
     const imgCount = await productImages.count();
     console.log(`  🖼 Imagens do produto: ${imgCount}`);
 

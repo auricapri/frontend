@@ -58,7 +58,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ locale: _locale, onN
 
           {/* Decorative Elements */}
           <div className="pt-16 space-y-8">
-            <div className="flex items-center justify-center gap-2 text-[8px] font-black uppercase tracking-[0.4em] text-neutral-300">
+            <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-neutral-300">
               <span>ERRO</span>
               <div className="w-1 h-1 rounded-full bg-neutral-300"></div>
               <span>404</span>
@@ -67,7 +67,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ locale: _locale, onN
             </div>
             
             {/* Links Úteis */}
-            <div className="flex flex-wrap items-center justify-center gap-6 text-[9px] font-black uppercase tracking-widest text-neutral-400">
+            <div className="flex flex-wrap items-center justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-neutral-400">
               <button 
                 onClick={() => onNavigate('home')}
                 className="hover:text-black transition-colors"

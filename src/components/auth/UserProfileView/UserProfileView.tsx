@@ -19,7 +19,7 @@
 ///
 /// Total: ~1075 lines split into 13 files (all under 500 lines)
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import { LoadingFallback } from '../../ui/LoadingFallback';
 import { UserProfileViewProps, TabId } from './types';
 import { useProfileState, useOrders, useAddresses, createGetLoc } from './hooks';
@@ -54,16 +54,18 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({
     onUpdate,
   });
 
-  // Orders hook
-  const { ordersState, fetchOrders, setSelectedOrder, setViewingReceiptOrder } = useOrders({
+  // Orders hook — enabled only when on the orders tab
+  const { ordersState, setSelectedOrder, setViewingReceiptOrder } = useOrders({
     userId: user.id,
+    enabled: activeTab === 'orders',
   });
 
-  // Addresses hook
-  const { addressesState, fetchAddresses, handleSetDefaultAddress, handleDeleteAddress } =
+  // Addresses hook — enabled only when on the addresses tab
+  const { addressesState, handleSetDefaultAddress, handleDeleteAddress } =
     useAddresses({
       userId: user.id,
       onUpdate,
+      enabled: activeTab === 'addresses',
     });
 
   // Delete account handler (LGPD Art. 18)
@@ -76,12 +78,6 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({
       console.error('[DeleteAccount]', error);
     }
   };
-
-  // Fetch data when tab changes
-  useEffect(() => {
-    if (activeTab === 'orders') fetchOrders();
-    if (activeTab === 'addresses') fetchAddresses();
-  }, [activeTab, fetchOrders, fetchAddresses]);
 
   // Receipt view mode
   if (ordersState.viewingReceiptOrder) {

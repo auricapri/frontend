@@ -177,23 +177,19 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
               <span>-{formatCurrency(quantityDiscount, locale)}</span>
             </div>
           )}
-
-          {userMode === UserMode.ATACADO ? (
-            <ShippingStep checkout={checkout} />
-          ) : (
-            <ShippingStep checkout={checkout} />
+          {paymentMethod === PaymentMethod.PIX && pixDiscount > 0 && (
+            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-green-500">
+              <span>Desconto PIX (5%)</span>
+              <span>-{formatCurrency(pixDiscount, locale)}</span>
+            </div>
           )}
+
+          <ShippingStep checkout={checkout} />
 
           {cashbackUsed > 0 && (
             <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-emerald-600">
               <span>Cashback Aplicado</span>
               <span>-{formatCurrency(cashbackUsed, locale)}</span>
-            </div>
-          )}
-          {paymentMethod === PaymentMethod.PIX && (
-            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-green-500">
-              <span>Desconto PIX (5%)</span>
-              <span>-{formatCurrency(pixDiscount, locale)}</span>
             </div>
           )}
 

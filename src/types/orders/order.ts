@@ -19,4 +19,5 @@ export interface Order {
   wishlist_slug?: string | null;
   gift_from_user_id?: string | null;
   user_id?: string;
+  cashback_used?: number;
 }

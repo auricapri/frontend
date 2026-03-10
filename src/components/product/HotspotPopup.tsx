@@ -3,6 +3,7 @@ import { ChevronRight } from 'lucide-react';
 import { ProductImageHotspot, LocalizedText, Product } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { Locale } from '../../i18n';
+import { getOptimizedImageUrl } from '../../utils/image';
 
 interface HotspotPopupProps {
   hotspot: ProductImageHotspot;
@@ -94,9 +95,11 @@ export function HotspotPopup({
         {/* Thumbnail */}
         {imageUrl ? (
           <img
-            src={imageUrl}
+            src={getOptimizedImageUrl(imageUrl, 'thumbnail')}
             alt={getLocText(linked_product.name)}
             className="w-9 h-9 rounded object-cover flex-shrink-0"
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="w-9 h-9 bg-neutral-100 rounded flex items-center justify-center flex-shrink-0">

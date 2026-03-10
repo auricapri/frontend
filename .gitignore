@@ -34,3 +34,4 @@ dist-ssr
 /playwright-report/
 /playwright/.cache/
 .npm-cache/
+.wrangler/

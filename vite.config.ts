@@ -1,10 +1,17 @@
 import path from 'path';
+import { readFileSync } from 'fs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import compression from 'vite-plugin-compression';
 
+const pkg = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string };
+
 export default defineConfig(() => {
     return {
+      define: {
+        __APP_VERSION__: JSON.stringify(pkg.version),
+        __APP_NAME__: JSON.stringify('Auricapri'),
+      },
       server: {
         port: 3000,
         host: '0.0.0.0',

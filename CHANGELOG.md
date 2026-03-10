@@ -5,6 +5,53 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.2.1] - 2026-03-09
+
+### Adicionado
+- **index.tsx**: Banner de versão no console do browser — mostra `Auricapri v{version}` para verificar cache
+- **vite.config.ts**: `__APP_VERSION__` e `__APP_NAME__` injetados via Vite define na build
+- **src/vite-env.d.ts**: Declarações TypeScript para `__APP_VERSION__` e `__APP_NAME__`
+
+## [1.2.0] - 2026-03-05
+
+### Refatorado
+- **PaymentStep.tsx**: 779L → 289L + 4 subcomponentes (CreditCardForm, PixPaymentSection, BoletoSection, CashbackToggle)
+- **ProductGrid.tsx**: 692L → 332L + 6 subcomponentes (ProductFilters, ProductPagination, ProductGridSkeleton, ProductGridBody, CollectionCard, CartIncentiveBanner)
+- **Navbar.tsx**: 637L → 194L + 5 subcomponentes (NavbarMobileBar, NavbarDesktop, NavbarSearch, NavbarMobile, NavbarUserMenu)
+- **10 componentes** convertidos de useEffect+fetch para React Query (useQuery/useMutation com staleTime, queryKey, invalidation)
+  - CouponsDrawer, DeliveryHistoryPanel, DeliveryNotificationsPanel, DeliveryDashboard, OrderReceipt, GarmentTryOnModal, FaceSwapModal, ReturnRequestForm, useOrders, useAddresses
+
+### Melhorado
+- **20 arquivos** com imagens otimizadas: 9 com `getOptimizedImageUrl` (produto/colecao), 11 com `loading="lazy" decoding="async"`
+- **CashbackToggle** agora visivel para TODOS os metodos de pagamento (nao apenas cartao)
+- **UserProfileView**: queries ativadas sob demanda por tab (enabled flag)
+- **DeliveryNotificationsPanel**: updates otimistas via queryClient.setQueryData
+
+## [1.1.2] - 2026-03-04
+
+### Corrigido
+- AuthDrawer: OAuth redirect agora usa `window.location.href` em vez de `window.location.origin + '/'` — usuário retorna à wishlist após login com Google/Apple
+- SharedWishlistPage: botões de compra desabilitados quando dono da wishlist não tem endereço cadastrado
+
+### Adicionado
+- SharedWishlistPage: exibe cidade/estado de entrega (endereço do dono) acima dos produtos
+- SharedWishlistPage: aviso quando dono não tem endereço cadastrado
+- SharedWishlistPage: checkout inicia direto no passo de Pagamento (endereço vem do dono via backend)
+- CheckoutViewV2: props `initialStep` e `giftDeliveryLocation` para checkout de presente
+- WishlistDrawer: aviso de que o dono deve ter endereço cadastrado antes de compartilhar
+- wishlist.api.ts: método `getDeliveryInfo` para buscar cidade/estado do endereço do dono
+
+## [1.1.1] - 2026-03-04
+
+### Corrigido
+- SharedWishlistPage: substituídos `alert()` por abertura do AuthDrawer ao tentar comprar sem login
+- SharedWishlistPage: removido `disabled` no botão principal para não-logados — agora abre login ao clicar
+- SharedWishlistPage: removidos `alert()` de erro/sucesso do pedido
+
+### Adicionado
+- SharedWishlistPage: banner de incentivo ao login para usuários não autenticados com botão "Entrar / Criar conta"
+- SharedWishlistPage: prop `onOpenAuth` passada via AppRouter usando `app.setIsAuthOpen(true)`
+
 ## [1.1.0] - 2026-02-19
 
 ### Performance

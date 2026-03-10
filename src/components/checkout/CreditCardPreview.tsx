@@ -154,7 +154,7 @@ export function CreditCardPreview({
             {/* Nome e Validade */}
             <div className="flex items-end justify-between">
               <div>
-                <span className="text-[7px] md:text-[8px] uppercase tracking-widest text-white/40 block mb-1">
+                <span className="text-[7px] md:text-[10px] uppercase tracking-widest text-white/40 block mb-1">
                   Titular do Cartão
                 </span>
                 <span className="text-xs md:text-sm font-bold text-white uppercase tracking-wider">
@@ -162,7 +162,7 @@ export function CreditCardPreview({
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-[7px] md:text-[8px] uppercase tracking-widest text-white/40 block mb-1">
+                <span className="text-[7px] md:text-[10px] uppercase tracking-widest text-white/40 block mb-1">
                   Validade
                 </span>
                 <span className="text-xs md:text-sm font-mono text-white tracking-wider">
@@ -198,7 +198,7 @@ export function CreditCardPreview({
                 </span>
               </div>
             </div>
-            <span className="text-[8px] text-white/40 mt-2 text-right uppercase tracking-widest">
+            <span className="text-[10px] text-white/40 mt-2 text-right uppercase tracking-widest">
               Código de Segurança (CVV)
             </span>
           </div>
@@ -211,7 +211,7 @@ export function CreditCardPreview({
       </div>
 
       {/* Indicador de clique */}
-      <p className="text-center text-[9px] text-neutral-400 mt-3 uppercase tracking-widest">
+      <p className="text-center text-[10px] text-neutral-400 mt-3 uppercase tracking-widest">
         Clique no cartão para {flipped ? 'ver a frente' : 'ver o verso'}
       </p>
     </div>

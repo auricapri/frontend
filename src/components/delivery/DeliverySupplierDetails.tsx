@@ -77,12 +77,12 @@ export function DeliverySupplierDetails(props: {
                 {group.supplier?.store_name || 'Fornecedor'}
               </span>
               {isComplete ? (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-green-50 text-green-600 text-[9px] font-bold flex-shrink-0">
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-green-50 text-green-600 text-[10px] font-bold flex-shrink-0">
                   <CheckCircle2 className="w-3 h-3" />
                   OK
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 text-[9px] font-bold flex-shrink-0">
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 text-[10px] font-bold flex-shrink-0">
                   {remaining} pendentes
                 </span>
               )}
@@ -219,12 +219,12 @@ export function DeliverySupplierDetails(props: {
                       {/* Status badge */}
                       <div className="flex-shrink-0">
                         {item.picked_up ? (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-green-50 text-green-600 text-[9px] font-bold">
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-green-50 text-green-600 text-[10px] font-bold">
                             <CheckCircle2 className="w-3 h-3" />
                             OK
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-500 text-[9px] font-bold">
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-500 text-[10px] font-bold">
                             <Package className="w-3 h-3" />
                           </span>
                         )}
@@ -238,7 +238,7 @@ export function DeliverySupplierDetails(props: {
                           type="button"
                           onClick={() => onAcceptItem(item.order_id, item.order_item_id)}
                           disabled={busy}
-                          className="px-2.5 py-1.5 rounded-lg bg-black text-white text-[9px] font-bold uppercase tracking-wider hover:bg-neutral-800 active:scale-[0.97] transition-all disabled:opacity-50"
+                          className="px-2.5 py-1.5 rounded-lg bg-black text-white text-[10px] font-bold uppercase tracking-wider hover:bg-neutral-800 active:scale-[0.97] transition-all disabled:opacity-50"
                         >
                           Aceitar
                         </button>
@@ -246,7 +246,7 @@ export function DeliverySupplierDetails(props: {
                           type="button"
                           onClick={() => onReportItem({ supplierId: group.supplier_id, orderId: item.order_id, orderItemId: item.order_item_id })}
                           disabled={busy}
-                          className="px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 text-[9px] font-bold uppercase tracking-wider hover:bg-red-100 active:scale-[0.97] transition-all disabled:opacity-50"
+                          className="px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold uppercase tracking-wider hover:bg-red-100 active:scale-[0.97] transition-all disabled:opacity-50"
                         >
                           Problema
                         </button>

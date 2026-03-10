@@ -117,7 +117,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: window.location.href,
         },
       });
       if (error) throw error;
@@ -223,7 +223,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                           setForgotPasswordMode(false);
                           setEmail('');
                         }}
-                        className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-neutral-400 hover:text-black transition-colors mb-4"
+                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-black transition-colors mb-4"
                       >
                         <ArrowLeft className="w-3 h-3" />
                         <span>Voltar</span>
@@ -236,7 +236,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
 
                     <form className="space-y-6" onSubmit={handleForgotPassword}>
                       <div className="space-y-2">
-                        <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">E-mail</label>
+                        <label className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest">E-mail</label>
                         <input 
                           type="email" 
                           className="w-full px-6 py-4 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none placeholder:text-neutral-300" 
@@ -276,11 +276,11 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                    {authMode === 'register' && (
                      <>
                        <div className="space-y-1.5">
-                          <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">Nome Completo</label>
+                          <label className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest">Nome Completo</label>
                           <input className="w-full px-4 py-3.5 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none" value={fullName} onChange={e => setFullName(e.target.value)} required onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300)} />
                        </div>
                        <div className="space-y-1.5">
-                          <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">
+                          <label className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest">
                             Código de Indicação <span className="text-neutral-300 normal-case">(opcional)</span>
                           </label>
                           <input
@@ -294,17 +294,17 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                      </>
                    )}
                    <div className="space-y-1.5">
-                     <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">{t('auth.email')}</label>
+                     <label className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest">{t('auth.email')}</label>
                      <input type="email" className="w-full px-4 py-3.5 bg-neutral-50 rounded-2xl border border-neutral-200 text-neutral-900 text-sm focus:border-neutral-900 outline-none placeholder:text-neutral-300" value={email} onChange={e => setEmail(e.target.value)} placeholder="voce@exemplo.com" required onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300)} />
                    </div>
                    <div className="space-y-1.5">
                      <div className="flex items-center justify-between">
-                       <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">{t('auth.password')}</label>
+                       <label className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest">{t('auth.password')}</label>
                        {authMode === 'login' && (
                          <button
                            type="button"
                            onClick={() => setForgotPasswordMode(true)}
-                           className="text-[9px] font-bold text-neutral-400 hover:text-black transition-colors underline"
+                           className="text-[10px] font-bold text-neutral-400 hover:text-black transition-colors underline"
                          >
                            Esqueceu a senha?
                          </button>
@@ -356,7 +356,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
 
                 <div className="flex items-center gap-4">
                    <div className="h-[1px] flex-1 bg-neutral-100"></div>
-                   <span className="text-[8px] font-black uppercase text-neutral-300 tracking-[0.4em]">OU</span>
+                   <span className="text-[10px] font-black uppercase text-neutral-300 tracking-[0.4em]">OU</span>
                    <div className="h-[1px] flex-1 bg-neutral-100"></div>
                 </div>
 

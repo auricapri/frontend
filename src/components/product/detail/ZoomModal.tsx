@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getOptimizedImageUrl } from '../../../utils/image';
 
 interface ZoomImage {
   url: string;
@@ -33,7 +34,7 @@ export function ZoomModal({
     <div className="fixed inset-0 z-[1000] bg-white flex flex-col animate-in fade-in zoom-in-95 duration-700">
       <header className="h-24 px-12 flex justify-between items-center fixed top-0 w-full z-10 bg-white/90 backdrop-blur-3xl">
         <div className="flex flex-col">
-          <span className="text-[8px] font-black uppercase tracking-[0.4em] text-neutral-300">Gallery View</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-300">Gallery View</span>
           <h4 className="text-[11px] font-black uppercase tracking-[0.4em]">{productName}</h4>
         </div>
         <button
@@ -55,9 +56,11 @@ export function ZoomModal({
 
         <div className="w-full h-full flex items-center justify-center overflow-hidden">
           <img
-            src={displayImages[currentIndex]}
+            src={getOptimizedImageUrl(displayImages[currentIndex], 'xlarge')}
             className="max-h-full max-w-full object-contain cursor-crosshair transition-transform duration-700 hover:scale-150"
             alt=""
+            loading="lazy"
+            decoding="async"
           />
         </div>
 
@@ -83,7 +86,13 @@ export function ZoomModal({
                 : 'border-transparent opacity-40 hover:opacity-100'
             }`}
           >
-            <img src={imgData.url} className="w-full h-full object-contain" alt={`Miniatura ${i + 1}`} />
+            <img
+              src={getOptimizedImageUrl(imgData.url, 'thumbnail')}
+              className="w-full h-full object-contain"
+              alt={`Miniatura ${i + 1}`}
+              loading="lazy"
+              decoding="async"
+            />
           </button>
         ))}
       </div>

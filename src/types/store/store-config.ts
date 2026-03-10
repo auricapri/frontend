@@ -36,6 +36,7 @@ export interface Coupon {
   discount_type: 'percentage' | 'fixed';
   discount_value: number;
   is_active: boolean;
+  is_influencer?: boolean;
   min_purchase_amount?: number;
   expires_at?: string;
   product_ids?: string[];

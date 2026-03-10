@@ -3,7 +3,8 @@
  *
  * Virtual try-on feature that allows users to see how products look on them.
  */
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   X,
   Camera,
@@ -17,6 +18,7 @@ import {
 import { faceSwapApi } from '../../../api/face-swap.api';
 import { feedbackApi } from '../../../api/feedback.api';
 import { createGetLoc } from '../../../utils/localization';
+import { getOptimizedImageUrl } from '../../../utils/image';
 import { ConsentModal } from './ConsentModal';
 import { ImageZoomModal } from './ImageZoomModal';
 import { FeedbackModal } from './FeedbackModal';
@@ -44,24 +46,21 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
 
   // Feedback states
   const [showFeedback, setShowFeedback] = useState(false);
-  const [hasFeedback, setHasFeedback] = useState(false);
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
-  const [feedbackChecked, setFeedbackChecked] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const getLoc = createGetLoc(locale);
 
-  // Check if user already gave feedback
-  useEffect(() => {
-    if (isOpen && userId && !feedbackChecked) {
-      feedbackApi.hasFeedback('virtual_try_on').then((has) => {
-        setHasFeedback(has);
-        setFeedbackChecked(true);
-      });
-    }
-  }, [isOpen, userId, feedbackChecked]);
+  const queryClient = useQueryClient();
+
+  const { data: hasFeedback = false } = useQuery<boolean>({
+    queryKey: ['feedback', 'virtual_try_on', userId],
+    queryFn: () => feedbackApi.hasFeedback('virtual_try_on'),
+    enabled: isOpen && !!userId,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const hasConsent = () => localStorage.getItem(CONSENT_KEY) === 'true';
 
@@ -175,11 +174,11 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
         },
       });
       if (result.success) {
-        setHasFeedback(true);
+        queryClient.setQueryData(['feedback', 'virtual_try_on', userId], true);
         setShowFeedback(false);
       }
-    } catch (err) {
-      console.error('Erro ao enviar feedback:', err);
+    } catch {
+      // Feedback errors are non-critical — silently ignored
     } finally {
       setFeedbackSubmitting(false);
     }
@@ -234,7 +233,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
                 <h2 className="text-xs font-bold uppercase tracking-wider">
                   Provador Virtual
                 </h2>
-                <p className="text-[9px] text-neutral-400 truncate max-w-[150px]">
+                <p className="text-[10px] text-neutral-400 truncate max-w-[150px]">
                   {getLoc(productName)}
                 </p>
               </div>
@@ -262,9 +261,11 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
                   onClick={() => setShowZoom(true)}
                 >
                   <img
-                    src={productImage}
+                    src={getOptimizedImageUrl(productImage, 'large')}
                     alt={getLoc(productName)}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full">
                     <ZoomIn className="w-4 h-4 text-neutral-600" />
@@ -302,7 +303,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-bold">Sua foto</p>
-                <p className="text-[9px] text-neutral-400">
+                <p className="text-[10px] text-neutral-400">
                   Pronta para processar
                 </p>
               </div>
@@ -397,7 +398,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
               </div>
             )}
 
-            <p className="text-[8px] text-neutral-400 text-center">
+            <p className="text-[10px] text-neutral-400 text-center">
               {resultImage
                 ? 'Arraste a linha para comparar antes e depois'
                 : 'Processamento por IA • Suas fotos não são armazenadas'}
