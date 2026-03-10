@@ -16,7 +16,7 @@ interface NavbarProps {
   onLogout?: () => void;
   userMode: UserMode;
   onToggleMode: () => void;
-  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals', target?: string) => void;
+  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery', target?: string) => void;
   isScrolled: boolean;
   isProductView?: boolean;
   onBack?: () => void;
@@ -90,7 +90,7 @@ const Navbar: React.FC<NavbarProps> = ({
   // Benefits bar is always h-8 (32px = top-8), test banner adds h-12 (48px)
   const topOffset = showTestBanner ? 'top-20' : 'top-8';
 
-  const handleNav = (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals', target?: string) => {
+  const handleNav = (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery', target?: string) => {
     onNavigate(view, target);
     setIsMenuOpen(false);
   };
@@ -475,6 +475,14 @@ const Navbar: React.FC<NavbarProps> = ({
                       </div>
                     </div>
                   </div>
+
+                  <a
+                    href="/galeria"
+                    onClick={(e) => { e.preventDefault(); handleNav('gallery'); }}
+                    className="block w-full text-3xl md:text-4xl font-light uppercase tracking-tight hover:opacity-70 transition-all text-left no-underline text-inherit"
+                  >
+                    Galeria
+                  </a>
 
                   <a
                     href="/about"

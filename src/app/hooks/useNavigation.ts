@@ -30,6 +30,7 @@ export type AppView =
   | 'marketplace-callback'
   | 'my-returns'
   | 'request-return'
+  | 'gallery'
   | '404';
 
 interface UseNavigationParams {
@@ -91,6 +92,7 @@ export function useNavigation(params: UseNavigationParams) {
     if (pathname === '/request-return') return 'request-return';
     if (pathname === '/faq') return 'home';
     if (pathname === '/affiliates') return 'affiliates';
+    if (pathname === '/galeria') return 'gallery';
     if (pathname === '/products') return 'home';
     if (pathname === '/collections') return 'new-arrivals';
     if (pathname === '/admin/marketplace-callback') return 'marketplace-callback';
@@ -229,6 +231,7 @@ export function useNavigation(params: UseNavigationParams) {
             terms: '/terms',
             shipping: '/shipping',
             affiliates: '/affiliates',
+            gallery: '/galeria',
             'my-returns': '/my-returns',
             'request-return': '/request-return',
             'search-results': '/search',
