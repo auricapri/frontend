@@ -179,67 +179,81 @@ function GalleryCard({
   onMouseEnter, onMouseLeave, onNavigate, onAddToCart,
 }: GalleryCardProps) {
   const outOfStock = !img.variant || img.variant.stock_quantity < 1;
+  const hasProduct = !!img.product;
 
   return (
     <div
-      className="break-inside-avoid mb-3 md:mb-4 relative group cursor-pointer"
+      className="break-inside-avoid mb-2 md:mb-3 group cursor-pointer"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      onClick={onNavigate}
     >
-      <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-neutral-100">
+      {/* Image — Pinterest style: natural height, rounded, no dark overlay */}
+      <div className="relative overflow-hidden rounded-2xl bg-neutral-100" onClick={onNavigate}>
         <img
           src={img.image_url}
           alt={img.title ?? 'Galeria Auricapri'}
           loading="lazy"
-          className="w-full h-auto object-cover transition-transform duration-[1.8s] ease-out group-hover:scale-105"
+          className="w-full h-auto object-cover transition-transform duration-[1.8s] ease-out group-hover:scale-[1.03]"
         />
 
+        {/* Location pill — top left */}
         {img.location_label && (
-          <div className="absolute top-3 left-3 flex items-center gap-1 bg-white/80 backdrop-blur-md px-2.5 py-1 rounded-full shadow-sm">
-            <MapPin className="w-2.5 h-2.5 text-neutral-500" strokeWidth={2} />
-            <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-wider text-neutral-700">
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
+            <MapPin className="w-2 h-2 text-neutral-400" strokeWidth={2} />
+            <span className="text-[7px] font-bold uppercase tracking-wider text-neutral-600">
               {img.location_label}
             </span>
           </div>
         )}
 
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-500 rounded-2xl md:rounded-3xl ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5">
-            {img.product && (
-              <p className="text-white text-[10px] md:text-[11px] font-black uppercase tracking-widest mb-1 leading-tight">
-                {getLoc(img.product.name)}
-              </p>
-            )}
-            {img.variant && (
-              <div className="flex items-center gap-2 mb-3">
-                <div
-                  className="w-3 h-3 rounded-full border border-white/40 flex-shrink-0"
-                  style={{ backgroundColor: img.variant.color_hex ?? '#ccc' }}
-                />
-                <span className="text-white/80 text-[9px] uppercase tracking-wider">
-                  {getLoc(img.variant.color_name)}
-                </span>
-                <span className="text-white font-bold text-[11px] ml-auto">
-                  {formatPrice(img.variant.retail_price)}
-                </span>
-              </div>
-            )}
+        {/* Add to cart button — top right, appears on hover like Pinterest save button */}
+        {hasProduct && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onAddToCart(); }}
+            disabled={outOfStock}
+            className={`absolute top-2.5 right-2.5 flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg transition-all duration-200
+              ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'}
+              ${isAdding ? 'bg-green-500 text-white' : 'bg-black text-white hover:bg-neutral-800'}
+              ${outOfStock ? 'bg-neutral-400 cursor-not-allowed' : ''}
+            `}
+          >
+            <ShoppingBag className="w-3 h-3" strokeWidth={2.5} />
+            {isAdding ? 'Adicionado!' : outOfStock ? 'Esgotado' : 'Comprar'}
+          </button>
+        )}
+      </div>
 
-            <button
-              onClick={(e) => { e.stopPropagation(); onAddToCart(); }}
-              disabled={outOfStock}
-              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95
-                ${isAdding ? 'bg-green-500 text-white' : 'bg-white text-black hover:bg-neutral-100'}
-                ${outOfStock ? 'opacity-50 cursor-not-allowed' : ''}
-              `}
+      {/* Info below image — Pinterest puts info below, not overlaid */}
+      {(hasProduct || img.title) && (
+        <div className="px-1 pt-2 pb-1">
+          {img.product && (
+            <p
+              onClick={onNavigate}
+              className="text-[11px] md:text-[12px] font-semibold text-neutral-900 leading-snug truncate hover:underline"
             >
-              <ShoppingBag className="w-3 h-3" strokeWidth={2.5} />
-              {isAdding ? 'Adicionado!' : 'Adicionar ao carrinho'}
-            </button>
+              {getLoc(img.product.name)}
+            </p>
+          )}
+          {!img.product && img.title && (
+            <p className="text-[11px] md:text-[12px] font-semibold text-neutral-900 leading-snug truncate">
+              {img.title}
+            </p>
+          )}
+          <div className="flex items-center gap-2 mt-0.5">
+            {img.variant?.color_hex && (
+              <div
+                className="w-2.5 h-2.5 rounded-full border border-neutral-200 flex-shrink-0"
+                style={{ backgroundColor: img.variant.color_hex }}
+              />
+            )}
+            {img.variant?.retail_price ? (
+              <span className="text-[11px] font-bold text-neutral-700">
+                {formatPrice(img.variant.retail_price)}
+              </span>
+            ) : null}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
