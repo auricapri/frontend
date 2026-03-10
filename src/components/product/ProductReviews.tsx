@@ -127,7 +127,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
                   <Star key={i} className={`w-4 h-4 ${i < Math.round(averageRating) ? 'fill-current' : 'text-neutral-100'}`} />
                 ))}
               </div>
-              <p className="text-[9px] font-black uppercase tracking-widest text-neutral-400">{reviews.length} avaliações</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">{reviews.length} avaliações</p>
             </div>
           </div>
         </div>
@@ -146,7 +146,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
         <div className="bg-neutral-50 p-10 rounded-[3rem] border border-neutral-100 animate-in fade-in slide-in-from-top-4 duration-500">
            <form onSubmit={handleSubmit} className="space-y-8">
               <div className="space-y-4">
-                 <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 px-4">{t('product.rating')}</label>
+                 <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-4">{t('product.rating')}</label>
                  <div className="flex gap-4 px-4">
                     {[1, 2, 3, 4, 5].map(star => (
                       <button 
@@ -162,7 +162,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
               </div>
 
               <div className="space-y-4">
-                 <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 px-4">{t('product.comment')}</label>
+                 <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-4">{t('product.comment')}</label>
                  <textarea 
                    className="w-full p-8 bg-white border border-neutral-100 rounded-[2.5rem] text-sm font-medium min-h-[150px] outline-none focus:border-black transition-all"
                    placeholder="Share your experience with this piece..."
@@ -210,12 +210,12 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
                           </div>
                           <div>
                              <h4 className="text-[11px] font-black uppercase tracking-tight italic">{review.user_name || 'Usuário'}</h4>
-                             <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest">{new Date(review.created_at).toLocaleDateString()}</p>
+                             <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{new Date(review.created_at).toLocaleDateString()}</p>
                           </div>
                        </div>
                        <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-600 rounded-full w-fit">
                           <CheckCircle2 className="w-3 h-3" />
-                          <span className="text-[8px] font-black uppercase tracking-widest">{t('product.verified')}</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest">{t('product.verified')}</span>
                        </div>
                     </div>
                     <div className="flex-1 space-y-6">
@@ -233,6 +233,8 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
                                    src={media.media_url}
                                    alt="Review"
                                    className="w-32 h-32 object-cover rounded-lg border border-neutral-100"
+                                   loading="lazy"
+                                   decoding="async"
                                  />
                                ) : (
                                  <video

@@ -32,10 +32,12 @@ const AboutUs: React.FC<AboutUsProps> = ({ config, locale, onBack }) => {
         
         {/* Left Column: Visual */}
         <div className="lg:w-1/2 h-[60vh] lg:h-screen relative overflow-hidden bg-neutral-100">
-           <img 
-             src={image} 
-             alt="About Us" 
-             className="w-full h-full object-cover animate-in fade-in duration-1000 scale-105 hover:scale-100 transition-transform duration-[2s]" 
+           <img
+             src={image}
+             alt="About Us"
+             className="w-full h-full object-cover animate-in fade-in duration-1000 scale-105 hover:scale-100 transition-transform duration-[2s]"
+             loading="lazy"
+             decoding="async"
            />
            <div className="absolute inset-0 bg-black/10" />
         </div>

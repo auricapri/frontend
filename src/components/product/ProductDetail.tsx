@@ -1,15 +1,10 @@
 /// Product Detail
 /// Main orchestrator component using modular sub-components
 
-// PROVADOR VIRTUAL DESATIVADO - ver docs/provador-virtual-desativado.md
-// TODO: Reativar quando o serviço estiver estável
-const PROVADOR_VIRTUAL_ENABLED = false;
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Product, UserMode, CartItem, UserProfile, Coupon, SizeGuide, Category, ProductReview } from '../../types';
 import { Locale } from '../../i18n';
 import ProductReviews from './ProductReviews';
-import { FaceSwapModal } from './FaceSwapModal';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
 import { getProductCoupon, applyCouponDiscount } from '../../utils/coupon';
@@ -20,6 +15,7 @@ import { useImageHotspots } from '../../hooks/useImageHotspots';
 import { useVariantSelection } from '../../hooks/useVariantSelection';
 import { useProductImages } from '../../hooks/useProductImages';
 import { useStickyBar } from '../../hooks/useStickyBar';
+import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
 import { RelatedProducts } from './RelatedProducts';
 import {
   ImageGallery,
@@ -63,6 +59,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   coupons = [],
   userMode,
   onAddToCart,
+  onBack,
   isWishlisted,
   onToggleWishlist,
   t,
@@ -95,7 +92,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [showFaceSwap, setShowFaceSwap] = useState(false);
   const [isPresentationExpanded, setIsPresentationExpanded] = useState(true);
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
@@ -220,7 +216,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   // Composition text
   const compositionText = activeVariant?.composition
     ? `${getLoc(activeVariant.composition)}\n\n${getLoc(activeVariant.care_instructions)}`
-    : 'Sustainable luxury materials. Hand-finished in our atelier.';
+    : 'Materiais de alta qualidade. Acabamento artesanal.';
 
   // Breadcrumb schema for SEO
   const breadcrumbSchema = useMemo(() => {
@@ -248,6 +244,16 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     return [...sameCategory, ...otherProducts].slice(0, 5);
   }, [products, product.id, product.category_id, userMode]);
 
+  // Recently viewed products
+  const recentlyViewedIds = useRecentlyViewed(product.id);
+  const recentlyViewedProducts = useMemo(() => {
+    if (!products.length || !recentlyViewedIds.length) return [];
+    return recentlyViewedIds
+      .map(id => products.find(p => p.id === id))
+      .filter((p): p is Product => !!p && p.is_active)
+      .slice(0, 5);
+  }, [products, recentlyViewedIds]);
+
   return (
     <div className="relative w-full bg-white">
       {/* Breadcrumb JSON-LD Schema */}
@@ -260,13 +266,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       <nav aria-label="Breadcrumb" className="px-6 md:px-12 lg:px-16 pt-2 pb-1">
         <ol className="flex items-center gap-1.5 text-[11px] text-neutral-400">
           <li>
-            <button onClick={() => window.history.back()} className="hover:text-neutral-700 transition-colors">
+            <button onClick={onBack} className="hover:text-neutral-700 transition-colors">
               Home
             </button>
           </li>
           <li aria-hidden="true" className="select-none">&gt;</li>
           <li>
-            <span className="hover:text-neutral-700 transition-colors">Colecoes</span>
+            <button onClick={onBack} className="hover:text-neutral-700 transition-colors cursor-pointer">Coleções</button>
           </li>
           <li aria-hidden="true" className="select-none">&gt;</li>
           <li aria-current="page" className="text-neutral-700 font-medium truncate max-w-[200px]">
@@ -288,8 +294,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           mobileGalleryRef={mobileGalleryRef}
           handleMobileScroll={handleMobileScroll}
           mobileActiveIdx={mobileActiveIdx}
-          showFaceSwap={PROVADOR_VIRTUAL_ENABLED && activeVariant?.face_swap_enabled}
-          onFaceSwapClick={() => setShowFaceSwap(true)}
+          showFaceSwap={false}
+          onFaceSwapClick={() => {}}
           hotspots={hotspots}
           onAddToCart={onAddToCart}
           onNavigateToProduct={onSelectProduct}
@@ -323,8 +329,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               activeSizeGuideImage={activeSizeGuideImage}
               onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
               isSelectedSizeAvailable={isSelectedSizeAvailable}
-              showProvador={PROVADOR_VIRTUAL_ENABLED && activeVariant?.face_swap_enabled}
-              onOpenProvador={() => setShowFaceSwap(true)}
+              showProvador={false}
+              onOpenProvador={() => {}}
             />
 
             <div ref={actionsRef}>
@@ -367,6 +373,22 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         t={t}
       />
 
+      {/* Recently Viewed Products */}
+      {recentlyViewedProducts.length > 0 && (
+        <RelatedProducts
+          products={recentlyViewedProducts}
+          userMode={userMode}
+          locale={locale}
+          coupons={coupons}
+          wishlistIds={wishlistIds}
+          onSelectProduct={onSelectProduct}
+          onToggleWishlist={onToggleWishlistProduct}
+          getLoc={getLoc}
+          t={t}
+          title="Vistos Recentemente"
+        />
+      )}
+
       {/* Presentation Section */}
       {product.presentation && getLoc(product.presentation) && (
         <PresentationSection
@@ -377,24 +399,22 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       )}
 
       {/* Reviews Section */}
-      {(reviews.length > 0 || isLoadingReviews) && (
-        <div id="reviews" className="w-full bg-white border-t border-neutral-100 pt-32 pb-40 px-8 md:px-24">
-          <div className="max-w-7xl mx-auto">
-            <ProductReviews
-              productId={product.id}
-              reviews={reviews}
-              user={currentUser}
-              userOrders={userOrders}
-              t={t}
-              isLoading={isLoadingReviews}
-              onAddReview={async (r) => {
-                const newReview: ProductReview = { ...r, id: `rev_${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), helpful_count: 0, cashback_awarded: false } as ProductReview;
-                setReviews(prev => [newReview, ...prev]);
-              }}
-            />
-          </div>
+      <div id="reviews" className="w-full bg-white border-t border-neutral-100 pt-32 pb-40 px-8 md:px-24">
+        <div className="max-w-7xl mx-auto">
+          <ProductReviews
+            productId={product.id}
+            reviews={reviews}
+            user={currentUser}
+            userOrders={userOrders}
+            t={t}
+            isLoading={isLoadingReviews}
+            onAddReview={async (r) => {
+              const newReview: ProductReview = { ...r, id: `rev_${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), helpful_count: 0, cashback_awarded: false } as ProductReview;
+              setReviews(prev => [newReview, ...prev]);
+            }}
+          />
         </div>
-      )}
+      </div>
 
       {/* Size Guide Modal */}
       <SizeGuideModal
@@ -413,23 +433,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         onClose={() => setIsZoomOpen(false)}
         onNavigate={setZoomImgIndex}
       />
-
-      {/* Face Swap Modal - DESATIVADO */}
-      {PROVADOR_VIRTUAL_ENABLED && activeVariant?.face_swap_enabled && (
-        <FaceSwapModal
-          isOpen={showFaceSwap}
-          onClose={() => setShowFaceSwap(false)}
-          variant={activeVariant}
-          productName={product.name}
-          productImage={
-            (activeVariant.variant_images?.length)
-              ? activeVariant.variant_images[0]
-              : (product.base_images?.length) ? product.base_images[0] : ''
-          }
-          userId={currentUser?.id || `guest_${Date.now()}`}
-          locale={locale}
-        />
-      )}
 
       {/* Mobile Sticky Bar */}
       <MobileStickyBar

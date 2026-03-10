@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Download, MessageCircle, Check, Loader2 } from 'lucide-react';
 import { Order, OrderItem, OrderReview } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
-import { OrdersApi } from '../../api/orders.api';
-import { OrderReviewsApi } from '../../api/order-reviews.api';
+import { ordersApi, orderReviewsApi } from '../../api/instances';
 import { OrderReviewForm } from './OrderReviewForm';
 import { OrderReviewsList } from './OrderReviewsList';
 import { useAuthContext } from '../../context/AuthContext';
@@ -21,20 +21,30 @@ interface OrderReceiptProps {
 
 const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, taxId }) => {
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
-  const [reviews, setReviews] = useState<OrderReview[]>([]);
-  const [userReview, setUserReview] = useState<OrderReview | null>(null);
   const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
-  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const { currentUser } = useAuthContext();
-  const ordersApi = new OrdersApi();
-  const reviewsApi = new OrderReviewsApi();
-  
+  const queryClient = useQueryClient();
+
+  const isDelivered =
+    order.status?.toLowerCase() === 'delivered' ||
+    order.status?.toLowerCase() === 'entregue';
+
+  const { data: reviews = [], isLoading: isLoadingReviews } = useQuery<OrderReview[]>({
+    queryKey: ['order-reviews', order.id],
+    queryFn: () => orderReviewsApi.getByOrderId(order.id),
+    enabled: isDelivered,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const userReview = currentUser
+    ? reviews.find((r) => r.user_id === currentUser.id) ?? null
+    : null;
+
   const handlePrint = async () => {
     setIsDownloadingPDF(true);
     try {
       await ordersApi.downloadReceiptPDF(order.id);
-    } catch (error: any) {
-      console.error('Error downloading PDF:', error);
+    } catch (error: unknown) {
       alert('Erro ao baixar PDF. Tente novamente.');
     } finally {
       setIsDownloadingPDF(false);
@@ -63,40 +73,12 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  useEffect(() => {
-    const loadReviews = async () => {
-      const orderStatus = order.status?.toLowerCase();
-      const isDelivered = orderStatus === 'delivered' || orderStatus === 'entregue';
-      if (!isDelivered) return;
-      
-      setIsLoadingReviews(true);
-      try {
-        const allReviews = await reviewsApi.getByOrderId(order.id);
-        setReviews(allReviews);
-        
-        if (currentUser) {
-          const userReview = allReviews.find(r => r.user_id === currentUser.id);
-          setUserReview(userReview || null);
-        }
-      } catch (error) {
-        console.error('Error loading reviews:', error);
-      } finally {
-        setIsLoadingReviews(false);
-      }
-    };
-
-    loadReviews();
-  }, [order.id, order.status, currentUser?.id]);
-
-  const handleReviewSuccess = async (review: OrderReview) => {
-    setUserReview(review);
+  const handleReviewSuccess = async (_review: OrderReview) => {
     setIsReviewFormOpen(false);
-    const allReviews = await reviewsApi.getByOrderId(order.id);
-    setReviews(allReviews);
+    await queryClient.invalidateQueries({ queryKey: ['order-reviews', order.id] });
   };
 
-  const handleEditReview = (review: OrderReview) => {
-    setUserReview(review);
+  const handleEditReview = (_review: OrderReview) => {
     setIsReviewFormOpen(true);
   };
 
@@ -191,7 +173,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
             </div>
             <div className="flex justify-between">
                <span className="uppercase font-bold text-neutral-400 print:text-black">MÉTODO</span>
-               <span className="bg-black text-white px-2 py-0.5 text-[9px] uppercase tracking-wider rounded-sm print:border print:border-black print:text-black print:bg-white">
+               <span className="bg-black text-white px-2 py-0.5 text-[10px] uppercase tracking-wider rounded-sm print:border print:border-black print:text-black print:bg-white">
                   {order.payment_method === 'pix' ? 'PIX' : 'CARTÃO CRÉDITO'}
                </span>
             </div>
@@ -206,7 +188,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
          <div className="border-b border-dashed border-neutral-300 mb-8 opacity-50 print:opacity-100 print:border-black"></div>
 
          <div className="space-y-6 mb-8">
-            <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4 print:text-black">Detalhamento</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4 print:text-black">Detalhamento</h3>
             {(order.items || []).map((item: OrderItem, idx) => (
                <div key={item.id || item.variant_id || idx} className="flex justify-between items-start">
                   <div className="flex-1 pr-4">
@@ -245,7 +227,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
 
          {order.tracking_code && (
              <div className="bg-neutral-900 text-white p-6 rounded-xl text-center mb-8 print:bg-white print:text-black print:border print:border-black">
-                <span className="block text-[9px] font-bold uppercase tracking-widest text-white/60 mb-2 print:text-black">Código de Rastreio</span>
+                <span className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-2 print:text-black">Código de Rastreio</span>
                 <span className="text-lg font-black font-mono tracking-widest select-all">{order.tracking_code}</span>
              </div>
          )}
@@ -259,7 +241,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
                     ))}
                 </div>
             </div>
-            <p className="text-[9px] uppercase tracking-widest text-neutral-400 leading-relaxed max-w-xs mx-auto print:text-black">
+            <p className="text-[10px] uppercase tracking-widest text-neutral-400 leading-relaxed max-w-xs mx-auto print:text-black">
                Este documento possui valor fiscal para fins de garantia. 
                <br/>Auricapri Global Inc.
             </p>
@@ -319,10 +301,9 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
               <OrderReviewsList
                 reviews={reviews}
                 currentUserId={currentUser?.id}
-                onReviewUpdate={async () => {
-                  const allReviews = await reviewsApi.getByOrderId(order.id);
-                  setReviews(allReviews);
-                }}
+                onReviewUpdate={() =>
+                  queryClient.invalidateQueries({ queryKey: ['order-reviews', order.id] })
+                }
                 onEdit={handleEditReview}
               />
             ) : (

@@ -86,7 +86,7 @@ export function MyReturnsPage({ locale, onBack, onRequestReturn }: MyReturnsPage
           </div>
           <button
             onClick={onRequestReturn}
-            className="px-5 py-2.5 bg-black text-white text-[9px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-colors"
+            className="px-5 py-2.5 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-colors"
           >
             Nova Solicitacao
           </button>
@@ -97,7 +97,7 @@ export function MyReturnsPage({ locale, onBack, onRequestReturn }: MyReturnsPage
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center text-neutral-300 space-y-4">
             <Loader2 className="w-8 h-8 animate-spin" strokeWidth={1} />
-            <span className="text-[9px] font-black uppercase tracking-widest">
+            <span className="text-[10px] font-black uppercase tracking-widest">
               Carregando...
             </span>
           </div>
@@ -126,7 +126,7 @@ export function MyReturnsPage({ locale, onBack, onRequestReturn }: MyReturnsPage
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <RotateCcw className="w-3.5 h-3.5 text-neutral-400" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
                           Pedido #{ret.order_id.slice(0, 8).toUpperCase()}
                         </span>
                       </div>
@@ -138,7 +138,7 @@ export function MyReturnsPage({ locale, onBack, onRequestReturn }: MyReturnsPage
                     </div>
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${statusInfo.color}`} />
-                      <span className="text-[9px] font-black uppercase tracking-widest text-neutral-600">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-neutral-600">
                         {statusInfo.label}
                       </span>
                     </div>
@@ -167,7 +167,7 @@ export function MyReturnsPage({ locale, onBack, onRequestReturn }: MyReturnsPage
                   {/* Show returned items if available in metadata */}
                   {ret.metadata?.items && Array.isArray(ret.metadata.items) && (
                     <div className="pt-3 border-t border-neutral-200 space-y-2">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-neutral-300">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-neutral-300">
                         Itens
                       </span>
                       {ret.metadata.items.map((item: any, idx: number) => (

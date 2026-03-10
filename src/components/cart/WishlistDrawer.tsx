@@ -191,7 +191,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-8 border-b border-gray-100 bg-white">
           <div className="flex flex-col">
-            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-neutral-300">{t('wishlist.curation')}</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-300">{t('wishlist.curation')}</span>
             <h2 className="text-2xl font-black tracking-tighter uppercase italic">{t('wishlist.title')} ({items.length})</h2>
           </div>
           <button onClick={onClose} aria-label="Close drawer" className="p-4 bg-neutral-50 rounded-full hover:rotate-90 transition-all">
@@ -241,6 +241,12 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
 
               {/* Share & Gift Section */}
               <div className="pt-10 border-t border-neutral-200">
+                <div className="mb-6 p-4 bg-neutral-50 rounded-2xl border border-neutral-100">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-neutral-700 mb-1">Endereço de entrega obrigatório</p>
+                  <p className="text-[10px] text-neutral-400 leading-relaxed">
+                    Quem receber o link só poderá enviar itens para o seu endereço cadastrado. Certifique-se de ter um endereço salvo no seu perfil antes de compartilhar.
+                  </p>
+                </div>
                 <div className="mb-6">
                   <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-6">{t('wishlist.shareTitle')}</h4>
                   <div className="grid grid-cols-4 gap-4">

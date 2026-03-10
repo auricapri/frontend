@@ -4,6 +4,7 @@ import {
   generateSrcSet,
   generateSizes,
   getPlaceholderUrl,
+  getR2FallbackUrl,
   IMAGE_SIZES,
 } from '../../utils/image';
 
@@ -45,6 +46,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
   const [hasError, setHasError] = useState(false);
+  const [triedR2, setTriedR2] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -100,9 +102,19 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   }, [onLoad]);
 
   const handleError = useCallback(() => {
+    // Try R2 fallback before giving up
+    if (!triedR2 && src) {
+      const r2Url = getR2FallbackUrl(src);
+      if (r2Url && imgRef.current) {
+        setTriedR2(true);
+        imgRef.current.srcset = '';
+        imgRef.current.src = r2Url;
+        return;
+      }
+    }
     setHasError(true);
     onError?.();
-  }, [onError]);
+  }, [onError, triedR2, src]);
 
   const objectFitClass = {
     cover: 'object-cover',

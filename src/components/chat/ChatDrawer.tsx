@@ -376,7 +376,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               )}
             </button>
           </div>
-          <p className="text-[9px] text-neutral-400 text-center mt-2">
+          <p className="text-[10px] text-neutral-400 text-center mt-2">
             Assistente com IA para ajudar nas suas compras
           </p>
         </div>

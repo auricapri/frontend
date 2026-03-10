@@ -111,11 +111,11 @@ export function ImageGallery(props: {
                   aria-label="Provador virtual - experimente esta peça"
                 >
                   <ScanFace className="w-4 h-4 text-neutral-700 group-hover/faceswap:text-black transition-colors" />
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-600 group-hover/faceswap:text-black">Provador</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 group-hover/faceswap:text-black">Provador</span>
                 </button>
               )}
               {isActiveVariantImage && (
-                <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-full">
+                <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-full">
                   {getLoc(activeVariantColorName)}
                 </div>
               )}
@@ -169,7 +169,7 @@ export function ImageGallery(props: {
                   />
                 </ImageHotspots>
                 {isActiveVariantImage && (
-                  <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-full">
+                  <div className="absolute top-4 left-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-full">
                     {getLoc(activeVariantColorName)}
                   </div>
                 )}
@@ -191,7 +191,7 @@ export function ImageGallery(props: {
             aria-label="Provador virtual - experimente esta peça"
           >
             <ScanFace className="w-4 h-4 text-neutral-700" />
-            <span className="text-[8px] font-bold uppercase tracking-wider text-neutral-600">Provador</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-600">Provador</span>
           </button>
         )}
       </div>

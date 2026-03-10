@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Loader2, RefreshCw, Truck, Package, CheckCircle, ArrowRight, LogOut, Calendar } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { DeliveryApi, type DeliverySupplierGroup } from '../../api/delivery.api';
@@ -11,7 +12,6 @@ import { DeliveryHistoryPanel } from '../delivery/DeliveryHistoryPanel';
 import { DeliveryNotificationsPanel } from '../delivery/DeliveryNotificationsPanel';
 import { Order } from '../../types';
 import { Supplier } from '../../types/suppliers';
-import { OrderStatus } from '../../constants/enums';
 
 interface DeliveryDashboardProps {
   orders?: Order[];
@@ -29,10 +29,7 @@ const TAB_CONFIG = [
 
 const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout }) => {
   const api = useMemo(() => new DeliveryApi(), []);
-  const [groups, setGroups] = useState<DeliverySupplierGroup[]>([]);
   const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string>('');
   const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'info' | 'error' }>({
     visible: false,
     message: '',
@@ -44,11 +41,6 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
   });
   const [activeTab, setActiveTab] = useState<'today' | 'coleta' | 'history' | 'notifications'>('today');
   const [busyAction, setBusyAction] = useState(false);
-
-  // Logistics workflow state
-  const [awaitingPickupOrders, setAwaitingPickupOrders] = useState<Order[]>([]);
-  const [collectedOrders, setCollectedOrders] = useState<Order[]>([]);
-  const [isLoadingLogistics, setIsLoadingLogistics] = useState(false);
   const [logisticsActionBusy, setLogisticsActionBusy] = useState<string | null>(null);
 
   const [reportOpen, setReportOpen] = useState(false);
@@ -57,60 +49,45 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
   const [rateOpen, setRateOpen] = useState(false);
   const [rateSupplierId, setRateSupplierId] = useState<string | null>(null);
 
-  const fetchGroups = useCallback(async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const list = await api.getOrdersForDelivery(selectedDate || undefined);
-      setGroups(list);
-      setSelectedSupplierId((prev) => {
-        if (prev && list.some((g) => g.supplier_id === prev)) return prev;
-        return null;
-      });
-    } catch (e: any) {
-      setError(e?.message || 'Falha ao carregar pedidos de delivery');
-      setGroups([]);
-      setSelectedSupplierId(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [api, selectedDate]);
-
   const showToast = useCallback((message: string, type: 'info' | 'error' = 'info') => {
     setToast({ visible: true, message, type });
   }, []);
 
-  useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+  const {
+    data: groups = [],
+    isLoading,
+    error: groupsError,
+    refetch: refetchGroups,
+  } = useQuery<DeliverySupplierGroup[]>({
+    queryKey: ['delivery', 'groups', selectedDate],
+    queryFn: () => api.getOrdersForDelivery(selectedDate || undefined),
+    staleTime: 30 * 1000,
+  });
 
-  const fetchLogisticsData = useCallback(async () => {
-    setIsLoadingLogistics(true);
-    try {
-      const dashboard = await api.getDeliveryDashboard();
-      setAwaitingPickupOrders(dashboard.awaiting_pickup || []);
-      setCollectedOrders(dashboard.collected || []);
-    } catch (e: any) {
-      showToast(e?.message || 'Falha ao carregar dados de logística', 'error');
-    } finally {
-      setIsLoadingLogistics(false);
-    }
-  }, [api, showToast]);
+  const {
+    data: logisticsData,
+    isLoading: isLoadingLogistics,
+    refetch: refetchLogistics,
+  } = useQuery({
+    queryKey: ['delivery', 'logistics'],
+    queryFn: () => api.getDeliveryDashboard(),
+    enabled: activeTab === 'coleta',
+    staleTime: 30 * 1000,
+  });
 
-  useEffect(() => {
-    if (activeTab === 'coleta') {
-      fetchLogisticsData();
-    }
-  }, [activeTab, fetchLogisticsData]);
+  const awaitingPickupOrders: Order[] = logisticsData?.awaiting_pickup ?? [];
+  const collectedOrders: Order[] = logisticsData?.collected ?? [];
+
+  const error = groupsError ? (groupsError as Error).message || 'Falha ao carregar pedidos de delivery' : '';
 
   const handleMarkAsCollected = async (orderId: string) => {
     setLogisticsActionBusy(orderId);
     try {
       await api.markAsCollected(orderId);
       showToast('Pedido marcado como coletado!', 'info');
-      await fetchLogisticsData();
-    } catch (e: any) {
-      showToast(e?.message || 'Falha ao marcar como coletado', 'error');
+      await refetchLogistics();
+    } catch (e: unknown) {
+      showToast((e as Error)?.message || 'Falha ao marcar como coletado', 'error');
     } finally {
       setLogisticsActionBusy(null);
     }
@@ -121,9 +98,9 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
     try {
       await api.moveToExpedition(orderId);
       showToast('Pedido movido para expedição!', 'info');
-      await fetchLogisticsData();
-    } catch (e: any) {
-      showToast(e?.message || 'Falha ao mover para expedição', 'error');
+      await refetchLogistics();
+    } catch (e: unknown) {
+      showToast((e as Error)?.message || 'Falha ao mover para expedição', 'error');
     } finally {
       setLogisticsActionBusy(null);
     }
@@ -143,9 +120,9 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
       } else {
         showToast('Itens aceitos com sucesso.', 'info');
       }
-      await fetchGroups();
-    } catch (e: any) {
-      showToast(e?.message || 'Falha ao aceitar itens do fornecedor.', 'error');
+      await refetchGroups();
+    } catch (e: unknown) {
+      showToast((e as Error)?.message || 'Falha ao aceitar itens do fornecedor.', 'error');
     } finally {
       setBusyAction(false);
     }
@@ -156,9 +133,9 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
     try {
       await api.markItemPickedUp(orderId, orderItemId);
       showToast('Item aceito com sucesso.', 'info');
-      await fetchGroups();
-    } catch (e: any) {
-      showToast(e?.message || 'Falha ao aceitar item.', 'error');
+      await refetchGroups();
+    } catch (e: unknown) {
+      showToast((e as Error)?.message || 'Falha ao aceitar item.', 'error');
     } finally {
       setBusyAction(false);
     }
@@ -191,7 +168,7 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
           </div>
           <button
             type="button"
-            onClick={fetchGroups}
+            onClick={() => refetchGroups()}
             disabled={isLoading}
             className="p-2 hover:bg-neutral-800 rounded-lg transition-all disabled:opacity-50"
             aria-label="Atualizar"
@@ -250,11 +227,11 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
                 <div className="text-xl font-black">{awaitingPickupOrders.length}</div>
-                <div className="text-[9px] font-bold uppercase tracking-widest text-amber-700">Aguardando</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-amber-700">Aguardando</div>
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
                 <div className="text-xl font-black">{collectedOrders.length}</div>
-                <div className="text-[9px] font-bold uppercase tracking-widest text-blue-700">Coletados</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-blue-700">Coletados</div>
               </div>
             </div>
 
@@ -400,7 +377,7 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
             : 'Fornecedor'
         }
         context={reportContext ? { orderId: reportContext.orderId, orderItemId: reportContext.orderItemId } : null}
-        onReported={fetchGroups}
+        onReported={() => refetchGroups()}
       />
 
       <RateSupplierModal
@@ -413,7 +390,7 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
         supplierName={
           rateSupplierId ? (groups.find((g) => g.supplier_id === rateSupplierId)?.supplier?.store_name || 'Fornecedor') : 'Fornecedor'
         }
-        onRated={fetchGroups}
+        onRated={() => refetchGroups()}
       />
 
       <Toast

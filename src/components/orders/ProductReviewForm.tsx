@@ -222,6 +222,8 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
                     src={media.media_url}
                     alt="Review media"
                     className="w-24 h-24 object-cover rounded-lg"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <video
@@ -246,6 +248,8 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
                     src={preview}
                     alt="Preview"
                     className="w-24 h-24 object-cover rounded-lg"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <video

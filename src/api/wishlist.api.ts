@@ -47,6 +47,17 @@ export class WishlistApi {
     return response.json();
   }
 
+  async getDeliveryInfo(slug: string): Promise<{ hasAddress: boolean; city?: string; state?: string }> {
+    const response = await fetch(`${API_BASE_URL}/wishlist/shared/${slug}/delivery-info`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return response.json();
+  }
+
   async buyAllFromSharedWishlist(
     slug: string,
     orderData: {

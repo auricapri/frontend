@@ -80,6 +80,8 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
         alt="Antes"
         className="absolute inset-0 w-full h-full object-cover"
         draggable={false}
+        loading="lazy"
+        decoding="async"
       />
 
       {/* After Image (top layer with clip) */}
@@ -92,6 +94,8 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           alt="Depois"
           className="w-full h-full object-cover"
           draggable={false}
+          loading="lazy"
+          decoding="async"
         />
       </div>
 
@@ -114,10 +118,10 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       </div>
 
       {/* Labels */}
-      <div className="absolute top-3 left-3 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-full text-[9px] font-bold uppercase tracking-wider">
+      <div className="absolute top-3 left-3 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-full text-[10px] font-bold uppercase tracking-wider">
         Depois
       </div>
-      <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/70 text-white backdrop-blur-sm rounded-full text-[9px] font-bold uppercase tracking-wider">
+      <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/70 text-white backdrop-blur-sm rounded-full text-[10px] font-bold uppercase tracking-wider">
         Antes
       </div>
 

@@ -8,7 +8,7 @@ import { PaymentsApi } from '../../../api/payments.api';
 import type { InstallmentOption, UseInstallmentStateParams, UseInstallmentStateReturn } from './types';
 
 export function useInstallmentState(params: UseInstallmentStateParams): UseInstallmentStateReturn {
-  const { finalTotal, paymentMethod } = params;
+  const { finalTotal, paymentMethod, isInfluencerCoupon } = params;
 
   const paymentsApi = useMemo(() => new PaymentsApi(), []);
 
@@ -54,7 +54,7 @@ export function useInstallmentState(params: UseInstallmentStateParams): UseInsta
 
     setInstallmentsLoading(true);
     try {
-      const response = await paymentsApi.getInstallmentOptions(amount);
+      const response = await paymentsApi.getInstallmentOptions(amount, isInfluencerCoupon);
       setInstallmentOptions(response.options);
       // Reset to 1x if current selection is invalid
       if (selectedInstallments > response.maxInstallments) {
@@ -67,7 +67,7 @@ export function useInstallmentState(params: UseInstallmentStateParams): UseInsta
     } finally {
       setInstallmentsLoading(false);
     }
-  }, [paymentsApi, selectedInstallments]);
+  }, [paymentsApi, selectedInstallments, isInfluencerCoupon]);
 
   // Load split card options
   const loadSplitCardOptions = useCallback(async () => {

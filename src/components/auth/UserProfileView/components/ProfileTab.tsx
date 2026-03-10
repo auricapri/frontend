@@ -62,7 +62,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       {/* Profile Form */}
       <form onSubmit={onSubmit} className="space-y-6">
         <div className="space-y-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 px-4">
+          <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-4">
             {t('admin.customer')}
           </label>
           <input
@@ -73,7 +73,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         </div>
 
         <div className="space-y-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 px-4">
+          <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-4">
             {t('auth.phone')}
           </label>
           <div className="relative">
@@ -88,7 +88,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         </div>
 
         <div className="space-y-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-neutral-400 px-4">
+          <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-4">
             CPF <span className="text-neutral-300">(opcional para nota fiscal)</span>
           </label>
           <input
@@ -159,7 +159,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           ) : (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full py-5 bg-white text-red-400 border border-red-100 rounded-[2rem] text-[9px] font-black uppercase tracking-[0.4em] hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all flex items-center justify-center gap-3 active:scale-95"
+              className="w-full py-5 bg-white text-red-400 border border-red-100 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all flex items-center justify-center gap-3 active:scale-95"
             >
               <Trash2 className="w-4 h-4" />
               <span>Excluir Conta</span>

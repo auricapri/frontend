@@ -138,7 +138,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _l
         {/* Form */}
         <form className="space-y-6" onSubmit={handleResetPassword}>
           <div className="space-y-2">
-            <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">Nova Senha</label>
+            <label className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest">Nova Senha</label>
             <div className="relative">
               <input 
                 type={showPassword ? 'text' : 'password'} 
@@ -159,7 +159,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _l
           </div>
 
           <div className="space-y-2">
-            <label className="text-[9px] uppercase font-bold text-neutral-400 tracking-widest">Confirmar Senha</label>
+            <label className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest">Confirmar Senha</label>
             <div className="relative">
               <input 
                 type={showConfirmPassword ? 'text' : 'password'} 

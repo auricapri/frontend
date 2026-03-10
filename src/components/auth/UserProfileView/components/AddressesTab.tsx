@@ -22,7 +22,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
     return (
       <div className="py-20 flex flex-col items-center justify-center text-neutral-300 space-y-4">
         <Loader2 className="w-8 h-8 animate-spin" strokeWidth={1} />
-        <span className="text-[9px] font-black uppercase tracking-widest">
+        <span className="text-[10px] font-black uppercase tracking-widest">
           Carregando Endereços...
         </span>
       </div>
@@ -47,7 +47,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-300">
           Meus Endereços
         </h3>
-        <span className="text-[9px] text-neutral-400">{addresses.length} endereço(s)</span>
+        <span className="text-[10px] text-neutral-400">{addresses.length} endereço(s)</span>
       </div>
 
       {addresses.map(addr => (
@@ -66,7 +66,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
                   className={`w-4 h-4 ${addr.is_default ? 'text-white/60' : 'text-neutral-400'}`}
                 />
                 {addr.is_default && (
-                  <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-white/20 rounded-full">
+                  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-white/20 rounded-full">
                     Padrão
                   </span>
                 )}
@@ -92,7 +92,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
                 <button
                   onClick={() => onSetDefault(addr.id)}
                   disabled={settingDefault === addr.id}
-                  className="px-4 py-2 bg-black text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {settingDefault === addr.id ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
@@ -105,7 +105,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
               <button
                 onClick={() => onDelete(addr.id)}
                 disabled={deletingAddress === addr.id}
-                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center gap-2 ${
                   addr.is_default
                     ? 'bg-white/10 text-white/60 hover:bg-white/20'
                     : 'bg-red-50 text-red-500 hover:bg-red-100'

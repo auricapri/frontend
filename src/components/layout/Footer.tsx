@@ -93,6 +93,15 @@ const Footer: React.FC<FooterProps> = ({
             >
               <Instagram className="w-5 h-5" />
             </a>
+            <a
+              href="https://www.facebook.com/auricapri"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+              className="text-neutral-500 hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
+            </a>
           </div>
         </div>
 
@@ -145,7 +154,7 @@ const Footer: React.FC<FooterProps> = ({
             <li>
               <button onClick={() => onNavigate('affiliates')} className="hover:text-white transition-colors uppercase tracking-wide text-left flex flex-col items-start gap-0.5">
                 <span>Programa de Afiliados</span>
-                <span className="text-[9px] text-neutral-500 tracking-widest font-bold">A PARTIR DE 10%</span>
+                <span className="text-[10px] text-neutral-500 tracking-widest font-bold">A PARTIR DE 10%</span>
               </button>
             </li>
             <li>
@@ -161,17 +170,17 @@ const Footer: React.FC<FooterProps> = ({
           <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-200">{t('footer.secure')}</h4>
           <div className="flex items-center space-x-2 text-neutral-400">
              <Lock className="w-3 h-3" />
-             <span className="text-[9px] uppercase tracking-wider">{t('footer.ssl')}</span>
+             <span className="text-[10px] uppercase tracking-wider">{t('footer.ssl')}</span>
           </div>
           <div className="flex flex-wrap gap-2 pt-2">
             {/* Payment method badges */}
-            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Pix</span>
-            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Visa</span>
-            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Master</span>
-            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Elo</span>
-            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Boleto</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">Pix</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">Visa</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">Master</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">Elo</span>
+            <span className="inline-flex items-center px-2 py-1 rounded bg-neutral-800 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">Boleto</span>
           </div>
-          <p className="text-[9px] text-neutral-600 leading-relaxed max-w-[180px]">
+          <p className="text-[10px] text-neutral-600 leading-relaxed max-w-[180px]">
             Pagamentos processados com segurança via Asaas. Dados protegidos com criptografia SSL.
           </p>
 
@@ -179,15 +188,15 @@ const Footer: React.FC<FooterProps> = ({
           <div className="flex flex-col gap-3 pt-4 border-t border-neutral-700">
             <div className="flex items-center gap-2 text-neutral-400">
               <RefreshCw className="w-3 h-3" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Troca fácil</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Troca fácil</span>
             </div>
             <div className="flex items-center gap-2 text-neutral-400">
               <ShieldCheck className="w-3 h-3" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Pagamento seguro</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Pagamento seguro</span>
             </div>
             <div className="flex items-center gap-2 text-neutral-400">
               <Truck className="w-3 h-3" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Envio para todo Brasil</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Envio para todo Brasil</span>
             </div>
           </div>
         </div>

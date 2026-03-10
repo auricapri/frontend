@@ -13,6 +13,7 @@ interface RelatedProductsProps {
   onToggleWishlist?: (productId: string) => void;
   getLoc: (text: LocalizedText | string | undefined) => string;
   t: (key: string) => string;
+  title?: string;
 }
 
 export const RelatedProducts: React.FC<RelatedProductsProps> = ({
@@ -25,6 +26,7 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
   onToggleWishlist,
   getLoc,
   t,
+  title,
 }) => {
   if (products.length === 0) return null;
 
@@ -32,7 +34,7 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
     <div className="w-full bg-white border-t border-neutral-100 pt-16 md:pt-24 pb-32 md:pb-32">
       <div className="w-full">
         <div className="mb-8 md:mb-12 px-6 md:px-12">
-          <h2 className="text-2xl md:text-3xl font-light tracking-tight uppercase mb-2">{t('product.related')}</h2>
+          <h2 className="text-2xl md:text-3xl font-light tracking-tight uppercase mb-2">{title || t('product.related')}</h2>
           <p className="text-[10px] text-neutral-400 tracking-[0.2em] uppercase font-bold">{t('product.relatedSubtitle')}</p>
         </div>
 
