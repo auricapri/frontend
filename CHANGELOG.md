@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.2.3] - 2026-03-09
+
+### Melhorado
+- **CartDrawer**: design do mobile melhorado — imagem maior (`w-28 h-36`), nome do produto `text-xs`, preço `font-semibold`, padding lateral reduzido (`px-4`), espaçamento entre itens `space-y-5`, footer compacto no mobile
+
 ## [1.2.2] - 2026-03-09
 
 ### Corrigido
