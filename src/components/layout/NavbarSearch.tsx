@@ -42,7 +42,7 @@ export const NavbarSearch: React.FC<NavbarSearchProps> = ({
         const name = getLoc(p.name).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         return name.includes(q) && p.is_active;
       })
-      .slice(0, 5);
+      .slice(0, 10);
   }, [searchQuery, products, getLoc]);
 
   const handleSearch = useCallback(() => {
@@ -117,7 +117,7 @@ export const NavbarSearch: React.FC<NavbarSearchProps> = ({
           </div>
 
           {isOpen && searchSuggestions.length > 0 && (
-            <div className="mt-2 bg-white rounded-lg border border-neutral-100 shadow-lg overflow-hidden">
+            <div className="mt-2 bg-white rounded-lg border border-neutral-100 shadow-lg overflow-y-auto max-h-[400px]">
               {searchSuggestions.map((product) => {
                 const img = product.variants?.[0]?.variant_images?.[0] || product.base_images?.[0];
                 const price = product.variants?.[0]?.retail_price || 0;

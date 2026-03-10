@@ -90,31 +90,29 @@ export const ProductGridBody: React.FC<ProductGridBodyProps> = ({
           )}
         </div>
       ) : (
-        <div className={`grid ${
-          products.length <= 3
-            ? 'grid-cols-2 md:grid-cols-3'
-            : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
-        }`}>
+        <div className="columns-2 md:columns-3 lg:columns-4 gap-2 md:gap-3 px-2 md:px-3">
           {products.map((p, index) => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              priority={index < 6}
-              userMode={userMode}
-              locale={locale}
-              coupons={coupons}
-              variant="grid"
-              showWishlist={true}
-              showQuickAdd={!!onAddToCart}
-              showDiscountBadge={true}
-              showColorSwatches={true}
-              isWishlisted={wishlistIds.includes(p.id)}
-              onToggleWishlist={onToggleWishlist}
-              onAddToCart={onAddToCart}
-              onQuickAdd={handleQuickAdd}
-              onClick={() => onSelectProduct(p)}
-              selectedColorFamilies={selectedColorFamilies.length > 0 ? selectedColorFamilies : undefined}
-            />
+            <div key={p.id} className="break-inside-avoid mb-2 md:mb-3">
+              <ProductCard
+                product={p}
+                priority={index < 6}
+                userMode={userMode}
+                locale={locale}
+                coupons={coupons}
+                variant="grid"
+                aspectRatio="portrait"
+                showWishlist={true}
+                showQuickAdd={!!onAddToCart}
+                showDiscountBadge={true}
+                showColorSwatches={true}
+                isWishlisted={wishlistIds.includes(p.id)}
+                onToggleWishlist={onToggleWishlist}
+                onAddToCart={onAddToCart}
+                onQuickAdd={handleQuickAdd}
+                onClick={() => onSelectProduct(p)}
+                selectedColorFamilies={selectedColorFamilies.length > 0 ? selectedColorFamilies : undefined}
+              />
+            </div>
           ))}
         </div>
       )}
