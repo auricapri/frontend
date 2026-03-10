@@ -5,6 +5,15 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.2.2] - 2026-03-09
+
+### Corrigido
+- **NavbarMobile**: perfil do usuario movido para dentro do scroll container — impedia o footer de aparecer em telas pequenas
+- **NavbarSearch**: sugestoes de busca agora mostram ate 10 itens (era 5) com scroll (`max-h-[400px] overflow-y-auto`)
+
+### Melhorado
+- **ProductGridBody**: layout alterado de grid uniforme para colunas masonry (`columns-2 md:columns-3 lg:columns-4`), imagens em portrait `3/4` — visual estilo Pinterest
+
 ## [1.2.1] - 2026-03-09
 
 ### Adicionado

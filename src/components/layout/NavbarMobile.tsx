@@ -214,19 +214,19 @@ export const NavbarMobile: React.FC<NavbarMobileProps> = ({
                 Sobre Nós
               </a>
             </div>
-          </div>
 
-          {/* User Profile Section */}
-          {isLoggedIn && currentUser && (
-            <NavbarUserMenu
-              currentUser={currentUser}
-              onMyAccount={handleMyAccount}
-              onMyOrders={handleMyOrders}
-              onWishlist={handleWishlist}
-              onLogout={handleLogout}
-              t={t}
-            />
-          )}
+            {/* User Profile Section — inside scroll so it doesn't push footer off screen */}
+            {isLoggedIn && currentUser && (
+              <NavbarUserMenu
+                currentUser={currentUser}
+                onMyAccount={handleMyAccount}
+                onMyOrders={handleMyOrders}
+                onWishlist={handleWishlist}
+                onLogout={handleLogout}
+                t={t}
+              />
+            )}
+          </div>
 
           {/* Menu Footer */}
           <div className="pt-4 border-t border-neutral-100 flex-shrink-0">
