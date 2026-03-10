@@ -19,6 +19,7 @@ const SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').
 const MyReturnsPage = React.lazy(() => import('../pages/MyReturnsPage').then(m => ({ default: m.MyReturnsPage })));
 const ReturnRequestForm = React.lazy(() => import('../components/returns/ReturnRequestForm'));
 const AffiliatePage = React.lazy(() => import('../pages/AffiliatePage').then(m => ({ default: m.AffiliatePage })));
+const GalleryPage = React.lazy(() => import('../pages/GalleryPage').then(m => ({ default: m.GalleryPage })));
 
 export function AppRouter(props: {
   app: any;
@@ -149,6 +150,18 @@ export function AppRouter(props: {
     return (
       <Suspense fallback={<LoadingFallback />}>
         <AffiliatePage locale={app.locale} onBack={() => app.onNavigate('home')} />
+      </Suspense>
+    );
+  }
+
+  if (app.currentView === 'gallery') {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <GalleryPage
+          locale={app.locale}
+          onNavigate={app.onNavigate}
+          onAddToCart={app.addToCart}
+        />
       </Suspense>
     );
   }
