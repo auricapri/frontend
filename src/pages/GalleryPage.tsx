@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, X, Maximize2, ShoppingBag, ExternalLink, MapPin } from 'lucide-react';
+import { Search, X, Maximize2, ShoppingBag, ExternalLink, MapPin, Instagram } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { type Product, type CartItem, type ProductVariant } from '../types';
 import { type Locale } from '../i18n';
@@ -156,38 +156,93 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* ── Header ── */}
-      <header className="pt-36 md:pt-44 pb-10 md:pb-16 px-6 text-center max-w-4xl mx-auto w-full">
-        <span className="text-[10px] uppercase tracking-[0.4em] text-neutral-400 mb-4 block animate-in fade-in duration-700">
-          Curadoria de Estilo · Auricapri
+
+      {/* ── AI Studio nav-header ── */}
+      <div className="pt-32 md:pt-24 bg-white/80 backdrop-blur-md border-b border-black/5">
+        <div className="px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
+
+          {/* Esquerda: logo + links */}
+          <div className="flex items-center gap-8">
+            <span className="font-serif text-2xl md:text-3xl tracking-tight font-medium select-none">
+              AURICAPRI
+            </span>
+            <nav className="hidden md:flex items-center gap-6 text-[11px] uppercase tracking-widest font-light">
+              <button
+                onClick={() => onNavigate('collection')}
+                className="hover:opacity-50 transition-opacity"
+              >
+                Coleções
+              </button>
+              <span className="font-semibold border-b border-black pb-px">Galeria</span>
+              <button
+                onClick={() => onNavigate('about')}
+                className="hover:opacity-50 transition-opacity"
+              >
+                Sobre
+              </button>
+            </nav>
+          </div>
+
+          {/* Direita: busca + Instagram */}
+          <div className="flex items-center gap-3">
+            <div className="relative hidden sm:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/30 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Buscar inspiração..."
+                className="pl-10 pr-4 py-2 bg-black/5 rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-black/20 w-44 lg:w-60 transition-all"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <X className="w-3.5 h-3.5 text-black/40 hover:text-black" />
+                </button>
+              )}
+            </div>
+            <a
+              href="https://www.instagram.com/auricapri"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram Auricapri"
+              className="p-2 hover:bg-black/5 rounded-full transition-colors"
+            >
+              <Instagram className="w-5 h-5" />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Hero ── */}
+      <header className="py-16 md:py-24 px-6 text-center max-w-4xl mx-auto w-full">
+        <span className="text-[10px] uppercase tracking-[0.4em] text-black/40 mb-4 block">
+          Curadoria de Estilo
         </span>
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[0.95] mb-6 uppercase animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <h1 className="font-serif text-5xl md:text-7xl mb-8 leading-tight">
           Nossa Galeria de{' '}
-          <em className="not-italic" style={{ fontStyle: 'italic' }}>Inspirações</em>
+          <em>Inspirações</em>
         </h1>
-        <p className="text-sm text-neutral-500 font-light leading-relaxed max-w-xl mx-auto animate-in fade-in duration-1000">
+        <p className="text-black/60 font-light leading-relaxed max-w-2xl mx-auto text-sm md:text-base">
           Explore o universo Auricapri através da nossa curadoria visual.
           Looks reais, momentos brasileiros — toque em qualquer peça para descobrir.
         </p>
 
-        {/* Search */}
-        <div className="relative max-w-sm mx-auto mt-8">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+        {/* Search mobile (visível só no mobile) */}
+        <div className="relative max-w-xs mx-auto mt-8 sm:hidden">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black/30 pointer-events-none" />
           <input
             type="text"
             placeholder="Buscar peças..."
-            className="w-full pl-11 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-full text-sm focus:outline-none focus:border-black transition-colors"
+            className="w-full pl-11 pr-10 py-2.5 bg-black/5 rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-black/20 transition-all"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
           {searchQuery && (
             <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2">
-              <X className="w-4 h-4 text-neutral-400 hover:text-black transition-colors" />
+              <X className="w-3.5 h-3.5 text-black/40 hover:text-black" />
             </button>
           )}
         </div>
-
-        <div className="mt-8 w-10 h-px bg-neutral-200 mx-auto" />
       </header>
 
       {/* ── Gallery ── */}
