@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --color-paper: #FAF8F0;
+  }
+  html, body {
+    background-color: var(--color-paper);
+  }
+}
+
 /* No Scrollbar Utility */
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {

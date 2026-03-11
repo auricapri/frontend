@@ -9,7 +9,7 @@ interface AffiliatePageProps {
 
 export function AffiliatePage({ onBack }: AffiliatePageProps) {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-paper">
       <SEOHead
         title="Programa de Afiliados | Auricapri"
         description="Ganhe comissão divulgando a Auricapri. Estrutura de comissões progressiva, a partir de 10% sobre cada venda confirmada. Parceria transparente e legal."

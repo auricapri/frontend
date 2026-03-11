@@ -227,7 +227,7 @@ export function AppLayout(props: {
   };
 
   return (
-    <div className="relative h-dvh w-full bg-white overflow-hidden text-neutral-900 font-sans">
+    <div className="relative h-dvh w-full bg-paper overflow-hidden text-neutral-900 font-sans">
       {/* Skip to content link for keyboard/screen reader users */}
       <a
         href="#main-content"

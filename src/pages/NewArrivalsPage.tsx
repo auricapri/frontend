@@ -112,7 +112,7 @@ export function NewArrivalsPage({
   };
 
   return (
-    <div className="min-h-full flex flex-col bg-white">
+    <div className="min-h-full flex flex-col bg-paper">
       <SEOHead
         title="Novidades | Auricapri"
         description="Descubra as novidades da Auricapri. Novas colecoes, pecas exclusivas e as ultimas tendencias em moda feminina."
