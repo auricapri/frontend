@@ -112,8 +112,8 @@ const Navbar: React.FC<NavbarProps> = ({
           <div
             className={`absolute inset-0 pointer-events-none transition-all duration-700 ease-out border-b
               ${isSolid
-                ? 'bg-white/90 backdrop-blur-xl opacity-100 border-neutral-100'
-                : 'bg-white/0 backdrop-blur-0 opacity-0 border-transparent'}
+                ? 'bg-paper/90 backdrop-blur-xl opacity-100 border-neutral-100'
+                : 'bg-paper/0 backdrop-blur-0 opacity-0 border-transparent'}
             `}
             style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
           />

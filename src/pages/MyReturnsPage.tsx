@@ -63,7 +63,7 @@ export function MyReturnsPage({ locale, onBack, onRequestReturn }: MyReturnsPage
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-paper">
       <SEOHead
         title="Minhas Devolucoes | Auricapri"
         description="Acompanhe suas solicitacoes de devolucao na Auricapri."

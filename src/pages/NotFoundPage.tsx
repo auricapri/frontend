@@ -10,7 +10,7 @@ interface NotFoundPageProps {
 
 export const NotFoundPage: React.FC<NotFoundPageProps> = ({ locale: _locale, onNavigate, t: _t }) => {
   return (
-    <div className="min-h-screen bg-white text-neutral-900 font-sans flex flex-col">
+    <div className="min-h-screen bg-paper text-neutral-900 font-sans flex flex-col">
       <main className="flex-1 flex items-center justify-center px-6 md:px-12 py-24">
         <div className="max-w-2xl w-full text-center space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
           

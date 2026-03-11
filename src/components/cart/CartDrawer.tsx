@@ -81,7 +81,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
       />
 
       {/* Drawer */}
-      <div role="dialog" aria-modal="true" className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
+      <div role="dialog" aria-modal="true" className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-paper z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
         
         {/* Header */}
         <div className="flex items-center justify-between p-6 md:p-8 border-b border-gray-100">
@@ -164,7 +164,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
 
         {/* Footer / Checkout */}
         {items.length > 0 && (
-          <div className="px-4 md:px-8 py-5 md:py-8 border-t border-gray-100 bg-white" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
+          <div className="px-4 md:px-8 py-5 md:py-8 border-t border-gray-100 bg-paper" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
             <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] uppercase tracking-[0.3em] font-black text-neutral-400">{t('cart.subtotal')}</span>
               <div className="text-right">

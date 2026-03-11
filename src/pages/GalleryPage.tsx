@@ -185,7 +185,7 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white pt-40 px-4 md:px-8">
+      <div className="min-h-screen bg-paper pt-40 px-4 md:px-8">
         <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
           {Array.from({ length: 9 }).map((_, i) => (
             <div key={i} className="break-inside-avoid mb-4 animate-pulse bg-neutral-100 rounded-2xl aspect-[3/4]" />
@@ -196,10 +196,10 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-paper">
 
       {/* ══ AI Studio Sticky Nav ══ */}
-      <nav className="pt-32 md:pt-24 sticky top-16 md:top-14 z-30 bg-white/80 backdrop-blur-md border-b border-black/5">
+      <nav className="pt-32 md:pt-24 sticky top-16 md:top-14 z-30 bg-paper/80 backdrop-blur-md border-b border-black/5">
         <div className="px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
           {/* Left: logo + links */}
           <div className="flex items-center gap-8">
