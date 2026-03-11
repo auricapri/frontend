@@ -410,7 +410,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
 
       {/* Image — full height, left spacing to feel like a framed photo */}
       <div
-        className={`md:w-[48%] h-[52vh] md:h-full flex-none flex items-stretch md:ml-48 cursor-zoom-out transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}
+        className={`md:w-[48%] h-[36vh] md:h-full flex-none flex items-stretch md:ml-48 cursor-zoom-out transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClose}
       >
         <img
@@ -422,22 +422,22 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
 
       {/* Info panel — right side, scrollable */}
       <div
-        className={`flex-1 overflow-y-auto flex flex-col justify-center px-8 md:px-14 py-8 md:py-16 transition-all duration-500 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'}`}
+        className={`flex-1 overflow-y-auto flex flex-col justify-center px-6 md:px-14 py-4 md:py-16 transition-all duration-500 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'}`}
         onClick={e => e.stopPropagation()}
       >
-        <div className="max-w-sm mx-auto md:mx-0 w-full space-y-5 md:space-y-7">
+        <div className="max-w-sm mx-auto md:mx-0 w-full space-y-3 md:space-y-7">
           <div>
             {categoryLabel && (
-              <span className="text-[10px] uppercase tracking-[0.3em] text-black/40 mb-2 block">
+              <span className="text-[10px] uppercase tracking-[0.3em] text-black/40 mb-1 block">
                 {categoryLabel}
               </span>
             )}
-            <h2 className="font-serif text-3xl md:text-5xl mb-3 leading-tight">
+            <h2 className="font-serif text-2xl md:text-5xl mb-2 leading-tight">
               {productName ?? 'Auricapri'}
             </h2>
             {img.variant?.retail_price ? (
               <div>
-                <p className="text-2xl font-light mb-1">{formatCurrency(img.variant.retail_price, locale)}</p>
+                <p className="text-lg md:text-2xl font-light mb-0.5">{formatCurrency(img.variant.retail_price, locale)}</p>
                 {img.variant.retail_price >= 10 && (
                   <p className="text-xs text-black/40">
                     ou <span className="font-semibold text-black">6x de {formatCurrency(img.variant.retail_price / 6, locale)}</span> sem juros
@@ -445,7 +445,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
                 )}
               </div>
             ) : (
-              <p className="text-black/60 font-light leading-relaxed text-sm">
+              <p className="hidden md:block text-black/60 font-light leading-relaxed text-sm">
                 Uma peça que transcende o tempo, desenhada para mulheres que valorizam a sofisticação em cada detalhe.
               </p>
             )}
@@ -462,11 +462,11 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
             </div>
           )}
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 md:gap-3">
             {img.product && (
               <button
                 onClick={onNavigate}
-                className="w-full py-4 bg-black text-white rounded-full font-medium hover:bg-black/80 transition-colors flex items-center justify-center gap-3 text-sm"
+                className="w-full py-3 md:py-4 bg-black text-white rounded-full font-medium hover:bg-black/80 transition-colors flex items-center justify-center gap-3 text-sm"
               >
                 Ver na Loja Online
               </button>
@@ -492,7 +492,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
           </div>
 
           {/* Share */}
-          <div className="flex pt-4 border-t border-black/5 items-center gap-6">
+          <div className="flex pt-3 md:pt-4 border-t border-black/5 items-center gap-6">
             <span className="text-xs uppercase tracking-widest text-black/40">Compartilhar</span>
             <div className="flex gap-4">
               <a href="https://www.instagram.com/auricapri.oficial" target="_blank" rel="noopener noreferrer" className="hover:opacity-50 transition-opacity">
