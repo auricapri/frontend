@@ -15,7 +15,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ config, locale, onBack }) => {
   const image = config.about_us_image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop';
 
   return (
-    <div className="w-full h-screen overflow-y-auto bg-white text-neutral-900">
+    <div className="w-full h-screen overflow-y-auto bg-paper text-neutral-900">
 
       {/* Header / Nav Area */}
       <div className="fixed top-0 left-0 w-full z-50 p-6 md:p-12 mix-blend-difference text-white pointer-events-none">
@@ -43,12 +43,12 @@ const AboutUs: React.FC<AboutUsProps> = ({ config, locale, onBack }) => {
         </div>
 
         {/* Right Column: Content */}
-        <div className="lg:w-1/2 flex flex-col justify-center p-12 lg:p-24 xl:p-32 bg-white">
+        <div className="lg:w-1/2 flex flex-col justify-center p-12 lg:p-24 xl:p-32 bg-paper">
            <div className="animate-in slide-in-from-bottom-10 duration-1000 delay-100">
               <span className="text-[10px] font-black uppercase tracking-[0.6em] text-neutral-400 mb-6 block">
                 Nossa História
               </span>
-              <h1 className="text-5xl md:text-7xl font-light tracking-tighter uppercase leading-[0.85] mb-12">
+              <h1 className="font-serif text-5xl md:text-7xl font-light tracking-tighter uppercase leading-[0.85] mb-12">
                 {config.brand_name}
               </h1>
               <div className="w-12 h-[2px] bg-black mb-12" />

@@ -112,7 +112,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
       {/* Panel — slides via transform (GPU, no layout reflow) */}
       <div
-        className="fixed top-0 left-0 h-full z-[61] bg-white shadow-2xl w-[290px] md:w-[320px] flex flex-col"
+        className="fixed top-0 left-0 h-full z-[61] bg-paper shadow-2xl w-[290px] md:w-[320px] flex flex-col"
         style={{
           transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform 280ms cubic-bezier(0.4, 0, 0.2, 1)',

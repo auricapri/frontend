@@ -16,7 +16,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ locale: _locale, onN
           
           {/* 404 Number */}
           <div className="space-y-4">
-            <h1 className="text-9xl md:text-[12rem] font-light tracking-tighter text-neutral-900 leading-none">
+            <h1 className="font-serif text-9xl md:text-[12rem] font-light tracking-tighter text-neutral-900 leading-none">
               404
             </h1>
             <div className="flex items-center justify-center gap-3">
@@ -28,7 +28,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ locale: _locale, onN
 
           {/* Message */}
           <div className="space-y-6">
-            <h2 className="text-2xl md:text-4xl font-light uppercase tracking-[0.3em] text-neutral-900">
+            <h2 className="font-serif text-2xl md:text-4xl font-light uppercase tracking-[0.3em] text-neutral-900">
               Página Não Encontrada
             </h2>
             <p className="text-sm md:text-base text-neutral-500 font-medium max-w-md mx-auto leading-relaxed">

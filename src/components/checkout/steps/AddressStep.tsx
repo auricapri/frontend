@@ -82,7 +82,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           <div className="p-4 bg-neutral-50 rounded-2xl">
             <MapPin className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-black uppercase italic tracking-tight text-neutral-900">Endereço de Entrega</h3>
+          <h3 className="text-2xl font-black uppercase italic tracking-tight text-neutral-900 font-serif">Endereço de Entrega</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Saved Addresses Dropdown */}

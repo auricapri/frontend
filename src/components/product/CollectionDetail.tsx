@@ -119,7 +119,7 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
 
         <div className="relative z-10 h-full flex flex-col justify-end p-8 md:p-20 text-white animate-in fade-in slide-in-from-bottom-10 duration-1000">
           <span className="text-[10px] font-black uppercase tracking-[0.6em] mb-4 text-white/60">Coleção Exclusiva</span>
-          <h1 className="text-5xl md:text-8xl font-light tracking-tighter uppercase leading-[0.85] mb-8">
+          <h1 className="text-5xl md:text-8xl font-light font-serif tracking-tighter uppercase leading-[0.85] mb-8">
             {getLoc(collection.name)}
           </h1>
           {collection.description && getLoc(collection.description) !== getLoc(collection.name) && (

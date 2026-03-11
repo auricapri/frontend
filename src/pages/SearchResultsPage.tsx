@@ -103,10 +103,10 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       {/* Header + Filters */}
-      <div className="bg-white">
+      <div className="bg-paper">
         {/* Header */}
         <div className="border-b border-neutral-100 py-3 md:py-4 px-6 md:px-12">
-          <h1 className="text-xl md:text-2xl font-light tracking-[0.2em] uppercase mb-1">
+          <h1 className="font-serif text-xl md:text-2xl font-light tracking-[0.2em] uppercase mb-1">
             {t('search.resultsTitle')}
           </h1>
           <p className="text-neutral-500 text-xs md:text-sm">

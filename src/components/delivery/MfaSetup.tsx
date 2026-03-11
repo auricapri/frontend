@@ -77,14 +77,14 @@ const AdminMfaSetup: React.FC<AdminMfaSetupProps> = ({ onComplete, onCancel, t: 
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12">
+        <div className="bg-paper rounded-3xl shadow-xl p-8 md:p-12">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-xl">
                 <Shield className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h2 className="text-xl font-black uppercase tracking-tighter">Configurar MFA</h2>
+                <h2 className="text-xl font-black font-serif uppercase tracking-tighter">Configurar MFA</h2>
                 <p className="text-xs text-neutral-400 uppercase tracking-widest">{subtitle || 'Obrigatório para Admin'}</p>
               </div>
             </div>

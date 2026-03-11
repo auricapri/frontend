@@ -31,7 +31,7 @@ const WeatherPersonalizedBanner: React.FC = () => {
             {temp < 15 ? '❄️' : temp > 28 ? '☀️' : '⛅'}
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+            <h3 className="text-xl font-bold font-serif text-gray-900">{title}</h3>
             <p className="text-gray-600">{subtitle}</p>
           </div>
         </div>
@@ -40,7 +40,7 @@ const WeatherPersonalizedBanner: React.FC = () => {
           {categories.map((cat) => (
             <button
               key={cat}
-              className="bg-white hover:bg-gray-50 text-gray-800 text-sm font-medium py-2 px-4 border border-gray-200 rounded-full transition-colors"
+              className="bg-paper hover:bg-gray-50 text-gray-800 text-sm font-medium py-2 px-4 border border-gray-200 rounded-full transition-colors"
             >
               {cat}
             </button>

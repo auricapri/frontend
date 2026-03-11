@@ -34,7 +34,7 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 z-20 bg-white flex flex-col animate-in slide-in-from-right duration-500">
+    <div className="absolute inset-0 z-20 bg-paper flex flex-col animate-in slide-in-from-right duration-500">
       {/* Header */}
       <header className="h-24 px-8 flex items-center justify-between border-b border-neutral-100">
         <button
@@ -43,7 +43,7 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
         >
           <ArrowLeft className="w-4 h-4" /> {t('nav.back')}
         </button>
-        <h4 className="text-sm font-black uppercase tracking-tight italic">
+        <h4 className="text-sm font-black font-serif uppercase tracking-tight italic">
           Pedido {order.id.slice(0, 8)}
         </h4>
         <button onClick={onClose} className="p-3 bg-neutral-50 rounded-full">

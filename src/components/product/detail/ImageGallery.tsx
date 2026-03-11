@@ -77,7 +77,7 @@ export function ImageGallery(props: {
                   setIsZoomOpen(true);
                 }
               }}
-              className="relative aspect-[3/4] bg-white overflow-hidden cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2"
+              className="relative aspect-[3/4] bg-paper overflow-hidden cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2"
               onClick={() => {
                 setZoomImgIndex(idx);
                 setIsZoomOpen(true);
@@ -125,7 +125,7 @@ export function ImageGallery(props: {
       </div>
 
       <div className="md:hidden relative group">
-        <div ref={mobileGalleryRef} onScroll={handleMobileScroll} className="aspect-[3/4] overflow-x-auto snap-x snap-mandatory flex no-scrollbar bg-white">
+        <div ref={mobileGalleryRef} onScroll={handleMobileScroll} className="aspect-[3/4] overflow-x-auto snap-x snap-mandatory flex no-scrollbar bg-paper">
           {allImagesWithVariant.map((imgData, idx) => {
             const isActiveVariantImage = (activeVariantId && imgData.variantIds?.includes(activeVariantId)) || false;
             const isFirstOfCombination = idx === 0 || allImagesWithVariant[idx - 1].combinationKey !== imgData.combinationKey;

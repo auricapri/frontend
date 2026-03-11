@@ -70,7 +70,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, t, banners, locale, isLoading }
       </div>
 
       <div className="relative z-10 text-center text-white px-6 animate-in fade-in slide-in-from-bottom-10 duration-1000 flex flex-col">
-        <h1 className="text-5xl md:text-[8rem] lg:text-[10rem] font-light tracking-tighter mb-20 whitespace-pre-line leading-[0.82] uppercase order-2">
+        <h1 className="text-5xl md:text-[8rem] lg:text-[10rem] font-light font-serif tracking-tighter mb-20 whitespace-pre-line leading-[0.82] uppercase order-2">
           {mainBanner.title}
         </h1>
         <p className="text-[10px] md:text-[11px] font-black tracking-[0.6em] mb-10 uppercase text-white/80 order-1">

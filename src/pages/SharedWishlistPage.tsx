@@ -205,7 +205,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
 
   if (error || !wishlistData) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+      <div className="min-h-screen bg-paper flex items-center justify-center px-6">
         <div className="max-w-md w-full text-center">
           <div className="mb-8">
             <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-neutral-100 flex items-center justify-center">
@@ -213,7 +213,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-black uppercase tracking-tighter mb-3 text-neutral-900">
+            <h2 className="font-serif text-2xl font-black uppercase tracking-tighter mb-3 text-neutral-900">
               Wishlist Não Encontrada
             </h2>
             <p className="text-sm text-neutral-500 leading-relaxed mb-2">
@@ -255,7 +255,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-white pt-24 pb-20 relative">
+    <div className="min-h-screen bg-paper pt-24 pb-20 relative">
       <SEOHead
         title="Lista de Desejos | Auricapri"
         description="Confira esta lista de desejos compartilhada da Auricapri."
@@ -273,7 +273,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       )}
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="mb-12">
-          <h1 className="text-4xl font-black uppercase tracking-tighter mb-4 italic">
+          <h1 className="font-serif text-4xl font-black uppercase tracking-tighter mb-4 italic">
             Wishlist Compartilhada
           </h1>
           <p className="text-neutral-500 text-[10px] font-bold uppercase tracking-widest">

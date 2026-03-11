@@ -17,7 +17,7 @@ export function AffiliatePage({ onBack }: AffiliatePageProps) {
         url="https://www.auricapri.com.br/affiliates"
       />
 
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-100">
+      <header className="sticky top-0 z-10 bg-paper border-b border-neutral-100">
         <div className="w-full px-4 py-4 flex items-center gap-4">
           <button
             onClick={onBack}
@@ -25,7 +25,7 @@ export function AffiliatePage({ onBack }: AffiliatePageProps) {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-xl font-bold">Programa de Afiliados</h1>
+          <h1 className="font-serif text-xl font-bold">Programa de Afiliados</h1>
         </div>
       </header>
 

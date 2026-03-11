@@ -43,7 +43,7 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   const checkout = useCheckoutState({ items, currentUser, storeConfig, userMode, onComplete, locale, initialStep });
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900 font-sans flex flex-col pt-24 pb-20 relative">
+    <div className="min-h-screen bg-paper text-neutral-900 font-sans flex flex-col pt-24 pb-20 relative">
       <div className="max-w-[1400px] mx-auto w-full px-6 md:px-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-20">
           <div>
@@ -53,7 +53,7 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
             >
               <ArrowLeft className="w-4 h-4" /> Voltar à Loja
             </button>
-            <h1 className="text-4xl font-black tracking-tighter uppercase italic">Finalizar Pedido</h1>
+            <h1 className="text-4xl font-black tracking-tighter uppercase italic font-serif">Finalizar Pedido</h1>
             {giftDeliveryLocation && (
               <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
                 Presente para: <span className="text-black">{giftDeliveryLocation}</span>

@@ -186,13 +186,13 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
       />
 
       {/* Drawer */}
-      <div role="dialog" aria-modal="true" className="fixed top-0 right-0 h-full w-full md:w-[480px] bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
+      <div role="dialog" aria-modal="true" className="fixed top-0 right-0 h-full w-full md:w-[480px] bg-paper z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-4 md:p-8 border-b border-gray-100 bg-white">
+        <div className="flex items-center justify-between p-4 md:p-8 border-b border-gray-100 bg-paper">
           <div className="flex flex-col">
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-300">{t('wishlist.curation')}</span>
-            <h2 className="text-2xl font-black tracking-tighter uppercase italic">{t('wishlist.title')} ({items.length})</h2>
+            <h2 className="text-2xl font-black font-serif tracking-tighter uppercase italic">{t('wishlist.title')} ({items.length})</h2>
           </div>
           <button onClick={onClose} aria-label="Close drawer" className="p-4 bg-neutral-50 rounded-full hover:rotate-90 transition-all">
             <X className="w-6 h-6" />
@@ -204,7 +204,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
 
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-6 py-20">
-              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-sm">
+              <div className="w-24 h-24 bg-paper rounded-full flex items-center justify-center shadow-sm">
                 <ShoppingBag className="w-10 h-10 stroke-1" />
               </div>
               <span className="text-xl font-light text-neutral-400 uppercase tracking-widest">{t('wishlist.empty')}</span>
@@ -254,7 +254,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                       onClick={handleShareLink}
                       disabled={isGeneratingLink || !currentUserId}
                       title="Copiar Link de Presente"
-                      className="flex items-center justify-center p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                      className="flex items-center justify-center p-5 bg-paper border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                       {isGeneratingLink ? (
                         <div className="w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
@@ -268,7 +268,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                       onClick={() => handleSocialShare('whatsapp')}
                       disabled={isGeneratingLink || !currentUserId}
                       title="Compartilhar no WhatsApp"
-                      className="flex items-center justify-center p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                      className="flex items-center justify-center p-5 bg-paper border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                       <MessageCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     </button>
@@ -276,7 +276,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                       onClick={() => handleSocialShare('facebook')}
                       disabled={isGeneratingLink || !currentUserId}
                       title="Compartilhar no Facebook"
-                      className="flex items-center justify-center p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                      className="flex items-center justify-center p-5 bg-paper border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                       <Facebook className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     </button>
@@ -284,7 +284,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                       onClick={() => handleSocialShare('twitter')}
                       disabled={isGeneratingLink || !currentUserId}
                       title="Compartilhar no X"
-                      className="flex items-center justify-center p-5 bg-white border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                      className="flex items-center justify-center p-5 bg-paper border border-neutral-200 rounded-2xl hover:border-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                       <XIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     </button>
@@ -297,7 +297,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
 
         {/* Footer Actions */}
         {items.length > 0 && (
-          <div className="p-4 md:p-8 border-t border-gray-100 bg-white shadow-2xl" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+          <div className="p-4 md:p-8 border-t border-gray-100 bg-paper shadow-2xl" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             <button
               onClick={onBuyAll}
               className="w-full bg-black text-white py-5 md:py-6 rounded-2xl flex items-center justify-between px-6 md:px-8 hover:bg-neutral-800 transition-all group shadow-xl active:scale-95"

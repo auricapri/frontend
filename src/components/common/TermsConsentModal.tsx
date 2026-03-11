@@ -27,7 +27,7 @@ export function TermsConsentModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full sm:max-w-lg mx-4 mb-4 sm:mb-0 bg-white rounded-3xl shadow-2xl animate-in slide-in-from-bottom duration-500">
+      <div className="relative w-full sm:max-w-lg mx-4 mb-4 sm:mb-0 bg-paper rounded-3xl shadow-2xl animate-in slide-in-from-bottom duration-500">
         {/* Close button */}
         <button
           onClick={onClose}
@@ -44,7 +44,7 @@ export function TermsConsentModal({
           </div>
 
           {/* Title */}
-          <h2 className="text-xl font-black uppercase tracking-tight mb-3">
+          <h2 className="text-xl font-black font-serif uppercase tracking-tight mb-3">
             Termos e Privacidade
           </h2>
 

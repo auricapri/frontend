@@ -37,7 +37,7 @@ export function ProductInfo(props: {
         </div>
       )}
 
-      <h1 className="text-2xl md:text-3xl lg:text-4xl font-light tracking-tighter uppercase leading-[0.95] mb-6 text-neutral-900 line-clamp-2">
+      <h1 className="text-2xl md:text-3xl lg:text-4xl font-light font-serif tracking-tighter uppercase leading-[0.95] mb-6 text-neutral-900 line-clamp-2">
         {getLoc(product.name)}
       </h1>
 

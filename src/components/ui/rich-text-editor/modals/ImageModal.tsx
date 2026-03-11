@@ -37,7 +37,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
       onClick={handleClose}
     >
       <div
-        className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl"
+        className="bg-paper rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">

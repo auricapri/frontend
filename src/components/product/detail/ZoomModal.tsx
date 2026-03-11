@@ -31,7 +31,7 @@ export function ZoomModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-white flex flex-col animate-in fade-in zoom-in-95 duration-700">
+    <div className="fixed inset-0 z-[1000] bg-paper flex flex-col animate-in fade-in zoom-in-95 duration-700">
       <header className="h-24 px-12 flex justify-between items-center fixed top-0 w-full z-10 bg-white/90 backdrop-blur-3xl">
         <div className="flex flex-col">
           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-300">Gallery View</span>

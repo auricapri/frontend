@@ -48,10 +48,10 @@ export const Drawer: React.FC<DrawerProps> = ({
         className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity animate-in fade-in duration-500"
         onClick={onClose}
       />
-      <div role="dialog" aria-modal="true" className={`fixed top-0 ${sideClasses} h-full ${width} bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-${side} duration-500`}>
+      <div role="dialog" aria-modal="true" className={`fixed top-0 ${sideClasses} h-full ${width} bg-paper z-[70] shadow-2xl flex flex-col animate-in slide-in-from-${side} duration-500`}>
         {title && (
           <div className="flex items-center justify-between p-6 md:p-8 border-b border-gray-100">
-            <h2 className="text-xl font-light tracking-widest uppercase">{title}</h2>
+            <h2 className="text-xl font-light font-serif tracking-widest uppercase">{title}</h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"

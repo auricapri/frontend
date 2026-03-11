@@ -57,7 +57,7 @@ export function DeliverySupplierDetails(props: {
   return (
     <div className="flex flex-col min-h-0 h-full">
       {/* Supplier header — compact */}
-      <div className="bg-white border-b border-neutral-100 px-3 py-2.5 md:px-4 flex-shrink-0">
+      <div className="bg-paper border-b border-neutral-100 px-3 py-2.5 md:px-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           {/* Back button — mobile only */}
           {onBack && (
@@ -132,7 +132,7 @@ export function DeliverySupplierDetails(props: {
               {showMenu && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-neutral-200 rounded-xl shadow-lg z-20 py-1 min-w-[180px]">
+                  <div className="absolute right-0 top-full mt-1 bg-paper border border-neutral-200 rounded-xl shadow-lg z-20 py-1 min-w-[180px]">
                     <button
                       type="button"
                       onClick={() => {
@@ -199,7 +199,7 @@ export function DeliverySupplierDetails(props: {
             ].filter(Boolean).join(' · ');
 
             return (
-              <div key={item.order_item_id} className="bg-white rounded-xl border border-neutral-100 p-2.5 md:p-3">
+              <div key={item.order_item_id} className="bg-paper rounded-xl border border-neutral-100 p-2.5 md:p-3">
                 <div className="flex gap-2.5">
                   {/* Image — small */}
                   <div className="w-12 h-14 rounded-lg overflow-hidden bg-neutral-50 flex-shrink-0">
@@ -262,7 +262,7 @@ export function DeliverySupplierDetails(props: {
 
       {/* Sticky bottom — Accept all button */}
       {!isComplete && (
-        <div className="flex-shrink-0 bg-white border-t border-neutral-100 px-3 py-2 md:px-4 md:py-3">
+        <div className="flex-shrink-0 bg-paper border-t border-neutral-100 px-3 py-2 md:px-4 md:py-3">
           <button
             type="button"
             onClick={() => onAcceptAll(group.supplier_id)}

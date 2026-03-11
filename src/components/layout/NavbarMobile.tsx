@@ -91,7 +91,7 @@ export const NavbarMobile: React.FC<NavbarMobileProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-white z-50 transition-all duration-700"
+      className="fixed inset-0 bg-paper z-50 transition-all duration-700"
       style={{
         opacity: isOpen ? 1 : 0,
         transform: isOpen ? 'translateY(0)' : 'translateY(-50px)',

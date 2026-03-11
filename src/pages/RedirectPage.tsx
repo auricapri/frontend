@@ -64,7 +64,7 @@ const RedirectPage: React.FC<RedirectPageProps> = ({ url, onNavigate, locale: _l
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-paper flex items-center justify-center p-6">
       <div className="max-w-xl w-full">
         {status === 'loading' && (
           <div className="text-center space-y-8 animate-in fade-in duration-700">
@@ -76,7 +76,7 @@ const RedirectPage: React.FC<RedirectPageProps> = ({ url, onNavigate, locale: _l
               </div>
             </div>
             <div className="space-y-3">
-              <h2 className="text-2xl font-black uppercase tracking-tighter italic">Verificando Link...</h2>
+              <h2 className="text-2xl font-black font-serif uppercase tracking-tighter italic">Verificando Link...</h2>
               <p className="text-neutral-400 text-sm">Garantindo que você seja redirecionado com segurança.</p>
             </div>
           </div>
@@ -88,7 +88,7 @@ const RedirectPage: React.FC<RedirectPageProps> = ({ url, onNavigate, locale: _l
               <span className="text-2xl font-black italic">{countdown}</span>
             </div>
             <div className="space-y-4">
-              <h2 className="text-2xl font-black uppercase tracking-tighter italic">Você está saindo da Auricapri</h2>
+              <h2 className="text-2xl font-black font-serif uppercase tracking-tighter italic">Você está saindo da Auricapri</h2>
               <div className="p-4 bg-white rounded-2xl border border-neutral-200 break-all text-[10px] font-medium text-neutral-500 font-mono">
                 {url}
               </div>
@@ -119,7 +119,7 @@ const RedirectPage: React.FC<RedirectPageProps> = ({ url, onNavigate, locale: _l
               <AlertTriangle className="w-12 h-12 text-red-500" />
             </div>
             <div className="space-y-4">
-              <h2 className="text-3xl font-black uppercase tracking-tighter italic text-red-500">Link Inválido</h2>
+              <h2 className="text-3xl font-black font-serif uppercase tracking-tighter italic text-red-500">Link Inválido</h2>
               <p className="text-neutral-400 text-sm max-w-xs mx-auto">
                 {error || 'Não conseguimos processar este link. Ele pode estar corrompido ou expirado.'}
               </p>
@@ -138,7 +138,7 @@ const RedirectPage: React.FC<RedirectPageProps> = ({ url, onNavigate, locale: _l
             <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto">
               <Loader2 className="w-10 h-10 text-green-500 animate-spin" />
             </div>
-            <h2 className="text-2xl font-black uppercase tracking-tighter italic">Redirecionando...</h2>
+            <h2 className="text-2xl font-black font-serif uppercase tracking-tighter italic">Redirecionando...</h2>
           </div>
         )}
       </div>

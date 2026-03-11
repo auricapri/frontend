@@ -5,6 +5,33 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.3.6] - 2026-03-11
+
+### Alterado
+- **Hero**: h1 principal recebe `font-serif` (Playfair Display)
+- **NavbarMobile**: `bg-white` → `bg-paper` no menu fullscreen
+- **NavbarSearch**: `bg-white` → `bg-paper` no dropdown de sugestões (mantida `bg-white/90` do overlay — variante de opacidade)
+- **FAQModal**: `bg-white` → `bg-paper` no painel e header do modal; h2 do título recebe `font-serif`
+- **TermsConsentModal**: `bg-white` → `bg-paper` no painel do modal; h2 do título recebe `font-serif`
+- **Modal** (ui): `bg-white` → `bg-paper` no painel; h2 do título recebe `font-serif`
+- **Drawer** (ui): `bg-white` → `bg-paper` no painel; h2 do título recebe `font-serif`
+- **AbandonedCartToast**: `bg-white` → `bg-paper` no container wrapper
+- **OrderResultOverlay**: `bg-white` → `bg-paper` no overlay fullscreen; h1 recebe `font-serif`
+- **OrderReceipt**: `bg-white` → `bg-paper` no container de página, no papel do recibo, no footer mobile e na seção de avaliações; h1 "AURICAPRI" recebe `font-serif`
+- **WeatherPersonalizedBanner**: `bg-white` → `bg-paper` no botão de categoria; h3 do título recebe `font-serif`
+
+## [1.3.5] - 2026-03-11
+
+### Alterado
+- **FilterModal**: `bg-white` → `bg-paper` no painel do modal de filtros
+- **FilterBottomSheet**: `bg-white` → `bg-paper` no container e footer do bottom sheet de filtros
+- **FilterSidebar**: `bg-white` → `bg-paper` no painel lateral de filtros
+- **RelatedProducts**: `bg-white` → `bg-paper` no container da seção; h2 do título recebe `font-serif`
+- **QuickAddModal**: `bg-white` → `bg-paper` no painel do modal; h3 do nome do produto recebe `font-serif`
+- **HotspotPopup**: `bg-white` → `bg-paper` nos dois estados do popup (loading e normal)
+- **GarmentTryOnModal**: `bg-white` → `bg-paper` no ConsentModal, painel principal e footer do modal
+- **ProductGrid**: h2 da seção de Coleções recebe `font-serif`
+
 ## [1.3.4] - 2026-03-11
 
 ### Corrigido

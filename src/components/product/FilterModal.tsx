@@ -85,7 +85,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
         >
           <div
           ref={modalRef}
-          className="bg-white w-full max-w-2xl rounded-[2rem] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 duration-300 flex flex-col max-h-[90vh]"
+          className="bg-paper w-full max-w-2xl rounded-[2rem] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 duration-300 flex flex-col max-h-[90vh]"
           tabIndex={-1}
           style={{ willChange: 'transform, opacity' }}
         >

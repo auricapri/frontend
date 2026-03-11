@@ -35,3 +35,4 @@ dist-ssr
 /playwright/.cache/
 .npm-cache/
 .wrangler/
+tests/admin/

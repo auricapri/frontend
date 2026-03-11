@@ -82,7 +82,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({
   // Receipt view mode
   if (ordersState.viewingReceiptOrder) {
     return (
-      <div className="fixed inset-0 z-[200] bg-white overflow-y-auto">
+      <div className="fixed inset-0 z-[200] bg-paper overflow-y-auto">
         <Suspense fallback={<LoadingFallback size="sm" message="Carregando pedido..." />}>
           <OrderReceipt
             order={ordersState.viewingReceiptOrder}
@@ -97,7 +97,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full bg-white relative">
+    <div className="flex flex-col h-full bg-paper relative">
       {/* Tab Navigation */}
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} t={t} />
 

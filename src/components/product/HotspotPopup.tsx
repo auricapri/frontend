@@ -59,7 +59,7 @@ export function HotspotPopup({
     return (
       <div
         style={popupStyle}
-        className="bg-white rounded-lg shadow-xl px-3 py-2 animate-in zoom-in-95 fade-in duration-200"
+        className="bg-paper rounded-lg shadow-xl px-3 py-2 animate-in zoom-in-95 fade-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export function HotspotPopup({
   return (
     <div
       style={popupStyle}
-      className="bg-white rounded-lg shadow-xl px-3 py-2 cursor-pointer hover:shadow-2xl transition-shadow animate-in zoom-in-95 fade-in duration-200"
+      className="bg-paper rounded-lg shadow-xl px-3 py-2 cursor-pointer hover:shadow-2xl transition-shadow animate-in zoom-in-95 fade-in duration-200"
       onClick={(e) => {
         e.stopPropagation();
         handleClick();

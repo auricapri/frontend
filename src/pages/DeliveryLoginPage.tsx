@@ -130,9 +130,9 @@ export const DeliveryLoginPage: React.FC<DeliveryLoginPageProps> = ({ onLoginSuc
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12">
+        <div className="bg-paper rounded-3xl shadow-xl p-8 md:p-12">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-black uppercase tracking-tighter mb-2">AURICAPRI</h1>
+            <h1 className="text-3xl font-black font-serif uppercase tracking-tighter mb-2">AURICAPRI</h1>
             <p className="text-sm font-bold uppercase tracking-widest text-neutral-400">Delivery Login</p>
           </div>
 

@@ -16,7 +16,7 @@ export function TermsPage({ config, locale, onBack }: TermsPageProps) {
   const content = rawContent.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-paper">
       <SEOHead
         title="Termos de Uso | Auricapri"
         description="Termos de uso da loja Auricapri."
@@ -25,7 +25,7 @@ export function TermsPage({ config, locale, onBack }: TermsPageProps) {
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-100">
+      <header className="sticky top-0 z-10 bg-paper border-b border-neutral-100">
         <div className="w-full px-4 py-4 flex items-center gap-4">
           <button
             onClick={onBack}
@@ -33,7 +33,7 @@ export function TermsPage({ config, locale, onBack }: TermsPageProps) {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-xl font-bold">
+          <h1 className="font-serif text-xl font-bold">
             {locale === 'pt' ? 'Termos de Uso' :
              locale === 'es' ? 'Términos de Uso' :
              locale === 'fr' ? "Conditions d'Utilisation" :

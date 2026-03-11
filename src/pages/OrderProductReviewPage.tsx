@@ -124,7 +124,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
 
   if (isLoading) {
     return (
-      <div className="w-full bg-white flex items-center justify-center py-24">
+      <div className="w-full bg-paper flex items-center justify-center py-24">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-neutral-400" />
           <p className="text-sm text-neutral-500">Carregando...</p>
@@ -135,7 +135,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
 
   if (error || !order) {
     return (
-      <div className="w-full bg-white flex items-center justify-center py-24 px-4">
+      <div className="w-full bg-paper flex items-center justify-center py-24 px-4">
         <div className="text-center max-w-md">
           <p className="text-lg font-medium mb-4 text-neutral-900">{error || 'Pedido não encontrado'}</p>
           {onBack && (
@@ -157,7 +157,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
 
   if (!isDelivered) {
     return (
-      <div className="w-full bg-white flex items-center justify-center py-24 px-4">
+      <div className="w-full bg-paper flex items-center justify-center py-24 px-4">
         <div className="text-center max-w-md">
           <p className="text-lg font-medium mb-4 text-neutral-900">
             Este pedido ainda não foi entregue. Você só pode avaliar pedidos entregues.
@@ -180,7 +180,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
   const reviewedItems = orderItems.filter(item => item.has_review);
 
   return (
-    <div className="w-full bg-white md:bg-neutral-100">
+    <div className="w-full bg-paper md:bg-neutral-100">
       <div className="max-w-4xl mx-auto px-4 py-8 md:py-12 pb-32">
         {onBack && (
           <button
@@ -193,7 +193,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
         )}
 
         <div className="bg-white rounded-xl p-6 md:p-8 border border-neutral-200 shadow-sm mb-6">
-          <h1 className="text-2xl font-bold mb-2">Avaliar Produtos do Pedido</h1>
+          <h1 className="font-serif text-2xl font-bold mb-2">Avaliar Produtos do Pedido</h1>
           <p className="text-sm text-neutral-500 mb-6">
             Pedido #{order.id.slice(0, 8).toUpperCase()}
           </p>
