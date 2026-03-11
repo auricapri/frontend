@@ -143,7 +143,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
       </div>
 
       {isWriting && (
-        <div className="bg-neutral-50 p-10 rounded-[3rem] border border-neutral-100 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="bg-paper p-10 rounded-[3rem] border border-neutral-100 animate-in fade-in slide-in-from-top-4 duration-500">
            <form onSubmit={handleSubmit} className="space-y-8">
               <div className="space-y-4">
                  <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-4">{t('product.rating')}</label>
