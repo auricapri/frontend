@@ -410,13 +410,13 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
 
       {/* Image — full height, left spacing to feel like a framed photo */}
       <div
-        className={`md:w-[48%] h-[52vh] md:h-full flex-none flex items-stretch pl-6 md:pl-16 py-6 md:py-12 cursor-zoom-out transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}
+        className={`md:w-[48%] h-[52vh] md:h-full flex-none flex items-stretch ml-6 md:ml-16 cursor-zoom-out transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClose}
       >
         <img
           src={getOptimizedImageUrl(img.image_url, 'large')}
           alt={productName ?? 'Auricapri'}
-          className="w-full h-full object-cover rounded-2xl md:rounded-3xl shadow-lg"
+          className="w-full h-full object-cover rounded-r-none rounded-l-2xl md:rounded-l-3xl shadow-lg"
         />
       </div>
 
