@@ -66,10 +66,10 @@ const FAQModal: React.FC<FAQModalProps> = ({ isOpen, onClose, locale, t }) => {
       />
 
       {/* Modal */}
-      <div role="dialog" aria-modal="true" className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl md:max-h-[85vh] bg-white rounded-[2rem] shadow-2xl z-[101] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
+      <div role="dialog" aria-modal="true" className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl md:max-h-[85vh] bg-paper rounded-[2rem] shadow-2xl z-[101] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-6 md:p-8 border-b border-neutral-100 bg-white">
+        <div className="flex items-center justify-between p-6 md:p-8 border-b border-neutral-100 bg-paper">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-neutral-100 rounded-2xl">
               <HelpCircle className="w-6 h-6 text-neutral-600" />
@@ -78,7 +78,7 @@ const FAQModal: React.FC<FAQModalProps> = ({ isOpen, onClose, locale, t }) => {
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 block">
                 {locale === 'pt' ? 'Ajuda' : locale === 'es' ? 'Ayuda' : 'Help'}
               </span>
-              <h2 className="text-xl md:text-2xl font-black tracking-tight">
+              <h2 className="text-xl md:text-2xl font-black font-serif tracking-tight">
                 {locale === 'pt' ? 'Perguntas Frequentes' : locale === 'es' ? 'Preguntas Frecuentes' : 'FAQ'}
               </h2>
             </div>

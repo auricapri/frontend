@@ -41,7 +41,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
     <div className="bg-neutral-50 rounded-[3rem] p-10 md:p-12 sticky top-32 border border-neutral-100 shadow-sm">
       <div className="flex items-center gap-4 mb-6 border-b border-neutral-100 pb-6">
         <ShoppingBag className="w-5 h-5 text-neutral-400" />
-        <h4 className="text-[10px] font-black uppercase tracking-[0.4em]">Sua Sacola</h4>
+        <h4 className="text-[10px] font-black uppercase tracking-[0.4em] font-serif">Sua Sacola</h4>
       </div>
 
       {/* Box Savings Indicator */}
@@ -194,7 +194,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
         </div>
       </div>
       
-      <div className="mt-12 p-8 bg-white rounded-3xl border border-neutral-100 flex items-center gap-5 shadow-sm">
+      <div className="mt-12 p-8 bg-paper rounded-3xl border border-neutral-100 flex items-center gap-5 shadow-sm">
         <ShieldCheck className="w-6 h-6 text-neutral-300" />
         <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 leading-loose">
           Pagamento seguro via Asaas. Seus dados são protegidos com criptografia SSL 256 bits.

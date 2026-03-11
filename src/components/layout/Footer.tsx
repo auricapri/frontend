@@ -9,7 +9,7 @@ interface FooterProps {
   currentLocale: Locale;
   onChangeLocale: (locale: Locale) => void;
   storeConfig: StoreConfig;
-  onNavigate: (view: 'home' | 'collection' | 'about' | 'privacy' | 'terms' | 'shipping' | 'affiliates', target?: string) => void;
+  onNavigate: (view: 'home' | 'collection' | 'about' | 'privacy' | 'terms' | 'shipping' | 'affiliates' | 'contact', target?: string) => void;
   onOpenFAQ?: () => void;
   onOpenAuth?: () => void;
   onOpenComplaint?: () => void;
@@ -137,7 +137,7 @@ const Footer: React.FC<FooterProps> = ({
               </button>
             </li>
             <li>
-              <button onClick={handleScrollToContact} className="hover:text-white transition-colors uppercase tracking-wide text-left">
+              <button onClick={() => onNavigate('contact')} className="hover:text-white transition-colors uppercase tracking-wide text-left">
                 Contato
               </button>
             </li>

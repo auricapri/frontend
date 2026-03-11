@@ -113,7 +113,7 @@ export const AiVisionButton: React.FC<AiVisionButtonProps> = ({
             onClick={handleClose}
           />
           <div className="fixed top-0 right-0 bottom-0 z-[9999] w-full max-w-md animate-in slide-in-from-right duration-300 overflow-hidden">
-            <div className="h-full bg-white shadow-2xl flex flex-col overflow-hidden">
+            <div className="h-full bg-paper shadow-2xl flex flex-col overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-neutral-100 bg-gradient-to-r from-amber-50 to-orange-50">
                 <div className="flex items-center gap-3">

@@ -134,7 +134,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
       {/* Modal */}
       <div className="fixed inset-x-4 bottom-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md z-[201]">
         <div
-          className="bg-white rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden"
+          className="bg-paper rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
           {/* Header */}
@@ -158,7 +158,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
 
             {/* Product Info */}
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-bold uppercase tracking-wide text-neutral-900 truncate">
+              <h3 className="text-sm font-bold font-serif uppercase tracking-wide text-neutral-900 truncate">
                 {getLoc(product.name)}
               </h3>
               {selectedColorHex && (

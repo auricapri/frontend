@@ -53,13 +53,13 @@ export const Modal: React.FC<ModalProps> = ({
       />
       <div role="dialog" aria-modal="true" className="fixed inset-0 z-[201] flex items-start md:items-center justify-center p-4 md:p-12 overflow-y-auto">
         <div
-          className={`bg-white w-full ${
+          className={`bg-paper w-full ${
             sizeClasses[size]
           } rounded-[3rem] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-4 duration-500 max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-6rem)] flex flex-col`}
         >
           {title && (
             <div className="flex items-center justify-between p-6 md:p-8 border-b border-neutral-100">
-              <h2 className="text-2xl font-black uppercase italic tracking-tighter leading-none">
+              <h2 className="text-2xl font-black font-serif uppercase italic tracking-tighter leading-none">
                 {title}
               </h2>
               <button

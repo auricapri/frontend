@@ -81,7 +81,7 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
           paddingBottom: 'env(safe-area-inset-bottom, 0px)'
         }}
       >
-        <div className="bg-white rounded-t-3xl shadow-2xl flex flex-col h-full max-h-[85vh]">
+        <div className="bg-paper rounded-t-3xl shadow-2xl flex flex-col h-full max-h-[85vh]">
           {/* Header */}
           <div className="flex-shrink-0 px-5 pt-4 pb-4 border-b border-neutral-100">
             {/* Drag Handle */}
@@ -128,7 +128,7 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
 
           {/* Footer - Fixed at bottom with safe area */}
           <div
-            className="flex-shrink-0 border-t border-neutral-200 px-5 pt-4 bg-white"
+            className="flex-shrink-0 border-t border-neutral-200 px-5 pt-4 bg-paper"
             style={{
               paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 16px))'
             }}

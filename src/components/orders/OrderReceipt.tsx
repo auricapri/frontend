@@ -83,7 +83,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
   };
 
   return (
-    <div className="min-h-screen bg-white md:bg-neutral-100 flex flex-col items-center justify-start py-20 md:py-24 relative animate-in fade-in duration-700 overflow-y-auto">
+    <div className="min-h-screen bg-paper md:bg-neutral-100 flex flex-col items-center justify-start py-20 md:py-24 relative animate-in fade-in duration-700 overflow-y-auto">
       
       {/* GLOBAL PRINT STYLES - Ensures clean PDF generation */}
       <style>{`
@@ -144,7 +144,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
       </div>
 
       {/* RECEIPT PAPER */}
-      <div id="receipt-container" className="bg-white w-full max-w-md p-8 md:p-14 md:shadow-2xl relative text-neutral-900 font-mono text-xs leading-relaxed mb-32 md:mb-0">
+      <div id="receipt-container" className="bg-paper w-full max-w-md p-8 md:p-14 md:shadow-2xl relative text-neutral-900 font-mono text-xs leading-relaxed mb-32 md:mb-0">
          
          {/* Paper Texture/Gradient for Desktop */}
          <div className="hidden md:block absolute top-0 left-0 w-full h-4 bg-gradient-to-b from-neutral-100 to-white opacity-20"></div>
@@ -155,7 +155,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
                   <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                </svg>
             </div>
-            <h1 className="text-2xl font-black uppercase tracking-[0.4em] mb-2">AURICAPRI</h1>
+            <h1 className="text-2xl font-black font-serif uppercase tracking-[0.4em] mb-2">AURICAPRI</h1>
             <p className="text-[10px] uppercase tracking-widest text-neutral-500">Luxury Global Retail</p>
             {taxId && (
               <p className="text-[10px] uppercase tracking-widest text-neutral-500 mt-1">CNPJ: {taxId}</p>
@@ -250,7 +250,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
       </div>
 
       {/* MOBILE FLOATING ACTIONS (Fixed Bottom) */}
-      <div className="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-neutral-100 md:hidden flex gap-3 z-50 no-print pb-8">
+      <div className="fixed bottom-0 left-0 w-full p-4 bg-paper border-t border-neutral-100 md:hidden flex gap-3 z-50 no-print pb-8">
           <button 
             onClick={handlePrint}
             disabled={isDownloadingPDF}
@@ -270,7 +270,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
       {/* ORDER REVIEWS SECTION */}
       {(order.status === OrderStatus.DELIVERED) && (
         <div className="w-full max-w-md px-4 md:px-0 mt-8 no-print">
-          <div className="bg-white rounded-xl p-6 border border-neutral-200">
+          <div className="bg-paper rounded-xl p-6 border border-neutral-200">
             <h3 className="text-lg font-bold mb-4">Avaliações</h3>
             
             {currentUser && !userReview && !isReviewFormOpen && (

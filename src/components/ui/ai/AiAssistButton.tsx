@@ -119,7 +119,7 @@ const AiModal: React.FC<AiModalProps> = ({
         onClick={handleClose}
       />
       <div className="fixed top-0 right-0 bottom-0 z-[9999] w-full max-w-md">
-        <div className="h-full bg-white shadow-2xl flex flex-col">
+        <div className="h-full bg-paper shadow-2xl flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-violet-50 to-indigo-50 flex-shrink-0">
             <div className="flex items-center gap-3">

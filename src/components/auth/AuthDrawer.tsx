@@ -157,9 +157,9 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
     <>
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]" onClick={onClose} />
 
-      <div role="dialog" aria-modal="true" className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 text-neutral-900" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-white">
-          <h2 className="text-xl font-light tracking-widest uppercase text-neutral-900">
+      <div role="dialog" aria-modal="true" className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-paper z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 text-neutral-900" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-paper">
+          <h2 className="text-xl font-light font-serif tracking-widest uppercase text-neutral-900">
             {user 
               ? t('auth.myAccount') 
               : forgotPasswordMode 
@@ -172,7 +172,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
           </button>
         </div>
 
-        <div className="flex-1 overflow-hidden bg-white">
+        <div className="flex-1 overflow-hidden bg-paper">
            {user ? (
              <div className="h-full flex flex-col">
                 <Suspense fallback={<LoadingFallback size="sm" message="Carregando perfil..." />}>
@@ -188,7 +188,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
              </div>
            ) : forgotPasswordMode ? (
              /* FORGOT PASSWORD MODE */
-             <div className="p-8 bg-white h-full space-y-8 overflow-y-auto no-scrollbar" style={{ paddingBottom: keyboardHeight > 0 ? `${keyboardHeight + 32}px` : undefined }}>
+             <div className="p-8 bg-paper h-full space-y-8 overflow-y-auto no-scrollbar" style={{ paddingBottom: keyboardHeight > 0 ? `${keyboardHeight + 32}px` : undefined }}>
                 {passwordResetSent ? (
                   /* SUCCESS MESSAGE */
                   <div className="flex flex-col items-center justify-center min-h-[400px] space-y-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -196,7 +196,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                       <Check className="w-10 h-10 text-green-500" />
                     </div>
                     <div className="space-y-4">
-                      <h3 className="text-2xl font-light uppercase tracking-widest">Email Enviado</h3>
+                      <h3 className="text-2xl font-light font-serif uppercase tracking-widest">Email Enviado</h3>
                       <p className="text-sm text-neutral-500 max-w-sm leading-relaxed">
                         Enviamos um link de recuperação de senha para <strong className="text-neutral-900">{email}</strong>. 
                         Verifique sua caixa de entrada e siga as instruções.
@@ -228,7 +228,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                         <ArrowLeft className="w-3 h-3" />
                         <span>Voltar</span>
                       </button>
-                      <h3 className="text-xl font-light uppercase tracking-widest mb-2">Recuperar Senha</h3>
+                      <h3 className="text-xl font-light font-serif uppercase tracking-widest mb-2">Recuperar Senha</h3>
                       <p className="text-sm text-neutral-500 leading-relaxed">
                         Digite seu email e enviaremos um link para redefinir sua senha.
                       </p>
@@ -269,7 +269,7 @@ const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin,
                 )}
              </div>
            ) : (
-             <div className="px-6 pt-5 pb-6 bg-white h-full overflow-y-auto no-scrollbar" style={{ paddingBottom: keyboardHeight > 0 ? `${keyboardHeight + 24}px` : undefined }}>
+             <div className="px-6 pt-5 pb-6 bg-paper h-full overflow-y-auto no-scrollbar" style={{ paddingBottom: keyboardHeight > 0 ? `${keyboardHeight + 24}px` : undefined }}>
 
                 {/* Form: email/senha primeiro para aparecer imediatamente na tela */}
                 <form className="space-y-4" onSubmit={handleAuth}>

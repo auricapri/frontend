@@ -71,7 +71,7 @@ export function MyReturnsPage({ locale, onBack, onRequestReturn }: MyReturnsPage
         url="https://www.auricapri.com.br/my-returns"
       />
 
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-100">
+      <header className="sticky top-0 z-10 bg-paper border-b border-neutral-100">
         <div className="w-full px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button

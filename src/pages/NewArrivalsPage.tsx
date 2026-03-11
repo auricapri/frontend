@@ -130,7 +130,7 @@ export function NewArrivalsPage({
         </button>
 
         <div className="space-y-3">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight">
+          <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight">
             {t('nav.newArrivals')}
           </h1>
           <p className="text-neutral-500 text-sm md:text-base max-w-lg">

@@ -95,7 +95,7 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
         <div className="p-6 border border-neutral-200 rounded-2xl text-center space-y-4">
           <Ticket className="w-10 h-10 text-neutral-300 mx-auto" />
           <div>
-            <h3 className="text-sm font-black uppercase tracking-tight">Programa de Afiliados</h3>
+            <h3 className="text-sm font-black font-serif uppercase tracking-tight">Programa de Afiliados</h3>
             <p className="text-xs text-neutral-500 mt-1 leading-relaxed max-w-xs mx-auto">
               Você ainda não faz parte do programa. Envie um e-mail para{' '}
               <strong>parceria@auricapri.com.br</strong> para se candidatar.
@@ -137,7 +137,7 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
         </div>
 
         <div className="relative z-10 space-y-1">
-          <h3 className="text-lg md:text-xl font-black uppercase italic tracking-tighter leading-none">
+          <h3 className="text-lg md:text-xl font-black font-serif uppercase italic tracking-tighter leading-none">
             Auricapri Muse
           </h3>
           <p className="text-[10px] text-white/50 uppercase tracking-widest font-black">
@@ -207,12 +207,12 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
       {/* Terms Acceptance Modal */}
       {showTermsModal && (
         <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl p-6 md:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-paper w-full max-w-lg rounded-[2rem] shadow-2xl p-6 md:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="text-center space-y-2">
               <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center mx-auto">
                 <Ticket className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-black uppercase tracking-tight">Termos de Afiliado</h3>
+              <h3 className="text-xl font-black font-serif uppercase tracking-tight">Termos de Afiliado</h3>
               <p className="text-xs text-neutral-500">Leia e aceite os termos antes de começar a divulgar</p>
             </div>
 

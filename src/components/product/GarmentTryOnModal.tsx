@@ -53,7 +53,7 @@ const ConsentModal: React.FC<{
   return (
     <>
       <div className="fixed inset-0 bg-black/50 z-[300]" onClick={onDecline} />
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl p-6 w-[90%] max-w-sm z-[301]">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-paper rounded-2xl p-6 w-[90%] max-w-sm z-[301]">
         <h3 className="text-lg font-bold mb-3">Consentimento de Uso</h3>
         <p className="text-sm text-neutral-600 mb-4">
           Para usar o provador virtual, precisamos processar sua foto.
@@ -337,7 +337,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
       {/* Modal */}
       <div className="fixed inset-0 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg z-[201]">
         <div
-          className="bg-white md:rounded-3xl shadow-2xl overflow-hidden w-full h-[100dvh] md:h-[90vh] md:max-h-[750px] flex flex-col"
+          className="bg-paper md:rounded-3xl shadow-2xl overflow-hidden w-full h-[100dvh] md:h-[90vh] md:max-h-[750px] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -510,7 +510,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
               )}
 
               {/* Footer */}
-              <div className="p-3 border-t border-neutral-100 space-y-2 flex-shrink-0 bg-white">
+              <div className="p-3 border-t border-neutral-100 space-y-2 flex-shrink-0 bg-paper">
                 {/* Upload Buttons */}
                 {!resultImage && (
                   <div className="grid grid-cols-2 gap-2">

@@ -43,7 +43,7 @@ const OrderResultOverlay: React.FC<OrderResultOverlayProps> = ({
   }, [status, onClose]);
 
   return (
-    <div className="fixed inset-0 z-[3000] bg-white flex flex-col items-center justify-center p-6 animate-in fade-in duration-500">
+    <div className="fixed inset-0 z-[3000] bg-paper flex flex-col items-center justify-center p-6 animate-in fade-in duration-500">
       {/* Close Button - Always visible */}
       <button
         onClick={onClose}
@@ -70,7 +70,7 @@ const OrderResultOverlay: React.FC<OrderResultOverlayProps> = ({
                 </div>
             )}
 
-            <h1 className={`text-3xl md:text-5xl font-light uppercase tracking-[0.2em] md:tracking-[0.4em] leading-tight splash-logo text-black`}>
+            <h1 className={`text-3xl md:text-5xl font-light font-serif uppercase tracking-[0.2em] md:tracking-[0.4em] leading-tight splash-logo text-black`}>
                 {status === 'success' ? 'Confirmed' : 'Payment\nDeclined'}
             </h1>
         </div>

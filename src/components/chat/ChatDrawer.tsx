@@ -273,7 +273,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-[301] flex flex-col animate-in slide-in-from-right duration-300">
+      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-paper shadow-2xl z-[301] flex flex-col animate-in slide-in-from-right duration-300">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-100 bg-black text-white">
           <div className="flex items-center gap-3">
@@ -281,7 +281,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               <MessageCircle className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold uppercase tracking-wider">Assistente Auricapri</h2>
+              <h2 className="text-sm font-bold font-serif uppercase tracking-wider">Assistente Auricapri</h2>
               <p className="text-[10px] text-white/70">Online agora</p>
             </div>
           </div>
@@ -352,7 +352,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-neutral-100 bg-white">
+        <div className="p-4 border-t border-neutral-100 bg-paper">
           <div className="flex items-center gap-3">
             <input
               ref={inputRef}

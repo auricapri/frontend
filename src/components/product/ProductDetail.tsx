@@ -255,7 +255,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   }, [products, recentlyViewedIds]);
 
   return (
-    <div className="relative w-full bg-white">
+    <div className="relative w-full bg-paper">
       {/* Breadcrumb JSON-LD Schema */}
       <script
         type="application/ld+json"
@@ -303,7 +303,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         />
 
         {/* Info Column */}
-        <div className="w-full md:w-[40%] p-8 md:p-12 lg:p-16 bg-white">
+        <div className="w-full md:w-[40%] p-8 md:p-12 lg:p-16 bg-paper">
           <div className="md:sticky md:top-24 transition-all duration-700">
             <ProductInfo
               product={product}
@@ -399,7 +399,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       )}
 
       {/* Reviews Section */}
-      <div id="reviews" className="w-full bg-white border-t border-neutral-100 pt-32 pb-40 px-8 md:px-24">
+      <div id="reviews" className="w-full bg-paper border-t border-neutral-100 pt-32 pb-40 px-8 md:px-24">
         <div className="max-w-7xl mx-auto">
           <ProductReviews
             productId={product.id}

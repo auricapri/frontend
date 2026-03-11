@@ -220,7 +220,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
       {/* Modal */}
       <div className="fixed inset-0 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md z-[201]">
         <div
-          className="bg-white md:rounded-3xl shadow-2xl overflow-hidden w-full h-[100dvh] md:h-[85vh] md:max-h-[700px] flex flex-col"
+          className="bg-paper md:rounded-3xl shadow-2xl overflow-hidden w-full h-[100dvh] md:h-[85vh] md:max-h-[700px] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -317,7 +317,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
           )}
 
           {/* Footer */}
-          <div className="p-3 border-t border-neutral-100 space-y-2 flex-shrink-0 bg-white">
+          <div className="p-3 border-t border-neutral-100 space-y-2 flex-shrink-0 bg-paper">
             {/* Upload Buttons */}
             {!resultImage && (
               <div className="grid grid-cols-2 gap-2">

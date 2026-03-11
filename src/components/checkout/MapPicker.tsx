@@ -256,7 +256,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
 
   return (
     <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-500">
-      <div className="bg-white w-full max-w-4xl rounded-[3rem] overflow-hidden shadow-2xl h-[85vh] md:h-[70vh] relative">
+      <div className="bg-paper w-full max-w-4xl rounded-[3rem] overflow-hidden shadow-2xl h-[85vh] md:h-[70vh] relative">
         {/* Botão de Fechar */}
         <button
           onClick={onClose}

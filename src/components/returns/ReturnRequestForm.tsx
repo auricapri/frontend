@@ -137,8 +137,8 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
   // Success state
   if (result) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
-        <header className="sticky top-0 z-10 bg-white border-b border-neutral-100">
+      <div className="min-h-screen bg-paper flex flex-col">
+        <header className="sticky top-0 z-10 bg-paper border-b border-neutral-100">
           <div className="w-full px-4 py-4 flex items-center gap-4">
             <button
               onClick={onBack}
@@ -157,7 +157,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
             <CheckCircle className="w-10 h-10 text-black" />
           </div>
           <div className="space-y-3">
-            <h2 className="text-lg font-black uppercase tracking-tight">
+            <h2 className="text-lg font-black font-serif uppercase tracking-tight">
               Devolucao Solicitada
             </h2>
             <p className="text-sm text-neutral-500 max-w-sm">
@@ -184,8 +184,8 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-100">
+    <div className="min-h-screen bg-paper">
+      <header className="sticky top-0 z-10 bg-paper border-b border-neutral-100">
         <div className="w-full px-4 py-4 flex items-center gap-4">
           <button
             onClick={onBack}

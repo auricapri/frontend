@@ -33,7 +33,7 @@ export function MobileStickyBar({
 }: MobileStickyBarProps) {
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-40 md:hidden transition-transform duration-300 ${
+      className={`fixed bottom-0 left-0 right-0 bg-paper border-t border-neutral-100 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-40 md:hidden transition-transform duration-300 ${
         isVisible ? 'translate-y-0' : 'translate-y-full'
       }`}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -86,7 +86,7 @@ export function MobileStickyBar({
       </div>
 
       {isShareOpen && (
-        <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-2xl shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300">
+        <div className="absolute bottom-full left-4 right-4 mb-2 bg-paper rounded-2xl shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">
             Compartilhar
           </span>

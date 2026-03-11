@@ -41,7 +41,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
         <div className="p-4 bg-neutral-50 rounded-2xl">
           <CreditCard className="w-6 h-6" />
         </div>
-        <h3 className="text-xl font-black uppercase italic tracking-tighter">Método de Pagamento</h3>
+        <h3 className="text-xl font-black uppercase italic tracking-tighter font-serif">Método de Pagamento</h3>
       </div>
       
       {/* Method Selection */}

@@ -26,7 +26,7 @@ export function PresentationSection({
           className="w-full flex justify-between items-center mb-8 md:mb-12 group"
         >
           <div className="flex flex-col items-start">
-            <h2 className="text-2xl md:text-4xl font-light tracking-tight uppercase">
+            <h2 className="text-2xl md:text-4xl font-light font-serif tracking-tight uppercase">
               Conheça o Produto
             </h2>
             <p className="text-[10px] text-neutral-400 tracking-[0.2em] uppercase font-bold mt-1">

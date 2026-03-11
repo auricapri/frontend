@@ -39,7 +39,7 @@ export function ProductActions({
   onShare,
 }: ProductActionsProps) {
   return (
-    <div className="pt-6 border-t border-neutral-100 bg-white">
+    <div className="pt-6 border-t border-neutral-100 bg-paper">
       <div className="flex flex-col gap-4">
         <div className="flex items-stretch gap-3 h-16">
           <div className="flex flex-none items-center bg-neutral-50 rounded-2xl border border-neutral-100 px-4 space-x-6">
@@ -94,7 +94,7 @@ export function ProductActions({
             </button>
 
             {isShareOpen && (
-              <div className="absolute bottom-[110%] right-0 min-w-[220px] bg-white rounded-[2rem] shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300 z-50">
+              <div className="absolute bottom-[110%] right-0 min-w-[220px] bg-paper rounded-[2rem] shadow-2xl border border-neutral-100 p-4 animate-in slide-in-from-bottom-2 fade-in duration-300 z-50">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2 block px-2">
                   Compartilhar
                 </span>

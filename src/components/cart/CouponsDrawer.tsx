@@ -65,13 +65,13 @@ const CouponsDrawer: React.FC<CouponsDrawerProps> = ({ isOpen, onClose, t }) => 
       />
 
       {/* Drawer */}
-      <div className="fixed top-0 right-0 h-full w-full md:w-[400px] bg-white z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
+      <div className="fixed top-0 right-0 h-full w-full md:w-[400px] bg-paper z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
         
         {/* Header */}
         <div className="flex items-center justify-between p-6 md:p-8 border-b border-gray-100">
           <div className="flex items-center space-x-3">
              <Ticket className="w-5 h-5" />
-             <h2 className="text-xl font-light tracking-widest uppercase">{t('nav.coupons')}</h2>
+             <h2 className="text-xl font-light font-serif tracking-widest uppercase">{t('nav.coupons')}</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <X className="w-5 h-5" />
@@ -93,7 +93,7 @@ const CouponsDrawer: React.FC<CouponsDrawerProps> = ({ isOpen, onClose, t }) => 
            ) : (
              <div className="space-y-4">
                 {coupons.map((coupon) => (
-                  <div key={coupon.code} className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm relative overflow-hidden group">
+                  <div key={coupon.code} className="bg-paper p-5 rounded-lg border border-gray-100 shadow-sm relative overflow-hidden group">
                      <div className="flex justify-between items-start mb-4">
                         <div>
                           <span className={`inline-block text-[10px] font-bold px-2 py-1 rounded mb-2 uppercase tracking-wider ${getCouponColor(coupon)}`}>

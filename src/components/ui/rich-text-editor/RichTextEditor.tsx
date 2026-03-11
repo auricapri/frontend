@@ -136,7 +136,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   if (!editor) {
     return (
       <div
-        className={`border border-neutral-200 rounded-2xl overflow-hidden bg-white ${className}`}
+        className={`border border-neutral-200 rounded-2xl overflow-hidden bg-paper ${className}`}
       >
         <div className="flex items-center justify-center p-8">
           <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />

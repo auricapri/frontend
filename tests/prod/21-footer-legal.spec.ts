@@ -83,7 +83,7 @@ test.describe('Footer -- Structure', () => {
 
     const footer = page.locator('footer');
 
-    // Footer.tsx: <a href="https://www.instagram.com/auricapri" aria-label="Instagram">
+    // Footer.tsx: <a href="https://www.instagram.com/auricapri.oficial" aria-label="Instagram">
     const instaLink = footer.locator('a[href*="instagram"]').first();
     const hasInsta = await instaLink.isVisible({ timeout: 10_000 }).catch(() => false);
     console.log(`  Link Instagram: ${hasInsta ? 'SIM' : 'NAO'}`);

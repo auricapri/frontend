@@ -10,14 +10,14 @@ interface ShippingReturnsPageProps {
 
 export function ShippingReturnsPage({ locale, onBack, onNavigateReturns }: ShippingReturnsPageProps) {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-paper">
       <SEOHead
         title="Envios e Devoluções | Auricapri"
         description="Saiba tudo sobre envios, trocas e devoluções na Auricapri. Frete gratis acima de R$ 299, trocas gratuitas em ate 30 dias e politica de devolucao transparente."
         keywords="envios, devoluções, trocas, frete, politica de envio, auricapri"
         url="https://www.auricapri.com.br/shipping-returns"
       />
-      <header className="sticky top-0 z-10 bg-white border-b border-neutral-100">
+      <header className="sticky top-0 z-10 bg-paper border-b border-neutral-100">
         <div className="w-full px-4 py-4 flex items-center gap-4">
           <button
             onClick={onBack}
@@ -25,7 +25,7 @@ export function ShippingReturnsPage({ locale, onBack, onNavigateReturns }: Shipp
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-xl font-bold">
+          <h1 className="font-serif text-xl font-bold">
             {locale === 'pt' ? 'Envios & Devoluções' :
              locale === 'es' ? 'Envíos & Devoluciones' :
              locale === 'fr' ? 'Livraisons & Retours' :

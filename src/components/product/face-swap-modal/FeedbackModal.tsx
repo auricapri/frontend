@@ -25,7 +25,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
   return (
     <div className="fixed inset-0 z-[210] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl max-w-sm w-full p-6 space-y-5 animate-in zoom-in-95 duration-300">
+      <div className="relative bg-paper rounded-2xl max-w-sm w-full p-6 space-y-5 animate-in zoom-in-95 duration-300">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

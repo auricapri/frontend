@@ -20,7 +20,7 @@ export function SizeGuideModal({ isOpen, imageUrl, onClose }: SizeGuideModalProp
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[2rem] overflow-hidden max-w-3xl w-full max-h-[90vh] relative shadow-2xl"
+        className="bg-paper rounded-[2rem] overflow-hidden max-w-3xl w-full max-h-[90vh] relative shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         <button

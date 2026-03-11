@@ -97,7 +97,7 @@ export const AbandonedCartToast: React.FC<AbandonedCartToastProps> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="w-full bg-white pt-6 pb-2 px-4 md:px-6">
+    <div className="w-full bg-paper pt-6 pb-2 px-4 md:px-6">
       <div
         onClick={handleClick}
         className="max-w-[1920px] mx-auto bg-neutral-900 text-white cursor-pointer animate-in slide-in-from-top duration-500 ease-out rounded-xl"

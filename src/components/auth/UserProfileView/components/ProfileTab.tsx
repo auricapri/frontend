@@ -136,7 +136,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeleting}
-                  className="flex-1 py-4 bg-white text-neutral-600 border border-neutral-200 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-neutral-50 transition-all active:scale-95 disabled:opacity-50"
+                  className="flex-1 py-4 bg-paper text-neutral-600 border border-neutral-200 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-neutral-50 transition-all active:scale-95 disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -159,7 +159,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           ) : (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full py-5 bg-white text-red-400 border border-red-100 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all flex items-center justify-center gap-3 active:scale-95"
+              className="w-full py-5 bg-paper text-red-400 border border-red-100 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all flex items-center justify-center gap-3 active:scale-95"
             >
               <Trash2 className="w-4 h-4" />
               <span>Excluir Conta</span>

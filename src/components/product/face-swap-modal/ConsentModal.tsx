@@ -15,7 +15,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
   return (
     <div className="fixed inset-0 z-[210] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80" onClick={onDecline} />
-      <div className="relative bg-white rounded-2xl max-w-sm w-full p-6 space-y-4">
+      <div className="relative bg-paper rounded-2xl max-w-sm w-full p-6 space-y-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
             <AlertTriangle className="w-5 h-5 text-amber-600" />
