@@ -90,7 +90,7 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
   }
 
   return (
-    <div className="w-full bg-white min-h-screen">
+    <div className="w-full bg-paper min-h-screen">
 
       {/* Collection Countdown Banner - inline, not fixed */}
       {collection.ends_at && (

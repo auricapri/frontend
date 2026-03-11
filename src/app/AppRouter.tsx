@@ -21,6 +21,7 @@ const ReturnRequestForm = React.lazy(() => import('../components/returns/ReturnR
 const AffiliatePage = React.lazy(() => import('../pages/AffiliatePage').then(m => ({ default: m.AffiliatePage })));
 const AuthDrawer = React.lazy(() => import('../components/auth/AuthDrawer'));
 const GalleryPage = React.lazy(() => import('../pages/GalleryPage').then(m => ({ default: m.GalleryPage })));
+const ContactPage = React.lazy(() => import('../pages/ContactPage').then(m => ({ default: m.ContactPage })));
 
 export function AppRouter(props: {
   app: any;
@@ -162,6 +163,18 @@ export function AppRouter(props: {
           locale={app.locale}
           onNavigate={app.onNavigate}
           onAddToCart={app.addToCart}
+        />
+      </Suspense>
+    );
+  }
+
+  if (app.currentView === 'contact') {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <ContactPage
+          config={storeConfig}
+          locale={app.locale}
+          onBack={() => app.onNavigate('home')}
         />
       </Suspense>
     );

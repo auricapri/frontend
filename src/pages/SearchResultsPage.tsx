@@ -94,7 +94,7 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
   }, [selectedSizes, priceMin, priceMax, sortBy, searchQuery]);
 
   return (
-    <div className="bg-white pt-2 pb-4">
+    <div className="bg-paper pt-2 pb-4">
       <SEOHead
         title={`Busca: ${searchQuery} | Auricapri`}
         description={`Resultados de busca para "${searchQuery}" na Auricapri.`}

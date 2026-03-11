@@ -31,6 +31,7 @@ export type AppView =
   | 'my-returns'
   | 'request-return'
   | 'gallery'
+  | 'contact'
   | '404';
 
 interface UseNavigationParams {
@@ -86,7 +87,7 @@ export function useNavigation(params: UseNavigationParams) {
     if (pathname.startsWith('/collection/')) return 'collection';
     if (pathname === '/privacy') return 'privacy';
     if (pathname === '/terms') return 'terms';
-    if (pathname === '/contact') return 'home';
+    if (pathname === '/contact') return 'contact';
     if (pathname === '/shipping') return 'shipping';
     if (pathname === '/my-returns') return 'my-returns';
     if (pathname === '/request-return') return 'request-return';
@@ -232,6 +233,7 @@ export function useNavigation(params: UseNavigationParams) {
             shipping: '/shipping',
             affiliates: '/affiliates',
             gallery: '/galeria',
+            contact: '/contact',
             'my-returns': '/my-returns',
             'request-return': '/request-return',
             'search-results': '/search',

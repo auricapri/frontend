@@ -185,7 +185,7 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-paper pt-40 px-4 md:px-8">
+      <div className="min-h-screen bg-paper pt-32 md:pt-24 px-4 md:px-8">
         <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
           {Array.from({ length: 9 }).map((_, i) => (
             <div key={i} className="break-inside-avoid mb-4 animate-pulse bg-neutral-100 rounded-2xl aspect-[3/4]" />
@@ -198,21 +198,23 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
   return (
     <div className="min-h-screen flex flex-col bg-paper">
 
+      <div className="h-32 md:h-24 flex-shrink-0" />
+
       {/* ══ AI Studio Sticky Nav ══ */}
-      <nav className="pt-32 md:pt-24 sticky top-16 md:top-14 z-30 bg-paper/80 backdrop-blur-md border-b border-black/5">
+      <nav className="sticky top-16 md:top-14 z-30 bg-paper/80 backdrop-blur-md border-b border-black/5">
         <div className="px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
           {/* Left: logo + links */}
           <div className="flex items-center gap-8">
             <h2 className="font-serif text-3xl tracking-tight font-medium">AURICAPRI</h2>
             <div className="hidden md:flex items-center gap-6 text-sm uppercase tracking-widest font-light">
-              <button onClick={() => onNavigate('collection')} className="hover:opacity-50 transition-opacity">
+              <button onClick={() => onNavigate('home', 'collection')} className="hover:opacity-50 transition-opacity">
                 Coleções
               </button>
               <span className="font-medium border-b border-black pb-px">Galeria</span>
               <button onClick={() => onNavigate('about')} className="hover:opacity-50 transition-opacity">
                 Sobre
               </button>
-              <button onClick={() => onNavigate('home', 'contact')} className="hover:opacity-50 transition-opacity">
+              <button onClick={() => onNavigate('contact')} className="hover:opacity-50 transition-opacity">
                 Contato
               </button>
             </div>
@@ -231,7 +233,7 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
               />
             </div>
             <a
-              href="https://www.instagram.com/auricapri"
+              href="https://www.instagram.com/auricapri.oficial"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
@@ -491,7 +493,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
             <span className="text-xs uppercase tracking-widest text-black/40">Compartilhar</span>
             <div className="flex gap-4">
               <a
-                href={`https://www.instagram.com/auricapri`}
+                href={`https://www.instagram.com/auricapri.oficial`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:opacity-50 transition-opacity"
