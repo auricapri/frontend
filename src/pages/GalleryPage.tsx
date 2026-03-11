@@ -149,8 +149,26 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
   }, [selectedItem]);
 
   useEffect(() => {
-    document.body.style.overflow = selectedItem ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    if (selectedItem) {
+      const scrollY = window.scrollY;
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+    } else {
+      const scrollY = parseInt(document.body.style.top || '0') * -1;
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, scrollY);
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+    };
   }, [selectedItem]);
 
   const closeLightbox = useCallback(() => {
@@ -397,7 +415,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
 
   return (
     <div
-      className={`fixed inset-0 z-[80] bg-paper flex flex-col md:flex-row transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      className={`fixed inset-0 z-[80] bg-paper flex flex-col md:flex-row transition-opacity duration-300 overflow-hidden ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
     >
       {/* Close button */}
       <button
@@ -422,7 +440,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
 
       {/* Info panel — right side, scrollable */}
       <div
-        className={`flex-1 overflow-y-auto flex flex-col justify-center px-6 md:px-14 py-4 md:py-16 transition-all duration-500 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'}`}
+        className={`flex-1 min-h-0 overflow-y-auto flex flex-col justify-center px-6 md:px-14 py-4 md:py-16 transition-all duration-500 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'}`}
         onClick={e => e.stopPropagation()}
       >
         <div className="max-w-sm mx-auto md:mx-0 w-full space-y-3 md:space-y-7">
