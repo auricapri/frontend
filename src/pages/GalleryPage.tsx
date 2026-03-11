@@ -434,7 +434,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
         <img
           src={getOptimizedImageUrl(img.image_url, 'large')}
           alt={productName ?? 'Auricapri'}
-          className="w-full h-full object-cover shadow-lg"
+          className="w-full h-full object-contain"
         />
       </div>
 
