@@ -55,7 +55,7 @@ export function ImageGallery(props: {
   } = props;
 
   return (
-    <div className="w-full md:w-[60%] bg-neutral-50 relative">
+    <div className="w-full md:w-[60%] bg-paper relative">
       <div className="hidden md:flex flex-col space-y-4 p-4 lg:p-12 overflow-y-visible" id="desktop-gallery">
         {allImagesWithVariant.map((imgData, idx) => {
           const isActiveVariantImage = (activeVariantId && imgData.variantIds?.includes(activeVariantId)) || false;

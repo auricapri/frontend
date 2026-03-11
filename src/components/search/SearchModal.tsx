@@ -148,7 +148,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       {/* Header */}
       <div className="flex-shrink-0 border-b border-neutral-200 px-6 py-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-light uppercase tracking-wide">{t('search.title')}</h2>
+          <h2 className="text-xl font-light font-serif uppercase tracking-wide">{t('search.title')}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-neutral-100 rounded-full transition-colors"

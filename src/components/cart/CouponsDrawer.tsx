@@ -99,7 +99,7 @@ const CouponsDrawer: React.FC<CouponsDrawerProps> = ({ isOpen, onClose, t }) => 
                           <span className={`inline-block text-[10px] font-bold px-2 py-1 rounded mb-2 uppercase tracking-wider ${getCouponColor(coupon)}`}>
                               {formatDiscount(coupon)} OFF
                           </span>
-                          <h3 className="text-sm font-medium text-gray-900">Código: {coupon.code}</h3>
+                          <h3 className="font-serif text-sm font-medium text-gray-900">Código: {coupon.code}</h3>
                           {coupon.min_purchase_amount && (
                             <p className="text-xs text-gray-500 mt-1">Compra mínima: R$ {coupon.min_purchase_amount.toFixed(2)}</p>
                           )}

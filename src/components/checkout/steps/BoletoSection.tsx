@@ -43,7 +43,7 @@ function BoletoConfirmedScreen() {
       </div>
 
       <div className="space-y-3">
-        <h4 className="text-2xl font-black uppercase italic tracking-tighter">Pedido Pendente</h4>
+        <h4 className="text-2xl font-black uppercase italic tracking-tighter font-serif">Pedido Pendente</h4>
         <p className="text-sm text-white/60 max-w-sm mx-auto leading-relaxed">
           Seu pedido foi registrado e está aguardando a confirmação do pagamento.
         </p>
@@ -111,7 +111,7 @@ function Boleto({ boletoData, boletoError, boletoLoading, boletoReady, finalTota
       )}
 
       <div className="space-y-3">
-        <h4 className="text-xl font-black uppercase italic tracking-tighter">
+        <h4 className="text-xl font-black uppercase italic tracking-tighter font-serif">
           {boletoData ? 'Boleto Gerado' : 'Boleto Bancário'}
         </h4>
         <p className="text-xs text-white/40 max-w-xs mx-auto leading-relaxed">

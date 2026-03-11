@@ -100,7 +100,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _l
             <Check className="w-10 h-10 text-green-500" />
           </div>
           <div className="space-y-4">
-            <h2 className="text-2xl font-light uppercase tracking-widest">Senha Redefinida</h2>
+            <h2 className="font-serif text-2xl font-light uppercase tracking-widest">Senha Redefinida</h2>
             <p className="text-sm text-neutral-500 leading-relaxed">
               Sua senha foi redefinida com sucesso! Você será redirecionado para a página inicial.
             </p>
@@ -122,7 +122,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _l
           <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto">
             <Lock className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-light uppercase tracking-widest">Nova Senha</h1>
+          <h1 className="font-serif text-3xl font-light uppercase tracking-widest">Nova Senha</h1>
           <p className="text-sm text-neutral-500 leading-relaxed">
             Digite sua nova senha abaixo. Certifique-se de que ela tenha pelo menos 6 caracteres.
           </p>

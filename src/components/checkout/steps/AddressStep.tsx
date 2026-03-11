@@ -79,7 +79,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
       )}
       <section className="space-y-6 animate-in fade-in slide-in-from-left duration-700">
         <div className="flex items-center gap-4 mb-6">
-          <div className="p-4 bg-neutral-50 rounded-2xl">
+          <div className="p-4 bg-paper rounded-2xl">
             <MapPin className="w-6 h-6" />
           </div>
           <h3 className="text-2xl font-black uppercase italic tracking-tight text-neutral-900 font-serif">Endereço de Entrega</h3>
@@ -96,7 +96,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                   value={selectedAddressId || ''}
                   onChange={(e) => handleSelectSavedAddress(e.target.value)}
                   disabled={loadingAddresses}
-                  className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black appearance-none cursor-pointer pr-12"
+                  className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black appearance-none cursor-pointer pr-12"
                 >
                   <option value="">+ Novo endereço</option>
                   {userAddresses.map((addr) => (
@@ -127,7 +127,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             <div className="relative">
               <input
                 data-testid="checkout-cep-input"
-                className={`w-full p-4 bg-neutral-50 border ${
+                className={`w-full p-4 bg-paper border ${
                   cepError ? 'border-red-200 bg-red-50/20' : 'border-neutral-100'
                 } rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-mono text-lg tracking-widest`}
                 placeholder="00000-000"
@@ -162,7 +162,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
 
             {/* Busca de Endereço Inline (mobile-friendly) */}
             {showInlineSearch && (
-              <div className="mt-4 p-4 bg-neutral-50 rounded-2xl border border-neutral-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="mt-4 p-4 bg-paper rounded-2xl border border-neutral-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
                     Buscar por Rua ou Bairro
@@ -288,7 +288,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                     <span className="text-xs font-black uppercase tracking-widest text-white/40 block mb-2">
                       {isManualAddress ? 'Localização Confirmada' : 'Destino Identificado'}
                     </span>
-                    <h4 className="text-xl font-black uppercase italic tracking-tight mb-1">
+                    <h4 className="text-xl font-black uppercase italic tracking-tight mb-1 font-serif">
                       {address.logradouro || (isManualAddress ? 'Rua não informada' : 'Endereço Identificado')}
                     </h4>
                     <p className="text-xs text-white/60 font-medium uppercase tracking-widest">
@@ -321,7 +321,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                     Rua / Logradouro <span className="text-red-500">*</span>
                   </label>
                   <input
-                    className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
                     placeholder="Ex: Rua das Flores"
                     value={address?.logradouro || ''}
                     onChange={(e) => updateAddressField('logradouro', e.target.value)}
@@ -332,7 +332,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                     Bairro <span className="text-red-500">*</span>
                   </label>
                   <input
-                    className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
                     placeholder="Ex: Centro"
                     value={address?.bairro || ''}
                     onChange={(e) => updateAddressField('bairro', e.target.value)}
@@ -344,7 +344,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Número <span className="text-red-500">*</span></label>
                   <input
-                    className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
                     placeholder="Ex: 123"
                     value={num}
                     onChange={(e) => setNum(e.target.value)}
@@ -353,7 +353,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Complemento</label>
                   <input
-                    className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
                     placeholder="Ex: Apto 12"
                     value={complement}
                     onChange={(e) => setComplement(e.target.value)}
@@ -365,7 +365,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           <div className="md:col-span-2 space-y-2">
             <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Nome do Destinatário</label>
             <input
-              className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black uppercase"
+              className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black uppercase"
               placeholder="Nome Completo"
               value={recipientName}
               onChange={(e) => setRecipientName(e.target.value)}
@@ -377,7 +377,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 Telefone <span className="text-red-500">*</span>
               </label>
               <input
-                className="w-full p-4 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
                 placeholder="(11) 99999-9999"
                 value={phone}
                 onChange={(e) => setPhone(checkout.maskPhone(e.target.value))}
@@ -390,7 +390,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 CPF <span className="text-red-500">*</span>
               </label>
               <input
-                className={`w-full p-4 bg-neutral-50 border ${
+                className={`w-full p-4 bg-paper border ${
                   cpfError ? 'border-red-300 bg-red-50/20' : cpf && cpf.replace(/\D/g, '').length === 11 && validateCPF(cpf) ? 'border-green-300' : cpf ? 'border-orange-200' : 'border-neutral-100'
                 } rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black`}
                 placeholder="000.000.000-00"

@@ -29,7 +29,7 @@ export function InstallmentSelector({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-6 bg-neutral-50 rounded-2xl border border-neutral-100">
+      <div className="flex items-center justify-center p-6 bg-paper rounded-2xl border border-neutral-100">
         <Loader2 className="w-5 h-5 animate-spin text-neutral-600" />
         <span className="ml-3 text-xs font-bold uppercase tracking-widest text-neutral-600">
           Carregando parcelas...
@@ -47,7 +47,7 @@ export function InstallmentSelector({
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-black uppercase tracking-widest text-neutral-600">
+          <h4 className="text-xs font-black uppercase tracking-widest text-neutral-600 font-serif">
             Parcelas
           </h4>
         </div>
@@ -206,7 +206,7 @@ export function InstallmentSelector({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="text-xs font-black uppercase tracking-widest text-neutral-600">
+        <h4 className="text-xs font-black uppercase tracking-widest text-neutral-600 font-serif">
           Parcelas
         </h4>
         {selectedHasFee && (

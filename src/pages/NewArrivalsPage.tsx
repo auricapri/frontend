@@ -171,7 +171,7 @@ export function NewArrivalsPage({
 
               {/* Content */}
               <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-end">
-                <h3 className="text-white font-black text-base md:text-lg lg:text-xl uppercase tracking-wide
+                <h3 className="font-serif text-white font-black text-base md:text-lg lg:text-xl uppercase tracking-wide
                   transform transition-all duration-300 ease-out group-hover:translate-y-[-4px]">
                   {getLoc(collection.name)}
                 </h3>
@@ -205,7 +205,7 @@ export function NewArrivalsPage({
             <div className="w-20 h-20 rounded-full bg-neutral-100 flex items-center justify-center mb-6">
               <span className="text-3xl">✨</span>
             </div>
-            <h3 className="text-xl font-black uppercase tracking-tight mb-2">
+            <h3 className="font-serif text-xl font-black uppercase tracking-tight mb-2">
               {locale === 'pt' ? 'Em breve' : locale === 'es' ? 'Próximamente' : 'Coming Soon'}
             </h3>
             <p className="text-neutral-500 text-sm max-w-sm">

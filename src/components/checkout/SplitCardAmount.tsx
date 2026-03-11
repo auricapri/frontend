@@ -289,7 +289,7 @@ export function SplitCardAmount({
       <div className="grid grid-cols-2 gap-4">
         {/* Card 1 */}
         <div className={`p-4 rounded-2xl border-2 ${
-          !isValid && card1Amount > 0 ? 'border-red-200 bg-red-50/30' : 'border-neutral-200 bg-neutral-50/50'
+          !isValid && card1Amount > 0 ? 'border-red-200 bg-red-50/30' : 'border-neutral-200 bg-paper/50'
         }`}>
           <div className="flex items-center gap-2 mb-3">
             <CreditCard className="w-4 h-4 text-neutral-800" />

@@ -110,7 +110,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
       />
 
       <div className="flex items-center gap-6 mb-10">
-        <div className="p-4 bg-neutral-50 rounded-2xl">
+        <div className="p-4 bg-paper rounded-2xl">
           <CreditCard className="w-6 h-6" />
         </div>
         <h3 className="text-2xl font-black uppercase italic tracking-tight text-neutral-900 font-serif">Método de Pagamento</h3>
@@ -121,7 +121,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
           onClick={handleSelectCard}
           className={`p-8 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all ${
             paymentMethod === PaymentMethod.CREDIT_CARD
-              ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]'
+              ? 'border-black bg-paper shadow-xl scale-[1.02]'
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
           }`}
         >
@@ -135,7 +135,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
           onClick={handleSelectPix}
           className={`p-8 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all ${
             paymentMethod === PaymentMethod.PIX
-              ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]'
+              ? 'border-black bg-paper shadow-xl scale-[1.02]'
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
           }`}
         >
@@ -149,7 +149,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
           onClick={handleSelectBoleto}
           className={`p-8 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all ${
             paymentMethod === PaymentMethod.BOLETO
-              ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]'
+              ? 'border-black bg-paper shadow-xl scale-[1.02]'
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
           }`}
         >

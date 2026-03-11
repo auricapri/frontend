@@ -255,7 +255,7 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
                 if (popularProducts.length === 0) return null;
                 return (
                   <div>
-                    <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-neutral-600 mb-6">
+                    <h3 className="font-serif text-sm font-bold uppercase tracking-[0.2em] text-neutral-600 mb-6">
                       {t('search.popularProducts')}
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4">

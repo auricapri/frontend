@@ -200,7 +200,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
 
           {pendingItems.length > 0 && (
             <div className="space-y-6 mb-8">
-              <h2 className="text-lg font-semibold">Produtos Pendentes de Avaliação</h2>
+              <h2 className="font-serif text-lg font-semibold">Produtos Pendentes de Avaliação</h2>
               {pendingItems.map((item) => (
                 <div key={item.order_item_id} className="border border-neutral-200 rounded-lg p-6">
                   {editingItem === item.order_item_id ? (
@@ -220,7 +220,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
                         loading="lazy"
                       />
                       <div className="flex-1">
-                        <h3 className="font-medium">{getLoc(item.product_name)}</h3>
+                        <h3 className="font-serif font-medium">{getLoc(item.product_name)}</h3>
                         <p className="text-sm text-neutral-500">
                           {getLoc(item.variant_color)} | {item.variant_size}
                         </p>
@@ -247,7 +247,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
 
           {reviewedItems.length > 0 && (
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold">Produtos Avaliados</h2>
+              <h2 className="font-serif text-lg font-semibold">Produtos Avaliados</h2>
               {reviewedItems.map((item) => (
                 <div key={item.order_item_id} className="border border-neutral-200 rounded-lg p-6">
                   <div className="flex items-center gap-4 mb-4">
@@ -258,7 +258,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
                       loading="lazy"
                     />
                     <div className="flex-1">
-                      <h3 className="font-medium">{getLoc(item.product_name)}</h3>
+                      <h3 className="font-serif font-medium">{getLoc(item.product_name)}</h3>
                       <p className="text-sm text-neutral-500">
                         {getLoc(item.variant_color)} | {item.variant_size}
                       </p>

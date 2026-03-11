@@ -397,46 +397,47 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
 
   return (
     <div
-      className={`fixed inset-0 z-[80] bg-paper/98 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-      onClick={onClose}
+      className={`fixed inset-0 z-[80] bg-paper flex flex-col md:flex-row transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
     >
       {/* Close button */}
       <button
-        className="absolute top-6 right-6 p-2 hover:bg-black/5 rounded-full transition-colors z-10"
+        className="absolute top-6 right-6 p-2 hover:bg-black/5 rounded-full transition-colors z-20"
         onClick={onClose}
         aria-label="Fechar"
       >
         <X className="w-7 h-7" />
       </button>
 
-      {/* Content — never overflows viewport */}
+      {/* Image — fills full height, clickable to close */}
       <div
-        className={`max-w-5xl w-full grid md:grid-cols-2 gap-4 md:gap-12 items-center transition-all duration-500 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+        className={`md:w-[55%] h-[52vh] md:h-full flex-none overflow-hidden cursor-zoom-out transition-transform duration-500 ${visible ? 'scale-100' : 'scale-95'}`}
+        onClick={onClose}
+      >
+        <img
+          src={getOptimizedImageUrl(img.image_url, 'large')}
+          alt={productName ?? 'Auricapri'}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Info panel — right side, scrollable */}
+      <div
+        className={`flex-1 overflow-y-auto flex flex-col justify-center px-8 md:px-14 py-8 md:py-16 transition-all duration-500 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'}`}
         onClick={e => e.stopPropagation()}
       >
-        {/* Image */}
-        <div className="rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl flex-shrink-0">
-          <img
-            src={getOptimizedImageUrl(img.image_url, 'large')}
-            alt={productName ?? 'Auricapri'}
-            className="w-full object-cover max-h-[38vh] md:max-h-[72vh]"
-          />
-        </div>
-
-        {/* Info */}
-        <div className="flex flex-col gap-2 md:gap-6">
+        <div className="max-w-sm mx-auto md:mx-0 w-full space-y-5 md:space-y-7">
           <div>
             {categoryLabel && (
-              <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-black/40 mb-1 md:mb-2 block">
+              <span className="text-[10px] uppercase tracking-[0.3em] text-black/40 mb-2 block">
                 {categoryLabel}
               </span>
             )}
-            <h2 className="font-serif text-2xl md:text-5xl mb-2 md:mb-4 leading-tight">
+            <h2 className="font-serif text-3xl md:text-5xl mb-3 leading-tight">
               {productName ?? 'Auricapri'}
             </h2>
             {img.variant?.retail_price ? (
               <div>
-                <p className="text-lg md:text-2xl font-light mb-0.5 md:mb-1">{formatCurrency(img.variant.retail_price, locale)}</p>
+                <p className="text-2xl font-light mb-1">{formatCurrency(img.variant.retail_price, locale)}</p>
                 {img.variant.retail_price >= 10 && (
                   <p className="text-xs text-black/40">
                     ou <span className="font-semibold text-black">6x de {formatCurrency(img.variant.retail_price / 6, locale)}</span> sem juros
@@ -444,7 +445,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
                 )}
               </div>
             ) : (
-              <p className="hidden md:block text-black/60 font-light leading-relaxed text-sm">
+              <p className="text-black/60 font-light leading-relaxed text-sm">
                 Uma peça que transcende o tempo, desenhada para mulheres que valorizam a sofisticação em cada detalhe.
               </p>
             )}
@@ -453,7 +454,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
           {img.variant?.color_name && (
             <div className="flex items-center gap-3">
               {img.variant.color_hex && (
-                <div className="w-4 h-4 md:w-5 md:h-5 rounded-full border border-black/10 shadow-sm flex-shrink-0" style={{ backgroundColor: img.variant.color_hex }} />
+                <div className="w-5 h-5 rounded-full border border-black/10 shadow-sm flex-shrink-0" style={{ backgroundColor: img.variant.color_hex }} />
               )}
               <span className="text-xs uppercase tracking-widest font-medium text-black/50">
                 {getLoc(img.variant.color_name)}
@@ -461,11 +462,11 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
             </div>
           )}
 
-          <div className="flex flex-col gap-2 md:gap-4">
+          <div className="flex flex-col gap-3">
             {img.product && (
               <button
                 onClick={onNavigate}
-                className="w-full py-3 md:py-4 bg-black text-white rounded-full font-medium hover:bg-black/80 transition-colors flex items-center justify-center gap-3 text-sm"
+                className="w-full py-4 bg-black text-white rounded-full font-medium hover:bg-black/80 transition-colors flex items-center justify-center gap-3 text-sm"
               >
                 Ver na Loja Online
               </button>
@@ -473,7 +474,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
             {img.product && !outOfStock && (
               <button
                 onClick={onAddToCart}
-                className={`w-full py-3 md:py-4 border rounded-full font-medium transition-all text-sm flex items-center justify-center gap-3 ${
+                className={`w-full py-4 border rounded-full font-medium transition-all text-sm flex items-center justify-center gap-3 ${
                   isAdding
                     ? 'bg-green-500 border-green-500 text-white'
                     : 'border-black/20 hover:bg-black/5'
@@ -490,8 +491,8 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
             )}
           </div>
 
-          {/* Share — desktop only */}
-          <div className="hidden md:flex pt-6 border-t border-black/5 items-center gap-6">
+          {/* Share */}
+          <div className="flex pt-4 border-t border-black/5 items-center gap-6">
             <span className="text-xs uppercase tracking-widest text-black/40">Compartilhar</span>
             <div className="flex gap-4">
               <a href="https://www.instagram.com/auricapri.oficial" target="_blank" rel="noopener noreferrer" className="hover:opacity-50 transition-opacity">
