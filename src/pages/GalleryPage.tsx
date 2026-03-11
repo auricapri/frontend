@@ -428,7 +428,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
 
       {/* Image — full height, left spacing to feel like a framed photo */}
       <div
-        className={`md:w-[48%] h-[36vh] md:h-full flex-none flex items-stretch md:ml-48 cursor-zoom-out transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}
+        className={`md:w-[48%] h-[36vh] md:h-full flex-none flex items-stretch md:ml-36 cursor-zoom-out transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClose}
       >
         <img

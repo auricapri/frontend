@@ -78,8 +78,7 @@ export function ImageGallery(props: {
                   setIsZoomOpen(true);
                 }
               }}
-              className="relative bg-paper cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2 overflow-hidden"
-              style={{ contain: 'paint' }}
+              className="relative bg-paper cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2"
               onClick={() => {
                 setZoomImgIndex(idx);
                 setIsZoomOpen(true);
