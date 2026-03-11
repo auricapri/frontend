@@ -5,6 +5,12 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.3.0] - 2026-03-11
+
+### Adicionado
+- **GalleryPage**: redesign completo inspirado no AI Studio — header "Curadoria de Estilo", busca em tempo real, masonry animado com Framer Motion, hover overlay escuro, lightbox com imagem grande + ações
+- **motion**: dependência `motion` (Framer Motion v12) instalada
+
 ## [1.2.3] - 2026-03-09
 
 ### Melhorado
