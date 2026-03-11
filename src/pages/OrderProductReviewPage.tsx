@@ -192,7 +192,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
           </button>
         )}
 
-        <div className="bg-white rounded-xl p-6 md:p-8 border border-neutral-200 shadow-sm mb-6">
+        <div className="bg-paper rounded-xl p-6 md:p-8 border border-neutral-200 shadow-sm mb-6">
           <h1 className="font-serif text-2xl font-bold mb-2">Avaliar Produtos do Pedido</h1>
           <p className="text-sm text-neutral-500 mb-6">
             Pedido #{order.id.slice(0, 8).toUpperCase()}
@@ -233,7 +233,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
                         <Star className="w-4 h-4" />
                         {item.has_review ? 'Editar' : 'Avaliar'}
                         {!item.has_review && storeConfig?.loyalty_program?.review_cashback_amount && storeConfig.loyalty_program.review_cashback_amount > 0 && (
-                          <span className="text-xs bg-white/20 px-2 py-0.5 rounded">
+                          <span className="text-xs bg-paper/20 px-2 py-0.5 rounded">
                             +{formatCurrency(storeConfig.loyalty_program.review_cashback_amount, locale)}
                           </span>
                         )}

@@ -80,8 +80,8 @@ export const NavbarSearch: React.FC<NavbarSearchProps> = ({
       <div
         className={`border-b shadow-lg transition-all duration-700 ease-out
           ${isSolid
-            ? 'bg-white/90 backdrop-blur-xl border-neutral-100'
-            : 'bg-white/0 backdrop-blur-0 border-transparent'
+            ? 'bg-paper/90 backdrop-blur-xl border-neutral-100'
+            : 'bg-paper/0 backdrop-blur-0 border-transparent'
           }`}
       >
         <div className="max-w-[1920px] mx-auto px-6 md:px-12 py-4">

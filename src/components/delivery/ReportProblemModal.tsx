@@ -136,7 +136,7 @@ export function ReportProblemModal(props: {
             <select
               value={issueType}
               onChange={(e) => setIssueType(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black transition-all"
+              className="w-full px-4 py-3 bg-paper border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black transition-all"
             >
               <option value="">Selecione</option>
               <option value="Produto ausente">Produto ausente</option>
@@ -210,7 +210,7 @@ export function ReportProblemModal(props: {
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
             placeholder="Descreva o que aconteceu (opcional)"
-            className="w-full px-4 py-3 bg-white border border-neutral-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black transition-all"
+            className="w-full px-4 py-3 bg-paper border border-neutral-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black transition-all"
           />
         </div>
 

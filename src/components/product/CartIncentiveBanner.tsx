@@ -49,8 +49,8 @@ export const CartIncentiveBanner: React.FC<CartIncentiveBannerProps> = ({
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-6">
               <div className="relative">
-                <div className="absolute inset-0 bg-white/20 rounded-full animate-ping" />
-                <div className="relative bg-white/10 p-3 rounded-full">
+                <div className="absolute inset-0 bg-paper/20 rounded-full animate-ping" />
+                <div className="relative bg-paper/10 p-3 rounded-full">
                   <ShoppingBag className="w-7 h-7" />
                 </div>
                 <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
@@ -66,7 +66,7 @@ export const CartIncentiveBanner: React.FC<CartIncentiveBannerProps> = ({
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 bg-white text-black px-6 py-3 rounded-full font-bold group-hover:bg-orange-500 group-hover:text-white transition-colors duration-300">
+            <div className="flex items-center gap-3 bg-paper text-black px-6 py-3 rounded-full font-bold group-hover:bg-orange-500 group-hover:text-white transition-colors duration-300">
               <span className="text-xs uppercase tracking-[0.15em]">{checkoutLabel}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>

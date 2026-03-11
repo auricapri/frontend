@@ -66,7 +66,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
                   className={`w-4 h-4 ${addr.is_default ? 'text-white/60' : 'text-neutral-400'}`}
                 />
                 {addr.is_default && (
-                  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-white/20 rounded-full">
+                  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-paper/20 rounded-full">
                     Padrão
                   </span>
                 )}
@@ -107,7 +107,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
                 disabled={deletingAddress === addr.id}
                 className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center gap-2 ${
                   addr.is_default
-                    ? 'bg-white/10 text-white/60 hover:bg-white/20'
+                    ? 'bg-paper/10 text-white/60 hover:bg-paper/20'
                     : 'bg-red-50 text-red-500 hover:bg-red-100'
                 }`}
               >

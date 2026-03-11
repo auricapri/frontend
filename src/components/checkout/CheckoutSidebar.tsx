@@ -51,7 +51,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
                   className="flex gap-4 items-start animate-in slide-in-from-right duration-500"
                   style={{ animationDelay: `${idx * 100}ms` }}
                 >
-                  <div className="w-16 h-20 bg-white rounded-xl overflow-hidden flex-none border border-neutral-100 shadow-sm">
+                  <div className="w-16 h-20 bg-paper rounded-xl overflow-hidden flex-none border border-neutral-100 shadow-sm">
                     <OptimizedImage src={item?.image} alt={getLoc(item?.name)} size="thumbnail" objectFit="cover" className="w-full h-full" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -120,7 +120,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
                   </span>
                 </div>
               </div>
-              <button onClick={handleRemoveCoupon} className="p-2 hover:bg-white/10 rounded-lg transition-all">
+              <button onClick={handleRemoveCoupon} className="p-2 hover:bg-paper/10 rounded-lg transition-all">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -133,7 +133,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
                   placeholder="DIGITE O CUPOM"
-                  className="w-full md:flex-1 p-3 md:p-4 bg-white border border-neutral-200 rounded-xl text-xs font-black uppercase tracking-widest outline-none focus:border-black transition-all placeholder:text-neutral-300"
+                  className="w-full md:flex-1 p-3 md:p-4 bg-paper border border-neutral-200 rounded-xl text-xs font-black uppercase tracking-widest outline-none focus:border-black transition-all placeholder:text-neutral-300"
                   disabled={itemsWithoutCoupon.length === 0}
                 />
                 <button

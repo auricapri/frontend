@@ -105,7 +105,7 @@ export const AbandonedCartToast: React.FC<AbandonedCartToastProps> = ({
         <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-3">
         {/* Left: Icon + Message */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-paper/10 rounded-full flex items-center justify-center flex-shrink-0">
             <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
           </div>
           <div className="flex items-center gap-2 flex-wrap min-w-0">
@@ -128,7 +128,7 @@ export const AbandonedCartToast: React.FC<AbandonedCartToastProps> = ({
           </span>
           <button
             onClick={handleDismiss}
-            className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
+            className="p-1.5 hover:bg-paper/10 rounded-full transition-colors"
             aria-label="Fechar"
           >
             <X className="w-4 h-4" />

@@ -101,13 +101,13 @@ export function ImageGallery(props: {
                   srcSetSizes={['medium', 'large', 'xlarge']}
                 />
               </ImageHotspots>
-              <div className="absolute bottom-10 right-10 p-5 bg-white/90 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">
+              <div className="absolute bottom-10 right-10 p-5 bg-paper/90 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">
                 <Maximize2 className="w-6 h-6" />
               </div>
               {showFaceSwap && idx === 0 && (
                 <button
                   onClick={(e) => { e.stopPropagation(); onFaceSwapClick?.(); }}
-                  className="absolute bottom-10 left-10 flex items-center gap-2 px-4 py-2.5 bg-white/90 backdrop-blur-md rounded-full opacity-80 hover:opacity-100 transition-all shadow-lg border border-neutral-100 group/faceswap z-10"
+                  className="absolute bottom-10 left-10 flex items-center gap-2 px-4 py-2.5 bg-paper/90 backdrop-blur-md rounded-full opacity-80 hover:opacity-100 transition-all shadow-lg border border-neutral-100 group/faceswap z-10"
                   aria-label="Provador virtual - experimente esta peça"
                 >
                   <ScanFace className="w-4 h-4 text-neutral-700 group-hover/faceswap:text-black transition-colors" />
@@ -187,7 +187,7 @@ export function ImageGallery(props: {
         {showFaceSwap && (
           <button
             onClick={(e) => { e.stopPropagation(); onFaceSwapClick?.(); }}
-            className="absolute bottom-24 left-4 flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg border border-neutral-100 z-10"
+            className="absolute bottom-24 left-4 flex items-center gap-2 px-3 py-2 bg-paper/90 backdrop-blur-md rounded-full shadow-lg border border-neutral-100 z-10"
             aria-label="Provador virtual - experimente esta peça"
           >
             <ScanFace className="w-4 h-4 text-neutral-700" />

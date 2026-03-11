@@ -109,7 +109,7 @@ function SavedCardList({ savedCards, selectedId, excludeId, onSelect, onDeselect
             key={card.id}
             onClick={() => handleClick(card.id)}
             className={`p-6 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ${
-              selectedId === card.id ? 'border-black bg-neutral-900 text-white' : 'border-neutral-100 bg-white hover:border-neutral-300'
+              selectedId === card.id ? 'border-black bg-neutral-900 text-white' : 'border-neutral-100 bg-paper hover:border-neutral-300'
             }`}
           >
             <div className="flex items-center gap-4">
@@ -220,7 +220,7 @@ function CardFields({
           className="flex items-center gap-3 p-3 md:p-4 bg-neutral-900 border border-neutral-800 rounded-xl md:rounded-2xl hover:border-neutral-600 transition-all cursor-pointer"
           onClick={onToggleSave}
         >
-          <div className={`w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${saveCardForFuture ? 'bg-white border-white' : 'border-neutral-500'}`}>
+          <div className={`w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${saveCardForFuture ? 'bg-paper border-white' : 'border-neutral-500'}`}>
             {saveCardForFuture && <Check className="w-3 h-3 text-black" />}
           </div>
           <div className="flex-1">
@@ -280,7 +280,7 @@ export function CreditCardForm({
             className={`relative w-12 h-6 rounded-full transition-all duration-300 ${splitCards ? 'bg-black' : 'bg-neutral-300'}`}
           >
             <div
-              className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-300 ${
+              className={`absolute top-0.5 left-0.5 w-5 h-5 bg-paper rounded-full shadow-sm transition-transform duration-300 ${
                 splitCards ? 'translate-x-5' : 'translate-x-0'
               }`}
             />

@@ -225,7 +225,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
                   setSelectedOrderId(e.target.value);
                   setSelectedItems({});
                 }}
-                className="w-full p-4 border border-neutral-200 rounded-xl text-sm bg-white focus:border-black focus:outline-none transition-colors appearance-none"
+                className="w-full p-4 border border-neutral-200 rounded-xl text-sm bg-paper focus:border-black focus:outline-none transition-colors appearance-none"
               >
                 <option value="">Escolha um pedido...</option>
                 {orders.map(order => (
@@ -295,7 +295,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
               <select
                 value={reason}
                 onChange={e => setReason(e.target.value)}
-                className="w-full p-4 border border-neutral-200 rounded-xl text-sm bg-white focus:border-black focus:outline-none transition-colors appearance-none"
+                className="w-full p-4 border border-neutral-200 rounded-xl text-sm bg-paper focus:border-black focus:outline-none transition-colors appearance-none"
               >
                 <option value="">Selecione o motivo...</option>
                 {RETURN_REASONS.map(r => (
@@ -316,7 +316,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
                 onChange={e => setDetails(e.target.value)}
                 placeholder="Descreva mais detalhes sobre a devolucao..."
                 rows={3}
-                className="w-full p-4 border border-neutral-200 rounded-xl text-sm bg-white focus:border-black focus:outline-none transition-colors resize-none"
+                className="w-full p-4 border border-neutral-200 rounded-xl text-sm bg-paper focus:border-black focus:outline-none transition-colors resize-none"
               />
             </section>
           )}

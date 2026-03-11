@@ -230,7 +230,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                     {/* Remove from wishlist button */}
                     <button
                       onClick={(e) => { e.stopPropagation(); onRemoveItem(item.id); }}
-                      className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm text-red-400 hover:bg-red-500 hover:text-white rounded-full shadow-sm transition-all z-10"
+                      className="absolute top-2 right-2 p-2 bg-paper/90 backdrop-blur-sm text-red-400 hover:bg-red-500 hover:text-white rounded-full shadow-sm transition-all z-10"
                       aria-label="Remover da wishlist"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

@@ -100,7 +100,7 @@ const LoyaltyBanner: React.FC<LoyaltyBannerProps> = ({
 
           {/* Icon Circle */}
           <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center flex-none shadow-lg relative overflow-hidden">
-             <div className="absolute inset-0 bg-white/20 animate-pulse" />
+             <div className="absolute inset-0 bg-paper/20 animate-pulse" />
              <Trophy className="w-6 h-6 text-black relative z-10" strokeWidth={1.5} />
           </div>
 
@@ -119,14 +119,14 @@ const LoyaltyBanner: React.FC<LoyaltyBannerProps> = ({
           <div className="flex items-center gap-2 border-l border-white/10 pl-4">
              <button 
                 onClick={handleCopy}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-90"
+                className="p-2 hover:bg-paper/10 rounded-full transition-colors active:scale-90"
                 title="Copiar Código"
              >
                 {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-neutral-400 hover:text-white" />}
              </button>
              <button 
                 onClick={onClose}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-90"
+                className="p-2 hover:bg-paper/10 rounded-full transition-colors active:scale-90"
              >
                 <X className="w-4 h-4 text-neutral-500 hover:text-white" />
              </button>

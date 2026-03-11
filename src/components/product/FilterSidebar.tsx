@@ -197,7 +197,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                       className={`min-w-[40px] h-8 px-3 inline-flex items-center justify-center rounded-md text-[11px] font-medium transition-colors border ${
                         isSelected
                           ? 'bg-neutral-900 text-white border-neutral-900'
-                          : 'bg-white text-neutral-700 border-neutral-300 hover:border-neutral-900'
+                          : 'bg-paper text-neutral-700 border-neutral-300 hover:border-neutral-900'
                       }`}
                       aria-pressed={isSelected}
                     >

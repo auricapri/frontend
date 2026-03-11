@@ -187,7 +187,7 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
       </div>
 
       {/* Tabs — single row, scrollable */}
-      <div className="bg-white border-b border-neutral-100 px-2 md:px-6 flex-shrink-0">
+      <div className="bg-paper border-b border-neutral-100 px-2 md:px-6 flex-shrink-0">
         <div className="flex overflow-x-auto no-scrollbar">
           {TAB_CONFIG.map((t) => {
             const Icon = t.icon;
@@ -236,13 +236,13 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
             </div>
 
             {isLoadingLogistics ? (
-              <div className="flex items-center justify-center h-32 bg-white rounded-xl border border-neutral-100">
+              <div className="flex items-center justify-center h-32 bg-paper rounded-xl border border-neutral-100">
                 <Loader2 className="w-6 h-6 animate-spin text-black" />
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {/* Awaiting Pickup */}
-                <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
+                <div className="bg-paper rounded-xl border border-neutral-100 overflow-hidden">
                   <div className="px-3 py-2.5 border-b border-neutral-100 bg-amber-50 flex items-center gap-2">
                     <Package className="w-4 h-4 text-amber-600" />
                     <h4 className="font-bold uppercase text-xs tracking-tight">Aguardando Coleta</h4>
@@ -280,7 +280,7 @@ const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({ locale, onLogout 
                 </div>
 
                 {/* Collected */}
-                <div className="bg-white rounded-xl border border-neutral-100 overflow-hidden">
+                <div className="bg-paper rounded-xl border border-neutral-100 overflow-hidden">
                   <div className="px-3 py-2.5 border-b border-neutral-100 bg-blue-50 flex items-center gap-2">
                     <Truck className="w-4 h-4 text-blue-600" />
                     <h4 className="font-bold uppercase text-xs tracking-tight">Coletados</h4>

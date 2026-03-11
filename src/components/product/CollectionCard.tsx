@@ -59,7 +59,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = React.memo(({ colle
 
       <div className="absolute inset-0 bg-black/20 flex flex-col justify-end p-4 md:p-8 text-white">
         <h3 className="text-lg md:text-2xl font-light tracking-widest uppercase">{getLoc(collection.name)}</h3>
-        <div className={`w-0 h-[1px] bg-white transition-all duration-500 mt-2 opacity-50 ${isAvailable ? 'group-hover:w-full group-active:w-full' : ''}`} />
+        <div className={`w-0 h-[1px] bg-paper transition-all duration-500 mt-2 opacity-50 ${isAvailable ? 'group-hover:w-full group-active:w-full' : ''}`} />
       </div>
 
       {hasCountdown && isAvailable && (

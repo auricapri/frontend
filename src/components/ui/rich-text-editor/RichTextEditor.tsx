@@ -147,7 +147,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div
-      className={`border border-neutral-200 rounded-2xl overflow-hidden bg-white ${className}`}
+      className={`border border-neutral-200 rounded-2xl overflow-hidden bg-paper ${className}`}
     >
       <Toolbar
         editor={editor}

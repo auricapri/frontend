@@ -40,7 +40,7 @@ export const LoyaltyCard: React.FC<LoyaltyCardProps> = ({ user, locale }) => {
             </span>
             <h3 className="text-2xl font-light tracking-tighter">Nível {level}</h3>
           </div>
-          <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+          <div className="bg-paper/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
             <span className="text-[10px] font-black uppercase tracking-widest">
               {formatCurrency(cashback, locale)} Cashback
             </span>
@@ -52,7 +52,7 @@ export const LoyaltyCard: React.FC<LoyaltyCardProps> = ({ user, locale }) => {
             <span>{xp} XP</span>
             <span>{nextLevelXp} XP</span>
           </div>
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-2 bg-paper/10 rounded-full overflow-hidden">
             <div
               className="h-full bg-yellow-500 transition-all duration-1000"
               style={{ width: `${xpProgress}%` }}

@@ -104,7 +104,7 @@ export function ProductVariants({
                   className={`min-w-[60px] px-5 py-3 text-[11px] font-black border transition-all duration-500 rounded-xl uppercase tracking-widest ${
                     isSelected
                       ? 'bg-black text-white border-black shadow-xl'
-                      : 'bg-white text-neutral-400 border-neutral-100 hover:border-black hover:text-black'
+                      : 'bg-paper text-neutral-400 border-neutral-100 hover:border-black hover:text-black'
                   }`}
                 >
                   {s}

@@ -267,7 +267,7 @@ export const FaceSwapModal: React.FC<FaceSwapModalProps> = ({
                     loading="lazy"
                     decoding="async"
                   />
-                  <div className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full">
+                  <div className="absolute top-3 right-3 p-2 bg-paper/90 backdrop-blur-sm rounded-full">
                     <ZoomIn className="w-4 h-4 text-neutral-600" />
                   </div>
                 </div>

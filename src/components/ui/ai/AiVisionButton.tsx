@@ -126,7 +126,7 @@ export const AiVisionButton: React.FC<AiVisionButtonProps> = ({
                 </div>
                 <button
                   onClick={handleClose}
-                  className="p-2 bg-white/80 rounded-full hover:bg-white transition-all"
+                  className="p-2 bg-paper/80 rounded-full hover:bg-paper transition-all"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -201,7 +201,7 @@ export const AiVisionButton: React.FC<AiVisionButtonProps> = ({
                 <div className="p-4 border-t border-neutral-100 bg-neutral-50 flex items-center justify-end gap-2 flex-shrink-0">
                   <button
                     onClick={handleClose}
-                    className="px-4 py-2 bg-white border border-neutral-200 rounded-lg font-bold text-xs hover:bg-neutral-100 transition-all"
+                    className="px-4 py-2 bg-paper border border-neutral-200 rounded-lg font-bold text-xs hover:bg-neutral-100 transition-all"
                   >
                     Cancelar
                   </button>

@@ -568,7 +568,7 @@ export function AppLayout(props: {
       />
 
       {app.isProcessingOrder && (
-        <div className="fixed inset-0 z-[2000] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-[2000] bg-paper/80 backdrop-blur-md flex flex-col items-center justify-center">
           <style>
             {`
               @keyframes logo-pulse {

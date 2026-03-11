@@ -100,7 +100,7 @@ const ImageZoomModal: React.FC<{
         />
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full"
+          className="absolute top-4 right-4 p-2 bg-paper/10 hover:bg-paper/20 rounded-full"
         >
           <X className="w-6 h-6 text-white" />
         </button>
@@ -393,7 +393,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                         loading="lazy"
                         decoding="async"
                       />
-                      <div className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full">
+                      <div className="absolute top-3 right-3 p-2 bg-paper/90 backdrop-blur-sm rounded-full">
                         <ZoomIn className="w-4 h-4 text-neutral-600" />
                       </div>
                     </div>
@@ -409,11 +409,11 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                         loading="lazy"
                         decoding="async"
                       />
-                      <div className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full">
+                      <div className="absolute top-3 right-3 p-2 bg-paper/90 backdrop-blur-sm rounded-full">
                         <ZoomIn className="w-4 h-4 text-neutral-600" />
                       </div>
                       {/* Garment name overlay */}
-                      <div className="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2">
+                      <div className="absolute bottom-3 left-3 right-3 bg-paper/90 backdrop-blur-sm rounded-xl px-3 py-2">
                         <p className="text-xs font-bold truncate">
                           {selectedItem.garment.name}
                         </p>
@@ -426,13 +426,13 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
                     <>
                       <button
                         onClick={() => navigateGallery('prev')}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-paper/90 hover:bg-paper rounded-full shadow-lg"
                       >
                         <ChevronLeft className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => navigateGallery('next')}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-paper/90 hover:bg-paper rounded-full shadow-lg"
                       >
                         <ChevronRight className="w-5 h-5" />
                       </button>

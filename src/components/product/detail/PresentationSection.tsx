@@ -37,7 +37,7 @@ export function PresentationSection({
             <span className="text-[10px] uppercase font-bold tracking-widest hidden md:inline">
               {isExpanded ? 'Recolher' : 'Expandir'}
             </span>
-            <div className="p-3 bg-white rounded-full shadow-sm group-hover:shadow-md transition-all">
+            <div className="p-3 bg-paper rounded-full shadow-sm group-hover:shadow-md transition-all">
               {isExpanded ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             </div>
           </span>

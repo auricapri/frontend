@@ -87,7 +87,7 @@ function getCardBrand(number: string): { brand: string; logo: React.ReactNode; c
     brand: 'default',
     color: 'from-neutral-700 to-neutral-900',
     logo: (
-      <div className="w-12 h-8 bg-white/20 rounded" />
+      <div className="w-12 h-8 bg-paper/20 rounded" />
     )
   };
 }
@@ -187,12 +187,12 @@ export function CreditCardPreview({
           {/* Área de assinatura e CVV */}
           <div className="flex-1 p-6 flex flex-col justify-center">
             <div className="flex items-center gap-4">
-              <div className="flex-1 h-10 bg-white/90 rounded flex items-center justify-end px-4">
+              <div className="flex-1 h-10 bg-paper/90 rounded flex items-center justify-end px-4">
                 <span className="font-mono text-neutral-900 italic text-sm tracking-widest">
                   {displayName}
                 </span>
               </div>
-              <div className="w-16 h-10 bg-white rounded flex items-center justify-center">
+              <div className="w-16 h-10 bg-paper rounded flex items-center justify-center">
                 <span className="font-mono text-neutral-900 font-bold tracking-widest">
                   {cardCvc || '•••'}
                 </span>

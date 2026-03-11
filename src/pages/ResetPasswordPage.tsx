@@ -83,7 +83,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _l
 
   if (isValidatingToken) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+      <div className="min-h-screen bg-paper flex items-center justify-center px-6">
         <div className="text-center space-y-6 animate-in fade-in duration-500">
           <Loader2 className="w-12 h-12 animate-spin text-neutral-400 mx-auto" />
           <p className="text-sm text-neutral-500 font-medium">Validando link de recuperação...</p>
@@ -94,7 +94,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _l
 
   if (success) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+      <div className="min-h-screen bg-paper flex items-center justify-center px-6">
         <div className="max-w-md w-full text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto">
             <Check className="w-10 h-10 text-green-500" />
@@ -111,7 +111,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _l
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-6 py-24">
+    <div className="min-h-screen bg-paper flex items-center justify-center px-6 py-24">
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>

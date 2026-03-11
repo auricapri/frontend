@@ -264,7 +264,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       {isProcessing && (
-        <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] bg-paper/80 backdrop-blur-sm flex items-center justify-center">
           <div className="text-center space-y-4">
             <Loader2 className="w-12 h-12 animate-spin mx-auto text-black" />
             <p className="text-[10px] font-black uppercase tracking-[0.3em]">Processando seu pedido...</p>
@@ -305,7 +305,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
             </div>
             <button
               onClick={onOpenAuth}
-              className="w-full sm:w-auto shrink-0 px-6 py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neutral-100 active:scale-95 transition-all"
+              className="w-full sm:w-auto shrink-0 px-6 py-3 bg-paper text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neutral-100 active:scale-95 transition-all"
             >
               Entrar / Criar conta
             </button>
@@ -338,7 +338,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 z-10">
                       <button
                         onClick={() => handleBuyItem(product.id)}
-                        className="w-full py-3 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                        className="w-full py-3 bg-paper text-black rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
                       >
                         Presentear Este Item
                       </button>

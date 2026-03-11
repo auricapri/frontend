@@ -267,7 +267,7 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
             className={`px-6 py-2 rounded-full text-sm tracking-wide transition-all duration-300 ${
               activeCategory === cat.id
                 ? 'bg-black text-white shadow-lg'
-                : 'bg-white border border-black/10 hover:border-black/30'
+                : 'bg-paper border border-black/10 hover:border-black/30'
             }`}
           >
             {cat.name}
@@ -363,7 +363,7 @@ function GalleryCard({ img, index, getLoc, locale, onClick }: GalleryCardProps) 
               <Maximize2 className="w-4 h-4" />
               Ver detalhes
             </button>
-            <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+            <div className="w-8 h-8 rounded-full bg-paper/20 backdrop-blur-md flex items-center justify-center text-white">
               <Instagram className="w-4 h-4" />
             </div>
           </div>

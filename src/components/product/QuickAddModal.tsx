@@ -234,7 +234,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                       className={`min-w-[44px] h-10 px-4 rounded-lg text-sm font-medium transition-all border ${
                         selectedSize === size
                           ? 'bg-neutral-900 text-white border-neutral-900'
-                          : 'bg-white text-neutral-700 border-neutral-300 hover:border-neutral-900'
+                          : 'bg-paper text-neutral-700 border-neutral-300 hover:border-neutral-900'
                       }`}
                     >
                       {size}

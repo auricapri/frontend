@@ -123,7 +123,7 @@ export const NavbarMobileBar: React.FC<NavbarMobileBarProps> = ({
             {cartCount > 0 && (
               <span
                 className={`absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 rounded-full text-[10px] font-black flex items-center justify-center
-                  ${isSolid ? 'bg-black text-white' : 'bg-white text-black'}
+                  ${isSolid ? 'bg-black text-white' : 'bg-paper text-black'}
                 `}
               >
                 {cartCount}
