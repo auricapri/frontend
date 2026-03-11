@@ -69,16 +69,15 @@ export function ZoomModal({
         </button>
 
         <div className="w-full h-full flex items-center justify-center overflow-hidden relative">
-          {/* Shimmer skeleton while loading */}
-          {!imgLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="img-shimmer rounded-2xl" style={{ width: '60%', height: '80%' }} />
-            </div>
-          )}
+          {/* Shimmer skeleton — same aspect ratio as image, fades out smoothly */}
+          <div
+            className={`absolute img-shimmer rounded-xl transition-opacity duration-700 pointer-events-none ${imgLoaded ? 'opacity-0' : 'opacity-100'}`}
+            style={{ height: '78%', aspectRatio: '3 / 4' }}
+          />
           <img
             key={currentIndex}
             src={getOptimizedImageUrl(displayImages[currentIndex], 'xlarge')}
-            className={`max-h-full max-w-full object-contain cursor-crosshair transition-all duration-700 hover:scale-150 ${imgLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-[0.97]'}`}
+            className={`max-h-full max-w-full object-contain cursor-crosshair transition-all duration-700 ease-out hover:scale-150 ${imgLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-[0.97]'}`}
             alt=""
             loading="eager"
             decoding="async"
