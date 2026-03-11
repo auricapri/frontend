@@ -143,7 +143,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       style={{ aspectRatio }}
     >
       {showSkeleton && (
-        <div className="absolute inset-0 bg-neutral-100 animate-pulse" />
+        <div className="absolute inset-0 img-shimmer" />
       )}
 
       {showBlur && (
@@ -172,7 +172,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           onError={handleError}
           className={`
             w-full h-full ${objectFitClass}
-            transition-opacity duration-300
+            transition-opacity duration-700 ease-out
             ${isLoaded ? 'opacity-100' : 'opacity-0'}
           `}
         />
