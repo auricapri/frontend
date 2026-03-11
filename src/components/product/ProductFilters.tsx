@@ -37,7 +37,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
   return (
     <div
       id="product-filters"
-      className="sticky top-24 md:top-20 z-30 bg-white/95 backdrop-blur-md border-b border-neutral-100 py-3 md:py-4 px-4 md:px-12 mb-6 md:mb-8 transition-all"
+      className="sticky top-24 md:top-20 z-30 bg-paper/95 backdrop-blur-md border-b border-neutral-100 py-3 md:py-4 px-4 md:px-12 mb-6 md:mb-8 transition-all"
     >
       <div className="flex items-center gap-3 md:gap-4">
         {/* Filter Toggle Button */}
