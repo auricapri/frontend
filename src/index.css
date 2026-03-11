@@ -11,6 +11,24 @@
   }
 }
 
+/* Image Shimmer Skeleton */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.img-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f0ece2 0%,
+    #e8dfd0 30%,
+    #f5f0e8 50%,
+    #e8dfd0 70%,
+    #f0ece2 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
 /* No Scrollbar Utility */
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
