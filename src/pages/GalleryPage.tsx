@@ -1,12 +1,14 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, X, Maximize2, ShoppingBag, ExternalLink, MapPin, Instagram } from 'lucide-react';
+import { Search, X, Maximize2, ShoppingBag, ExternalLink, MapPin, Instagram, Facebook, Mail } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { type Product, type CartItem, type ProductVariant } from '../types';
 import { type Locale } from '../i18n';
 import { createGetLoc } from '../utils/localization';
 import { formatCurrency } from '../utils/currency';
 import { getOptimizedImageUrl } from '../utils/image';
+
+/* ─── Types ─── */
 
 interface GalleryRow {
   id: string;
@@ -22,12 +24,18 @@ interface GalleryProduct {
   id: string;
   name: Record<string, string>;
   slug: Record<string, string> | string;
+  category_id: string | null;
 }
 
 interface GalleryItem extends GalleryRow {
   variant?: Pick<ProductVariant, 'id' | 'color_name' | 'color_hex' | 'retail_price' | 'stock_quantity' | 'sku'>;
   product?: GalleryProduct;
+  categoryName?: string;
 }
+
+interface CategoryOption { id: string; name: string; }
+
+interface GalleryData { items: GalleryItem[]; categories: CategoryOption[]; }
 
 interface GalleryPageProps {
   onNavigate: (view: string, target?: string, product?: Product) => void;
@@ -35,14 +43,16 @@ interface GalleryPageProps {
   locale: Locale;
 }
 
-async function fetchGallery(): Promise<GalleryItem[]> {
+/* ─── Data fetching ─── */
+
+async function fetchGallery(locale: string): Promise<GalleryData> {
   const { data: rawRows, error } = await supabase
     .from('gallery_images')
     .select('id, image_url, title, location_label, sort_order, product_id, variant_id')
     .eq('is_active', true)
     .order('sort_order');
 
-  if (error || !rawRows?.length) return [];
+  if (error || !rawRows?.length) return { items: [], categories: [{ id: 'all', name: 'Todos' }] };
 
   const rows = rawRows as GalleryRow[];
   const variantIds = rows.map(r => r.variant_id).filter((id): id is string => id !== null);
@@ -55,24 +65,55 @@ async function fetchGallery(): Promise<GalleryItem[]> {
       .in('id', [...new Set(variantIds)]),
     supabase
       .from('products')
-      .select('id, name, slug')
+      .select('id, name, slug, category_id')
       .in('id', [...new Set(productIds)]),
   ]);
 
   type VariantRow = { id: string; color_name: Record<string, string>; color_hex: string; retail_price: number; stock_quantity: number; sku: string };
-  type ProductRow = { id: string; name: Record<string, string>; slug: Record<string, string> | string };
+  type ProductRow = { id: string; name: Record<string, string>; slug: Record<string, string> | string; category_id: string | null };
 
   const variantMap = new Map((variants ?? []).map((v: VariantRow) => [v.id, v]));
   const productMap = new Map((products ?? []).map((p: ProductRow) => [p.id, p]));
 
-  return rows.map((r: GalleryRow): GalleryItem => ({
-    ...r,
-    variant: r.variant_id ? (variantMap.get(r.variant_id) as GalleryItem['variant']) : undefined,
-    product: r.product_id ? (productMap.get(r.product_id) as GalleryProduct) : undefined,
+  // Fetch categories
+  const categoryIds = [...new Set((products ?? []).map((p: ProductRow) => p.category_id).filter(Boolean))] as string[];
+  const { data: categoriesRaw } = categoryIds.length
+    ? await supabase.from('categories').select('id, name').in('id', categoryIds)
+    : { data: [] };
+
+  type CategoryRow = { id: string; name: Record<string, string> | string };
+  const categoryMap = new Map((categoriesRaw ?? []).map((c: CategoryRow) => {
+    const name = typeof c.name === 'object' ? (c.name[locale] ?? c.name['pt'] ?? Object.values(c.name)[0] ?? '') : c.name;
+    return [c.id, name as string];
   }));
+
+  const items: GalleryItem[] = rows.map((r: GalleryRow) => {
+    const product = r.product_id ? (productMap.get(r.product_id) as GalleryProduct | undefined) : undefined;
+    const categoryName = product?.category_id ? categoryMap.get(product.category_id) : undefined;
+    return {
+      ...r,
+      variant: r.variant_id ? (variantMap.get(r.variant_id) as GalleryItem['variant']) : undefined,
+      product,
+      categoryName,
+    };
+  });
+
+  // Build category pills — only categories that have gallery items
+  const usedCategoryIds = new Set(items.map(i => i.product?.category_id).filter(Boolean));
+  const categories: CategoryOption[] = [
+    { id: 'all', name: 'Todos' },
+    ...([...usedCategoryIds] as string[])
+      .filter(id => categoryMap.has(id))
+      .map(id => ({ id, name: categoryMap.get(id)! })),
+  ];
+
+  return { items, categories };
 }
 
+/* ─── Page component ─── */
+
 export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProps) {
+  const [activeCategory, setActiveCategory] = useState('all');
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [lightboxVisible, setLightboxVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,33 +121,33 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
 
   const getLoc = createGetLoc(locale);
 
-  const { data: images = [], isLoading } = useQuery({
-    queryKey: ['gallery-images'],
-    queryFn: fetchGallery,
+  const { data, isLoading } = useQuery({
+    queryKey: ['gallery-images', locale],
+    queryFn: () => fetchGallery(locale),
     staleTime: 5 * 60 * 1000,
   });
 
-  const filteredItems = useMemo(() => {
-    if (!searchQuery.trim()) return images;
-    const q = searchQuery.toLowerCase();
-    return images.filter(img => {
-      const title = img.title?.toLowerCase() ?? '';
-      const name = img.product ? getLoc(img.product.name).toLowerCase() : '';
-      const loc = img.location_label?.toLowerCase() ?? '';
-      return title.includes(q) || name.includes(q) || loc.includes(q);
-    });
-  }, [images, searchQuery, getLoc]);
+  const images = data?.items ?? [];
+  const categories = data?.categories ?? [{ id: 'all', name: 'Todos' }];
 
-  // Animação de entrada do lightbox
+  const filteredItems = useMemo(() => {
+    return images.filter(img => {
+      const matchesCat = activeCategory === 'all' || img.product?.category_id === activeCategory;
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = !q
+        || (img.title?.toLowerCase() ?? '').includes(q)
+        || (img.product ? getLoc(img.product.name).toLowerCase() : '').includes(q)
+        || (img.location_label?.toLowerCase() ?? '').includes(q);
+      return matchesCat && matchesSearch;
+    });
+  }, [images, activeCategory, searchQuery, getLoc]);
+
+  // Lightbox open/close
   useEffect(() => {
-    if (selectedItem) {
-      requestAnimationFrame(() => setLightboxVisible(true));
-    } else {
-      setLightboxVisible(false);
-    }
+    if (selectedItem) requestAnimationFrame(() => setLightboxVisible(true));
+    else setLightboxVisible(false);
   }, [selectedItem]);
 
-  // Bloqueia scroll quando lightbox está aberto
   useEffect(() => {
     document.body.style.overflow = selectedItem ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -155,109 +196,88 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
 
-      {/* ── AI Studio nav-header ── */}
-      <div className="pt-32 md:pt-24 bg-white/80 backdrop-blur-md border-b border-black/5">
+      {/* ══ AI Studio Sticky Nav ══ */}
+      <nav className="pt-32 md:pt-24 sticky top-16 md:top-14 z-30 bg-white/80 backdrop-blur-md border-b border-black/5">
         <div className="px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
-
-          {/* Esquerda: logo + links */}
+          {/* Left: logo + links */}
           <div className="flex items-center gap-8">
-            <span className="font-serif text-2xl md:text-3xl tracking-tight font-medium select-none">
-              AURICAPRI
-            </span>
-            <nav className="hidden md:flex items-center gap-6 text-[11px] uppercase tracking-widest font-light">
-              <button
-                onClick={() => onNavigate('collection')}
-                className="hover:opacity-50 transition-opacity"
-              >
+            <h2 className="font-serif text-3xl tracking-tight font-medium">AURICAPRI</h2>
+            <div className="hidden md:flex items-center gap-6 text-sm uppercase tracking-widest font-light">
+              <button onClick={() => onNavigate('collection')} className="hover:opacity-50 transition-opacity">
                 Coleções
               </button>
-              <span className="font-semibold border-b border-black pb-px">Galeria</span>
-              <button
-                onClick={() => onNavigate('about')}
-                className="hover:opacity-50 transition-opacity"
-              >
+              <span className="font-medium border-b border-black pb-px">Galeria</span>
+              <button onClick={() => onNavigate('about')} className="hover:opacity-50 transition-opacity">
                 Sobre
               </button>
-            </nav>
+              <button onClick={() => onNavigate('home', 'contact')} className="hover:opacity-50 transition-opacity">
+                Contato
+              </button>
+            </div>
           </div>
 
-          {/* Direita: busca + Instagram */}
-          <div className="flex items-center gap-3">
+          {/* Right: search + Instagram */}
+          <div className="flex items-center gap-4">
             <div className="relative hidden sm:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/30 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Buscar inspiração..."
-                className="pl-10 pr-4 py-2 bg-black/5 rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-black/20 w-44 lg:w-60 transition-all"
+                className="pl-10 pr-4 py-2 bg-black/5 rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-black/10 w-48 lg:w-64 transition-all"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <X className="w-3.5 h-3.5 text-black/40 hover:text-black" />
-                </button>
-              )}
             </div>
             <a
               href="https://www.instagram.com/auricapri"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Instagram Auricapri"
+              aria-label="Instagram"
               className="p-2 hover:bg-black/5 rounded-full transition-colors"
             >
               <Instagram className="w-5 h-5" />
             </a>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* ── Hero ── */}
-      <header className="py-16 md:py-24 px-6 text-center max-w-4xl mx-auto w-full">
-        <span className="text-[10px] uppercase tracking-[0.4em] text-black/40 mb-4 block">
+      {/* ══ Header Hero ══ */}
+      <header className="px-6 py-16 md:py-24 text-center max-w-4xl mx-auto">
+        <span className="text-xs uppercase tracking-[0.3em] text-black/40 mb-4 block">
           Curadoria de Estilo
         </span>
         <h1 className="font-serif text-5xl md:text-7xl mb-8 leading-tight">
-          Nossa Galeria de{' '}
-          <em>Inspirações</em>
+          Nossa Galeria de <em>Inspirações</em>
         </h1>
-        <p className="text-black/60 font-light leading-relaxed max-w-2xl mx-auto text-sm md:text-base">
+        <p className="text-black/60 font-light leading-relaxed max-w-2xl mx-auto">
           Explore o universo Auricapri através da nossa curadoria visual.
           Looks reais, momentos brasileiros — toque em qualquer peça para descobrir.
         </p>
-
-        {/* Search mobile (visível só no mobile) */}
-        <div className="relative max-w-xs mx-auto mt-8 sm:hidden">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black/30 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Buscar peças..."
-            className="w-full pl-11 pr-10 py-2.5 bg-black/5 rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-black/20 transition-all"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2">
-              <X className="w-3.5 h-3.5 text-black/40 hover:text-black" />
-            </button>
-          )}
-        </div>
       </header>
 
-      {/* ── Gallery ── */}
-      <main className="px-4 md:px-8 pb-24 flex-grow">
-        {filteredItems.length === 0 && (
-          <div className="py-24 text-center">
-            <p className="text-neutral-400 font-light italic text-sm">
-              {searchQuery
-                ? `Nenhuma peça encontrada para "${searchQuery}".`
-                : 'Em breve — nossa galeria está sendo preparada.'}
-            </p>
-          </div>
-        )}
+      {/* ══ Category Filters ══ */}
+      <div className="px-6 mb-12 flex flex-wrap justify-center gap-2">
+        {categories.map((cat, idx) => (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCategory(cat.id)}
+            style={{ transitionDelay: `${idx * 40}ms` }}
+            className={`px-6 py-2 rounded-full text-sm tracking-wide transition-all duration-300 ${
+              activeCategory === cat.id
+                ? 'bg-black text-white shadow-lg'
+                : 'bg-white border border-black/10 hover:border-black/30'
+            }`}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
 
-        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+      {/* ══ Gallery ══ */}
+      <main className="px-4 md:px-8 pb-24 flex-grow">
+        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
           {filteredItems.map((img, i) => (
             <GalleryCard
               key={img.id}
@@ -269,9 +289,19 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
             />
           ))}
         </div>
+
+        {filteredItems.length === 0 && (
+          <div className="py-24 text-center">
+            <p className="text-black/40 font-light italic">
+              {searchQuery
+                ? `Nenhuma peça encontrada para "${searchQuery}".`
+                : 'Em breve — nossa galeria está sendo preparada.'}
+            </p>
+          </div>
+        )}
       </main>
 
-      {/* ── Lightbox ── */}
+      {/* ══ Lightbox ══ */}
       {selectedItem && (
         <GalleryLightbox
           img={selectedItem}
@@ -280,7 +310,7 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
           getLoc={getLoc}
           locale={locale}
           onClose={closeLightbox}
-          onNavigate={() => { closeLightbox(); setTimeout(() => handleNavigateToProduct(selectedItem), 300); }}
+          onNavigate={() => { closeLightbox(); setTimeout(() => handleNavigateToProduct(selectedItem), 320); }}
           onAddToCart={() => handleAddToCart(selectedItem)}
         />
       )}
@@ -288,7 +318,7 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
   );
 }
 
-/* ─────────── GalleryCard ─────────── */
+/* ─── GalleryCard ─── */
 
 interface GalleryCardProps {
   img: GalleryItem;
@@ -300,46 +330,42 @@ interface GalleryCardProps {
 
 function GalleryCard({ img, index, getLoc, locale, onClick }: GalleryCardProps) {
   const productName = img.product ? getLoc(img.product.name) : img.title;
+  const categoryLabel = img.categoryName ?? img.location_label;
 
   return (
     <div
-      className="relative group cursor-pointer break-inside-avoid mb-4"
+      className="relative group cursor-pointer break-inside-avoid"
       style={{ animationDelay: `${index * 40}ms` }}
       onClick={onClick}
     >
-      <div className="overflow-hidden rounded-2xl bg-neutral-100">
+      <div className="overflow-hidden rounded-2xl bg-black/5">
         <img
           src={getOptimizedImageUrl(img.image_url, 'medium')}
           alt={productName ?? 'Auricapri'}
           loading="lazy"
-          className="w-full h-auto transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+          className="w-full h-auto transition-transform duration-700 group-hover:scale-110"
         />
       </div>
 
-      {/* Location pill */}
-      {img.location_label && (
-        <div className="absolute top-3 left-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm pointer-events-none">
-          <MapPin className="w-2 h-2 text-neutral-400" strokeWidth={2} />
-          <span className="text-[7px] font-bold uppercase tracking-wider text-neutral-600">
-            {img.location_label}
-          </span>
-        </div>
-      )}
-
-      {/* Hover overlay */}
-      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl flex flex-col justify-end p-5 pointer-events-none">
-        <div className="translate-y-3 group-hover:translate-y-0 transition-transform duration-300">
+      {/* Hover overlay — exactly AI Studio style */}
+      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl flex flex-col justify-end p-6">
+        <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+          {categoryLabel && (
+            <span className="text-[10px] uppercase tracking-widest text-white/70 mb-1 block">
+              {categoryLabel}
+            </span>
+          )}
           {productName && (
-            <h3 className="text-white font-light text-base leading-tight mb-1">{productName}</h3>
+            <h3 className="text-white font-serif text-xl mb-3">{productName}</h3>
           )}
-          {img.variant?.retail_price && (
-            <p className="text-white/80 text-sm font-semibold mb-3">
-              {formatCurrency(img.variant.retail_price, locale)}
-            </p>
-          )}
-          <div className="flex items-center gap-2 text-white/70 text-xs">
-            <Maximize2 className="w-3.5 h-3.5" />
-            <span className="uppercase tracking-wider font-medium">Ver detalhes</span>
+          <div className="flex items-center justify-between">
+            <button className="text-white/80 hover:text-white text-xs flex items-center gap-2">
+              <Maximize2 className="w-4 h-4" />
+              Ver detalhes
+            </button>
+            <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+              <Instagram className="w-4 h-4" />
+            </div>
           </div>
         </div>
       </div>
@@ -347,7 +373,7 @@ function GalleryCard({ img, index, getLoc, locale, onClick }: GalleryCardProps) 
   );
 }
 
-/* ─────────── GalleryLightbox ─────────── */
+/* ─── GalleryLightbox ─── */
 
 interface GalleryLightboxProps {
   img: GalleryItem;
@@ -362,30 +388,32 @@ interface GalleryLightboxProps {
 
 function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNavigate, onAddToCart }: GalleryLightboxProps) {
   const productName = img.product ? getLoc(img.product.name) : img.title;
+  const categoryLabel = img.categoryName ?? img.location_label;
   const outOfStock = !img.variant || img.variant.stock_quantity < 1;
+
+  const shareUrl = img.product
+    ? `https://www.auricapri.com.br/product/${getLoc(img.product.slug) || img.product.id}`
+    : 'https://www.auricapri.com.br/galeria';
 
   return (
     <div
-      className={`fixed inset-0 z-[80] flex items-center justify-center p-4 md:p-12 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed inset-0 z-[80] bg-white/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
       onClick={onClose}
     >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-white/95 backdrop-blur-xl" />
-
       <button
-        className="absolute top-6 right-6 p-2 hover:bg-black/5 rounded-full transition-colors z-10"
+        className="absolute top-8 right-8 p-2 hover:bg-black/5 rounded-full transition-colors"
         onClick={onClose}
         aria-label="Fechar"
       >
-        <X className="w-7 h-7" />
+        <X className="w-8 h-8" />
       </button>
 
       <div
-        className={`relative max-w-5xl w-full grid md:grid-cols-2 gap-8 md:gap-16 items-center transition-all duration-500 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+        className={`max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center transition-all duration-500 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
         onClick={e => e.stopPropagation()}
       >
         {/* Image */}
-        <div className="rounded-3xl overflow-hidden shadow-2xl bg-neutral-100">
+        <div className="rounded-3xl overflow-hidden shadow-2xl">
           <img
             src={getOptimizedImageUrl(img.image_url, 'large')}
             alt={productName ?? 'Auricapri'}
@@ -395,67 +423,56 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
 
         {/* Info */}
         <div className="flex flex-col gap-6">
-          {img.location_label && (
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-3 h-3 text-neutral-400" />
-              <span className="text-[10px] uppercase tracking-[0.3em] text-neutral-400">
-                {img.location_label}
+          <div>
+            {categoryLabel && (
+              <span className="text-xs uppercase tracking-[0.3em] text-black/40 mb-2 block">
+                {categoryLabel}
               </span>
-            </div>
-          )}
-
-          {productName && (
-            <h2 className="text-3xl md:text-5xl font-light tracking-tight leading-[0.95] uppercase">
-              {productName}
-            </h2>
-          )}
-
-          {img.variant?.retail_price && (
-            <div>
-              <p className="text-2xl font-light">{formatCurrency(img.variant.retail_price, locale)}</p>
-              {img.variant.retail_price >= 10 && (
-                <p className="text-xs text-neutral-400 mt-1">
-                  ou{' '}
-                  <span className="font-semibold text-black">
-                    6x de {formatCurrency(img.variant.retail_price / 6, locale)}
-                  </span>{' '}
-                  sem juros
-                </p>
-              )}
-            </div>
-          )}
+            )}
+            <h2 className="font-serif text-4xl md:text-6xl mb-4">{productName ?? 'Auricapri'}</h2>
+            {img.variant?.retail_price ? (
+              <div>
+                <p className="text-2xl font-light mb-1">{formatCurrency(img.variant.retail_price, locale)}</p>
+                {img.variant.retail_price >= 10 && (
+                  <p className="text-xs text-black/40">
+                    ou <span className="font-semibold text-black">6x de {formatCurrency(img.variant.retail_price / 6, locale)}</span> sem juros
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-black/60 font-light leading-relaxed">
+                Uma peça que transcende o tempo, desenhada para mulheres que valorizam a sofisticação em cada detalhe.
+              </p>
+            )}
+          </div>
 
           {img.variant?.color_name && (
             <div className="flex items-center gap-3">
               {img.variant.color_hex && (
-                <div
-                  className="w-5 h-5 rounded-full border border-neutral-200 shadow-sm flex-shrink-0"
-                  style={{ backgroundColor: img.variant.color_hex }}
-                />
+                <div className="w-5 h-5 rounded-full border border-black/10 shadow-sm flex-shrink-0" style={{ backgroundColor: img.variant.color_hex }} />
               )}
-              <span className="text-xs uppercase tracking-widest font-bold text-neutral-500">
+              <span className="text-xs uppercase tracking-widest font-medium text-black/50">
                 {getLoc(img.variant.color_name)}
               </span>
             </div>
           )}
 
-          <div className="flex flex-col gap-3 pt-2">
+          <div className="flex flex-col gap-4">
             {img.product && (
               <button
                 onClick={onNavigate}
-                className="w-full py-4 bg-black text-white rounded-full text-xs font-black uppercase tracking-[0.3em] hover:bg-neutral-800 transition-colors flex items-center justify-center gap-3"
+                className="w-full py-4 bg-black text-white rounded-full font-medium hover:bg-black/80 transition-colors flex items-center justify-center gap-3 text-sm"
               >
-                <ExternalLink className="w-4 h-4" />
-                Ver na Loja
+                Ver na Loja Online
               </button>
             )}
             {img.product && !outOfStock && (
               <button
                 onClick={onAddToCart}
-                className={`w-full py-4 border rounded-full text-xs font-black uppercase tracking-[0.3em] transition-all duration-200 flex items-center justify-center gap-3 ${
+                className={`w-full py-4 border rounded-full font-medium transition-all text-sm flex items-center justify-center gap-3 ${
                   isAdding
                     ? 'bg-green-500 border-green-500 text-white'
-                    : 'border-black hover:bg-black hover:text-white'
+                    : 'border-black/10 hover:bg-black/5'
                 }`}
               >
                 <ShoppingBag className="w-4 h-4" />
@@ -463,10 +480,39 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
               </button>
             )}
             {outOfStock && img.product && (
-              <p className="text-center text-xs uppercase tracking-widest text-neutral-400 font-bold py-2">
+              <p className="text-center text-xs uppercase tracking-widest text-black/30 font-bold py-2">
                 Esgotado
               </p>
             )}
+          </div>
+
+          {/* Share — exactly AI Studio */}
+          <div className="pt-8 border-t border-black/5 flex items-center gap-6">
+            <span className="text-xs uppercase tracking-widest text-black/40">Compartilhar</span>
+            <div className="flex gap-4">
+              <a
+                href={`https://www.instagram.com/auricapri`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-50 transition-opacity"
+              >
+                <Instagram className="w-5 h-5 cursor-pointer" />
+              </a>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-50 transition-opacity"
+              >
+                <Facebook className="w-5 h-5 cursor-pointer" />
+              </a>
+              <a
+                href={`mailto:?subject=Olha essa peça da Auricapri&body=${shareUrl}`}
+                className="hover:opacity-50 transition-opacity"
+              >
+                <Mail className="w-5 h-5 cursor-pointer" />
+              </a>
+            </div>
           </div>
         </div>
       </div>
