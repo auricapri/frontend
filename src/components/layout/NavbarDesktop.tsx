@@ -74,7 +74,7 @@ export const NavbarDesktop: React.FC<NavbarDesktopProps> = ({
         <a
           href="/"
           onClick={handleNavHome}
-          className={`${isSolid ? 'text-xl' : 'text-4xl'} font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2 no-underline text-inherit inline-block`}
+          className={`${isSolid ? 'text-xl' : 'text-4xl'} font-serif font-light tracking-[0.5em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 py-2 no-underline text-inherit inline-block`}
         >
           {storeName}
         </a>

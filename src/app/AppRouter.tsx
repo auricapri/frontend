@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { type Order, type StoreConfig } from '../types';
 import { AppLayout } from './AppLayout';
 import { LoadingFallback } from '../components/ui';
+import Footer from '../components/layout/Footer';
 
 const DeliveryLoginPage = React.lazy(() => import('../pages/DeliveryLoginPage').then(m => ({ default: m.DeliveryLoginPage })));
 const DeliveryDashboard = React.lazy(() => import('../components/delivery/DeliveryDashboard'));
@@ -158,13 +159,23 @@ export function AppRouter(props: {
 
   if (app.currentView === 'gallery') {
     return (
-      <Suspense fallback={<LoadingFallback />}>
-        <GalleryPage
-          locale={app.locale}
+      <div className="min-h-dvh flex flex-col bg-paper">
+        <Suspense fallback={<LoadingFallback />}>
+          <GalleryPage
+            locale={app.locale}
+            onNavigate={app.onNavigate}
+            onAddToCart={app.addToCart}
+          />
+        </Suspense>
+        <Footer
+          t={app.t}
+          currentLocale={app.locale}
+          onChangeLocale={app.setLocale}
+          storeConfig={storeConfig}
           onNavigate={app.onNavigate}
-          onAddToCart={app.addToCart}
+          onOpenAuth={() => app.setIsAuthOpen(true)}
         />
-      </Suspense>
+      </div>
     );
   }
 

@@ -53,7 +53,7 @@ export const NavbarMobileBar: React.FC<NavbarMobileBarProps> = ({
         <a
           href="/"
           onClick={handleNavHome}
-          className={`${isSolid ? 'text-lg' : 'text-2xl'} font-light tracking-[0.3em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 no-underline text-inherit`}
+          className={`${isSolid ? 'text-lg' : 'text-2xl'} font-serif font-light tracking-[0.3em] uppercase cursor-pointer transition-all duration-700 hover:opacity-60 active:scale-95 no-underline text-inherit`}
         >
           {storeName}
         </a>
