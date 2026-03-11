@@ -1,6 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'motion/react';
 import { Search, X, Maximize2, ShoppingBag, ExternalLink, MapPin } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { type Product, type CartItem, type ProductVariant } from '../types';
@@ -75,6 +74,7 @@ async function fetchGallery(): Promise<GalleryItem[]> {
 
 export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProps) {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const [lightboxVisible, setLightboxVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [addingId, setAddingId] = useState<string | null>(null);
 
@@ -96,6 +96,26 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
       return title.includes(q) || name.includes(q) || loc.includes(q);
     });
   }, [images, searchQuery, getLoc]);
+
+  // Animação de entrada do lightbox
+  useEffect(() => {
+    if (selectedItem) {
+      requestAnimationFrame(() => setLightboxVisible(true));
+    } else {
+      setLightboxVisible(false);
+    }
+  }, [selectedItem]);
+
+  // Bloqueia scroll quando lightbox está aberto
+  useEffect(() => {
+    document.body.style.overflow = selectedItem ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [selectedItem]);
+
+  const closeLightbox = useCallback(() => {
+    setLightboxVisible(false);
+    setTimeout(() => setSelectedItem(null), 300);
+  }, []);
 
   const handleAddToCart = useCallback((img: GalleryItem) => {
     if (!img.variant || !img.product || img.variant.stock_quantity < 1) return;
@@ -138,40 +158,21 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
     <div className="min-h-screen bg-white flex flex-col">
       {/* ── Header ── */}
       <header className="pt-36 md:pt-44 pb-10 md:pb-16 px-6 text-center max-w-4xl mx-auto w-full">
-        <motion.span
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-[10px] uppercase tracking-[0.4em] text-neutral-400 mb-4 block"
-        >
+        <span className="text-[10px] uppercase tracking-[0.4em] text-neutral-400 mb-4 block animate-in fade-in duration-700">
           Curadoria de Estilo · Auricapri
-        </motion.span>
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[0.95] mb-6 uppercase"
-        >
+        </span>
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[0.95] mb-6 uppercase animate-in fade-in slide-in-from-bottom-4 duration-700">
           Nossa Galeria de{' '}
-          <span className="italic font-light not-italic" style={{ fontStyle: 'italic' }}>Inspirações</span>
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-sm text-neutral-500 font-light leading-relaxed max-w-xl mx-auto"
-        >
+          <em className="not-italic" style={{ fontStyle: 'italic' }}>Inspirações</em>
+        </h1>
+        <p className="text-sm text-neutral-500 font-light leading-relaxed max-w-xl mx-auto animate-in fade-in duration-1000">
           Explore o universo Auricapri através da nossa curadoria visual.
           Looks reais, momentos brasileiros — toque em qualquer peça para descobrir.
-        </motion.p>
+        </p>
 
         {/* Search */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="relative max-w-sm mx-auto mt-8"
-        >
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+        <div className="relative max-w-sm mx-auto mt-8">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
           <input
             type="text"
             placeholder="Buscar peças..."
@@ -181,53 +182,53 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
           />
           {searchQuery && (
             <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2">
-              <X className="w-4 h-4 text-neutral-400 hover:text-black" />
+              <X className="w-4 h-4 text-neutral-400 hover:text-black transition-colors" />
             </button>
           )}
-        </motion.div>
+        </div>
 
         <div className="mt-8 w-10 h-px bg-neutral-200 mx-auto" />
       </header>
 
       {/* ── Gallery ── */}
       <main className="px-4 md:px-8 pb-24 flex-grow">
-        {filteredItems.length === 0 && !isLoading && (
+        {filteredItems.length === 0 && (
           <div className="py-24 text-center">
             <p className="text-neutral-400 font-light italic text-sm">
-              {searchQuery ? `Nenhuma peça encontrada para "${searchQuery}".` : 'Em breve — nossa galeria está sendo preparada.'}
+              {searchQuery
+                ? `Nenhuma peça encontrada para "${searchQuery}".`
+                : 'Em breve — nossa galeria está sendo preparada.'}
             </p>
           </div>
         )}
 
         <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
-          <AnimatePresence mode="popLayout">
-            {filteredItems.map((img, i) => (
-              <GalleryCard
-                key={img.id}
-                img={img}
-                index={i}
-                getLoc={getLoc}
-                onClick={() => setSelectedItem(img)}
-              />
-            ))}
-          </AnimatePresence>
+          {filteredItems.map((img, i) => (
+            <GalleryCard
+              key={img.id}
+              img={img}
+              index={i}
+              getLoc={getLoc}
+              locale={locale}
+              onClick={() => setSelectedItem(img)}
+            />
+          ))}
         </div>
       </main>
 
       {/* ── Lightbox ── */}
-      <AnimatePresence>
-        {selectedItem && (
-          <GalleryLightbox
-            img={selectedItem}
-            isAdding={addingId === selectedItem.id}
-            getLoc={getLoc}
-            locale={locale}
-            onClose={() => setSelectedItem(null)}
-            onNavigate={() => { setSelectedItem(null); handleNavigateToProduct(selectedItem); }}
-            onAddToCart={() => handleAddToCart(selectedItem)}
-          />
-        )}
-      </AnimatePresence>
+      {selectedItem && (
+        <GalleryLightbox
+          img={selectedItem}
+          visible={lightboxVisible}
+          isAdding={addingId === selectedItem.id}
+          getLoc={getLoc}
+          locale={locale}
+          onClose={closeLightbox}
+          onNavigate={() => { closeLightbox(); setTimeout(() => handleNavigateToProduct(selectedItem), 300); }}
+          onAddToCart={() => handleAddToCart(selectedItem)}
+        />
+      )}
     </div>
   );
 }
@@ -238,20 +239,17 @@ interface GalleryCardProps {
   img: GalleryItem;
   index: number;
   getLoc: (obj: unknown) => string;
+  locale: Locale;
   onClick: () => void;
 }
 
-function GalleryCard({ img, index, getLoc, onClick }: GalleryCardProps) {
+function GalleryCard({ img, index, getLoc, locale, onClick }: GalleryCardProps) {
   const productName = img.product ? getLoc(img.product.name) : img.title;
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.4, delay: index * 0.03, ease: [0.23, 1, 0.32, 1] }}
+    <div
       className="relative group cursor-pointer break-inside-avoid mb-4"
+      style={{ animationDelay: `${index * 40}ms` }}
       onClick={onClick}
     >
       <div className="overflow-hidden rounded-2xl bg-neutral-100">
@@ -259,7 +257,7 @@ function GalleryCard({ img, index, getLoc, onClick }: GalleryCardProps) {
           src={getOptimizedImageUrl(img.image_url, 'medium')}
           alt={productName ?? 'Auricapri'}
           loading="lazy"
-          className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.06]"
+          className="w-full h-auto transition-transform duration-700 ease-out group-hover:scale-[1.06]"
         />
       </div>
 
@@ -274,14 +272,14 @@ function GalleryCard({ img, index, getLoc, onClick }: GalleryCardProps) {
       )}
 
       {/* Hover overlay */}
-      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl flex flex-col justify-end p-5">
+      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl flex flex-col justify-end p-5 pointer-events-none">
         <div className="translate-y-3 group-hover:translate-y-0 transition-transform duration-300">
           {productName && (
-            <h3 className="text-white font-light text-base leading-tight mb-2">{productName}</h3>
+            <h3 className="text-white font-light text-base leading-tight mb-1">{productName}</h3>
           )}
           {img.variant?.retail_price && (
             <p className="text-white/80 text-sm font-semibold mb-3">
-              {formatCurrency(img.variant.retail_price, 'pt')}
+              {formatCurrency(img.variant.retail_price, locale)}
             </p>
           )}
           <div className="flex items-center gap-2 text-white/70 text-xs">
@@ -290,7 +288,7 @@ function GalleryCard({ img, index, getLoc, onClick }: GalleryCardProps) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -298,6 +296,7 @@ function GalleryCard({ img, index, getLoc, onClick }: GalleryCardProps) {
 
 interface GalleryLightboxProps {
   img: GalleryItem;
+  visible: boolean;
   isAdding: boolean;
   getLoc: (obj: unknown) => string;
   locale: Locale;
@@ -306,20 +305,20 @@ interface GalleryLightboxProps {
   onAddToCart: () => void;
 }
 
-function GalleryLightbox({ img, isAdding, getLoc, locale, onClose, onNavigate, onAddToCart }: GalleryLightboxProps) {
+function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNavigate, onAddToCart }: GalleryLightboxProps) {
   const productName = img.product ? getLoc(img.product.name) : img.title;
   const outOfStock = !img.variant || img.variant.stock_quantity < 1;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[80] bg-white/96 backdrop-blur-xl flex items-center justify-center p-4 md:p-12"
+    <div
+      className={`fixed inset-0 z-[80] flex items-center justify-center p-4 md:p-12 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
       onClick={onClose}
     >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-white/95 backdrop-blur-xl" />
+
       <button
-        className="absolute top-6 right-6 p-2 hover:bg-black/5 rounded-full transition-colors"
+        className="absolute top-6 right-6 p-2 hover:bg-black/5 rounded-full transition-colors z-10"
         onClick={onClose}
         aria-label="Fechar"
       >
@@ -327,30 +326,20 @@ function GalleryLightbox({ img, isAdding, getLoc, locale, onClose, onNavigate, o
       </button>
 
       <div
-        className="max-w-5xl w-full grid md:grid-cols-2 gap-8 md:gap-16 items-center"
+        className={`relative max-w-5xl w-full grid md:grid-cols-2 gap-8 md:gap-16 items-center transition-all duration-500 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
         onClick={e => e.stopPropagation()}
       >
         {/* Image */}
-        <motion.div
-          initial={{ x: -24, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-          className="rounded-3xl overflow-hidden shadow-2xl bg-neutral-100"
-        >
+        <div className="rounded-3xl overflow-hidden shadow-2xl bg-neutral-100">
           <img
             src={getOptimizedImageUrl(img.image_url, 'large')}
             alt={productName ?? 'Auricapri'}
             className="w-full h-auto"
           />
-        </motion.div>
+        </div>
 
         {/* Info */}
-        <motion.div
-          initial={{ x: 24, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.08, ease: [0.23, 1, 0.32, 1] }}
-          className="flex flex-col gap-6"
-        >
+        <div className="flex flex-col gap-6">
           {img.location_label && (
             <div className="flex items-center gap-1.5">
               <MapPin className="w-3 h-3 text-neutral-400" />
@@ -385,7 +374,7 @@ function GalleryLightbox({ img, isAdding, getLoc, locale, onClose, onNavigate, o
             <div className="flex items-center gap-3">
               {img.variant.color_hex && (
                 <div
-                  className="w-5 h-5 rounded-full border border-neutral-200 shadow-sm"
+                  className="w-5 h-5 rounded-full border border-neutral-200 shadow-sm flex-shrink-0"
                   style={{ backgroundColor: img.variant.color_hex }}
                 />
               )}
@@ -408,24 +397,24 @@ function GalleryLightbox({ img, isAdding, getLoc, locale, onClose, onNavigate, o
             {img.product && !outOfStock && (
               <button
                 onClick={onAddToCart}
-                className={`w-full py-4 border rounded-full text-xs font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3
-                  ${isAdding
+                className={`w-full py-4 border rounded-full text-xs font-black uppercase tracking-[0.3em] transition-all duration-200 flex items-center justify-center gap-3 ${
+                  isAdding
                     ? 'bg-green-500 border-green-500 text-white'
                     : 'border-black hover:bg-black hover:text-white'
-                  }`}
+                }`}
               >
                 <ShoppingBag className="w-4 h-4" />
                 {isAdding ? 'Adicionado!' : 'Adicionar à Bolsa'}
               </button>
             )}
             {outOfStock && img.product && (
-              <p className="text-center text-xs uppercase tracking-widest text-neutral-400 font-bold">
+              <p className="text-center text-xs uppercase tracking-widest text-neutral-400 font-bold py-2">
                 Esgotado
               </p>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
