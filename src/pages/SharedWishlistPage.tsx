@@ -215,8 +215,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
             </div>
             <h2 className="font-serif text-2xl font-black uppercase tracking-tighter mb-3 text-neutral-900">
               Wishlist Não Encontrada
-            </h2>
-            <p className="text-sm text-neutral-500 leading-relaxed mb-2">
+            </h2>            <p className="text-sm text-neutral-500 leading-relaxed mb-2">
               {error || 'A wishlist que você está procurando não existe ou foi removida.'}
             </p>
             <p className="text-xs text-neutral-400">

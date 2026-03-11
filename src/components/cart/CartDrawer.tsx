@@ -85,7 +85,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
         
         {/* Header */}
         <div className="flex items-center justify-between p-6 md:p-8 border-b border-gray-100">
-          <h2 className="text-xl font-light tracking-widest uppercase">{t('cart.title')} ({items.length})</h2>
+          <h2 className="font-serif text-xl font-light tracking-widest uppercase">{t('cart.title')} ({items.length})</h2>
           <button onClick={onClose} aria-label="Close drawer" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -121,7 +121,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                   <div className="flex-1 flex flex-col justify-between py-0.5 min-w-0">
                     <div>
                       <div className="flex justify-between items-start gap-2">
-                        <h3 className="text-xs font-black uppercase tracking-tight leading-tight">{getLoc(item.name)}</h3>
+                        <h3 className="font-serif text-xs font-black uppercase tracking-tight leading-tight">{getLoc(item.name)}</h3>
                         <div className="text-right flex-shrink-0">
                           {itemHasDiscount && (
                             <p className="text-[10px] text-neutral-400 line-through">{formatCurrency(item.original_price! * item.quantity, locale)}</p>

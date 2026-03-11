@@ -19,7 +19,7 @@ export function PresentationSection({
   if (!content) return null;
 
   return (
-    <div className="w-full bg-neutral-50 border-t border-neutral-100 py-16 md:py-24 px-8 md:px-24">
+    <div className="w-full bg-paper border-t border-neutral-100 py-16 md:py-24 px-8 md:px-24">
       <div className="max-w-7xl mx-auto">
         <button
           onClick={onToggle}

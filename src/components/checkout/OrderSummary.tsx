@@ -114,7 +114,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
                   onClick={() => onSelectShippingOption?.(option)}
                   className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
                     isSelected 
-                      ? 'border-neutral-900 bg-neutral-50' 
+                      ? 'border-neutral-900 bg-paper' 
                       : 'border-neutral-100 hover:border-neutral-300'
                   }`}
                 >

@@ -44,7 +44,7 @@ export function PixPaymentSection({ pixData, pixError, isGenerating, pixCopied, 
       )}
 
       <div className="space-y-3">
-        <h4 className="text-xl font-black uppercase italic tracking-tighter">
+        <h4 className="text-xl font-black uppercase italic tracking-tighter font-serif">
           {isGenerating ? 'Gerando QR Code...' : pixReady ? 'Escaneie o QR Code' : 'Clique para gerar o PIX'}
         </h4>
         <p className="text-xs text-white/40 max-w-xs mx-auto leading-relaxed">

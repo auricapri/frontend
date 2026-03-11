@@ -38,7 +38,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
   return (
     <section className="space-y-10 animate-in fade-in slide-in-from-left duration-700">
       <div className="flex items-center gap-6 mb-10">
-        <div className="p-4 bg-neutral-50 rounded-2xl">
+        <div className="p-4 bg-paper rounded-2xl">
           <CreditCard className="w-6 h-6" />
         </div>
         <h3 className="text-xl font-black uppercase italic tracking-tighter font-serif">Método de Pagamento</h3>
@@ -53,7 +53,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
           }}
           className={`p-10 border-2 rounded-[2.5rem] flex flex-col items-center gap-4 transition-all ${
             paymentMethod === PaymentMethod.CREDIT_CARD
-              ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]'
+              ? 'border-black bg-paper shadow-xl scale-[1.02]'
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
           }`}
         >
@@ -72,7 +72,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
           onClick={() => onPaymentMethodChange(PaymentMethod.PIX)}
           className={`p-10 border-2 rounded-[2.5rem] flex flex-col items-center gap-4 transition-all ${
             paymentMethod === PaymentMethod.PIX
-              ? 'border-black bg-neutral-50 shadow-xl scale-[1.02]'
+              ? 'border-black bg-paper shadow-xl scale-[1.02]'
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
           }`}
         >
@@ -138,7 +138,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
           {/* NEW CARD FORM (Only if no saved card selected) */}
           {!selectedSavedCardId && (
-            <div className="space-y-8 bg-neutral-50/50 p-8 rounded-[2.5rem] border border-neutral-100">
+            <div className="space-y-8 bg-paper/50 p-8 rounded-[2.5rem] border border-neutral-100">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">

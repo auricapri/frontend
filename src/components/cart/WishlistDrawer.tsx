@@ -248,7 +248,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                   </p>
                 </div>
                 <div className="mb-6">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-6">{t('wishlist.shareTitle')}</h4>
+                  <h4 className="font-serif text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-6">{t('wishlist.shareTitle')}</h4>
                   <div className="grid grid-cols-4 gap-4">
                     <button 
                       onClick={handleShareLink}

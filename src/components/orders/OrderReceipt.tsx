@@ -188,7 +188,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
          <div className="border-b border-dashed border-neutral-300 mb-8 opacity-50 print:opacity-100 print:border-black"></div>
 
          <div className="space-y-6 mb-8">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4 print:text-black">Detalhamento</h3>
+            <h3 className="font-serif text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4 print:text-black">Detalhamento</h3>
             {(order.items || []).map((item: OrderItem, idx) => (
                <div key={item.id || item.variant_id || idx} className="flex justify-between items-start">
                   <div className="flex-1 pr-4">
@@ -271,7 +271,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
       {(order.status === OrderStatus.DELIVERED) && (
         <div className="w-full max-w-md px-4 md:px-0 mt-8 no-print">
           <div className="bg-paper rounded-xl p-6 border border-neutral-200">
-            <h3 className="text-lg font-bold mb-4">Avaliações</h3>
+            <h3 className="font-serif text-lg font-bold mb-4">Avaliações</h3>
             
             {currentUser && !userReview && !isReviewFormOpen && (
               <button

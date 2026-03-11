@@ -161,7 +161,7 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
           loading="lazy"
         />
         <div className="flex-1">
-          <h4 className="font-medium text-sm">{getLoc(orderItem.product_name)}</h4>
+          <h4 className="font-serif font-medium text-sm">{getLoc(orderItem.product_name)}</h4>
           <p className="text-xs text-neutral-500">
             {getLoc(orderItem.variant_color)} | {orderItem.variant_size}
           </p>

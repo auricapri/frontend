@@ -51,7 +51,7 @@ const Footer: React.FC<FooterProps> = ({
         {/* Brand & Corporate Info */}
         <div className="space-y-8">
           <div className="space-y-4">
-            <h3 className="text-2xl font-light tracking-[0.2em] uppercase text-white">{storeConfig.brand_name}</h3>
+            <h3 className="text-2xl font-light font-serif tracking-[0.2em] uppercase text-white">{storeConfig.brand_name}</h3>
             <p className="text-xs text-neutral-300 leading-relaxed max-w-xs">{t('footer.tagline')}</p>
           </div>
 
@@ -107,7 +107,7 @@ const Footer: React.FC<FooterProps> = ({
 
         {/* Shop Navigation */}
         <div className="space-y-6">
-          <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-200">{t('footer.shop')}</h4>
+          <h4 className="text-xs font-bold font-serif uppercase tracking-[0.15em] text-neutral-200">{t('footer.shop')}</h4>
           <ul className="space-y-3 text-xs text-neutral-400 font-light">
             <li>
               <button onClick={() => onNavigate('home', 'hero')} className="hover:text-white transition-colors uppercase tracking-wide text-left">
@@ -129,7 +129,7 @@ const Footer: React.FC<FooterProps> = ({
 
         {/* Customer Care */}
         <div className="space-y-6">
-          <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-200">{t('footer.customerCare')}</h4>
+          <h4 className="text-xs font-bold font-serif uppercase tracking-[0.15em] text-neutral-200">{t('footer.customerCare')}</h4>
           <ul className="space-y-3 text-xs text-neutral-400 font-light text-left">
             <li>
               <button onClick={() => onNavigate('about')} className="hover:text-white transition-colors uppercase tracking-wide text-left">
@@ -167,7 +167,7 @@ const Footer: React.FC<FooterProps> = ({
 
         {/* Security Badges */}
         <div className="space-y-6">
-          <h4 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-200">{t('footer.secure')}</h4>
+          <h4 className="text-xs font-bold font-serif uppercase tracking-[0.15em] text-neutral-200">{t('footer.secure')}</h4>
           <div className="flex items-center space-x-2 text-neutral-400">
              <Lock className="w-3 h-3" />
              <span className="text-[10px] uppercase tracking-wider">{t('footer.ssl')}</span>

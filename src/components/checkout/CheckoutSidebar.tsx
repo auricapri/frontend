@@ -34,7 +34,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
 
   return (
     <div className="lg:col-span-5">
-      <div className="bg-neutral-50 rounded-[3rem] p-4 md:p-8 lg:p-12 lg:sticky lg:top-32 border border-neutral-100 shadow-sm">
+      <div className="bg-paper rounded-[3rem] p-4 md:p-8 lg:p-12 lg:sticky lg:top-32 border border-neutral-100 shadow-sm">
         <div className="flex items-center gap-4 mb-10 border-b border-neutral-100 pb-6">
           <ShoppingBag className="w-5 h-5 text-neutral-600" />
           <h4 className="text-xs font-black uppercase tracking-[0.4em] font-serif">Sua Sacola</h4>

@@ -44,7 +44,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-300">
+        <h3 className="text-[10px] font-black font-serif uppercase tracking-[0.3em] text-neutral-300">
           Meus Endereços
         </h3>
         <span className="text-[10px] text-neutral-400">{addresses.length} endereço(s)</span>
@@ -71,7 +71,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
                   </span>
                 )}
               </div>
-              <h4 className="text-sm font-black uppercase tracking-tight">
+              <h4 className="text-sm font-black font-serif uppercase tracking-tight">
                 {addr.street_address || addr.line1}
               </h4>
               <p className={`text-xs ${addr.is_default ? 'text-white/60' : 'text-neutral-500'}`}>

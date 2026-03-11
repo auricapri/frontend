@@ -77,7 +77,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                     </span>
                   )}
                 </div>
-                <h4 className="text-sm font-black uppercase tracking-tight italic">
+                <h4 className="text-sm font-black font-serif uppercase tracking-tight italic">
                   {new Date(order.created_at).toLocaleDateString(locale)}
                 </h4>
                 <div className="flex items-center gap-2">

@@ -80,7 +80,7 @@ export function MyReturnsPage({ locale, onBack, onRequestReturn }: MyReturnsPage
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="text-xs font-bold uppercase tracking-[0.15em]">
+            <h1 className="font-serif text-xs font-bold uppercase tracking-[0.15em]">
               Minhas Devolucoes
             </h1>
           </div>

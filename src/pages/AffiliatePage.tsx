@@ -42,7 +42,7 @@ export function AffiliatePage({ onBack }: AffiliatePageProps) {
 
         {/* Tabela de comissões */}
         <section className="mb-12">
-          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
+          <h2 className="font-serif text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
             Comissões
           </h2>
 
@@ -92,7 +92,7 @@ export function AffiliatePage({ onBack }: AffiliatePageProps) {
 
         {/* Como funciona */}
         <section className="mb-12">
-          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
+          <h2 className="font-serif text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
             Como Funciona
           </h2>
           <ol className="space-y-4">
@@ -112,7 +112,7 @@ export function AffiliatePage({ onBack }: AffiliatePageProps) {
 
         {/* Requisitos */}
         <section className="mb-12">
-          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
+          <h2 className="font-serif text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
             Requisitos
           </h2>
           <ul className="space-y-3">
@@ -142,7 +142,7 @@ export function AffiliatePage({ onBack }: AffiliatePageProps) {
 
         {/* Obrigações de transparência */}
         <section className="mb-12">
-          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
+          <h2 className="font-serif text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
             Divulgação Obrigatória
           </h2>
 
@@ -189,7 +189,7 @@ export function AffiliatePage({ onBack }: AffiliatePageProps) {
 
         {/* Pagamento */}
         <section className="mb-12">
-          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
+          <h2 className="font-serif text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
             Pagamento
           </h2>
           <ul className="space-y-3 text-sm text-neutral-700 leading-relaxed">
@@ -203,7 +203,7 @@ export function AffiliatePage({ onBack }: AffiliatePageProps) {
 
         {/* CTA */}
         <section className="mb-12">
-          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
+          <h2 className="font-serif text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
             Quero Participar
           </h2>
           <p className="text-sm text-neutral-700 leading-relaxed mb-6">

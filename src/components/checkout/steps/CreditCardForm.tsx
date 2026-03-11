@@ -162,7 +162,7 @@ function CardFields({
   showSaveToggle, saveCardForFuture, onToggleSave,
 }: CardFieldsProps) {
   return (
-    <div className="space-y-6 md:space-y-8 bg-neutral-50/50 p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-[2.5rem] border border-neutral-100">
+    <div className="space-y-6 md:space-y-8 bg-paper/50 p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-[2.5rem] border border-neutral-100">
       <CreditCardPreview
         cardNumber={cardNumber}
         cardName={cardName}
@@ -289,7 +289,7 @@ export function CreditCardForm({
       )}
 
       {splitCards && finalTotal >= 500 && (
-        <div className="p-6 bg-neutral-50 rounded-[2rem] border border-neutral-100">
+        <div className="p-6 bg-paper rounded-[2rem] border border-neutral-100">
           <SplitCardAmount
             totalAmount={finalTotal}
             card1Amount={card1Amount}
@@ -309,7 +309,7 @@ export function CreditCardForm({
       )}
 
       {!splitCards && (
-        <div className="p-6 bg-neutral-50 rounded-[2rem] border border-neutral-100">
+        <div className="p-6 bg-paper rounded-[2rem] border border-neutral-100">
           <InstallmentSelector
             options={installmentOptions}
             selectedInstallments={selectedInstallments}
@@ -323,7 +323,7 @@ export function CreditCardForm({
       )}
 
       <div className="space-y-6">
-        <h4 className="text-xs font-black uppercase tracking-wider text-neutral-600 px-2">
+        <h4 className="text-xs font-black uppercase tracking-wider text-neutral-600 px-2 font-serif">
           {splitCards ? 'Cartão 1' : 'Cartão de Pagamento'}
         </h4>
 
@@ -359,7 +359,7 @@ export function CreditCardForm({
 
       {splitCards && finalTotal >= 500 && (
         <div className="space-y-6 pt-6 border-t border-neutral-200">
-          <h4 className="text-xs font-black uppercase tracking-wider text-neutral-600 px-2">Cartão 2</h4>
+          <h4 className="text-xs font-black uppercase tracking-wider text-neutral-600 px-2 font-serif">Cartão 2</h4>
 
           {savedCards.length > 0 && (
             <SavedCardList

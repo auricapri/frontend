@@ -51,7 +51,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   return (
     <section className="space-y-10 animate-in fade-in slide-in-from-left duration-700">
       <div className="flex items-center gap-6 mb-10">
-        <div className="p-4 bg-neutral-50 rounded-2xl">
+        <div className="p-4 bg-paper rounded-2xl">
           <MapPin className="w-6 h-6" />
         </div>
         <h3 className="text-xl font-black uppercase italic tracking-tighter font-serif">Endereço de Entrega</h3>
@@ -62,7 +62,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
           <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">CEP</label>
           <div className="relative">
             <input
-              className={`w-full p-6 bg-neutral-50 border ${
+              className={`w-full p-6 bg-paper border ${
                 cepError ? 'border-red-200 bg-red-50/20' : 'border-neutral-100'
               } rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-mono text-lg tracking-widest`}
               placeholder="00000-000"
@@ -129,7 +129,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
                   Número
                 </label>
                 <input
-                  className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                  className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
                   placeholder="Ex: 123"
                   value={num}
                   onChange={(e) => onNumChange(e.target.value)}
@@ -140,7 +140,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
                   Complemento
                 </label>
                 <input
-                  className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                  className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
                   placeholder="Ex: Apto 12"
                   value={complement}
                   onChange={(e) => onComplementChange(e.target.value)}
@@ -155,7 +155,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
             Nome do Destinatário
           </label>
           <input
-            className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black uppercase"
+            className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black uppercase"
             placeholder="Nome Completo"
             defaultValue={currentUser?.full_name}
           />

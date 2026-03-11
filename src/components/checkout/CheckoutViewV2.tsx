@@ -43,7 +43,7 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   const checkout = useCheckoutState({ items, currentUser, storeConfig, userMode, onComplete, locale, initialStep });
 
   return (
-    <div className="min-h-screen bg-paper text-neutral-900 font-sans flex flex-col pt-24 pb-20 relative">
+    <div className="min-h-screen bg-paper text-neutral-900 flex flex-col pt-24 pb-20 relative">
       <div className="max-w-[1400px] mx-auto w-full px-6 md:px-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-20">
           <div>

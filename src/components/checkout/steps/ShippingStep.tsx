@@ -22,7 +22,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
               key={idx}
               onClick={() => shipping.setSelectedShippingOption(option)}
               className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
-                isSelected ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-100 hover:border-neutral-300'
+                isSelected ? 'border-neutral-900 bg-paper' : 'border-neutral-100 hover:border-neutral-300'
               }`}
             >
               <div className="flex justify-between items-start mb-2">
@@ -71,7 +71,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
           onClick={() => shipping.setSelectedVarejoShipping('free')}
           className={`w-full p-3 rounded-xl border-2 transition-all text-left ${
             shipping.selectedVarejoShipping === 'free'
-              ? 'border-neutral-900 bg-neutral-50'
+              ? 'border-neutral-900 bg-paper'
               : 'border-neutral-100 hover:border-neutral-300'
           }`}
         >
@@ -94,7 +94,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
           onClick={() => shipping.setSelectedVarejoShipping('express')}
           className={`w-full p-3 rounded-xl border-2 transition-all text-left ${
             shipping.selectedVarejoShipping === 'express'
-              ? 'border-neutral-900 bg-neutral-50'
+              ? 'border-neutral-900 bg-paper'
               : 'border-neutral-100 hover:border-neutral-300'
           }`}
         >
