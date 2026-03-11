@@ -31,7 +31,7 @@ export const clothingStoreSchema = {
     "addressRegion": "SP"
   },
   "sameAs": [
-    "https://www.instagram.com/auricapri",
+    "https://www.instagram.com/auricapri.oficial",
     "https://www.facebook.com/auricapri"
   ]
 };
@@ -53,7 +53,7 @@ export const organizationSchema = {
     "availableLanguage": ["Portuguese", "English", "Spanish", "French"]
   },
   "sameAs": [
-    "https://www.instagram.com/auricapri",
+    "https://www.instagram.com/auricapri.oficial",
     "https://www.facebook.com/auricapri"
   ]
 };

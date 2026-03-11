@@ -5,6 +5,36 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.3.3] - 2026-03-11
+
+### Adicionado
+- **ContactPage**: nova pagina `/contact` com canais de atendimento (Instagram, WhatsApp, Email) — design consistente com tema paper
+- **Roteamento**: `'contact'` adicionado ao AppView type, AppRouter e useNavigation; `/contact` agora renderiza a ContactPage
+
+### Corrigido
+- **GalleryPage**: botao "Contato" agora navega para `/contact` em vez de redirecionar para home
+- **Instagram**: URL corrigida para `auricapri.oficial` em Footer e GalleryPage
+- **CollectionDetail**: `bg-white` substituido por `bg-paper` — pagina de colecao nao aparece mais branca
+- **ProductGrid**: `bg-white` substituido por `bg-paper` — grid de produtos usa tom papel
+
+### Alterado
+- **Cor de fundo global**: Background alterado de branco para `#FAF8F0` (paper) — token Tailwind `paper`, CSS variable `--color-paper`, body inline style e splash screen
+- **Playfair Display**: fonte serif adicionada ao Tailwind config e carregada via Google Fonts
+- **AppLayout**: root div usa `bg-paper` em vez de `bg-white`
+- **Navbar**: background solido usa `bg-paper/90` em vez de `bg-white/90`
+- **CartDrawer**: background usa `bg-paper` em vez de `bg-white`
+
+## [1.3.2] - 2026-03-11
+
+### Corrigido
+- **GalleryPage**: botao "Colecoes" corrigido de `onNavigate('collection')` para `onNavigate('home', 'collection')` — evita pagina branca ao tentar navegar para `/collection` sem slug
+- **GalleryPage**: botao "Contato" corrigido de `onNavigate('home', 'contact')` para `onNavigate('home')` — nao existe secao com `id="contact"` na home; o contato esta disponivel no `id="footer-contact"` no rodape da home page
+
+## [1.3.1] - 2026-03-11
+
+### Corrigido
+- **GalleryPage**: nav flutuante corrigido — removido `pt-32 md:pt-24` do elemento `<nav>` e adicionado `<div className="h-32 md:h-24 flex-shrink-0" />` como spacer antes do nav; esqueleto de loading ajustado de `pt-40` para `pt-32 md:pt-24`
+
 ## [1.3.0] - 2026-03-11
 
 ### Adicionado

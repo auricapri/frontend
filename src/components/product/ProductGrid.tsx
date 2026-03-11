@@ -158,7 +158,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     selectedSizes.length + selectedColorFamilies.length + (priceMin !== null || priceMax !== null ? 1 : 0);
 
   return (
-    <section id="collection" className="w-full bg-white flex flex-col pt-4 md:pt-20 pb-4">
+    <section id="collection" className="w-full bg-paper flex flex-col pt-4 md:pt-20 pb-4">
 
       {onGoToCart && (
         <CartIncentiveBanner
