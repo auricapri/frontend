@@ -396,125 +396,113 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
     : 'https://www.auricapri.com.br/galeria';
 
   return (
-    <div className={`fixed inset-0 z-[80] transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-      {/* Backdrop — click to close */}
-      <div className="absolute inset-0 bg-paper" onClick={onClose} />
+    <div
+      className={`fixed inset-0 z-[80] bg-paper/98 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      onClick={onClose}
+    >
+      {/* Close button */}
+      <button
+        className="absolute top-6 right-6 p-2 hover:bg-black/5 rounded-full transition-colors z-10"
+        onClick={onClose}
+        aria-label="Fechar"
+      >
+        <X className="w-7 h-7" />
+      </button>
 
-      {/* Scrollable area */}
-      <div className="relative h-full overflow-y-auto overscroll-contain">
-
-        {/* Sticky close button */}
-        <div className="sticky top-0 z-10 flex justify-end p-4 md:p-8 pointer-events-none">
-          <button
-            className="pointer-events-auto p-2.5 bg-black/8 hover:bg-black/15 rounded-full transition-colors"
-            onClick={onClose}
-            aria-label="Fechar"
-          >
-            <X className="w-5 h-5" />
-          </button>
+      {/* Content — never overflows viewport */}
+      <div
+        className={`max-w-5xl w-full grid md:grid-cols-2 gap-4 md:gap-12 items-center transition-all duration-500 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Image */}
+        <div className="rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl flex-shrink-0">
+          <img
+            src={getOptimizedImageUrl(img.image_url, 'large')}
+            alt={productName ?? 'Auricapri'}
+            className="w-full object-cover max-h-[38vh] md:max-h-[72vh]"
+          />
         </div>
 
-        {/* Content */}
-        <div
-          className={`px-4 md:px-12 pb-8 -mt-2 md:-mt-6 transition-transform duration-500 ${visible ? 'translate-y-0' : 'translate-y-6'}`}
-          onClick={e => e.stopPropagation()}
-        >
-          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6 md:gap-12 items-start">
-
-            {/* Image */}
-            <div className="rounded-2xl md:rounded-3xl overflow-hidden shadow-xl">
-              <img
-                src={getOptimizedImageUrl(img.image_url, 'large')}
-                alt={productName ?? 'Auricapri'}
-                className="w-full h-auto max-h-[50vh] md:max-h-[75vh] object-cover"
-              />
-            </div>
-
-            {/* Info */}
-            <div
-              className="flex flex-col gap-5"
-              style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
-            >
+        {/* Info */}
+        <div className="flex flex-col gap-2 md:gap-6">
+          <div>
+            {categoryLabel && (
+              <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-black/40 mb-1 md:mb-2 block">
+                {categoryLabel}
+              </span>
+            )}
+            <h2 className="font-serif text-2xl md:text-5xl mb-2 md:mb-4 leading-tight">
+              {productName ?? 'Auricapri'}
+            </h2>
+            {img.variant?.retail_price ? (
               <div>
-                {categoryLabel && (
-                  <span className="text-xs uppercase tracking-[0.3em] text-black/40 mb-2 block">
-                    {categoryLabel}
-                  </span>
-                )}
-                <h2 className="font-serif text-2xl sm:text-3xl md:text-5xl mb-3 leading-tight">
-                  {productName ?? 'Auricapri'}
-                </h2>
-                {img.variant?.retail_price ? (
-                  <div>
-                    <p className="text-xl md:text-2xl font-light mb-1">{formatCurrency(img.variant.retail_price, locale)}</p>
-                    {img.variant.retail_price >= 10 && (
-                      <p className="text-xs text-black/40">
-                        ou <span className="font-semibold text-black">6x de {formatCurrency(img.variant.retail_price / 6, locale)}</span> sem juros
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm text-black/60 font-light leading-relaxed">
-                    Uma peça que transcende o tempo, desenhada para mulheres que valorizam a sofisticação.
+                <p className="text-lg md:text-2xl font-light mb-0.5 md:mb-1">{formatCurrency(img.variant.retail_price, locale)}</p>
+                {img.variant.retail_price >= 10 && (
+                  <p className="text-xs text-black/40">
+                    ou <span className="font-semibold text-black">6x de {formatCurrency(img.variant.retail_price / 6, locale)}</span> sem juros
                   </p>
                 )}
               </div>
+            ) : (
+              <p className="hidden md:block text-black/60 font-light leading-relaxed text-sm">
+                Uma peça que transcende o tempo, desenhada para mulheres que valorizam a sofisticação em cada detalhe.
+              </p>
+            )}
+          </div>
 
-              {img.variant?.color_name && (
-                <div className="flex items-center gap-3">
-                  {img.variant.color_hex && (
-                    <div className="w-5 h-5 rounded-full border border-black/10 shadow-sm flex-shrink-0" style={{ backgroundColor: img.variant.color_hex }} />
-                  )}
-                  <span className="text-xs uppercase tracking-widest font-medium text-black/50">
-                    {getLoc(img.variant.color_name)}
-                  </span>
-                </div>
+          {img.variant?.color_name && (
+            <div className="flex items-center gap-3">
+              {img.variant.color_hex && (
+                <div className="w-4 h-4 md:w-5 md:h-5 rounded-full border border-black/10 shadow-sm flex-shrink-0" style={{ backgroundColor: img.variant.color_hex }} />
               )}
+              <span className="text-xs uppercase tracking-widest font-medium text-black/50">
+                {getLoc(img.variant.color_name)}
+              </span>
+            </div>
+          )}
 
-              <div className="flex flex-col gap-3">
-                {img.product && (
-                  <button
-                    onClick={onNavigate}
-                    className="w-full py-4 bg-black text-white rounded-full font-medium hover:bg-black/80 transition-colors flex items-center justify-center gap-3 text-sm"
-                  >
-                    Ver na Loja Online
-                  </button>
-                )}
-                {img.product && !outOfStock && (
-                  <button
-                    onClick={onAddToCart}
-                    className={`w-full py-4 border rounded-full font-medium transition-all text-sm flex items-center justify-center gap-3 ${
-                      isAdding
-                        ? 'bg-green-500 border-green-500 text-white'
-                        : 'border-black/20 hover:bg-black/5'
-                    }`}
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                    {isAdding ? 'Adicionado!' : 'Adicionar à Bolsa'}
-                  </button>
-                )}
-                {outOfStock && img.product && (
-                  <p className="text-center text-xs uppercase tracking-widest text-black/30 font-bold py-2">
-                    Esgotado
-                  </p>
-                )}
-              </div>
+          <div className="flex flex-col gap-2 md:gap-4">
+            {img.product && (
+              <button
+                onClick={onNavigate}
+                className="w-full py-3 md:py-4 bg-black text-white rounded-full font-medium hover:bg-black/80 transition-colors flex items-center justify-center gap-3 text-sm"
+              >
+                Ver na Loja Online
+              </button>
+            )}
+            {img.product && !outOfStock && (
+              <button
+                onClick={onAddToCart}
+                className={`w-full py-3 md:py-4 border rounded-full font-medium transition-all text-sm flex items-center justify-center gap-3 ${
+                  isAdding
+                    ? 'bg-green-500 border-green-500 text-white'
+                    : 'border-black/20 hover:bg-black/5'
+                }`}
+              >
+                <ShoppingBag className="w-4 h-4" />
+                {isAdding ? 'Adicionado!' : 'Adicionar à Bolsa'}
+              </button>
+            )}
+            {outOfStock && img.product && (
+              <p className="text-center text-xs uppercase tracking-widest text-black/30 font-bold py-1">
+                Esgotado
+              </p>
+            )}
+          </div>
 
-              {/* Share */}
-              <div className="pt-5 border-t border-black/5 flex items-center gap-6">
-                <span className="text-xs uppercase tracking-widest text-black/40">Compartilhar</span>
-                <div className="flex gap-4">
-                  <a href="https://www.instagram.com/auricapri.oficial" target="_blank" rel="noopener noreferrer" className="hover:opacity-50 transition-opacity">
-                    <Instagram className="w-5 h-5" />
-                  </a>
-                  <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="hover:opacity-50 transition-opacity">
-                    <Facebook className="w-5 h-5" />
-                  </a>
-                  <a href={`mailto:?subject=Olha essa peça da Auricapri&body=${shareUrl}`} className="hover:opacity-50 transition-opacity">
-                    <Mail className="w-5 h-5" />
-                  </a>
-                </div>
-              </div>
+          {/* Share — desktop only */}
+          <div className="hidden md:flex pt-6 border-t border-black/5 items-center gap-6">
+            <span className="text-xs uppercase tracking-widest text-black/40">Compartilhar</span>
+            <div className="flex gap-4">
+              <a href="https://www.instagram.com/auricapri.oficial" target="_blank" rel="noopener noreferrer" className="hover:opacity-50 transition-opacity">
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="hover:opacity-50 transition-opacity">
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a href={`mailto:?subject=Olha essa peça da Auricapri&body=${shareUrl}`} className="hover:opacity-50 transition-opacity">
+                <Mail className="w-5 h-5" />
+              </a>
             </div>
           </div>
         </div>
