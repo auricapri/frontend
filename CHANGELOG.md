@@ -5,6 +5,18 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.3.4] - 2026-03-11
+
+### Corrigido
+- **GalleryPage**: espaçamento extra no header removido — spacer `h-32` eliminado (galeria é standalone sem navbar principal); sub-nav agora `sticky top-0`
+- **GalleryPage**: cor do header corrigida de `bg-paper/80 backdrop-blur-md` para `bg-paper` sólido — cor idêntica ao restante do background
+- **GalleryPage**: lightbox mobile completamente refeito — container `overflow-y-auto`, botão fechar sticky no topo, imagem com `max-h-[50vh]` no mobile, fonte do título reduzida (`text-2xl` mobile → `text-5xl` desktop), `safe-area-inset-bottom` no info
+- **GalleryPage**: footer adicionado — mesmo Footer da home renderizado via AppRouter após o conteúdo da galeria
+
+### Alterado
+- **NavbarMobileBar**: nome da loja agora usa `font-serif` (Playfair Display) — consistência com galeria
+- **NavbarDesktop**: nome da loja agora usa `font-serif` (Playfair Display) — consistência com galeria
+
 ## [1.3.3] - 2026-03-11
 
 ### Adicionado
