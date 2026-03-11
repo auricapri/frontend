@@ -1,10 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { MapPin, ShoppingBag } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Search, X, Maximize2, ShoppingBag, ExternalLink, MapPin } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { type Product, type CartItem, type ProductVariant } from '../types';
 import { type Locale } from '../i18n';
 import { createGetLoc } from '../utils/localization';
+import { formatCurrency } from '../utils/currency';
+import { getOptimizedImageUrl } from '../utils/image';
 
 interface GalleryRow {
   id: string;
@@ -43,7 +46,6 @@ async function fetchGallery(): Promise<GalleryItem[]> {
   if (error || !rawRows?.length) return [];
 
   const rows = rawRows as GalleryRow[];
-
   const variantIds = rows.map(r => r.variant_id).filter((id): id is string => id !== null);
   const productIds = rows.map(r => r.product_id).filter((id): id is string => id !== null);
 
@@ -72,7 +74,8 @@ async function fetchGallery(): Promise<GalleryItem[]> {
 }
 
 export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProps) {
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [addingId, setAddingId] = useState<string | null>(null);
 
   const getLoc = createGetLoc(locale);
@@ -83,8 +86,16 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
     staleTime: 5 * 60 * 1000,
   });
 
-  const formatPrice = (price: number) =>
-    price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return images;
+    const q = searchQuery.toLowerCase();
+    return images.filter(img => {
+      const title = img.title?.toLowerCase() ?? '';
+      const name = img.product ? getLoc(img.product.name).toLowerCase() : '';
+      const loc = img.location_label?.toLowerCase() ?? '';
+      return title.includes(q) || name.includes(q) || loc.includes(q);
+    });
+  }, [images, searchQuery, getLoc]);
 
   const handleAddToCart = useCallback((img: GalleryItem) => {
     if (!img.variant || !img.product || img.variant.stock_quantity < 1) return;
@@ -113,10 +124,10 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white pt-40 px-4 md:px-12">
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4">
+      <div className="min-h-screen bg-white pt-40 px-4 md:px-8">
+        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
           {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="break-inside-avoid mb-3 md:mb-4 animate-pulse bg-neutral-100 rounded-2xl aspect-[3/4]" />
+            <div key={i} className="break-inside-avoid mb-4 animate-pulse bg-neutral-100 rounded-2xl aspect-[3/4]" />
           ))}
         </div>
       </div>
@@ -124,136 +135,297 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="pt-36 md:pt-44 pb-8 md:pb-12 px-4 md:px-12 text-center">
-        <p className="text-[9px] font-black uppercase tracking-[0.4em] text-neutral-400 mb-3">Auricapri</p>
-        <h1 className="text-3xl md:text-5xl font-light tracking-[0.15em] uppercase mb-4">Galeria</h1>
-        <p className="text-sm text-neutral-500 font-light max-w-md mx-auto leading-relaxed">
-          Looks reais, momentos brasileiros. Toque em qualquer peça para comprar.
-        </p>
-        <div className="mt-6 w-8 h-px bg-neutral-200 mx-auto" />
-      </div>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* ── Header ── */}
+      <header className="pt-36 md:pt-44 pb-10 md:pb-16 px-6 text-center max-w-4xl mx-auto w-full">
+        <motion.span
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-[10px] uppercase tracking-[0.4em] text-neutral-400 mb-4 block"
+        >
+          Curadoria de Estilo · Auricapri
+        </motion.span>
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[0.95] mb-6 uppercase"
+        >
+          Nossa Galeria de{' '}
+          <span className="italic font-light not-italic" style={{ fontStyle: 'italic' }}>Inspirações</span>
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-sm text-neutral-500 font-light leading-relaxed max-w-xl mx-auto"
+        >
+          Explore o universo Auricapri através da nossa curadoria visual.
+          Looks reais, momentos brasileiros — toque em qualquer peça para descobrir.
+        </motion.p>
 
-      <div className="px-3 md:px-12 pb-20">
-        <div className="columns-2 md:columns-3 xl:columns-4 gap-3 md:gap-4">
-          {images.map((img) => (
-            <GalleryCard
-              key={img.id}
-              img={img}
-              isHovered={hoveredId === img.id}
-              isAdding={addingId === img.id}
-              getLoc={getLoc}
-              formatPrice={formatPrice}
-              onMouseEnter={() => setHoveredId(img.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              onNavigate={() => handleNavigateToProduct(img)}
-              onAddToCart={() => handleAddToCart(img)}
-            />
-          ))}
-        </div>
+        {/* Search */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="relative max-w-sm mx-auto mt-8"
+        >
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <input
+            type="text"
+            placeholder="Buscar peças..."
+            className="w-full pl-11 pr-10 py-3 bg-neutral-50 border border-neutral-200 rounded-full text-sm focus:outline-none focus:border-black transition-colors"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2">
+              <X className="w-4 h-4 text-neutral-400 hover:text-black" />
+            </button>
+          )}
+        </motion.div>
 
-        {images.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-neutral-400 text-sm">Em breve — nossa galeria está sendo preparada.</p>
+        <div className="mt-8 w-10 h-px bg-neutral-200 mx-auto" />
+      </header>
+
+      {/* ── Gallery ── */}
+      <main className="px-4 md:px-8 pb-24 flex-grow">
+        {filteredItems.length === 0 && !isLoading && (
+          <div className="py-24 text-center">
+            <p className="text-neutral-400 font-light italic text-sm">
+              {searchQuery ? `Nenhuma peça encontrada para "${searchQuery}".` : 'Em breve — nossa galeria está sendo preparada.'}
+            </p>
           </div>
         )}
-      </div>
+
+        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+          <AnimatePresence mode="popLayout">
+            {filteredItems.map((img, i) => (
+              <GalleryCard
+                key={img.id}
+                img={img}
+                index={i}
+                getLoc={getLoc}
+                onClick={() => setSelectedItem(img)}
+              />
+            ))}
+          </AnimatePresence>
+        </div>
+      </main>
+
+      {/* ── Lightbox ── */}
+      <AnimatePresence>
+        {selectedItem && (
+          <GalleryLightbox
+            img={selectedItem}
+            isAdding={addingId === selectedItem.id}
+            getLoc={getLoc}
+            locale={locale}
+            onClose={() => setSelectedItem(null)}
+            onNavigate={() => { setSelectedItem(null); handleNavigateToProduct(selectedItem); }}
+            onAddToCart={() => handleAddToCart(selectedItem)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
+/* ─────────── GalleryCard ─────────── */
+
 interface GalleryCardProps {
   img: GalleryItem;
-  isHovered: boolean;
+  index: number;
+  getLoc: (obj: unknown) => string;
+  onClick: () => void;
+}
+
+function GalleryCard({ img, index, getLoc, onClick }: GalleryCardProps) {
+  const productName = img.product ? getLoc(img.product.name) : img.title;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.4, delay: index * 0.03, ease: [0.23, 1, 0.32, 1] }}
+      className="relative group cursor-pointer break-inside-avoid mb-4"
+      onClick={onClick}
+    >
+      <div className="overflow-hidden rounded-2xl bg-neutral-100">
+        <img
+          src={getOptimizedImageUrl(img.image_url, 'medium')}
+          alt={productName ?? 'Auricapri'}
+          loading="lazy"
+          className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.06]"
+        />
+      </div>
+
+      {/* Location pill */}
+      {img.location_label && (
+        <div className="absolute top-3 left-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm pointer-events-none">
+          <MapPin className="w-2 h-2 text-neutral-400" strokeWidth={2} />
+          <span className="text-[7px] font-bold uppercase tracking-wider text-neutral-600">
+            {img.location_label}
+          </span>
+        </div>
+      )}
+
+      {/* Hover overlay */}
+      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl flex flex-col justify-end p-5">
+        <div className="translate-y-3 group-hover:translate-y-0 transition-transform duration-300">
+          {productName && (
+            <h3 className="text-white font-light text-base leading-tight mb-2">{productName}</h3>
+          )}
+          {img.variant?.retail_price && (
+            <p className="text-white/80 text-sm font-semibold mb-3">
+              {formatCurrency(img.variant.retail_price, 'pt')}
+            </p>
+          )}
+          <div className="flex items-center gap-2 text-white/70 text-xs">
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span className="uppercase tracking-wider font-medium">Ver detalhes</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─────────── GalleryLightbox ─────────── */
+
+interface GalleryLightboxProps {
+  img: GalleryItem;
   isAdding: boolean;
   getLoc: (obj: unknown) => string;
-  formatPrice: (price: number) => string;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
+  locale: Locale;
+  onClose: () => void;
   onNavigate: () => void;
   onAddToCart: () => void;
 }
 
-function GalleryCard({
-  img, isHovered, isAdding, getLoc, formatPrice,
-  onMouseEnter, onMouseLeave, onNavigate, onAddToCart,
-}: GalleryCardProps) {
+function GalleryLightbox({ img, isAdding, getLoc, locale, onClose, onNavigate, onAddToCart }: GalleryLightboxProps) {
+  const productName = img.product ? getLoc(img.product.name) : img.title;
   const outOfStock = !img.variant || img.variant.stock_quantity < 1;
-  const hasProduct = !!img.product;
 
   return (
-    <div
-      className="break-inside-avoid mb-2 md:mb-3 group cursor-pointer"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[80] bg-white/96 backdrop-blur-xl flex items-center justify-center p-4 md:p-12"
+      onClick={onClose}
     >
-      {/* Image — Pinterest style: natural height, rounded, no dark overlay */}
-      <div className="relative overflow-hidden rounded-2xl bg-neutral-100" onClick={onNavigate}>
-        <img
-          src={img.image_url}
-          alt={img.title ?? 'Galeria Auricapri'}
-          loading="lazy"
-          className="w-full h-auto object-cover transition-transform duration-[1.8s] ease-out group-hover:scale-[1.03]"
-        />
+      <button
+        className="absolute top-6 right-6 p-2 hover:bg-black/5 rounded-full transition-colors"
+        onClick={onClose}
+        aria-label="Fechar"
+      >
+        <X className="w-7 h-7" />
+      </button>
 
-        {/* Location pill — top left */}
-        {img.location_label && (
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
-            <MapPin className="w-2 h-2 text-neutral-400" strokeWidth={2} />
-            <span className="text-[7px] font-bold uppercase tracking-wider text-neutral-600">
-              {img.location_label}
-            </span>
-          </div>
-        )}
+      <div
+        className="max-w-5xl w-full grid md:grid-cols-2 gap-8 md:gap-16 items-center"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Image */}
+        <motion.div
+          initial={{ x: -24, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+          className="rounded-3xl overflow-hidden shadow-2xl bg-neutral-100"
+        >
+          <img
+            src={getOptimizedImageUrl(img.image_url, 'large')}
+            alt={productName ?? 'Auricapri'}
+            className="w-full h-auto"
+          />
+        </motion.div>
 
-        {/* Add to cart button — top right, appears on hover like Pinterest save button */}
-        {hasProduct && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onAddToCart(); }}
-            disabled={outOfStock}
-            className={`absolute top-2.5 right-2.5 flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg transition-all duration-200
-              ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'}
-              ${isAdding ? 'bg-green-500 text-white' : 'bg-black text-white hover:bg-neutral-800'}
-              ${outOfStock ? 'bg-neutral-400 cursor-not-allowed' : ''}
-            `}
-          >
-            <ShoppingBag className="w-3 h-3" strokeWidth={2.5} />
-            {isAdding ? 'Adicionado!' : outOfStock ? 'Esgotado' : 'Comprar'}
-          </button>
-        )}
-      </div>
-
-      {/* Info below image — Pinterest puts info below, not overlaid */}
-      {(hasProduct || img.title) && (
-        <div className="px-1 pt-2 pb-1">
-          {img.product && (
-            <p
-              onClick={onNavigate}
-              className="text-[11px] md:text-[12px] font-semibold text-neutral-900 leading-snug truncate hover:underline"
-            >
-              {getLoc(img.product.name)}
-            </p>
-          )}
-          {!img.product && img.title && (
-            <p className="text-[11px] md:text-[12px] font-semibold text-neutral-900 leading-snug truncate">
-              {img.title}
-            </p>
-          )}
-          <div className="flex items-center gap-2 mt-0.5">
-            {img.variant?.color_hex && (
-              <div
-                className="w-2.5 h-2.5 rounded-full border border-neutral-200 flex-shrink-0"
-                style={{ backgroundColor: img.variant.color_hex }}
-              />
-            )}
-            {img.variant?.retail_price ? (
-              <span className="text-[11px] font-bold text-neutral-700">
-                {formatPrice(img.variant.retail_price)}
+        {/* Info */}
+        <motion.div
+          initial={{ x: 24, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.08, ease: [0.23, 1, 0.32, 1] }}
+          className="flex flex-col gap-6"
+        >
+          {img.location_label && (
+            <div className="flex items-center gap-1.5">
+              <MapPin className="w-3 h-3 text-neutral-400" />
+              <span className="text-[10px] uppercase tracking-[0.3em] text-neutral-400">
+                {img.location_label}
               </span>
-            ) : null}
+            </div>
+          )}
+
+          {productName && (
+            <h2 className="text-3xl md:text-5xl font-light tracking-tight leading-[0.95] uppercase">
+              {productName}
+            </h2>
+          )}
+
+          {img.variant?.retail_price && (
+            <div>
+              <p className="text-2xl font-light">{formatCurrency(img.variant.retail_price, locale)}</p>
+              {img.variant.retail_price >= 10 && (
+                <p className="text-xs text-neutral-400 mt-1">
+                  ou{' '}
+                  <span className="font-semibold text-black">
+                    6x de {formatCurrency(img.variant.retail_price / 6, locale)}
+                  </span>{' '}
+                  sem juros
+                </p>
+              )}
+            </div>
+          )}
+
+          {img.variant?.color_name && (
+            <div className="flex items-center gap-3">
+              {img.variant.color_hex && (
+                <div
+                  className="w-5 h-5 rounded-full border border-neutral-200 shadow-sm"
+                  style={{ backgroundColor: img.variant.color_hex }}
+                />
+              )}
+              <span className="text-xs uppercase tracking-widest font-bold text-neutral-500">
+                {getLoc(img.variant.color_name)}
+              </span>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3 pt-2">
+            {img.product && (
+              <button
+                onClick={onNavigate}
+                className="w-full py-4 bg-black text-white rounded-full text-xs font-black uppercase tracking-[0.3em] hover:bg-neutral-800 transition-colors flex items-center justify-center gap-3"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Ver na Loja
+              </button>
+            )}
+            {img.product && !outOfStock && (
+              <button
+                onClick={onAddToCart}
+                className={`w-full py-4 border rounded-full text-xs font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3
+                  ${isAdding
+                    ? 'bg-green-500 border-green-500 text-white'
+                    : 'border-black hover:bg-black hover:text-white'
+                  }`}
+              >
+                <ShoppingBag className="w-4 h-4" />
+                {isAdding ? 'Adicionado!' : 'Adicionar à Bolsa'}
+              </button>
+            )}
+            {outOfStock && img.product && (
+              <p className="text-center text-xs uppercase tracking-widest text-neutral-400 font-bold">
+                Esgotado
+              </p>
+            )}
           </div>
-        </div>
-      )}
-    </div>
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }
