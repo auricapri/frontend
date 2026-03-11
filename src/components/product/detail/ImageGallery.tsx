@@ -56,8 +56,8 @@ export function ImageGallery(props: {
   } = props;
 
   return (
-    <div className="w-full md:w-[60%] bg-paper relative">
-      <div className="hidden md:flex flex-col space-y-4 p-4 lg:p-12 overflow-y-visible" id="desktop-gallery">
+    <div className="w-full md:w-[60%] bg-paper relative md:self-start">
+      <div className="hidden md:flex flex-col space-y-4 p-4 lg:p-12" id="desktop-gallery">
         {allImagesWithVariant.map((imgData, idx) => {
           const isActiveVariantImage = (activeVariantId && imgData.variantIds?.includes(activeVariantId)) || false;
           const isFirstOfCombination = idx === 0 || allImagesWithVariant[idx - 1].combinationKey !== imgData.combinationKey;
@@ -78,7 +78,8 @@ export function ImageGallery(props: {
                   setIsZoomOpen(true);
                 }
               }}
-              className="relative bg-paper overflow-hidden cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2"
+              className="relative bg-paper cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2 overflow-hidden"
+              style={{ contain: 'paint' }}
               onClick={() => {
                 setZoomImgIndex(idx);
                 setIsZoomOpen(true);
