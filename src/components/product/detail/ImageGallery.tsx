@@ -1,6 +1,7 @@
 import React from 'react';
 import { Maximize2, ScanFace } from 'lucide-react';
 import { OptimizedImage } from '../../ui';
+import { getOptimizedImageUrl } from '../../../utils/image';
 import { type Product, type ProductImageHotspot, type CartItem } from '../../../types';
 import { ImageHotspots } from '../ImageHotspots';
 import { Locale } from '../../../i18n';
@@ -77,7 +78,7 @@ export function ImageGallery(props: {
                   setIsZoomOpen(true);
                 }
               }}
-              className="relative aspect-[3/4] bg-paper overflow-hidden cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2"
+              className="relative bg-paper overflow-hidden cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2"
               onClick={() => {
                 setZoomImgIndex(idx);
                 setIsZoomOpen(true);
@@ -90,15 +91,12 @@ export function ImageGallery(props: {
                 onAddToCart={onAddToCart || (() => {})}
                 onNavigateToProduct={onNavigateToProduct}
               >
-                <OptimizedImage
-                  src={imgData.url}
+                <img
+                  src={getOptimizedImageUrl(imgData.url, idx < 2 ? 'large' : 'medium')}
                   alt={`${getLoc(product.name)} view ${idx + 1}`}
-                  className="w-full h-full transition-transform duration-[1.5s] ease-out group-hover:scale-110"
-                  size={idx < 2 ? 'large' : 'medium'}
-                  priority={idx < 2}
-                  objectFit="contain"
-                  useSrcSet
-                  srcSetSizes={['medium', 'large', 'xlarge']}
+                  className="w-full h-auto transition-transform duration-[1.5s] ease-out group-hover:scale-105"
+                  loading={idx < 2 ? 'eager' : 'lazy'}
+                  decoding="async"
                 />
               </ImageHotspots>
               <div className="absolute bottom-10 right-10 p-5 bg-paper/90 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">
