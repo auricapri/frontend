@@ -49,7 +49,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ locale: _locale, onN
             
             <button
               onClick={() => window.history.back()}
-              className="group flex items-center gap-3 px-8 py-4 bg-neutral-50 text-neutral-900 border border-neutral-200 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:border-black transition-all active:scale-95"
+              className="group flex items-center gap-3 px-8 py-4 bg-neutral-50 text-neutral-900 border border-neutral-200 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] hover:bg-paper hover:border-black transition-all active:scale-95"
             >
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
               <span>Voltar</span>

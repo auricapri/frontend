@@ -25,7 +25,7 @@ export const Input: React.FC<InputProps> = ({
         id={inputId}
         className={`w-full p-5 bg-neutral-50 border ${
           error ? 'border-red-200 bg-red-50/20' : 'border-neutral-100'
-        } rounded-2xl outline-none focus:bg-white focus:border-black transition-all ${className}`}
+        } rounded-2xl outline-none focus:bg-paper focus:border-black transition-all ${className}`}
         {...props}
       />
       {error && (

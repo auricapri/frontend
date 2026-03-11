@@ -31,8 +31,8 @@ export function HotspotDot({ x, y, onClick, isActive = false, productName }: Hot
       {/* Simple circular dot */}
       <div className={`relative w-8 h-8 rounded-full shadow-lg transition-all duration-200 ${
         isActive
-          ? 'bg-white border-2 border-neutral-800 scale-110'
-          : 'bg-white/90 border-2 border-white group-hover:bg-white group-hover:scale-110'
+          ? 'bg-paper border-2 border-neutral-800 scale-110'
+          : 'bg-paper/90 border-2 border-white group-hover:bg-paper group-hover:scale-110'
       }`}>
         {/* Inner dot */}
         <div className={`absolute inset-0 m-auto w-2 h-2 rounded-full transition-colors ${

@@ -66,7 +66,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             {t('admin.customer')}
           </label>
           <input
-            className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-black outline-none focus:bg-white focus:border-black transition-all"
+            className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-black outline-none focus:bg-paper focus:border-black transition-all"
             value={fullName}
             onChange={e => onFullNameChange(e.target.value)}
           />
@@ -78,7 +78,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           </label>
           <div className="relative">
             <input
-              className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-black outline-none focus:bg-white focus:border-black transition-all pl-14"
+              className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-black outline-none focus:bg-paper focus:border-black transition-all pl-14"
               placeholder="+55 11 99999-9999"
               value={phone}
               onChange={e => onPhoneChange(maskPhone(e.target.value))}
@@ -92,7 +92,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             CPF <span className="text-neutral-300">(opcional para nota fiscal)</span>
           </label>
           <input
-            className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-mono outline-none focus:bg-white focus:border-black transition-all"
+            className="w-full p-6 bg-neutral-50 border border-neutral-100 rounded-2xl text-sm font-mono outline-none focus:bg-paper focus:border-black transition-all"
             placeholder="000.000.000-00"
             value={cpf}
             onChange={e => onCpfChange(maskCPF(e.target.value))}

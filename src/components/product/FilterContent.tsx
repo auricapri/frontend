@@ -103,7 +103,7 @@ export const FilterContent: React.FC<FilterContentProps> = ({
                   className={`min-w-[44px] h-10 px-4 inline-flex items-center justify-center rounded-md text-[12px] font-medium transition-all border ${
                     isSelected
                       ? 'bg-neutral-900 text-white border-neutral-900'
-                      : 'bg-white text-neutral-700 border-neutral-300 hover:border-neutral-900 active:bg-neutral-100'
+                      : 'bg-paper text-neutral-700 border-neutral-300 hover:border-neutral-900 active:bg-neutral-100'
                   }`}
                   aria-pressed={isSelected}
                 >

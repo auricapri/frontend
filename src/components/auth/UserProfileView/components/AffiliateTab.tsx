@@ -169,13 +169,13 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
               Seu Cupom
             </span>
-            <div className="bg-white/5 border border-white/10 p-3 md:p-4 rounded-xl flex items-center justify-between gap-3 group hover:border-white/40 transition-all">
+            <div className="bg-paper/5 border border-white/10 p-3 md:p-4 rounded-xl flex items-center justify-between gap-3 group hover:border-white/40 transition-all">
               <code className="text-sm md:text-base font-mono font-bold uppercase tracking-wider truncate">
                 {couponCode}
               </code>
               <button
                 onClick={handleCopyCode}
-                className="p-2 md:p-3 bg-white text-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg flex-shrink-0"
+                className="p-2 md:p-3 bg-paper text-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg flex-shrink-0"
                 title="Copiar link de indicação"
               >
                 {copiedCode ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}

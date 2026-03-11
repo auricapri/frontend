@@ -121,7 +121,7 @@ const AdminMfaSetup: React.FC<AdminMfaSetupProps> = ({ onComplete, onCancel, t: 
 
               {qrCode && (
                 <div className="flex flex-col items-center space-y-4">
-                  <div className="bg-white p-4 rounded-xl border border-neutral-200">
+                  <div className="bg-paper p-4 rounded-xl border border-neutral-200">
                     <img
                       src={qrCode}
                       alt="QR Code"

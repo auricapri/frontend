@@ -135,7 +135,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
       </div>
 
       {/* MOBILE HEADER (Visible only on mobile) */}
-      <div className="md:hidden fixed top-0 left-0 w-full flex items-center justify-between p-6 border-b border-neutral-100 no-print bg-white/90 backdrop-blur-md z-40">
+      <div className="md:hidden fixed top-0 left-0 w-full flex items-center justify-between p-6 border-b border-neutral-100 no-print bg-paper/90 backdrop-blur-md z-40">
           <button onClick={onBack} className="p-2 -ml-2">
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -162,7 +162,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
             )}
          </div>
 
-         <div className="space-y-3 mb-8 bg-neutral-50 p-6 rounded-xl border border-neutral-100 print:border-black print:bg-white print:border-dashed">
+         <div className="space-y-3 mb-8 bg-neutral-50 p-6 rounded-xl border border-neutral-100 print:border-black print:bg-paper print:border-dashed">
             <div className="flex justify-between">
                <span className="uppercase font-bold text-neutral-400 print:text-black">ID DO PEDIDO</span>
                <span className="font-bold select-all">{order.id.slice(0, 8).toUpperCase()}</span>
@@ -173,7 +173,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
             </div>
             <div className="flex justify-between">
                <span className="uppercase font-bold text-neutral-400 print:text-black">MÉTODO</span>
-               <span className="bg-black text-white px-2 py-0.5 text-[10px] uppercase tracking-wider rounded-sm print:border print:border-black print:text-black print:bg-white">
+               <span className="bg-black text-white px-2 py-0.5 text-[10px] uppercase tracking-wider rounded-sm print:border print:border-black print:text-black print:bg-paper">
                   {order.payment_method === 'pix' ? 'PIX' : 'CARTÃO CRÉDITO'}
                </span>
             </div>
@@ -226,7 +226,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
          </div>
 
          {order.tracking_code && (
-             <div className="bg-neutral-900 text-white p-6 rounded-xl text-center mb-8 print:bg-white print:text-black print:border print:border-black">
+             <div className="bg-neutral-900 text-white p-6 rounded-xl text-center mb-8 print:bg-paper print:text-black print:border print:border-black">
                 <span className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-2 print:text-black">Código de Rastreio</span>
                 <span className="text-lg font-black font-mono tracking-widest select-all">{order.tracking_code}</span>
              </div>

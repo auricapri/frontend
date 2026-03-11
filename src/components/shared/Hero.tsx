@@ -80,7 +80,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, t, banners, locale, isLoading }
           href="#collection"
           onClick={handleClick}
           aria-label={t('hero.cta')}
-          className="inline-flex items-center gap-3 text-[10px] tracking-[0.4em] border border-white/20 bg-white/5 backdrop-blur-md px-8 py-4 hover:bg-white hover:text-black transition-all duration-700 uppercase font-black rounded-sm order-3 self-center"
+          className="inline-flex items-center gap-3 text-[10px] tracking-[0.4em] border border-white/20 bg-paper/5 backdrop-blur-md px-8 py-4 hover:bg-paper hover:text-black transition-all duration-700 uppercase font-black rounded-sm order-3 self-center"
         >
           <span>{t('hero.cta')}</span>
           <ArrowRight className="w-4 h-4" aria-hidden="true" />

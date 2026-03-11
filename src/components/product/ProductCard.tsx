@@ -193,7 +193,7 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
         {/* Discount Badge - Domino Style */}
         {showDiscountBadge && hasDiscount && (
           <div className="absolute top-2 left-2 flex items-center shadow-lg z-10 rounded overflow-hidden">
-            <div className="bg-white text-black px-2 py-1 flex items-center">
+            <div className="bg-paper text-black px-2 py-1 flex items-center">
               <span className="text-[11px] font-black tracking-tight">{discountDisplay}</span>
             </div>
             <div className="bg-black text-white px-2 py-1">
@@ -207,7 +207,7 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
           <button
             onClick={handleWishlistToggle}
             aria-label="Toggle wishlist"
-            className={`absolute top-2 right-2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm transition-all ${
+            className={`absolute top-2 right-2 p-2 bg-paper/80 backdrop-blur-sm rounded-full shadow-sm transition-all ${
               isWishlisted ? 'text-red-500' : 'text-neutral-400 hover:text-neutral-900'
             }`}
           >

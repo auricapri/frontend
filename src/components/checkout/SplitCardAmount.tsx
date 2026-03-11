@@ -260,7 +260,7 @@ export function SplitCardAmount({
 
           {/* Drag Handle */}
           <div
-            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 w-8 h-8 bg-white rounded-full shadow-lg border-2 border-neutral-300 flex items-center justify-center transition-transform ${
+            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 w-8 h-8 bg-paper rounded-full shadow-lg border-2 border-neutral-300 flex items-center justify-center transition-transform ${
               isDragging ? 'scale-110 border-neutral-500' : 'hover:scale-105'
             }`}
             style={{ left: `${card1Percentage}%` }}
@@ -307,7 +307,7 @@ export function SplitCardAmount({
               onFocus={() => setCard1Focused(true)}
               onBlur={applyCard1Value}
               onKeyDown={(e) => handleKeyDown(e, applyCard1Value)}
-              className={`w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-lg font-bold focus:outline-none transition-all ${
+              className={`w-full pl-10 pr-4 py-3 bg-paper border rounded-xl text-lg font-bold focus:outline-none transition-all ${
                 !isValid && card1Amount > 0
                   ? 'border-red-300 focus:border-red-400'
                   : 'border-neutral-200 focus:border-neutral-400'
@@ -336,7 +336,7 @@ export function SplitCardAmount({
               onFocus={() => setCard2Focused(true)}
               onBlur={applyCard2Value}
               onKeyDown={(e) => handleKeyDown(e, applyCard2Value)}
-              className={`w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-lg font-bold focus:outline-none transition-all ${
+              className={`w-full pl-10 pr-4 py-3 bg-paper border rounded-xl text-lg font-bold focus:outline-none transition-all ${
                 !isValid && card2Amount > 0
                   ? 'border-red-300 focus:border-red-400'
                   : 'border-amber-200 focus:border-amber-400'
@@ -368,7 +368,7 @@ export function SplitCardAmount({
       {isValid && (
         <div className="space-y-6">
           {/* Card 1 Installments */}
-          <div className="p-4 rounded-2xl border border-neutral-200 bg-white">
+          <div className="p-4 rounded-2xl border border-neutral-200 bg-paper">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-6 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[10px] font-bold">
                 1
@@ -389,7 +389,7 @@ export function SplitCardAmount({
           </div>
 
           {/* Card 2 Installments */}
-          <div className="p-4 rounded-2xl border border-amber-200 bg-white">
+          <div className="p-4 rounded-2xl border border-amber-200 bg-paper">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold">
                 2

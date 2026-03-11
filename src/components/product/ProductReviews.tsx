@@ -164,7 +164,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
               <div className="space-y-4">
                  <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-4">{t('product.comment')}</label>
                  <textarea 
-                   className="w-full p-8 bg-white border border-neutral-100 rounded-[2.5rem] text-sm font-medium min-h-[150px] outline-none focus:border-black transition-all"
+                   className="w-full p-8 bg-paper border border-neutral-100 rounded-[2.5rem] text-sm font-medium min-h-[150px] outline-none focus:border-black transition-all"
                    placeholder="Share your experience with this piece..."
                    value={comment}
                    onChange={e => setComment(e.target.value)}
@@ -176,7 +176,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
                  <button 
                    type="button" 
                    onClick={() => setIsWriting(false)}
-                   className="px-10 py-6 border border-neutral-200 rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all"
+                   className="px-10 py-6 border border-neutral-200 rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-paper transition-all"
                  >
                     Cancel
                  </button>

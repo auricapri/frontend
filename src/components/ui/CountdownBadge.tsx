@@ -232,15 +232,15 @@ export const CountdownBadge: React.FC<CountdownBadgeProps> = ({
           <div className="flex items-center gap-1 font-mono">
             {timeLeft.days > 0 && (
               <>
-                <span className="bg-white/20 px-2 py-1 rounded text-sm font-black">{timeLeft.days}</span>
+                <span className="bg-paper/20 px-2 py-1 rounded text-sm font-black">{timeLeft.days}</span>
                 <span className="text-[10px] opacity-70 mr-1">{dayLabel}</span>
               </>
             )}
-            <span className="bg-white/20 px-2 py-1 rounded text-sm font-black">{formatNumber(timeLeft.hours)}</span>
+            <span className="bg-paper/20 px-2 py-1 rounded text-sm font-black">{formatNumber(timeLeft.hours)}</span>
             <span className="text-lg font-black opacity-50">:</span>
-            <span className="bg-white/20 px-2 py-1 rounded text-sm font-black">{formatNumber(timeLeft.minutes)}</span>
+            <span className="bg-paper/20 px-2 py-1 rounded text-sm font-black">{formatNumber(timeLeft.minutes)}</span>
             <span className="text-lg font-black opacity-50">:</span>
-            <span className="bg-white/20 px-2 py-1 rounded text-sm font-black">{formatNumber(timeLeft.seconds)}</span>
+            <span className="bg-paper/20 px-2 py-1 rounded text-sm font-black">{formatNumber(timeLeft.seconds)}</span>
           </div>
         </div>
       </div>

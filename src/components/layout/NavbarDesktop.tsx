@@ -122,7 +122,7 @@ export const NavbarDesktop: React.FC<NavbarDesktopProps> = ({
             {cartCount > 0 && (
               <span
                 className={`absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-black flex items-center justify-center
-                  ${isSolid ? 'bg-black text-white' : 'bg-white text-black'}
+                  ${isSolid ? 'bg-black text-white' : 'bg-paper text-black'}
                 `}
               >
                 {cartCount}

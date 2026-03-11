@@ -56,7 +56,7 @@ export function InstallmentSelector({
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full p-4 bg-white border border-neutral-200 rounded-xl flex items-center justify-between hover:border-neutral-300 transition-all"
+            className="w-full p-4 bg-paper border border-neutral-200 rounded-xl flex items-center justify-between hover:border-neutral-300 transition-all"
           >
             <div className="text-left flex items-center gap-2">
               <span className="text-sm font-bold">
@@ -94,7 +94,7 @@ export function InstallmentSelector({
           </button>
 
           {isOpen && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-neutral-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-paper border border-neutral-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
               {options.map((option) => {
                 const isAvista = option.installments === 1;
                 // À vista NUNCA tem taxa, independente do que vier do backend
@@ -233,7 +233,7 @@ export function InstallmentSelector({
                   ? 'border-black bg-black text-white'
                   : hasFee
                     ? 'border-amber-200 bg-amber-50 hover:border-amber-300'
-                    : 'border-neutral-100 bg-white hover:border-neutral-300'
+                    : 'border-neutral-100 bg-paper hover:border-neutral-300'
               }`}
             >
               <div className="text-center">

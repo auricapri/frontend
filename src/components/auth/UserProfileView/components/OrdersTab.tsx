@@ -125,7 +125,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                     <span>Avaliar Pedido</span>
                     {storeConfig?.loyalty_program?.review_cashback_amount &&
                       storeConfig.loyalty_program.review_cashback_amount > 0 && (
-                        <span className="ml-auto flex items-center gap-1 text-xs bg-white/20 px-2 py-0.5 rounded">
+                        <span className="ml-auto flex items-center gap-1 text-xs bg-paper/20 px-2 py-0.5 rounded">
                           <DollarSign className="w-3 h-3" />+
                           {formatCurrency(storeConfig.loyalty_program.review_cashback_amount, locale)}
                         </span>

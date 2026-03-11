@@ -49,7 +49,7 @@ function BoletoConfirmedScreen() {
         </p>
       </div>
 
-      <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/10 space-y-4 w-full max-w-md">
+      <div className="bg-paper/10 backdrop-blur-sm p-6 rounded-2xl border border-white/10 space-y-4 w-full max-w-md">
         <div className="flex items-center gap-4 p-4 bg-amber-500/20 border border-amber-500/30 rounded-xl">
           <Package className="w-6 h-6 text-amber-400 flex-shrink-0" />
           <div className="text-left">
@@ -65,7 +65,7 @@ function BoletoConfirmedScreen() {
             { step: '3', text: <>Você receberá atualizações por <strong className="text-white">e-mail e WhatsApp</strong></> },
           ].map(({ step, text }) => (
             <div key={step} className="flex items-start gap-3 text-[11px] text-white/60">
-              <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-5 h-5 rounded-full bg-paper/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <span className="text-[10px] font-black">{step}</span>
               </div>
               <span>{text}</span>
@@ -94,7 +94,7 @@ interface BoletoProps {
 function Boleto({ boletoData, boletoError, boletoLoading, boletoReady, finalTotal, locale, onConfirm }: BoletoProps) {
   return (
     <>
-      <div className="p-6 bg-white rounded-[2.5rem] shadow-inner">
+      <div className="p-6 bg-paper rounded-[2.5rem] shadow-inner">
         {boletoLoading ? (
           <div className="w-40 h-40 flex items-center justify-center">
             <Loader2 className="w-12 h-12 text-black animate-spin" />
@@ -121,7 +121,7 @@ function Boleto({ boletoData, boletoError, boletoLoading, boletoReady, finalTota
         </p>
       </div>
 
-      <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/10 space-y-4 w-full max-w-md">
+      <div className="bg-paper/10 backdrop-blur-sm p-6 rounded-2xl border border-white/10 space-y-4 w-full max-w-md">
         <div className="flex items-center justify-between">
           <span className="text-xs font-black uppercase tracking-wider text-white/60">Valor do boleto</span>
           <span className="text-lg font-black">{formatCurrency(finalTotal, locale)}</span>
@@ -131,7 +131,7 @@ function Boleto({ boletoData, boletoError, boletoLoading, boletoReady, finalTota
           <>
             <div className="space-y-2">
               <span className="text-xs font-black uppercase tracking-wider text-white/60 block">Linha Digitável</span>
-              <div className="bg-white/5 p-4 rounded-xl">
+              <div className="bg-paper/5 p-4 rounded-xl">
                 <p className="font-mono text-xs break-all text-white/80">{boletoData.barCode}</p>
               </div>
             </div>
@@ -139,7 +139,7 @@ function Boleto({ boletoData, boletoError, boletoLoading, boletoReady, finalTota
             <div className="flex gap-3">
               <button
                 onClick={() => { navigator.clipboard.writeText(boletoData.barCode); }}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl transition-all"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-paper/10 hover:bg-paper/20 border border-white/10 rounded-xl transition-all"
               >
                 <Copy className="w-4 h-4" />
                 <span className="text-[10px] font-black uppercase tracking-wider">Copiar</span>
@@ -149,7 +149,7 @@ function Boleto({ boletoData, boletoError, boletoLoading, boletoReady, finalTota
                   href={boletoData.bankSlipUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-paper/10 hover:bg-paper/20 border border-white/10 rounded-xl transition-all"
                 >
                   <ExternalLink className="w-4 h-4" />
                   <span className="text-[10px] font-black uppercase tracking-wider">Abrir PDF</span>
@@ -160,11 +160,11 @@ function Boleto({ boletoData, boletoError, boletoLoading, boletoReady, finalTota
         ) : (
           <>
             <div className="flex items-center gap-3 text-[10px] text-white/40">
-              <div className="w-2 h-2 rounded-full bg-white/40" />
+              <div className="w-2 h-2 rounded-full bg-paper/40" />
               <span>O boleto será enviado por e-mail e ficará disponível na área do pedido</span>
             </div>
             <div className="flex items-center gap-3 text-[10px] text-white/40">
-              <div className="w-2 h-2 rounded-full bg-white/40" />
+              <div className="w-2 h-2 rounded-full bg-paper/40" />
               <span>Após o pagamento, a confirmação pode levar até 3 dias úteis</span>
             </div>
           </>

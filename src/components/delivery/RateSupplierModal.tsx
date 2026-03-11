@@ -83,7 +83,7 @@ export function RateSupplierModal(props: {
                   onClick={() => setRating(n)}
                   className={
                     `p-3 rounded-xl border transition-all active:scale-[0.99] ` +
-                    (active ? 'bg-black border-black text-white' : 'bg-white border-neutral-200 text-neutral-600 hover:border-black')
+                    (active ? 'bg-black border-black text-white' : 'bg-paper border-neutral-200 text-neutral-600 hover:border-black')
                   }
                 >
                   <Star className="w-5 h-5" />
@@ -101,7 +101,7 @@ export function RateSupplierModal(props: {
             onChange={(e) => setComment(e.target.value)}
             rows={4}
             placeholder="Opcional"
-            className="w-full px-4 py-3 bg-white border border-neutral-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black transition-all"
+            className="w-full px-4 py-3 bg-paper border border-neutral-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black transition-all"
           />
         </div>
 

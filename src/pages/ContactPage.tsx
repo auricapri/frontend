@@ -43,7 +43,7 @@ export function ContactPage({ config, onBack }: ContactPageProps) {
             href="https://www.instagram.com/auricapri.oficial"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-4 px-6 py-5 bg-white/60 border border-black/10 rounded-2xl hover:bg-white hover:border-black/20 transition-all group"
+            className="flex items-center gap-4 px-6 py-5 bg-paper/60 border border-black/10 rounded-2xl hover:bg-paper hover:border-black/20 transition-all group"
           >
             <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center flex-shrink-0">
               <Instagram className="w-5 h-5 text-white" />
@@ -60,7 +60,7 @@ export function ContactPage({ config, onBack }: ContactPageProps) {
               href={`https://wa.me/${phone}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-4 px-6 py-5 bg-white/60 border border-black/10 rounded-2xl hover:bg-white hover:border-black/20 transition-all group"
+              className="flex items-center gap-4 px-6 py-5 bg-paper/60 border border-black/10 rounded-2xl hover:bg-paper hover:border-black/20 transition-all group"
             >
               <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center flex-shrink-0">
                 <MessageCircle className="w-5 h-5 text-white" />
@@ -76,7 +76,7 @@ export function ContactPage({ config, onBack }: ContactPageProps) {
           {email && (
             <a
               href={`mailto:${email}`}
-              className="flex items-center gap-4 px-6 py-5 bg-white/60 border border-black/10 rounded-2xl hover:bg-white hover:border-black/20 transition-all group"
+              className="flex items-center gap-4 px-6 py-5 bg-paper/60 border border-black/10 rounded-2xl hover:bg-paper hover:border-black/20 transition-all group"
             >
               <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center flex-shrink-0">
                 <Mail className="w-5 h-5 text-white" />

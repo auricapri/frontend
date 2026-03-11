@@ -198,14 +198,14 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <>
                 <button
                   onClick={() => document.getElementById('collections-scroller')?.scrollBy({ left: -300, behavior: 'smooth' })}
-                  className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-lg items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity hover:bg-white z-10"
+                  className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-paper/90 backdrop-blur rounded-full shadow-lg items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity hover:bg-paper z-10"
                   aria-label="Anterior"
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => document.getElementById('collections-scroller')?.scrollBy({ left: 300, behavior: 'smooth' })}
-                  className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-lg items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity hover:bg-white z-10"
+                  className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-paper/90 backdrop-blur rounded-full shadow-lg items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity hover:bg-paper z-10"
                   aria-label="Próximo"
                 >
                   <ArrowRight className="w-4 h-4" />

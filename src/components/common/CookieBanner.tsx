@@ -71,7 +71,7 @@ export const CookieBanner: React.FC<CookieBannerProps> = ({ onNavigatePrivacy })
             <button
               onClick={handleAccept}
               aria-label="Aceitar cookies"
-              className="px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-black bg-white rounded-full hover:bg-neutral-200 transition-colors min-h-[44px]"
+              className="px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-black bg-paper rounded-full hover:bg-neutral-200 transition-colors min-h-[44px]"
             >
               Aceitar
             </button>

@@ -15,7 +15,7 @@ export function PixPaymentSection({ pixData, pixError, isGenerating, pixCopied, 
 
   return (
     <div className="bg-neutral-900 text-white rounded-[3rem] p-10 md:p-16 flex flex-col items-center text-center space-y-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
-      <div className="p-6 bg-white rounded-[2.5rem] shadow-inner">
+      <div className="p-6 bg-paper rounded-[2.5rem] shadow-inner">
         {isGenerating ? (
           <div className="w-40 h-40 flex items-center justify-center">
             <Loader2 className="w-12 h-12 text-black animate-spin" />
@@ -58,7 +58,7 @@ export function PixPaymentSection({ pixData, pixError, isGenerating, pixCopied, 
 
       {pixReady && (
         <>
-          <div className="w-full max-w-md bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10">
+          <div className="w-full max-w-md bg-paper/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10">
             <span className="text-[10px] font-black uppercase tracking-widest text-white/40 block mb-2">Código PIX (Copia e Cola)</span>
             <div className="bg-black/30 p-3 rounded-xl">
               <p className="font-mono text-[10px] break-all text-white/70 leading-relaxed">
@@ -69,7 +69,7 @@ export function PixPaymentSection({ pixData, pixError, isGenerating, pixCopied, 
 
           <button
             onClick={onCopyPix}
-            className="flex items-center gap-4 px-10 py-5 bg-white text-black hover:bg-white/90 rounded-2xl transition-all group shadow-xl"
+            className="flex items-center gap-4 px-10 py-5 bg-paper text-black hover:bg-paper/90 rounded-2xl transition-all group shadow-xl"
           >
             {pixCopied ? (
               <Check className="w-5 h-5 text-green-600" />

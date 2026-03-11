@@ -106,7 +106,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                     className={`p-6 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ${
                       selectedSavedCardId === card.id
                         ? 'border-black bg-neutral-900 text-white'
-                        : 'border-neutral-100 bg-white hover:border-neutral-300'
+                        : 'border-neutral-100 bg-paper hover:border-neutral-300'
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -145,7 +145,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                     Número do Cartão
                   </label>
                   <input
-                    className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none font-mono tracking-widest focus:border-black transition-all"
+                    className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none font-mono tracking-widest focus:border-black transition-all"
                     placeholder="0000 0000 0000 0000"
                   />
                 </div>
@@ -154,7 +154,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                     Nome no Cartão
                   </label>
                   <input
-                    className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none font-black uppercase focus:border-black transition-all"
+                    className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none font-black uppercase focus:border-black transition-all"
                     placeholder="NOME COMO IMPRESSO"
                   />
                 </div>
@@ -164,7 +164,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                       Validade
                     </label>
                     <input
-                      className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none focus:border-black transition-all"
+                      className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none focus:border-black transition-all"
                       placeholder="MM/YY"
                     />
                   </div>
@@ -173,7 +173,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                       CVC
                     </label>
                     <input
-                      className="w-full p-6 bg-white border border-neutral-100 rounded-2xl outline-none focus:border-black transition-all"
+                      className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none focus:border-black transition-all"
                       placeholder="123"
                     />
                   </div>
@@ -210,7 +210,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
       {paymentMethod === PaymentMethod.PIX && (
         <div className="bg-neutral-900 text-white rounded-[3rem] p-10 md:p-16 flex flex-col items-center text-center space-y-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="p-6 bg-white rounded-[2.5rem] shadow-inner">
+          <div className="p-6 bg-paper rounded-[2.5rem] shadow-inner">
             <QrCode className="w-40 h-40 text-black" />
           </div>
           <div className="space-y-3">
@@ -221,7 +221,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
           </div>
           <button
             onClick={onCopyPix}
-            className="flex items-center gap-4 px-10 py-5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl transition-all group"
+            className="flex items-center gap-4 px-10 py-5 bg-paper/10 hover:bg-paper/20 border border-white/10 rounded-2xl transition-all group"
           >
             <Copy className="w-4 h-4 text-white/60 group-hover:text-white" />
             <span className="text-[10px] font-black uppercase tracking-[0.3em]">

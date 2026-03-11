@@ -62,7 +62,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
             className="flex gap-6 items-center animate-in slide-in-from-right duration-500"
             style={{ animationDelay: `${idx * 100}ms` }}
           >
-            <div className="w-20 h-24 bg-white rounded-2xl overflow-hidden flex-none border border-neutral-100 shadow-sm">
+            <div className="w-20 h-24 bg-paper rounded-2xl overflow-hidden flex-none border border-neutral-100 shadow-sm">
               <OptimizedImage 
                 src={item?.image} 
                 alt={getLoc(item?.name)} 

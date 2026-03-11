@@ -277,7 +277,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-100 bg-black text-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-paper/10 flex items-center justify-center">
               <MessageCircle className="w-5 h-5" />
             </div>
             <div>
@@ -288,14 +288,14 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleClearChat}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              className="p-2 hover:bg-paper/10 rounded-full transition-colors"
               title="Limpar conversa"
             >
               <Trash2 className="w-4 h-4" />
             </button>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              className="p-2 hover:bg-paper/10 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
             </button>

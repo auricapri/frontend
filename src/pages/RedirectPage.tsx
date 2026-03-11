@@ -89,7 +89,7 @@ const RedirectPage: React.FC<RedirectPageProps> = ({ url, onNavigate, locale: _l
             </div>
             <div className="space-y-4">
               <h2 className="text-2xl font-black font-serif uppercase tracking-tighter italic">Você está saindo da Auricapri</h2>
-              <div className="p-4 bg-white rounded-2xl border border-neutral-200 break-all text-[10px] font-medium text-neutral-500 font-mono">
+              <div className="p-4 bg-paper rounded-2xl border border-neutral-200 break-all text-[10px] font-medium text-neutral-500 font-mono">
                 {url}
               </div>
               <p className="text-neutral-400 text-xs px-8 leading-relaxed">
@@ -105,7 +105,7 @@ const RedirectPage: React.FC<RedirectPageProps> = ({ url, onNavigate, locale: _l
               </button>
               <button 
                 onClick={() => onNavigate('home')}
-                className="w-full py-6 bg-white border border-neutral-200 text-black rounded-3xl text-[11px] font-black uppercase tracking-widest hover:bg-neutral-50 transition-all"
+                className="w-full py-6 bg-paper border border-neutral-200 text-black rounded-3xl text-[11px] font-black uppercase tracking-widest hover:bg-neutral-50 transition-all"
               >
                 Cancelar e Voltar
               </button>

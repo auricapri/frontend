@@ -260,7 +260,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
         {/* Botão de Fechar */}
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 z-20 p-4 bg-white rounded-full hover:bg-neutral-100 transition-all shadow-lg"
+          className="absolute top-6 right-6 z-20 p-4 bg-paper rounded-full hover:bg-neutral-100 transition-all shadow-lg"
         >
           <X className="w-5 h-5" />
         </button>
@@ -272,7 +272,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
         <div className="absolute top-6 left-6 right-20 z-10">
           <div className="relative group">
             <input
-              className="w-full p-6 pr-16 bg-white border-none rounded-2xl shadow-2xl text-xs font-black uppercase tracking-widest outline-none placeholder:text-neutral-300"
+              className="w-full p-6 pr-16 bg-paper border-none rounded-2xl shadow-2xl text-xs font-black uppercase tracking-widest outline-none placeholder:text-neutral-300"
               placeholder="Busque sua rua e cidade..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -288,7 +288,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
 
           {/* Resultados da Busca */}
           {searchResults.length > 0 && (
-            <div className="mt-2 bg-white rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-top-2 max-h-80 overflow-y-auto">
+            <div className="mt-2 bg-paper rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-top-2 max-h-80 overflow-y-auto">
               {searchResults.map((res, idx) => (
                 <button
                   key={idx}
@@ -306,7 +306,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
         {/* Botão de Confirmação na parte inferior */}
         {(manualAddress.street && manualAddress.city) && (
           <div className="absolute bottom-6 left-6 right-6 z-10">
-            <div className="bg-white rounded-2xl shadow-2xl p-4 mb-4">
+            <div className="bg-paper rounded-2xl shadow-2xl p-4 mb-4">
               <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">Endereço Selecionado:</p>
               <p className="text-xs font-black uppercase">
                 {manualAddress.street}

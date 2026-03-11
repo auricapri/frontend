@@ -24,7 +24,7 @@ export const ChatProductCard: React.FC<ChatProductCardProps> = ({
   const hasStock = mainVariant ? mainVariant.stock > 0 : true;
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm hover:shadow-md transition-all animate-in slide-in-from-bottom-2 duration-300 min-w-[140px]">
+    <div className="bg-paper rounded-2xl border border-neutral-100 overflow-hidden shadow-sm hover:shadow-md transition-all animate-in slide-in-from-bottom-2 duration-300 min-w-[140px]">
       {/* Product Image */}
       <div
         className="relative aspect-[3/4] bg-neutral-50 cursor-pointer group"

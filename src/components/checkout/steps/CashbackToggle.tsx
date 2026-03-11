@@ -27,7 +27,7 @@ export function CashbackToggle({ availableCashback, useCashback, onToggle, local
         className={`relative w-14 h-8 rounded-full transition-all duration-300 ${useCashback ? 'bg-emerald-600' : 'bg-neutral-300'}`}
       >
         <div
-          className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${
+          className={`absolute top-1 left-1 w-6 h-6 bg-paper rounded-full shadow-md transition-transform duration-300 ${
             useCashback ? 'translate-x-6' : 'translate-x-0'
           }`}
         />

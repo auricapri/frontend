@@ -23,7 +23,7 @@ export function DeliveryHistoryPanel() {
   });
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+    <div className="bg-paper rounded-2xl border border-neutral-100 overflow-hidden">
       <div className="p-5 border-b border-neutral-100 flex items-start justify-between gap-4">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Histórico</div>
