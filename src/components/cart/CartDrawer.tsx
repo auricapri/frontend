@@ -1,16 +1,18 @@
 
-import React, { useState, useEffect } from 'react';
-import { X, Minus, Plus, Trash2, ArrowRight, Ticket, ChevronDown } from 'lucide-react';
-import { CartItem, UserMode } from '../../types';
+import React, { useMemo, useState, useEffect } from 'react';
+import { X, Minus, Plus, Trash2, ArrowRight, Ticket, ChevronDown, Sparkles } from 'lucide-react';
+import { CartItem, Product, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import BoxSavingsIndicator, { calculateQuantityDiscount } from './BoxSavingsIndicator';
 import { getOptimizedImageUrl, handleImageError } from '../../utils/image';
+import { computeAccessoryBundleDiscount, isAccessoryItem, ACCESSORY_BUNDLE_DISCOUNT_PCT } from '../../utils/product';
 
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   items: CartItem[];
+  products?: Product[];
   userMode: UserMode;
   onUpdateQuantity: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
@@ -19,16 +21,17 @@ interface CartDrawerProps {
   locale: Locale;
 }
 
-const CartDrawer: React.FC<CartDrawerProps> = ({ 
-  isOpen, 
-  onClose, 
-  items, 
-  userMode: _userMode, 
-  onUpdateQuantity, 
-  onRemoveItem, 
+const CartDrawer: React.FC<CartDrawerProps> = ({
+  isOpen,
+  onClose,
+  items,
+  products = [],
+  userMode: _userMode,
+  onUpdateQuantity,
+  onRemoveItem,
   onCheckout,
-  t, 
-  locale 
+  t,
+  locale
 }) => {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCouponOpen, setIsCouponOpen] = useState(false);
@@ -55,10 +58,27 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
     return obj[locale] || obj['pt'] || obj['en'] || Object.values(obj)[0] || "";
   };
 
-  const subtotal = items.reduce((sum, item) => {
-    const price = item.price;
-    return sum + (price * item.quantity);
-  }, 0);
+  const bundleDiscount = useMemo(
+    () => computeAccessoryBundleDiscount(items, products),
+    [items, products]
+  );
+
+  const hasBundlePromo = useMemo(() => {
+    if (products.length === 0) return false;
+    const hasClothing = items.some(i => !isAccessoryItem(i, products));
+    const hasAccessory = items.some(i => isAccessoryItem(i, products));
+    return hasClothing && hasAccessory;
+  }, [items, products]);
+
+  // Effective price per item (bundle discount applied to accessories)
+  const getEffectivePrice = (item: CartItem) => {
+    if (hasBundlePromo && isAccessoryItem(item, products)) {
+      return item.price * (1 - ACCESSORY_BUNDLE_DISCOUNT_PCT / 100);
+    }
+    return item.price;
+  };
+
+  const subtotal = items.reduce((sum, item) => sum + (getEffectivePrice(item) * item.quantity), 0);
 
   const originalSubtotal = items.reduce((sum, item) => {
     const originalPrice = item.original_price || item.price;
@@ -68,7 +88,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
   const { discountValue: boxDiscount } = calculateQuantityDiscount(totalQuantity, subtotal);
   const finalTotal = subtotal - boxDiscount;
-  const hasAnyDiscount = originalSubtotal > subtotal || boxDiscount > 0;
+  const hasAnyDiscount = originalSubtotal > subtotal || boxDiscount > 0 || bundleDiscount > 0;
 
   if (!isOpen) return null;
 
@@ -91,6 +111,16 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
           </button>
         </div>
 
+        {/* Bundle promo banner */}
+        {hasBundlePromo && (
+          <div className="mx-4 md:mx-8 mt-3 px-4 py-2.5 bg-violet-50 border border-violet-200 rounded-2xl flex items-center gap-2 animate-in fade-in duration-300">
+            <Sparkles className="w-3.5 h-3.5 text-violet-500 flex-shrink-0" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-violet-700">
+              {ACCESSORY_BUNDLE_DISCOUNT_PCT}% de desconto nos acessórios aplicado!
+            </span>
+          </div>
+        )}
+
         {/* Box Savings Indicator */}
         {items.length > 0 && (
           <div className="px-4 md:px-8 pt-3">
@@ -111,8 +141,10 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
             </div>
           ) : (
             items.map((item) => {
-              const price = item.price;
-              const itemHasDiscount = item.original_price && item.original_price > item.price;
+              const effectivePrice = getEffectivePrice(item);
+              const hasBundleOnItem = hasBundlePromo && isAccessoryItem(item, products);
+              const itemHasDiscount = (item.original_price && item.original_price > item.price) || hasBundleOnItem;
+              const displayOriginal = hasBundleOnItem ? item.price : (item.original_price ?? item.price);
               return (
                 <div key={`${item.variant_id}-${item.size}-${item.color_hex}`} className="flex gap-4 animate-in fade-in slide-in-from-right duration-300">
                   <div className="w-28 h-36 md:w-24 md:h-32 bg-gray-100 flex-none overflow-hidden rounded-xl">
@@ -121,12 +153,19 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                   <div className="flex-1 flex flex-col justify-between py-0.5 min-w-0">
                     <div>
                       <div className="flex justify-between items-start gap-2">
-                        <h3 className="font-serif text-xs font-black uppercase tracking-tight leading-tight">{getLoc(item.name)}</h3>
+                        <div>
+                          <h3 className="font-serif text-xs font-black uppercase tracking-tight leading-tight">{getLoc(item.name)}</h3>
+                          {hasBundleOnItem && (
+                            <span className="text-[9px] font-black uppercase tracking-widest text-violet-600 flex items-center gap-0.5 mt-0.5">
+                              <Sparkles className="w-2.5 h-2.5" />{ACCESSORY_BUNDLE_DISCOUNT_PCT}% desconto
+                            </span>
+                          )}
+                        </div>
                         <div className="text-right flex-shrink-0">
                           {itemHasDiscount && (
-                            <p className="text-[10px] text-neutral-400 line-through">{formatCurrency(item.original_price! * item.quantity, locale)}</p>
+                            <p className="text-[10px] text-neutral-400 line-through">{formatCurrency(displayOriginal * item.quantity, locale)}</p>
                           )}
-                          <p className="text-sm font-semibold">{formatCurrency(price * item.quantity, locale)}</p>
+                          <p className={`text-sm font-semibold ${hasBundleOnItem ? 'text-violet-700' : ''}`}>{formatCurrency(effectivePrice * item.quantity, locale)}</p>
                         </div>
                       </div>
                       <p className="text-[11px] text-gray-400 mt-1 uppercase font-bold tracking-wider">{getLoc(item.color_name)} / {item.size}</p>
@@ -174,6 +213,11 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                 <span className="text-2xl font-light">{formatCurrency(finalTotal, locale)}</span>
               </div>
             </div>
+            {bundleDiscount > 0 && (
+              <p className="text-[10px] text-violet-600 mb-2 text-right font-bold uppercase tracking-wider">
+                Acessório + Roupa: -{formatCurrency(bundleDiscount, locale)}
+              </p>
+            )}
             {boxDiscount > 0 && (
               <p className="text-[10px] text-green-600 mb-2 text-right font-bold uppercase tracking-wider">
                 {locale === 'pt' ? `Economia de ${formatCurrency(boxDiscount, locale)}` :

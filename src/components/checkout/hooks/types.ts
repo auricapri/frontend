@@ -50,6 +50,7 @@ export interface CustomerPaymentInfo {
 export interface UseCheckoutTotalsParams {
   items: CartItem[];
   manualCouponDiscount: number;
+  bundleDiscount?: number;
   shippingCost: number;
   paymentMethod: PaymentMethod;
   availableCashback: number;
@@ -61,6 +62,7 @@ export interface UseCheckoutTotalsReturn {
   originalSubtotal: number;
   preAppliedDiscount: number;
   quantityDiscount: number;
+  bundleDiscount: number;
   discountedSubtotal: number;
   pixDiscount: number;
   totalBeforeWallet: number;

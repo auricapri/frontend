@@ -5,7 +5,7 @@
  * but internally delegates to smaller, focused hooks.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PaymentMethod } from '../../../constants/enums';
 import { Locale } from '../../../i18n';
 import { maskCPF, maskPhone, unmask } from '../../../utils/masks';
@@ -21,6 +21,8 @@ import type {
 } from '../../../types';
 import { UserMode } from '../../../types';
 import { usePaymentProcessing } from './usePaymentProcessing';
+import { computeAccessoryBundleDiscount } from '../../../utils/product';
+import { useAppContext } from '../../../context/AppContext';
 import { useShippingCalculation } from './useShippingCalculation';
 import { useCheckoutTotals } from './useCheckoutTotals';
 import { useCouponState } from './useCouponState';
@@ -98,10 +100,18 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
       ? shipping.expressOption.real_cost
       : 0;
 
+  // Accessory bundle discount
+  const { products } = useAppContext();
+  const bundleDiscount = useMemo(
+    () => computeAccessoryBundleDiscount(coupon.checkoutItems, products),
+    [coupon.checkoutItems, products]
+  );
+
   // Totals
   const totals = useCheckoutTotals({
     items: coupon.checkoutItems,
     manualCouponDiscount: coupon.manualCouponDiscount,
+    bundleDiscount,
     shippingCost,
     paymentMethod,
     availableCashback: currentUser?.loyalty?.cashback_balance || 0,
@@ -320,6 +330,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     originalSubtotal: totals.originalSubtotal,
     preAppliedDiscount: totals.preAppliedDiscount,
     quantityDiscount: totals.quantityDiscount,
+    bundleDiscount: totals.bundleDiscount,
     shippingCost,
     pixDiscount: totals.pixDiscount,
     cashbackUsed: totals.cashbackUsed,

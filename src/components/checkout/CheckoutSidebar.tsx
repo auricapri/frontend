@@ -10,6 +10,7 @@ import { type CheckoutState } from './hooks/useCheckoutState';
 export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
   const {
     appliedCoupon,
+    bundleDiscount,
     cashbackUsed,
     checkoutItems,
     couponCode,
@@ -169,6 +170,12 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
             <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-emerald-600">
               <span>Desconto ({appliedCoupon?.code})</span>
               <span>-{formatCurrency(manualCouponDiscount, locale)}</span>
+            </div>
+          )}
+          {(bundleDiscount ?? 0) > 0 && (
+            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-violet-600">
+              <span>Desconto Acessório + Roupa (15%)</span>
+              <span>-{formatCurrency(bundleDiscount!, locale)}</span>
             </div>
           )}
           {quantityDiscount > 0 && (

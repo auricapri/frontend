@@ -3,14 +3,15 @@
  *
  * Ordem correta dos descontos:
  * 1. subtotal (soma dos itens a preços atuais)
- * 2. − desconto cupom (incondicional → NF-e vDesc → reduz ICMS)
- * 3. − desconto quantidade/caixa (incondicional → NF-e vDesc)
- * 4. = discountedSubtotal (base para PIX)
- * 5. − desconto PIX 5% (sobre discountedSubtotal, SEM frete)
- * 6. + frete
- * 7. = totalBeforeWallet
- * 8. − cashback (crédito de compra anterior, fora da NF-e)
- * 9. = finalTotal (valor que o cliente paga)
+ * 2. − desconto bundle acessório (quando há roupa + acessório no carrinho)
+ * 3. − desconto cupom (incondicional → NF-e vDesc → reduz ICMS)
+ * 4. − desconto quantidade/caixa (incondicional → NF-e vDesc)
+ * 5. = discountedSubtotal (base para PIX)
+ * 6. − desconto PIX 5% (sobre discountedSubtotal, SEM frete)
+ * 7. + frete
+ * 8. = totalBeforeWallet
+ * 9. − cashback (crédito de compra anterior, fora da NF-e)
+ * 10. = finalTotal (valor que o cliente paga)
  */
 
 import { useMemo } from 'react';
@@ -22,6 +23,7 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
   const {
     items,
     manualCouponDiscount,
+    bundleDiscount: bundleDiscountParam = 0,
     shippingCost,
     paymentMethod,
     availableCashback,
@@ -48,6 +50,9 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
     return originalSubtotal - subtotal;
   }, [originalSubtotal, subtotal]);
 
+  // Accessory bundle discount (15% off accessories when bought with clothing)
+  const bundleDiscount = useMemo(() => bundleDiscountParam, [bundleDiscountParam]);
+
   // Total item count for quantity discount
   const totalItemCount = useMemo(() => {
     return safeItems.reduce((sum, item) => sum + (item?.quantity || 0), 0);
@@ -59,10 +64,10 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
     return discountValue;
   }, [totalItemCount, subtotal]);
 
-  // Subtotal after coupon and quantity discounts (base for PIX discount, excludes shipping)
+  // Subtotal after bundle, coupon and quantity discounts (base for PIX discount, excludes shipping)
   const discountedSubtotal = useMemo(() => {
-    return Math.max(0, subtotal - manualCouponDiscount - quantityDiscount);
-  }, [subtotal, manualCouponDiscount, quantityDiscount]);
+    return Math.max(0, subtotal - bundleDiscount - manualCouponDiscount - quantityDiscount);
+  }, [subtotal, bundleDiscount, manualCouponDiscount, quantityDiscount]);
 
   // PIX discount (5% applied on discountedSubtotal only — excludes shipping per SEFAZ-SP RC 28518/2023)
   const pixDiscount = useMemo(() => {
@@ -89,6 +94,7 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
     originalSubtotal,
     preAppliedDiscount,
     quantityDiscount,
+    bundleDiscount,
     discountedSubtotal,
     pixDiscount,
     totalBeforeWallet,

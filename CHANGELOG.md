@@ -5,6 +5,17 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.3] - 2026-03-12
+
+### Adicionado
+- **AccessoryPromoModal**: modal de boas-vindas com animação, exibe promoção de 15% de desconto em acessórios ao comprar com roupa; aparece após 2s na primeira visita da sessão
+- **CartDrawer**: exibe desconto bundle nos itens acessório (badge Sparkles + preço tachado + preço violeta), banner violeta no topo e linha de desconto no footer
+- **CheckoutSidebar**: linha "Desconto Acessório + Roupa (15%)" no resumo de totais
+- **useCheckoutState / useCheckoutTotals**: cálculo server-side do bundle discount integrado ao fluxo de totais do checkout
+- **BenefitsBar**: banner top_bar adicionado ao Supabase — "PROMOÇÃO: ACESSÓRIOS COM 15% DE DESCONTO AO COMPRAR COM QUALQUER ROUPA"
+- **AddressesTab**: formulário inline de criação de endereço com busca de CEP via ViaCEP, limite de 3 endereços com mensagem, botão condicional
+- **useAddresses**: `handleCreateAddress` para criar endereço diretamente no perfil do usuário
+
 ## [1.4.2] - 2026-03-12
 
 ### Corrigido
