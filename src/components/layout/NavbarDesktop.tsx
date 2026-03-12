@@ -14,7 +14,7 @@ export interface NavbarDesktopProps {
   onOpenMenu: () => void;
   onOpenSearch: () => void;
   onBack?: () => void;
-  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals', target?: string) => void;
+  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery', target?: string) => void;
   t: (key: string) => string;
 }
 
@@ -48,8 +48,8 @@ export const NavbarDesktop: React.FC<NavbarDesktopProps> = ({
         ${isSolid ? 'text-black' : 'text-white'}
       `}
     >
-      {/* Left Col: Menu/Back */}
-      <div className="flex-1 flex items-center justify-start">
+      {/* Left Col: Menu/Back + Nav tabs */}
+      <div className="flex-1 flex items-center justify-start gap-6">
         {isProductView ? (
           <button
             onClick={onBack}
@@ -59,13 +59,21 @@ export const NavbarDesktop: React.FC<NavbarDesktopProps> = ({
             <span className="text-[10px] font-black uppercase tracking-[0.3em]">{t('nav.back')}</span>
           </button>
         ) : (
-          <button
-            onClick={onOpenMenu}
-            className="p-2 -ml-2 hover:opacity-50 transition-all active:scale-90"
-            aria-label="Abrir menu"
-          >
-            <Menu className="w-6 h-6" strokeWidth={1.2} />
-          </button>
+          <>
+            <button
+              onClick={onOpenMenu}
+              className="p-2 -ml-2 hover:opacity-50 transition-all active:scale-90"
+              aria-label="Abrir menu"
+            >
+              <Menu className="w-6 h-6" strokeWidth={1.2} />
+            </button>
+            <button
+              onClick={handleNavHome}
+              className="text-[10px] font-black uppercase tracking-[0.3em] hover:opacity-50 transition-all active:scale-95 py-2"
+            >
+              Início
+            </button>
+          </>
         )}
       </div>
 
