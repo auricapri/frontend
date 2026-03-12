@@ -13,6 +13,7 @@ import { TermsConsentModal } from '../components/common/TermsConsentModal';
 import { useTermsConsent } from '../hooks/useTermsConsent';
 import { AbandonedCartToast } from '../components/ui/AbandonedCartToast';
 import { filterProductsForMode } from '../utils/product';
+import { AccessoryPromoModal, useAccessoryPromoModal } from '../components/common/AccessoryPromoModal';
 import { trackingService } from '../services/tracking.service';
 import { ChatProduct } from '../api/ai-chat.api';
 import { Gender } from '../constants/enums';
@@ -114,6 +115,7 @@ export function AppLayout(props: {
   const [isComplaintOpen, setIsComplaintOpen] = useState(false);
   const [selectedGender, setSelectedGender] = useState<Gender>(Gender.FEMALE);
   const { showModal: showTermsModal, acceptTerms, closeModal: closeTermsModal } = useTermsConsent();
+  const { show: showPromoModal, close: closePromoModal } = useAccessoryPromoModal();
 
   // Auto-open FAQ modal when user navigates to /faq
   useEffect(() => {
@@ -605,6 +607,7 @@ export function AppLayout(props: {
           isOpen={app.isCartOpen}
           onClose={() => app.setIsCartOpen(false)}
           items={app.cartItems}
+          products={app.products}
           userMode={app.userMode}
           onUpdateQuantity={app.handleUpdateQuantity}
           onRemoveItem={(id) => {
@@ -700,6 +703,13 @@ export function AppLayout(props: {
       </Suspense>
 
       <CookieBanner onNavigatePrivacy={() => app.onNavigate('privacy')} />
+
+      {showPromoModal && (
+        <AccessoryPromoModal
+          onClose={closePromoModal}
+          onShopNow={() => app.onNavigate('home')}
+        />
+      )}
     </div>
   );
 }

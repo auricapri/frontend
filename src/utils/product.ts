@@ -1,5 +1,32 @@
-import { ProductVariant, Product, UserMode } from '../types';
+import { ProductVariant, Product, UserMode, CartItem } from '../types';
 import { pricingService } from '../services/pricing.service';
+
+// Accessory bundle promotion: accessories get a discount when bought with clothing
+export const ACCESSORY_CATEGORY_ID = 'b2f3481f-74c1-462d-aca9-3769a381753b';
+export const ACCESSORY_BUNDLE_DISCOUNT_PCT = 15; // 15% off accessories when bought with clothing
+
+export function computeAccessoryBundleDiscount(
+  items: CartItem[],
+  products: Product[]
+): number {
+  const productMap = new Map(products.map(p => [p.id, p]));
+  const hasClothing = items.some(item => {
+    const cat = productMap.get(item.product_id)?.category_id;
+    return cat && cat !== ACCESSORY_CATEGORY_ID;
+  });
+  if (!hasClothing) return 0;
+  return items.reduce((sum, item) => {
+    const cat = productMap.get(item.product_id)?.category_id;
+    if (cat === ACCESSORY_CATEGORY_ID) {
+      return sum + item.price * item.quantity * (ACCESSORY_BUNDLE_DISCOUNT_PCT / 100);
+    }
+    return sum;
+  }, 0);
+}
+
+export function isAccessoryItem(item: CartItem, products: Product[]): boolean {
+  return products.find(p => p.id === item.product_id)?.category_id === ACCESSORY_CATEGORY_ID;
+}
 
 export function calculatePrice(variant: ProductVariant, userMode: UserMode, product?: Product): number {
   return pricingService.calculateRetailPrice(variant, userMode, product);
