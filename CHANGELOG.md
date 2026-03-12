@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.3.7] - 2026-03-12
+
+### Corrigido
+- **GalleryPage**: clique em "Ver produto" abria página em branco — `onNavigate('product', slug)` passava o slug como `targetSection` sem o objeto `product`; corrigido para `onNavigate('product', undefined, img.product)`
+
 ## [1.3.6] - 2026-03-11
 
 ### Alterado
