@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.3.9] - 2026-03-12
+
+### Corrigido
+- **GalleryPage**: logo "AURICAPRI" na nav interna da galeria agora navega para a home ao ser clicado
+
 ## [1.3.8] - 2026-03-12
 
 ### Adicionado
