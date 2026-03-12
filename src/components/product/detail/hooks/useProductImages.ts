@@ -17,31 +17,39 @@ export function useProductImages(product: Product, variants: ProductVariant[]) {
     const images: ImageWithVariant[] = [];
     const urlToIndex = new Map<string, number>();
     
-    const baseImgs = product.base_images || [];
-    baseImgs.forEach(img => {
-      if (img && typeof img === 'string' && img.trim() !== '') {
-        const trimmedUrl = img.trim();
-        if (!urlToIndex.has(trimmedUrl)) {
-          const index = images.length;
-          images.push({ 
-            url: trimmedUrl, 
-            variantId: 'base', 
-            variantColor: '', 
-            variantColorName: null,
-            size: '',
-            combinationKey: 'base',
-            isBase: true,
-            variantIds: ['base']
-          });
-          urlToIndex.set(trimmedUrl, index);
-        } else {
-          const existingIndex = urlToIndex.get(trimmedUrl)!;
-          if (!images[existingIndex].variantIds.includes('base')) {
-            images[existingIndex].variantIds.push('base');
+    // Only include base_images if no variant has specific variant_images.
+    // When variants have their own images, base_images (vton/supplier) are obsolete fallbacks.
+    const anyVariantHasImages = variants.some(
+      v => Array.isArray(v.variant_images) && v.variant_images.length > 0
+    );
+
+    if (!anyVariantHasImages) {
+      const baseImgs = product.base_images || [];
+      baseImgs.forEach(img => {
+        if (img && typeof img === 'string' && img.trim() !== '') {
+          const trimmedUrl = img.trim();
+          if (!urlToIndex.has(trimmedUrl)) {
+            const index = images.length;
+            images.push({
+              url: trimmedUrl,
+              variantId: 'base',
+              variantColor: '',
+              variantColorName: null,
+              size: '',
+              combinationKey: 'base',
+              isBase: true,
+              variantIds: ['base']
+            });
+            urlToIndex.set(trimmedUrl, index);
+          } else {
+            const existingIndex = urlToIndex.get(trimmedUrl)!;
+            if (!images[existingIndex].variantIds.includes('base')) {
+              images[existingIndex].variantIds.push('base');
+            }
           }
         }
-      }
-    });
+      });
+    }
 
     variants.forEach(variant => {
       if (variant.variant_images && Array.isArray(variant.variant_images) && variant.variant_images.length > 0) {

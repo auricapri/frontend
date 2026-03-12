@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.1] - 2026-03-12
+
+### Corrigido
+- **useProductImages**: quando qualquer variante tem `variant_images`, `base_images` (foto vton do fornecedor) não é mais incluída na galeria — elimina a 3ª imagem fantasma em Lisboa, Mônaco, Florença e outros produtos com imagens AI
+
 ## [1.4.0] - 2026-03-12
 
 ### Corrigido
