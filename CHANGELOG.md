@@ -5,6 +5,20 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.3.8] - 2026-03-12
+
+### Adicionado
+- **NavbarDesktop**: aba "Início" no lado esquerdo da navbar desktop para navegação rápida à home
+- **GalleryPage**: lightbox ao clicar em imagem — overlay escuro com imagem ampliada, botões "Comprar" e "Ver produto" sem sair da galeria
+
+### Corrigido
+- **GalleryPage**: Vestido Trancoso removido da galeria (imagem quebrada no storage)
+- **NavbarMobileBar / NavbarDesktop**: tipo `onNavigate` atualizado para incluir `'gallery'`
+
+### Conteúdo
+- Imagens AI geradas e publicadas para 6 coleções (Blazers, Conjuntos do Dia, Novas Chegadas, Vestidos para Festas, Plus Size, Coleção Vício)
+- Novo banner hero — Lençóis Maranhenses, formato panorâmico
+
 ## [1.3.7] - 2026-03-12
 
 ### Corrigido
