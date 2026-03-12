@@ -372,8 +372,7 @@ export class PricingService {
     product?: Product
   ): number {
     if (userMode === UserMode.ATACADO) {
-      const costPrice = variant.cost_price ?? 0;
-      return this.calculateWholesalePrice(costPrice);
+      return variant.wholesale_price ?? 0;
     }
 
     const basePrice = variant.retail_price;

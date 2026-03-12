@@ -5,6 +5,13 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.0] - 2026-03-12
+
+### Corrigido
+- **pricingService**: modo atacado usava `cost_price` (sempre null no DB) para calcular preço — trocado para `wholesale_price` diretamente; todos os produtos agora exibem preço atacado correto
+- **filterProductsForMode**: produtos sem variantes cadastradas não aparecem mais no grid (evita exibição de preço R$ 0,00 em varejo)
+- **Conjunto Lisboa**: imagens das variantes azul e preto corrigidas de URL CDN morto para Supabase Storage
+
 ## [1.3.9] - 2026-03-12
 
 ### Corrigido

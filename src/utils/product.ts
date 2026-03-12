@@ -10,9 +10,12 @@ export function calculateWholesalePrice(costPrice: number, marginPercent: number
 }
 
 export function filterProductsForMode(products: Product[], userMode: UserMode): Product[] {
-  if (userMode !== UserMode.ATACADO) return products;
-  
-  return products
+  // Always hide products with no variants (would display price 0)
+  const withVariants = products.filter(p => (p.variants?.length ?? 0) > 0);
+
+  if (userMode !== UserMode.ATACADO) return withVariants;
+
+  return withVariants
     .map(product => ({
       ...product,
       variants: product.variants?.filter(v => v.stock_quantity >= 10) ?? []
