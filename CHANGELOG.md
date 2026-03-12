@@ -5,6 +5,15 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.2] - 2026-03-12
+
+### Corrigido
+- **useAuth**: `mergeCart` enviava o JSON completo do localStorage (`{"data":"...","expiry":...}`) como sessionId — causava 400 Validation error no backend; agora faz parse correto e extrai apenas o campo `data`
+
+### Adicionado
+- **AboutUs**: redesign completo da página — coluna esquerda com imagem sticky + quote overlay; coluna direita com manifesto da marca, valores (Elegância, Autenticidade, Qualidade), assinatura dos fundadores e barra de stats
+- **store_config**: texto "Sobre a Marca" atualizado no banco em PT e EN com história da Auricapri, origem do nome e manifesto
+
 ## [1.4.1] - 2026-03-12
 
 ### Corrigido
