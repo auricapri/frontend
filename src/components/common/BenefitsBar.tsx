@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import type { Banner } from '../../types';
 import type { Locale } from '../../i18n';
 
-const DEFAULT_MESSAGE = 'FRETE GRÁTIS  ·  TROCA GRÁTIS EM ATÉ 30 DIAS  ·  PARCELE EM ATÉ 6X SEM JUROS  ·  ';
+const DEFAULT_MESSAGE = 'FRETE GRÁTIS  ·  TROCA GRÁTIS EM ATÉ 30 DIAS  ·  PARCELE EM ATÉ 3X SEM JUROS  ·  ';
 
 interface BenefitsBarProps {
   banners?: Banner[];
