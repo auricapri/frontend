@@ -198,7 +198,7 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
     if (!img.product) return;
     const slug = getLoc(img.product.slug) || img.product.id;
     window.history.pushState({ view: 'product' }, '', `/product/${slug}`);
-    onNavigate('product', slug);
+    onNavigate('product', undefined, img.product);
   }, [getLoc, onNavigate]);
 
   if (isLoading) {
