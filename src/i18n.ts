@@ -108,7 +108,7 @@ export const translations = {
     benefits: {
       freeShipping: 'FREE SHIPPING OVER R$299',
       freeExchange: 'FREE EXCHANGE WITHIN 30 DAYS',
-      installments: 'UP TO 6X INTEREST-FREE'
+      installments: 'UP TO 3X INTEREST-FREE'
     },
     auth: {
       signIn: 'Sign In',
@@ -308,7 +308,7 @@ export const translations = {
     benefits: {
       freeShipping: 'FRETE GRÁTIS ACIMA DE R$299',
       freeExchange: 'TROCA GRÁTIS EM ATÉ 30 DIAS',
-      installments: 'PARCELE EM ATÉ 6X SEM JUROS'
+      installments: 'PARCELE EM ATÉ 3X SEM JUROS'
     },
     auth: {
       signIn: 'Entrar',
@@ -506,7 +506,7 @@ export const translations = {
     benefits: {
       freeShipping: 'ENVÍO GRATIS DESDE R$299',
       freeExchange: 'CAMBIO GRATIS HASTA 30 DÍAS',
-      installments: 'HASTA 6X SIN INTERESES'
+      installments: 'HASTA 3X SIN INTERESES'
     },
     auth: {
       signIn: 'Entrar',
@@ -704,7 +704,7 @@ export const translations = {
     benefits: {
       freeShipping: 'LIVRAISON GRATUITE DÈS R$299',
       freeExchange: 'ÉCHANGE GRATUIT SOUS 30 JOURS',
-      installments: 'JUSQU\'À 6X SANS INTÉRÊTS'
+      installments: 'JUSQU\'À 3X SANS INTÉRÊTS'
     },
     auth: {
       signIn: 'Se Connecter',

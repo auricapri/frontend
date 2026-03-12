@@ -458,7 +458,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
                 <p className="text-lg md:text-2xl font-light mb-0.5">{formatCurrency(img.variant.retail_price, locale)}</p>
                 {img.variant.retail_price >= 10 && (
                   <p className="text-xs text-black/40">
-                    ou <span className="font-semibold text-black">6x de {formatCurrency(img.variant.retail_price / 6, locale)}</span> sem juros
+                    ou <span className="font-semibold text-black">3x de {formatCurrency(img.variant.retail_price / 3, locale)}</span> sem juros
                   </p>
                 )}
               </div>
