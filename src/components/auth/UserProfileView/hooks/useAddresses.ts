@@ -1,10 +1,21 @@
 /// useAddresses Hook
 /// Manages user addresses state and actions
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { SavedAddress, UserProfile } from '../../../../types';
 import { AddressesState } from '../types';
+
+export interface NewAddressData {
+  street_address: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state_province: string;
+  postal_code: string;
+  recipient_name?: string;
+}
 
 interface UseAddressesParams {
   userId: string;
@@ -59,6 +70,28 @@ export const useAddresses = ({ userId, onUpdate, enabled = false }: UseAddresses
     }
   };
 
+  const handleCreateAddress = useCallback(async (data: NewAddressData): Promise<boolean> => {
+    try {
+      const { UsersApi } = await import('../../../../api/users.api');
+      const usersApi = new UsersApi();
+      await usersApi.createAddress({
+        line1: `${data.street_address}${data.number ? `, ${data.number}` : ''}`,
+        line2: data.complement || undefined,
+        neighborhood: data.neighborhood || undefined,
+        city: data.city,
+        state: data.state_province,
+        postal_code: data.postal_code,
+        country: 'BR',
+        is_default: addresses.length === 0,
+      });
+      await queryClient.invalidateQueries({ queryKey: ['user-addresses', userId] });
+      return true;
+    } catch (err: unknown) {
+      alert(`Erro ao salvar endereço: ${(err as Error).message}`);
+      return false;
+    }
+  }, [addresses.length, queryClient, userId]);
+
   const addressesState: AddressesState = {
     addresses,
     loading,
@@ -71,5 +104,6 @@ export const useAddresses = ({ userId, onUpdate, enabled = false }: UseAddresses
     fetchAddresses,
     handleSetDefaultAddress,
     handleDeleteAddress,
+    handleCreateAddress,
   };
 };

@@ -61,7 +61,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({
   });
 
   // Addresses hook — enabled only when on the addresses tab
-  const { addressesState, handleSetDefaultAddress, handleDeleteAddress } =
+  const { addressesState, handleSetDefaultAddress, handleDeleteAddress, handleCreateAddress } =
     useAddresses({
       userId: user.id,
       onUpdate,
@@ -133,6 +133,7 @@ const UserProfileView: React.FC<UserProfileViewProps> = ({
             addressesState={addressesState}
             onSetDefault={handleSetDefaultAddress}
             onDelete={handleDeleteAddress}
+            onAdd={handleCreateAddress}
           />
         )}
 
