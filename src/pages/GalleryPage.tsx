@@ -221,7 +221,7 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
         <div className="px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
           {/* Left: logo + links */}
           <div className="flex items-center gap-8">
-            <h2 className="font-serif text-3xl tracking-tight font-medium">AURICAPRI</h2>
+            <button onClick={() => onNavigate('home')} className="font-serif text-3xl tracking-tight font-medium hover:opacity-60 transition-opacity">AURICAPRI</button>
             <div className="hidden md:flex items-center gap-6 text-sm uppercase tracking-widest font-light">
               <button onClick={() => onNavigate('home', 'collection')} className="hover:opacity-50 transition-opacity">
                 Coleções
