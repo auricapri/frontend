@@ -48,12 +48,12 @@ export function ProductInfo(props: {
         </div>
         {finalPrice >= 10 && (() => {
           const maxInstallments = Math.min(Math.floor(finalPrice / 10), 10);
-          const freeMax = Math.min(maxInstallments, 6);
+          const freeMax = Math.min(maxInstallments, 3);
           if (freeMax >= 2) {
             return (
               <span className="text-xs text-neutral-500 mt-1">
                 ou <span className="font-bold text-black">{freeMax}x de {formatCurrency(finalPrice / freeMax, locale)}</span> sem juros
-                {maxInstallments > 6 && <span className="text-neutral-400"> | até {maxInstallments}x com juros</span>}
+                {maxInstallments > 3 && <span className="text-neutral-400"> | até {maxInstallments}x com juros</span>}
               </span>
             );
           }

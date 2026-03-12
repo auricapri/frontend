@@ -63,7 +63,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
               Cartão de Crédito
             </span>
             <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">
-              Até 10x sem juros
+              Até 3x sem juros
             </span>
           </div>
         </button>
