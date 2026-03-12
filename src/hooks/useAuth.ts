@@ -36,7 +36,16 @@ export const useAuth = () => {
           // Merge cart on login (fire-and-forget)
           if (!previousUid && session.user.id) {
             const STORAGE_KEY = 'auricapri_cart_session_id';
-            const sessionId = localStorage.getItem(STORAGE_KEY);
+            let sessionId: string | null = null;
+            try {
+              const raw = localStorage.getItem(STORAGE_KEY);
+              if (raw) {
+                const entry = JSON.parse(raw) as { data: string; expiry: number };
+                if (entry.data && entry.expiry > Date.now()) {
+                  sessionId = entry.data;
+                }
+              }
+            } catch { /* ignore parse error */ }
             if (sessionId) {
               cartApi.mergeCart(sessionId)
                 .then(() => {
