@@ -23,8 +23,7 @@ const IMAGE_SIZES: Record<string, ImageSize> = {
   xlarge: { width: 1200, height: 1600, label: '1200w' },
 };
 
-// Matches both /object/public/ (raw) and /render/image/public/ (already transformed)
-const SUPABASE_STORAGE_URL_PATTERN = /supabase\.co\/storage\/v1\/(object\/public|render\/image\/public)\//;
+const SUPABASE_STORAGE_URL_PATTERN = /supabase\.co\/storage\/v1\/object\/public\//;
 
 function isSupabaseStorageUrl(url: string): boolean {
   return SUPABASE_STORAGE_URL_PATTERN.test(url);
@@ -77,13 +76,7 @@ function transformSupabaseUrl(url: string, options: ImageTransformOptions): stri
   }
 
   const queryString = params.toString();
-  // Use /render/image/public/ endpoint for actual Supabase image transformations (WebP conversion,
-  // resize, quality). /object/public/ ignores these params and serves the original file.
-  const renderPath = urlObj.pathname.replace(
-    '/storage/v1/object/public/',
-    '/storage/v1/render/image/public/'
-  );
-  return queryString ? `${urlObj.origin}${renderPath}?${queryString}` : url;
+  return queryString ? `${urlObj.origin}${urlObj.pathname}?${queryString}` : url;
 }
 
 export function getOptimizedImageUrl(
