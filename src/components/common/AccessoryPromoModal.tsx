@@ -84,12 +84,13 @@ export function useAccessoryPromoModal() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const seen = sessionStorage.getItem(STORAGE_KEY);
+    // Use localStorage so it only shows once per browser (not every session)
+    const seen = localStorage.getItem(STORAGE_KEY);
     if (!seen) {
       const timer = setTimeout(() => {
         setShow(true);
-        sessionStorage.setItem(STORAGE_KEY, '1');
-      }, 2000); // Show after 2s
+        localStorage.setItem(STORAGE_KEY, '1');
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, []);

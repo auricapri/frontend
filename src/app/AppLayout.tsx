@@ -470,6 +470,7 @@ export function AppLayout(props: {
                 onComplete={app.handlePlaceOrder}
                 locale={app.locale}
                 t={app.t}
+                products={app.products}
               />
             </Suspense>
           </>
