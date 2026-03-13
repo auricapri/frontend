@@ -25,6 +25,7 @@ interface GalleryProduct {
   name: Record<string, string>;
   slug: Record<string, string> | string;
   category_id: string | null;
+  has_free_shipping: boolean;
 }
 
 interface GalleryItem extends GalleryRow {
@@ -65,12 +66,12 @@ async function fetchGallery(locale: string): Promise<GalleryData> {
       .in('id', [...new Set(variantIds)]),
     supabase
       .from('products')
-      .select('id, name, slug, category_id')
+      .select('id, name, slug, category_id, has_free_shipping')
       .in('id', [...new Set(productIds)]),
   ]);
 
   type VariantRow = { id: string; color_name: Record<string, string>; color_hex: string; retail_price: number; stock_quantity: number; sku: string };
-  type ProductRow = { id: string; name: Record<string, string>; slug: Record<string, string> | string; category_id: string | null };
+  type ProductRow = { id: string; name: Record<string, string>; slug: Record<string, string> | string; category_id: string | null; has_free_shipping: boolean };
 
   const variantMap = new Map((variants ?? []).map((v: VariantRow) => [v.id, v]));
   const productMap = new Map((products ?? []).map((p: ProductRow) => [p.id, p]));
@@ -187,7 +188,7 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
       size: 'Tamanho único',
       color_name: img.variant.color_name as CartItem['color_name'],
       color_hex: img.variant.color_hex ?? '',
-      price: img.variant.retail_price,
+      price: img.variant.retail_price + (img.product.has_free_shipping ? 35 : 0),
       quantity: 1,
       sku: img.variant.sku,
     });
@@ -408,6 +409,9 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
   const productName = img.product ? getLoc(img.product.name) : img.title;
   const categoryLabel = img.categoryName ?? img.location_label;
   const outOfStock = !img.variant || img.variant.stock_quantity < 1;
+  const displayPrice = img.variant
+    ? img.variant.retail_price + (img.product?.has_free_shipping ? 35 : 0)
+    : 0;
 
   const shareUrl = img.product
     ? `https://www.auricapri.com.br/product/${getLoc(img.product.slug) || img.product.id}`
@@ -453,12 +457,12 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
             <h2 className="font-serif text-2xl md:text-5xl mb-2 leading-tight">
               {productName ?? 'Auricapri'}
             </h2>
-            {img.variant?.retail_price ? (
+            {displayPrice > 0 ? (
               <div>
-                <p className="text-lg md:text-2xl font-light mb-0.5">{formatCurrency(img.variant.retail_price, locale)}</p>
-                {img.variant.retail_price >= 10 && (
+                <p className="text-lg md:text-2xl font-light mb-0.5">{formatCurrency(displayPrice, locale)}</p>
+                {displayPrice >= 10 && (
                   <p className="text-xs text-black/40">
-                    ou <span className="font-semibold text-black">3x de {formatCurrency(img.variant.retail_price / 3, locale)}</span> sem juros
+                    ou <span className="font-semibold text-black">3x de {formatCurrency(displayPrice / 3, locale)}</span> sem juros
                   </p>
                 )}
               </div>
