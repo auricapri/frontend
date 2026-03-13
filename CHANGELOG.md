@@ -5,6 +5,14 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.4] - 2026-03-13
+
+### Corrigido
+- **CheckoutSidebar**: desconto `preAppliedDiscount` (cupons do produto) estava aparecendo ANTES do subtotal; movido para depois do subtotal — todos os descontos ficam abaixo do subtotal
+- **CheckoutSidebar**: valores dos descontos não quebravam para a linha de baixo no mobile — adicionado `flex-shrink-0` em todos os spans de valor e `gap-3` nas linhas; `tracking-wide md:tracking-widest` evita overflow em telas pequenas
+- **CheckoutSidebar**: labels abreviados para mobile: "Bundle (15%)", "Cupom X", "Cashback", "Desconto (cupons)" — evita overflow lateral
+- **ShippingStep**: linha de frete com `flex-shrink-0` nos dois lados e `tracking-wide md:tracking-widest`; prazo simplificado para "{days} dias úteis" sem "Prazo Estimado:" que quebrava no mobile
+
 ## [1.4.3] - 2026-03-12
 
 ### Adicionado
