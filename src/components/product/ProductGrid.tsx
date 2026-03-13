@@ -175,7 +175,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           <div className="px-6 md:px-12 mb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <h2 className="text-3xl font-light font-serif tracking-tight uppercase mb-2">{t('nav.collection')}</h2>
-              <p className="text-[10px] text-neutral-400 tracking-[0.2em] uppercase font-bold">{t('grid.curated')}</p>
+              <p className="text-[10px] text-neutral-600 tracking-[0.2em] uppercase font-bold">{t('grid.curated')}</p>
             </div>
           </div>
 

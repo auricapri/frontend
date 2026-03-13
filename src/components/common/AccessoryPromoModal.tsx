@@ -47,7 +47,7 @@ export function AccessoryPromoModal({ onClose, onShopNow }: AccessoryPromoModalP
         {/* Content */}
         <div className="p-8 sm:p-10 space-y-5">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-violet-500 block mb-2 flex items-center gap-1.5">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-violet-700 block mb-2 flex items-center gap-1.5">
               <Sparkles className="w-3 h-3" /> Promoção Especial
             </span>
             <h2 className="font-serif text-2xl sm:text-3xl font-light tracking-tighter leading-tight">
@@ -56,7 +56,7 @@ export function AccessoryPromoModal({ onClose, onShopNow }: AccessoryPromoModalP
             </h2>
           </div>
 
-          <p className="text-sm text-neutral-500 leading-relaxed">
+          <p className="text-sm text-neutral-600 leading-relaxed">
             Adicione qualquer vestido, conjunto ou top ao seu carrinho e ganhe <strong>15% de desconto automático</strong> em todos os acessórios da compra.
           </p>
 
