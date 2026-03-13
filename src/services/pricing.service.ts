@@ -375,11 +375,7 @@ export class PricingService {
       return variant.wholesale_price ?? 0;
     }
 
-    const basePrice = variant.retail_price;
-    if (product?.has_free_shipping) {
-      return basePrice + 35;
-    }
-    return basePrice;
+    return variant.retail_price;
   }
 
   /**
