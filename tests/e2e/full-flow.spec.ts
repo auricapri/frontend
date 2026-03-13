@@ -149,7 +149,7 @@ async function openFirstProduct(page: Page) {
     await page.waitForTimeout(300);
   }
 
-  const productCards = page.locator('#collection .grid .cursor-pointer.group');
+  const productCards = page.locator('#collection [class*="columns"] .cursor-pointer.group');
   await expect(productCards.first()).toBeVisible({ timeout: 60_000 });
 
   // Click the product name heading — avoids the wishlist/cart action buttons
@@ -287,7 +287,7 @@ test.describe('Full User Flow — Production', () => {
 
     // Try up to 15 products to find one with an enabled Add button
     // (some products may be out of stock or require color/size selection)
-    const productCards = page.locator('#collection .grid .cursor-pointer.group');
+    const productCards = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(productCards.first()).toBeVisible({ timeout: 60_000 });
     const totalCards = await productCards.count();
 
@@ -384,7 +384,7 @@ test.describe('Full User Flow — Production', () => {
       await page.waitForTimeout(300);
     }
 
-    const productCards = page.locator('#collection .grid .cursor-pointer.group');
+    const productCards = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(productCards.first()).toBeVisible({ timeout: 60_000 });
     const totalCards5 = await productCards.count();
 

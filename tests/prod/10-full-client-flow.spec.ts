@@ -146,7 +146,7 @@ test.describe('Fluxo Completo do Cliente', () => {
     await dismissOverlays(page);
 
     // Ver grid de produtos
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
     const totalProducts = await products.count();
     console.log(`  📦 ${totalProducts} produtos na home`);
@@ -213,7 +213,7 @@ test.describe('Fluxo Completo do Cliente', () => {
     await page.waitForTimeout(1000);
 
     // Navegar para um produto
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
     const total = await products.count();
 
@@ -301,7 +301,7 @@ test.describe('Fluxo Completo do Cliente', () => {
     await page.waitForTimeout(1000);
 
     // Adicionar produto ao carrinho
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
     const total = await products.count();
 
@@ -433,7 +433,7 @@ test.describe('Fluxo Completo do Cliente', () => {
     await page.waitForTimeout(1000);
 
     // Abrir um produto
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
     await products.first().locator('h3').first().click();
     await expect(page).toHaveURL(/\/product\//, { timeout: 30_000 });

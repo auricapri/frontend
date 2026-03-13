@@ -47,8 +47,9 @@ test.describe('Homepage — Carregamento e Performance', () => {
     await page.evaluate(() => window.scrollTo(0, 600));
     await page.waitForTimeout(1000);
 
-    // Grid de produtos (o elemento principal da loja)
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    // Grid de produtos — container usa columns-2/columns-3/columns-4 (não .grid)
+    await page.waitForSelector('#collection [class*="columns"] .cursor-pointer', { timeout: 15_000 }).catch(() => undefined);
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     const count = await products.count();
     console.log(`  📦 ${count} produtos visíveis na home`);
     expect(count, 'Deve ter pelo menos 1 produto').toBeGreaterThan(0);

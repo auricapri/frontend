@@ -141,7 +141,7 @@ async function addProductToCart(page: Page): Promise<boolean> {
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(1000);
 
-  const products = page.locator('#collection .grid .cursor-pointer.group');
+  const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
   const hasProducts = await products.first().isVisible({ timeout: 15_000 }).catch(() => false);
 
   if (!hasProducts) {
