@@ -156,51 +156,54 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
         </div>
 
         <div className="space-y-4 pt-6 border-t border-neutral-200">
+          {/* Subtotal sempre primeiro */}
+          <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-widest text-neutral-700">
+            <span>Subtotal</span>
+            <span className="flex-shrink-0">{formatCurrency(subtotal, locale)}</span>
+          </div>
+
+          {/* Todos os descontos abaixo do subtotal */}
           {preAppliedDiscount > 0 && (
-            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-emerald-600">
-              <span>Desconto (cupons do produto)</span>
-              <span>-{formatCurrency(preAppliedDiscount, locale)}</span>
+            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-emerald-600">
+              <span className="leading-tight">Desconto (cupons)</span>
+              <span className="flex-shrink-0">-{formatCurrency(preAppliedDiscount, locale)}</span>
             </div>
           )}
-          <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-neutral-600">
-            <span>Subtotal</span>
-            <span>{formatCurrency(subtotal, locale)}</span>
-          </div>
           {manualCouponDiscount > 0 && (
-            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-emerald-600">
-              <span>Desconto ({appliedCoupon?.code})</span>
-              <span>-{formatCurrency(manualCouponDiscount, locale)}</span>
+            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-emerald-600">
+              <span className="leading-tight">Cupom {appliedCoupon?.code}</span>
+              <span className="flex-shrink-0">-{formatCurrency(manualCouponDiscount, locale)}</span>
             </div>
           )}
           {(bundleDiscount ?? 0) > 0 && (
-            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-violet-600">
-              <span>Desconto Acessório + Roupa (15%)</span>
-              <span>-{formatCurrency(bundleDiscount!, locale)}</span>
+            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-violet-600">
+              <span className="leading-tight">Bundle (15%)</span>
+              <span className="flex-shrink-0">-{formatCurrency(bundleDiscount!, locale)}</span>
             </div>
           )}
           {quantityDiscount > 0 && (
-            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-amber-600">
-              <span>Desconto Quantidade</span>
-              <span>-{formatCurrency(quantityDiscount, locale)}</span>
+            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-amber-600">
+              <span className="leading-tight">Desconto Qtd</span>
+              <span className="flex-shrink-0">-{formatCurrency(quantityDiscount, locale)}</span>
             </div>
           )}
           {paymentMethod === PaymentMethod.PIX && pixDiscount > 0 && (
-            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-green-500">
-              <span>Desconto PIX (5%)</span>
-              <span>-{formatCurrency(pixDiscount, locale)}</span>
+            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-green-500">
+              <span className="leading-tight">Desconto PIX (5%)</span>
+              <span className="flex-shrink-0">-{formatCurrency(pixDiscount, locale)}</span>
             </div>
           )}
 
           <ShippingStep checkout={checkout} />
 
           {cashbackUsed > 0 && (
-            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-emerald-600">
-              <span>Cashback Aplicado</span>
-              <span>-{formatCurrency(cashbackUsed, locale)}</span>
+            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-emerald-600">
+              <span className="leading-tight">Cashback</span>
+              <span className="flex-shrink-0">-{formatCurrency(cashbackUsed, locale)}</span>
             </div>
           )}
 
-          <div className="flex justify-between items-center pt-8 mt-6 border-t border-neutral-100">
+          <div className="flex justify-between items-center pt-8 mt-6 border-t border-neutral-200">
             <span className="text-xl font-black uppercase italic tracking-tighter">Total</span>
             <span className="text-4xl font-light tracking-tighter">{formatCurrency(finalTotal, locale)}</span>
           </div>

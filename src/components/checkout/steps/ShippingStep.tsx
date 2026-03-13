@@ -121,16 +121,16 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
   // VAREJO default: show GRÁTIS or loading
   return (
     <>
-      <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-neutral-600">
-        <span>Frete</span>
-        <div className="flex items-center gap-2">
+      <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-neutral-600">
+        <span className="flex-shrink-0">Frete</span>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           {shipping.calculatingShipping ? (
             <span className="flex items-center gap-1">
               <Loader2 className="w-3 h-3 animate-spin" /> Calc...
             </span>
           ) : shipping.shippingDisplay ? (
             <>
-              <span className="line-through text-neutral-500 decoration-red-500 decoration-2 font-medium">
+              <span className="line-through text-neutral-500 decoration-red-500 decoration-2 font-medium text-[10px]">
                 {formatCurrency(shipping.shippingDisplay.price, locale)}
               </span>
               <span className="text-green-500 font-black">GRÁTIS</span>
@@ -141,8 +141,8 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
         </div>
       </div>
       {shipping.shippingDisplay && !shipping.calculatingShipping && (
-        <div className="text-right text-xs font-bold text-neutral-600 uppercase tracking-widest">
-          Prazo Estimado: {shipping.shippingDisplay.days} dias úteis
+        <div className="text-right text-[10px] font-bold text-neutral-500 uppercase tracking-wide md:tracking-widest">
+          {shipping.shippingDisplay.days} dias úteis
         </div>
       )}
     </>
