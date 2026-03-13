@@ -2,6 +2,12 @@
   "redirects": [
     {
       "source": "/(.*)",
+      "has": [{ "type": "host", "value": "auricapri.com.br" }],
+      "destination": "https://www.auricapri.com.br/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "www.auricapri.com" }],
       "destination": "https://www.auricapri.com.br/$1",
       "permanent": true
