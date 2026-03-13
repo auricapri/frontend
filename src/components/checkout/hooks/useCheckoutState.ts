@@ -22,7 +22,7 @@ import type {
 import { UserMode } from '../../../types';
 import { usePaymentProcessing } from './usePaymentProcessing';
 import { computeAccessoryBundleDiscount } from '../../../utils/product';
-import { useAppContext } from '../../../context/AppContext';
+import type { Product } from '../../../types';
 import { useShippingCalculation } from './useShippingCalculation';
 import { useCheckoutTotals } from './useCheckoutTotals';
 import { useCouponState } from './useCouponState';
@@ -49,10 +49,11 @@ export type UseCheckoutStateParams = {
   ) => void;
   locale: Locale;
   initialStep?: number;
+  products?: Product[];
 };
 
 export function useCheckoutState(params: UseCheckoutStateParams) {
-  const { items, currentUser, storeConfig, userMode, onComplete, locale, initialStep } = params;
+  const { items, currentUser, storeConfig, userMode, onComplete, locale, initialStep, products = [] } = params;
 
   // Step management
   const [step, setStep] = useState(initialStep ?? 1);
@@ -101,7 +102,6 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
       : 0;
 
   // Accessory bundle discount
-  const { products } = useAppContext();
   const bundleDiscount = useMemo(
     () => computeAccessoryBundleDiscount(coupon.checkoutItems, products),
     [coupon.checkoutItems, products]
