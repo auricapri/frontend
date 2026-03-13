@@ -188,7 +188,7 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
       size: 'Tamanho único',
       color_name: img.variant.color_name as CartItem['color_name'],
       color_hex: img.variant.color_hex ?? '',
-      price: img.variant.retail_price + (img.product.has_free_shipping ? 35 : 0),
+      price: img.variant.retail_price,
       quantity: 1,
       sku: img.variant.sku,
     });
@@ -409,9 +409,7 @@ function GalleryLightbox({ img, visible, isAdding, getLoc, locale, onClose, onNa
   const productName = img.product ? getLoc(img.product.name) : img.title;
   const categoryLabel = img.categoryName ?? img.location_label;
   const outOfStock = !img.variant || img.variant.stock_quantity < 1;
-  const displayPrice = img.variant
-    ? img.variant.retail_price + (img.product?.has_free_shipping ? 35 : 0)
-    : 0;
+  const displayPrice = img.variant?.retail_price ?? 0;
 
   const shareUrl = img.product
     ? `https://www.auricapri.com.br/product/${getLoc(img.product.slug) || img.product.id}`
