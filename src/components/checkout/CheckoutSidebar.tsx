@@ -177,7 +177,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
           )}
           {(bundleDiscount ?? 0) > 0 && (
             <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-violet-600">
-              <span className="leading-tight">Bundle (15%)</span>
+              <span className="leading-tight">Acessório c/ Roupa (15%)</span>
               <span className="flex-shrink-0">-{formatCurrency(bundleDiscount!, locale)}</span>
             </div>
           )}
