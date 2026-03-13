@@ -169,6 +169,81 @@ export function useMyFeature(param: string) {
 
 ---
 
+## Testes Obrigatórios — NUNCA PULAR
+
+**Contexto crítico:** Não temos ambiente de homologação. Toda alteração vai direto para produção (Vercel branch `producao`). Testar antes de commitar é a única linha de defesa.
+
+### Antes de qualquer commit
+
+```bash
+# Todos os comandos a partir de /home/auricapri/projeto/auricapri/frontend/
+
+# 1. TypeScript check
+source /home/auricapri/.nvm/nvm.sh && npx tsc --noEmit
+# NOTA: há erros pré-existentes em GalleryPage.tsx e useNavigation.ts
+# Garantir que NOVOS erros não foram introduzidos
+
+# 2. Unit tests (rápidos, < 5s)
+npx vitest run
+
+# 3. Build completo (garante que Vite não quebra)
+npx vite build
+```
+
+### Testes E2E de produção (Playwright)
+
+Os testes em `tests/prod/` rodam contra `https://www.auricapri.com.br`. Como não há staging, devem ser rodados COM CUIDADO para não gerar dados reais (pedidos, cobranças):
+
+```bash
+# Testes seguros (leitura/navegação apenas — sempre rodar)
+npx playwright test tests/prod/01-homepage-performance.spec.ts
+npx playwright test tests/prod/02-navigation-and-seo.spec.ts
+npx playwright test tests/prod/07-mobile-responsive.spec.ts
+npx playwright test tests/prod/08-api-health.spec.ts
+npx playwright test tests/prod/09-visual-accessibility.spec.ts
+
+# Testes com criação de dados — rodar com usuário de teste dedicado
+npx playwright test tests/prod/03-auth-login.spec.ts
+npx playwright test tests/prod/04-product-and-cart.spec.ts
+
+# ⚠️ NUNCA rodar em produção sem supervisão (geram pedidos/cobranças):
+# tests/prod/05-checkout-flow.spec.ts
+# tests/prod/10-full-client-flow.spec.ts
+# tests/prod/19-checkout-payments.spec.ts
+```
+
+### Áreas de alto risco após mudanças
+
+| Área modificada | Teste obrigatório |
+|----------------|-------------------|
+| `utils/image.ts` | Abrir homepage, confirmar que imagens carregam em WebP e são < 200KB |
+| Qualquer componente de checkout | Adicionar item ao carrinho manualmente |
+| `vite.config.ts` | `npx vite build` sem erros; verificar tamanho dos chunks |
+| Navbar/Footer | Testar mobile + desktop |
+| Auth routes | Login/logout manuais |
+
+### Regra para testes com LLM
+
+Testes que envolvem resposta de IA (chatbot, recomendações, analytics NLP) podem dar **falso positivo**:
+- A API de LLM pode estar lenta/throttled/indisponível
+- O formato da resposta pode variar entre chamadas
+- **Ação**: verificar apenas status HTTP 200, não conteúdo
+- Logar falha mas não bloquear deploy por timeout de LLM
+
+### Lighthouse — Performance (rodar após mudanças visuais)
+
+```bash
+# Requer chromium instalado
+CHROME_PATH=$(which chromium-browser) npx lighthouse https://www.auricapri.com.br \
+  --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage --disable-gpu" \
+  --output=json --output-path=/tmp/lh-report.json \
+  --only-categories=performance,accessibility --quiet
+
+# Score mínimo aceitável: performance >= 75, accessibility >= 90
+```
+
+---
+
 ## Changelog — Regra Global Obrigatória
 
 Após **qualquer alteração** finalizada (código, configuração, dependências):
