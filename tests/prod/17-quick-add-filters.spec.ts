@@ -64,7 +64,7 @@ test.describe('Quick Add Modal', () => {
     await scrollToProducts(page);
 
     // Click first product to go to detail -- use the same selector pattern as file 10
-    const productCard = page.locator('#collection .grid .cursor-pointer.group').first();
+    const productCard = page.locator('#collection [class*="columns"] .cursor-pointer.group').first();
     const altProductCard = page.locator('[class*="product"], [data-testid*="product"]').first();
 
     let clicked = false;

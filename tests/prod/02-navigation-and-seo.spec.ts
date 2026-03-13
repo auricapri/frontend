@@ -39,7 +39,14 @@ test.describe('Navegação e SEO', () => {
   });
 
   test('Navegação por produto — clicar num produto abre a página', async ({ page }) => {
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    // Dismiss promo/terms modal if blocking
+    const closeBtn = page.locator('button[aria-label="Fechar"]').first();
+    if (await closeBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await closeBtn.click();
+      await page.waitForTimeout(300);
+    }
+
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
 
     // Clicar no primeiro produto
@@ -69,7 +76,14 @@ test.describe('Navegação e SEO', () => {
   });
 
   test('Voltar para home funciona (via browser back)', async ({ page }) => {
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    // Dismiss promo/terms modal if blocking
+    const closeBtn2 = page.locator('button[aria-label="Fechar"]').first();
+    if (await closeBtn2.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await closeBtn2.click();
+      await page.waitForTimeout(300);
+    }
+
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
     await products.first().locator('h3').first().click();
     await expect(page).toHaveURL(/\/product\//, { timeout: 30_000 });
@@ -79,7 +93,7 @@ test.describe('Navegação e SEO', () => {
     await page.waitForTimeout(3000);
 
     // Verificar que voltou para home
-    const backProducts = page.locator('#collection .grid .cursor-pointer.group');
+    const backProducts = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(backProducts.first()).toBeVisible({ timeout: 30_000 });
     console.log('  ✅ Navegação de volta para home OK');
   });
@@ -109,7 +123,7 @@ test.describe('Navegação e SEO', () => {
   });
 
   test('Scroll infinito ou paginação carrega mais produtos', async ({ page }) => {
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
 
     const initialCount = await products.count();

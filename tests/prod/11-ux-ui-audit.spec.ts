@@ -59,7 +59,7 @@ test.describe('UX — Home Page', () => {
 
     // Verificar se os produtos estão visíveis sem scroll (above the fold)
     const productsAboveFold = await page.evaluate(() => {
-      const grid = document.querySelector('#collection .grid');
+      const grid = document.querySelector('#collection [class*="columns"]');
       if (!grid) return false;
       const rect = grid.getBoundingClientRect();
       return rect.top < window.innerHeight;
@@ -155,7 +155,7 @@ test.describe('UX — Página de Produto', () => {
     await page.goto('/', { waitUntil: 'load' });
     await dismissOverlays(page);
 
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
     await products.first().locator('h3').first().click();
     await expect(page).toHaveURL(/\/product\//, { timeout: 30_000 });
@@ -219,7 +219,7 @@ test.describe('UX — Página de Produto', () => {
     await page.goto('/', { waitUntil: 'load' });
     await dismissOverlays(page);
 
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
 
     // Hover no card de produto — verificar se tem efeito visual
@@ -255,7 +255,7 @@ test.describe('UX — Página de Produto', () => {
     await page.goto('/', { waitUntil: 'load' });
     await dismissOverlays(page);
 
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
     await products.first().locator('h3').first().click();
     await expect(page).toHaveURL(/\/product\//, { timeout: 30_000 });
@@ -372,7 +372,7 @@ test.describe('UX — Carrinho', () => {
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(1000);
 
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
 
     // Navegar para produto e adicionar
@@ -456,7 +456,7 @@ test.describe('UX — Checkout', () => {
     await page.waitForTimeout(1000);
 
     // Adicionar produto
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
     const total = await products.count();
 

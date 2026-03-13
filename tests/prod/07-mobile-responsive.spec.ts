@@ -27,7 +27,7 @@ test.describe('Mobile — Responsividade', () => {
     console.log(`  📱 Scroll horizontal: ${hasHorizontalScroll ? '⚠ PRESENTE' : '✅ OK'}`);
 
     // Verificar que produtos são visíveis
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
     const count = await products.count();
     console.log(`  📦 ${count} produtos visíveis no mobile`);
@@ -54,7 +54,7 @@ test.describe('Mobile — Responsividade', () => {
       await termsBtn.click();
     }
 
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
 
     // On mobile the quick-add button is visible (opacity-100) and uses stopPropagation,
@@ -135,7 +135,7 @@ test.describe('Tablet — Responsividade', () => {
       await termsBtn.click();
     }
 
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
     const count = await products.count();
     console.log(`  📱 ${count} produtos visíveis no tablet`);

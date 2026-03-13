@@ -83,7 +83,7 @@ async function login(page: Page) {
 
 /** Navigate to a product page from the home grid */
 async function navigateToProduct(page: Page) {
-  const products = page.locator('#collection .grid .cursor-pointer.group');
+  const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
   await expect(products.first()).toBeVisible({ timeout: 30_000 });
   await products.first().locator('h3').first().click();
   await expect(page).toHaveURL(/\/product\//, { timeout: 30_000 });
@@ -108,7 +108,7 @@ function locateAddToCartButton(page: Page) {
  * Returns true if successfully added.
  */
 async function addProductToCart(page: Page): Promise<boolean> {
-  const products = page.locator('#collection .grid .cursor-pointer.group');
+  const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
   await expect(products.first()).toBeVisible({ timeout: 30_000 });
   const totalCards = await products.count();
 
@@ -200,7 +200,7 @@ test.describe('Produto — Detalhes', () => {
   test('Seletor de tamanho funciona', async ({ page }) => {
     await setup(page);
 
-    const products = page.locator('#collection .grid .cursor-pointer.group');
+    const products = page.locator('#collection [class*="columns"] .cursor-pointer.group');
     await expect(products.first()).toBeVisible({ timeout: 30_000 });
 
     // Navegar por produtos ate encontrar um com seletor de tamanho

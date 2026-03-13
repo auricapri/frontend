@@ -40,7 +40,7 @@ test.describe('E2E - Wishlist compartilhada e compra presente', () => {
     });
 
     await flow.step('Abrir produto com estoque', async () => {
-      const cards = page.locator('#collection .grid .cursor-pointer.group');
+      const cards = page.locator('#collection [class*="columns"] .cursor-pointer.group');
       for (let i = 0; i < 8; i += 1) {
         const card = cards.nth(i);
         await expect(card).toBeVisible({ timeout: 30000 });

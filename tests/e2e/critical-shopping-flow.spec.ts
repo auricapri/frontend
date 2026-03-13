@@ -22,7 +22,7 @@ test.describe('E2E - Compra e navegação crítica', () => {
       await page
         .waitForFunction(() => document.body.classList.contains('loaded'), null, { timeout: 60000 })
         .catch(() => undefined);
-      const firstProduct = page.locator('#collection .grid .cursor-pointer.group').first();
+      const firstProduct = page.locator('#collection [class*="columns"] .cursor-pointer.group').first();
       await expect(firstProduct).toBeVisible({ timeout: 90000 });
     });
 
@@ -34,7 +34,7 @@ test.describe('E2E - Compra e navegação crítica', () => {
     });
 
     await flow.step('Abrir produto com estoque', async () => {
-      const cards = page.locator('#collection .grid .cursor-pointer.group');
+      const cards = page.locator('#collection [class*="columns"] .cursor-pointer.group');
       for (let i = 0; i < 8; i += 1) {
         await cards.nth(i).locator('div[class*="aspect-[3/4]"]').first().click();
         await expect(page).toHaveURL(/\/product\//, { timeout: 30000 });
