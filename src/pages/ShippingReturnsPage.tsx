@@ -43,8 +43,9 @@ export function ShippingReturnsPage({ locale, onBack, onNavigateReturns }: Shipp
           </h2>
           <ul className="space-y-3 text-sm text-neutral-700 leading-relaxed">
             <li>Entrega para todo o Brasil.</li>
-            <li>Frete grátis em compras acima de R$ 299.</li>
-            <li>Prazo de entrega: 3 a 10 dias úteis, dependendo da região.</li>
+            <li>Frete grátis em todos os pedidos — sem valor mínimo.</li>
+            <li>Prazo frete grátis (PAC): 7 a 15 dias úteis, dependendo da região.</li>
+            <li>Entrega expressa disponível de segunda a quinta-feira, com prazo menor e custo adicional exibido no checkout.</li>
             <li>Após o envio, você receberá um e-mail com o código de rastreamento.</li>
             <li>Acompanhe seu pedido pelo painel da sua conta.</li>
           </ul>
@@ -81,6 +82,20 @@ export function ShippingReturnsPage({ locale, onBack, onNavigateReturns }: Shipp
                 <li>Boleto: até 5 dias úteis</li>
               </ul>
             </li>
+          </ul>
+        </section>
+
+        {/* PARCELAMENTO */}
+        <section className="mb-12">
+          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-900 mb-6">
+            Parcelamento
+          </h2>
+          <ul className="space-y-3 text-sm text-neutral-700 leading-relaxed">
+            <li>Pagamento em até 10x no cartão de crédito.</li>
+            <li>Parcelas de 1x a 3x sem juros — a Auricapri absorve a taxa.</li>
+            <li>A partir de 4x, juros aplicados de acordo com a tabela da operadora de pagamento, exibidos antes da confirmação do pedido.</li>
+            <li>PIX: 5% de desconto sobre o valor dos produtos.</li>
+            <li>Boleto bancário: pagamento à vista com vencimento em 3 dias úteis.</li>
           </ul>
         </section>
 
