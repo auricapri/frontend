@@ -68,13 +68,13 @@ interface CreditCardFormProps {
 }
 
 const INPUT_CLASS =
-  'w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none font-mono text-sm md:text-base tracking-wide md:tracking-widest focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all';
+  'w-full p-3 bg-neutral-900 text-white border border-neutral-800 rounded-xl outline-none font-mono text-sm tracking-wide focus:border-neutral-600 focus:ring-1 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all';
 
 const INPUT_CLASS_TEXT =
-  'w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none text-sm md:text-base font-normal uppercase focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all';
+  'w-full p-3 bg-neutral-900 text-white border border-neutral-800 rounded-xl outline-none text-sm font-normal uppercase focus:border-neutral-600 focus:ring-1 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all';
 
 const INPUT_CLASS_SHORT =
-  'w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none text-sm md:text-base focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all';
+  'w-full p-3 bg-neutral-900 text-white border border-neutral-800 rounded-xl outline-none text-sm focus:border-neutral-600 focus:ring-1 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all';
 
 const LABEL_CLASS = 'text-[10px] md:text-xs font-normal uppercase tracking-wide md:tracking-widest text-neutral-600';
 
@@ -162,7 +162,7 @@ function CardFields({
   showSaveToggle, saveCardForFuture, onToggleSave,
 }: CardFieldsProps) {
   return (
-    <div className="space-y-6 md:space-y-8 bg-paper/50 p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-[2.5rem] border border-neutral-100">
+    <div className="space-y-4 bg-paper/50 p-4 rounded-2xl border border-neutral-100">
       <CreditCardPreview
         cardNumber={cardNumber}
         cardName={cardName}
@@ -170,7 +170,7 @@ function CardFields({
         cardCvc={cardCvc}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="space-y-2">
           <label className={LABEL_CLASS}>Número do Cartão</label>
           <input
@@ -190,7 +190,7 @@ function CardFields({
             onChange={(e) => setCardName(e.target.value.toUpperCase())}
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 md:col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:col-span-2">
           <div className="space-y-2">
             <label className={LABEL_CLASS}>Validade</label>
             <input
@@ -271,7 +271,7 @@ export function CreditCardForm({
   const savedCards: SavedCard[] = currentUser?.saved_cards ?? [];
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-500">
+    <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
       {finalTotal >= 500 && (
         <div className="flex items-center justify-between p-4 border-b border-neutral-100">
           <span className="text-xs font-normal uppercase tracking-wider text-neutral-900">Dividir em dois cartões</span>
@@ -289,7 +289,7 @@ export function CreditCardForm({
       )}
 
       {splitCards && finalTotal >= 500 && (
-        <div className="p-6 bg-paper rounded-[2rem] border border-neutral-100">
+        <div className="p-4 bg-paper rounded-2xl border border-neutral-100">
           <SplitCardAmount
             totalAmount={finalTotal}
             card1Amount={card1Amount}
@@ -309,7 +309,7 @@ export function CreditCardForm({
       )}
 
       {!splitCards && (
-        <div className="p-6 bg-paper rounded-[2rem] border border-neutral-100">
+        <div className="p-4 bg-paper rounded-2xl border border-neutral-100">
           <InstallmentSelector
             options={installmentOptions}
             selectedInstallments={selectedInstallments}
