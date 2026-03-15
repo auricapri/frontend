@@ -2,7 +2,7 @@
  * useCouponState - Manages coupon validation, application, and discount calculation
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CouponsApi } from '../../../api/coupons.api';
 import { formatCurrency } from '../../../utils/currency';
 import type { CartItem, Coupon, Locale, UseCouponStateParams, UseCouponStateReturn } from './types';
@@ -17,11 +17,31 @@ export function useCouponState(params: UseCouponStateParams): UseCouponStateRetu
   const [couponError, setCouponError] = useState<string | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [checkoutItems, setCheckoutItems] = useState<CartItem[]>(items);
+  const autoAppliedRef = useRef(false);
 
   // Sync checkout items when items prop changes
   useEffect(() => {
     setCheckoutItems(items);
   }, [items]);
+
+  // Auto-apply coupon saved from CartDrawer when items are ready
+  useEffect(() => {
+    if (autoAppliedRef.current || appliedCoupon || items.length === 0) return;
+    const saved = sessionStorage.getItem('cart_coupon_code');
+    if (!saved) return;
+    autoAppliedRef.current = true;
+    setCouponCode(saved);
+    // Trigger apply on next tick so couponCode state is set
+    setTimeout(async () => {
+      try {
+        const coupon = await couponsApi.getByCode(saved);
+        if (coupon && !(coupon.expires_at && new Date(coupon.expires_at) < new Date())) {
+          setAppliedCoupon(coupon);
+        }
+      } catch { /* silently ignore — user can apply manually */ }
+      setCouponCode('');
+    }, 0);
+  }, [items.length, appliedCoupon, couponsApi]);
 
   // Items that already have a coupon applied
   const itemsWithCoupon = useMemo(

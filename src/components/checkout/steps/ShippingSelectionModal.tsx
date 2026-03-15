@@ -183,7 +183,7 @@ export function ShippingSelectionModal({
           Continuar para Pagamento
         </button>
         <p className="text-center text-xs text-neutral-400 mt-3">
-          Para alterar, role até embaixo
+          Para alterar, role até embaixo na tela de checkout
         </p>
       </div>
     </div>
