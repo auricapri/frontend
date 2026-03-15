@@ -176,7 +176,15 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     boletoData: pixBoleto.boletoData,
   });
 
-  // Reset PIX/boleto data when coupon changes (new coupon → old QR code is invalid)
+  // Keep refs up-to-date so the coupon-change effect never uses stale closures
+  const pixBoletoRef = useRef(pixBoleto);
+  pixBoletoRef.current = pixBoleto;
+  const paymentMethodRef = useRef(paymentMethod);
+  paymentMethodRef.current = paymentMethod;
+
+  // When coupon changes: reset stale PIX/boleto QR code and auto-regenerate with new amount.
+  // NOTE: the authoritative payment amount is ALWAYS server-calculated from DB prices + coupon.
+  // The frontend's finalTotal is a display hint; the backend recomputes it independently.
   const prevCouponCodeRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     const newCode = coupon.appliedCoupon?.code ?? null;
@@ -186,7 +194,14 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     }
     if (prevCouponCodeRef.current !== newCode) {
       prevCouponCodeRef.current = newCode;
-      pixBoleto.resetPaymentData();
+      const pb = pixBoletoRef.current;
+      const pm = paymentMethodRef.current;
+      const hadPaymentData = !!(pb.pixData || pb.boletoData);
+      pb.resetPaymentData();
+      // Auto-regenerate PIX/Boleto with new order+amount when QR was already shown
+      if (hadPaymentData && (pm === PaymentMethod.PIX || pm === PaymentMethod.BOLETO)) {
+        pb.completeOrderWithPayment(pm).catch(() => { /* error surfaced in pixError/boletoError */ });
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coupon.appliedCoupon?.code]);
