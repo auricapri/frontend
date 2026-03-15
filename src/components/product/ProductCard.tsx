@@ -120,8 +120,7 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
   const colors = getProductColors(product.variants);
   const hasMultipleVariants = (product.variants?.length || 0) > 1;
 
-  // Free shipping: use product flag or fallback to price >= 299
-  const hasFreeShipping = product.has_free_shipping === true || final >= 299;
+  const hasFreeShipping = true;
 
   const textSize = TEXT_SIZES[variant] ?? TEXT_SIZES.grid;
   const imgSrcSet = generateSrcSet(displayImg, ['thumbnail', 'small', 'medium']);

@@ -5,6 +5,13 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.7] - 2026-03-15
+
+### Corrigido
+- **i18n.ts** (4 locales): barra de benefícios corrigida — `'FRETE GRÁTIS EM TODOS OS PEDIDOS'` / `'FREE SHIPPING ON ALL ORDERS'` / `'ENVÍO GRATIS EN TODOS LOS PEDIDOS'` / `'LIVRAISON GRATUITE SUR TOUTES LES COMMANDES'` (antes indicavam limite R$299 que não existe)
+- **ProductCard.tsx**: `hasFreeShipping` agora sempre `true` para todos os produtos VAREJO (antes exigia `has_free_shipping === true || price >= 299`, incompatível com política de frete grátis sem mínimo)
+- **ShippingReturnsPage.tsx**: seção Envios reescrita — frete grátis sem valor mínimo, PAC 7–15 dias úteis, expressa seg–qui; seção Parcelamento adicionada (1–3x sem juros, 4–10x com juros, PIX 5% desconto, boleto 3 dias)
+
 ## [1.4.6] - 2026-03-15
 
 ### Adicionado

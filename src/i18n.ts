@@ -106,7 +106,7 @@ export const translations = {
       shareTitle: 'Social Sharing & Gift Link'
     },
     benefits: {
-      freeShipping: 'FREE SHIPPING OVER R$299',
+      freeShipping: 'FREE SHIPPING ON ALL ORDERS',
       freeExchange: 'FREE EXCHANGE WITHIN 30 DAYS',
       installments: 'UP TO 3X INTEREST-FREE'
     },
@@ -306,7 +306,7 @@ export const translations = {
       shareTitle: 'Compartilhar & Link de Presente'
     },
     benefits: {
-      freeShipping: 'FRETE GRÁTIS ACIMA DE R$299',
+      freeShipping: 'FRETE GRÁTIS EM TODOS OS PEDIDOS',
       freeExchange: 'TROCA GRÁTIS EM ATÉ 30 DIAS',
       installments: 'PARCELE EM ATÉ 3X SEM JUROS'
     },
@@ -504,7 +504,7 @@ export const translations = {
       shareTitle: 'Compartir & Enlace de Regalo'
     },
     benefits: {
-      freeShipping: 'ENVÍO GRATIS DESDE R$299',
+      freeShipping: 'ENVÍO GRATIS EN TODOS LOS PEDIDOS',
       freeExchange: 'CAMBIO GRATIS HASTA 30 DÍAS',
       installments: 'HASTA 3X SIN INTERESES'
     },
@@ -702,7 +702,7 @@ export const translations = {
       shareTitle: 'Partager & Lien Cadeau'
     },
     benefits: {
-      freeShipping: 'LIVRAISON GRATUITE DÈS R$299',
+      freeShipping: 'LIVRAISON GRATUITE SUR TOUTES LES COMMANDES',
       freeExchange: 'ÉCHANGE GRATUIT SOUS 30 JOURS',
       installments: 'JUSQU\'À 3X SANS INTÉRÊTS'
     },
