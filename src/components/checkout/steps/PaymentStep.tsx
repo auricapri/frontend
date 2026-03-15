@@ -102,14 +102,14 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
   const isGenerating = pixLoading || paymentProcessing || boletoLoading;
 
   return (
-    <section className="space-y-10 animate-in fade-in slide-in-from-left duration-700">
+    <section className="space-y-6 animate-in fade-in slide-in-from-left duration-700">
       <LoadingModal
         isOpen={isGenerating}
         message={pixLoading ? 'Gerando PIX' : boletoLoading ? 'Gerando Boleto' : 'Processando pagamento'}
         subMessage="Por favor, aguarde enquanto preparamos seu pagamento"
       />
 
-      <div className="flex items-center gap-6 mb-10">
+      <div className="flex items-center gap-4 mb-4">
         <div className="p-4 bg-paper rounded-2xl">
           <CreditCard className="w-6 h-6" />
         </div>
@@ -119,7 +119,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <button
           onClick={handleSelectCard}
-          className={`p-8 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all ${
+          className={`p-5 border-2 rounded-2xl flex flex-col items-center gap-3 transition-all ${
             paymentMethod === PaymentMethod.CREDIT_CARD
               ? 'border-black bg-paper shadow-xl scale-[1.02]'
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
@@ -133,7 +133,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
         </button>
         <button
           onClick={handleSelectPix}
-          className={`p-8 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all ${
+          className={`p-5 border-2 rounded-2xl flex flex-col items-center gap-3 transition-all ${
             paymentMethod === PaymentMethod.PIX
               ? 'border-black bg-paper shadow-xl scale-[1.02]'
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
@@ -147,7 +147,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
         </button>
         <button
           onClick={handleSelectBoleto}
-          className={`p-8 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all ${
+          className={`p-5 border-2 rounded-2xl flex flex-col items-center gap-3 transition-all ${
             paymentMethod === PaymentMethod.BOLETO
               ? 'border-black bg-paper shadow-xl scale-[1.02]'
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
@@ -241,20 +241,20 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
       )}
 
       {(pixReady || boletoReady) ? (
-        <div className="flex gap-4 pt-12">
+        <div className="flex gap-4 pt-6">
           <button
             onClick={() => setStep(1)}
-            className="flex-1 px-10 py-6 border border-neutral-200 rounded-[2rem] text-xs font-normal uppercase tracking-wider hover:bg-neutral-50 transition-all"
+            className="flex-1 px-6 py-4 border border-neutral-200 rounded-2xl text-xs font-normal uppercase tracking-wider hover:bg-neutral-50 transition-all"
           >
             Voltar ao Endereço
           </button>
         </div>
       ) : (
-        <div className="flex gap-4 pt-12">
+        <div className="flex gap-4 pt-6">
           <button
             onClick={() => setStep(1)}
             disabled={isGenerating}
-            className="px-10 py-6 border border-neutral-200 rounded-[2rem] text-xs font-normal uppercase tracking-wider hover:bg-neutral-50 transition-all disabled:opacity-50"
+            className="px-6 py-4 border border-neutral-200 rounded-2xl text-xs font-normal uppercase tracking-wider hover:bg-neutral-50 transition-all disabled:opacity-50"
           >
             Voltar
           </button>
@@ -262,7 +262,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
             <button
               onClick={() => setStep(3)}
               disabled={splitCards && !splitCardsValid}
-              className={`flex-1 py-8 bg-black text-white rounded-[2rem] text-[10px] font-normal uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 transition-all ${
+              className={`flex-1 py-5 bg-black text-white rounded-2xl text-[10px] font-normal uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 transition-all ${
                 splitCards && !splitCardsValid
                   ? 'opacity-40 cursor-not-allowed'
                   : 'hover:scale-[1.02] active:scale-95'
@@ -271,7 +271,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
               Revisar Pedido <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
-            <div className="flex-1 py-8 bg-neutral-100 text-neutral-400 rounded-[2rem] text-[10px] font-normal uppercase tracking-[0.4em] flex items-center justify-center gap-4">
+            <div className="flex-1 py-5 bg-neutral-100 text-neutral-400 rounded-2xl text-[10px] font-normal uppercase tracking-[0.4em] flex items-center justify-center gap-4">
               {isGenerating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />

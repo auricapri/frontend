@@ -5,6 +5,14 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.11] - 2026-03-15
+
+### Corrigido
+- **useCheckoutTotals**: cupom nunca pode reduzir `totalBeforeWallet` abaixo de R$1,00 (mínimo do gateway Asaas) — `max(R$1, raw)` aplicado quando `manualCouponDiscount > 0`
+- **useCheckoutState**: quando cupom muda (aplicado ou removido), PIX e boleto já gerados são resetados automaticamente — força nova confirmação para gerar com o valor correto
+- **PaymentStep**: padding reduzido — `space-y-10` → `space-y-6`, botões de método `p-8 rounded-[2rem]` → `p-5 rounded-2xl`, cabeçalho `mb-10` → `mb-4`, botões de ação `pt-12 px-10 py-6/8` → `pt-6 px-6 py-4/5`
+- **InstallmentSelector**: grid de parcelas `gap-2 grid-cols-6` → `gap-3 grid-cols-5` — mais espaço entre as opções
+
 ## [1.4.10] - 2026-03-15
 
 ### Corrigido
