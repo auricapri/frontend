@@ -38,7 +38,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
       <div className="bg-paper rounded-[3rem] p-4 md:p-8 lg:p-12 lg:sticky lg:top-32 border border-neutral-100 shadow-sm">
         <div className="flex items-center gap-4 mb-10 border-b border-neutral-100 pb-6">
           <ShoppingBag className="w-5 h-5 text-neutral-600" />
-          <h4 className="text-xs font-black uppercase tracking-[0.4em] font-serif">Sua Sacola</h4>
+          <h4 className="text-xs font-normal uppercase tracking-[0.4em]">Sua Sacola</h4>
         </div>
         <div className="space-y-6 mb-8 max-h-[300px] overflow-y-auto pr-4 no-scrollbar">
           {Array.isArray(checkoutItems) && checkoutItems.length > 0 ? (
@@ -56,15 +56,15 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
                     <OptimizedImage src={item?.image} alt={getLoc(item?.name)} size="thumbnail" objectFit="cover" className="w-full h-full" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h5 className="text-xs font-black uppercase tracking-tight leading-tight mb-1 truncate">{getLoc(item?.name)}</h5>
-                    <p className="text-xs text-neutral-600 uppercase font-bold tracking-widest">
+                    <h5 className="text-xs font-normal uppercase tracking-tight leading-tight mb-1 truncate">{getLoc(item?.name)}</h5>
+                    <p className="text-xs text-neutral-600 uppercase font-normal tracking-widest">
                       {getLoc(item?.color_name)} | {item?.size || 'N/A'}
                     </p>
-                    <p className="text-xs font-black mt-1">Qtd: {item?.quantity || 0}</p>
+                    <p className="text-xs font-normal mt-1">Qtd: {item?.quantity || 0}</p>
                     {hasCoupon && (
                       <div className="flex items-center gap-1 mt-1.5">
                         <Tag className="w-2.5 h-2.5 text-emerald-600" />
-                        <span className="text-xs font-black uppercase tracking-widest text-emerald-600">{item.applied_coupon_code}</span>
+                        <span className="text-xs font-normal uppercase tracking-widest text-emerald-600">{item.applied_coupon_code}</span>
                       </div>
                     )}
                   </div>
@@ -74,7 +74,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
                         {formatCurrency(item.original_price! * (item?.quantity || 0), locale)}
                       </span>
                     )}
-                    <span className={`text-[11px] font-black tracking-tighter ${hasCoupon ? 'text-emerald-600' : ''}`}>
+                    <span className={`text-[11px] font-normal tracking-tighter ${hasCoupon ? 'text-emerald-600' : ''}`}>
                       {formatCurrency((item?.price || 0) * (item?.quantity || 0), locale)}
                     </span>
                   </div>
@@ -89,7 +89,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
         <div className="mb-8 pt-6 border-t border-neutral-200">
           <div className="flex items-center gap-2 mb-4">
             <Ticket className="w-4 h-4 text-neutral-600" />
-            <span className="text-xs font-black uppercase tracking-[0.3em] text-neutral-700">Cupom de Desconto</span>
+            <span className="text-xs font-normal uppercase tracking-[0.3em] text-neutral-700">Cupom de Desconto</span>
           </div>
 
           {itemsWithCoupon.length > 0 && (
@@ -97,7 +97,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
               <div className="flex items-center md:items-start gap-2">
                 <Info className="w-3 h-3 text-emerald-600 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-[10px] md:text-xs font-bold text-emerald-800 uppercase tracking-wide">
+                  <p className="text-[10px] md:text-xs font-normal text-emerald-800 uppercase tracking-wide">
                     {itemsWithCoupon.length} {itemsWithCoupon.length === 1 ? 'item já possui' : 'itens já possuem'} cupom
                   </p>
                   <p className="hidden md:block text-xs text-emerald-600 mt-0.5">
@@ -113,7 +113,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
               <div className="flex items-center gap-3">
                 <Tag className="w-4 h-4" />
                 <div>
-                  <span className="text-xs font-black uppercase tracking-widest block">{appliedCoupon.code}</span>
+                  <span className="text-xs font-normal uppercase tracking-widest block">{appliedCoupon.code}</span>
                   <span className="text-xs text-white/60 block mt-0.5">
                     {appliedCoupon.discount_type === 'percentage'
                       ? `${appliedCoupon.discount_value}% de desconto`
@@ -134,13 +134,13 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
                   placeholder="DIGITE O CUPOM"
-                  className="w-full md:flex-1 p-3 md:p-4 bg-paper border border-neutral-200 rounded-xl text-xs font-black uppercase tracking-widest outline-none focus:border-black transition-all placeholder:text-neutral-300"
+                  className="w-full md:flex-1 p-3 md:p-4 bg-paper border border-neutral-200 rounded-xl text-xs font-normal uppercase tracking-widest outline-none focus:border-black transition-all placeholder:text-neutral-300"
                   disabled={itemsWithoutCoupon.length === 0}
                 />
                 <button
                   onClick={handleApplyCoupon}
                   disabled={couponLoading || !couponCode.trim() || itemsWithoutCoupon.length === 0}
-                  className="w-full md:w-auto px-6 py-3 md:py-4 bg-black text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                  className="w-full md:w-auto px-6 py-3 md:py-4 bg-black text-white rounded-xl text-xs font-normal uppercase tracking-widest hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
                   {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Aplicar'}
                 </button>
@@ -148,7 +148,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
               {couponError && (
                 <div className="flex items-center gap-2 text-red-500">
                   <AlertCircle className="w-3 h-3" />
-                  <span className="text-xs font-bold">{couponError}</span>
+                  <span className="text-xs font-normal">{couponError}</span>
                 </div>
               )}
             </div>
@@ -157,38 +157,38 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
 
         <div className="space-y-4 pt-6 border-t border-neutral-200">
           {/* Subtotal sempre primeiro */}
-          <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-widest text-neutral-700">
+          <div className="flex justify-between items-center gap-3 text-xs font-normal uppercase tracking-widest text-neutral-700">
             <span>Subtotal</span>
             <span className="flex-shrink-0">{formatCurrency(subtotal, locale)}</span>
           </div>
 
           {/* Todos os descontos abaixo do subtotal */}
           {preAppliedDiscount > 0 && (
-            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-emerald-600">
+            <div className="flex justify-between items-center gap-3 text-xs font-normal uppercase tracking-wide md:tracking-widest text-emerald-600">
               <span className="leading-tight">Desconto (cupons)</span>
               <span className="flex-shrink-0">-{formatCurrency(preAppliedDiscount, locale)}</span>
             </div>
           )}
           {manualCouponDiscount > 0 && (
-            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-emerald-600">
+            <div className="flex justify-between items-center gap-3 text-xs font-normal uppercase tracking-wide md:tracking-widest text-emerald-600">
               <span className="leading-tight">Cupom {appliedCoupon?.code}</span>
               <span className="flex-shrink-0">-{formatCurrency(manualCouponDiscount, locale)}</span>
             </div>
           )}
           {(bundleDiscount ?? 0) > 0 && (
-            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-violet-600">
+            <div className="flex justify-between items-center gap-3 text-xs font-normal uppercase tracking-wide md:tracking-widest text-violet-600">
               <span className="leading-tight">Acessório c/ Roupa (15%)</span>
               <span className="flex-shrink-0">-{formatCurrency(bundleDiscount!, locale)}</span>
             </div>
           )}
           {quantityDiscount > 0 && (
-            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-amber-600">
+            <div className="flex justify-between items-center gap-3 text-xs font-normal uppercase tracking-wide md:tracking-widest text-amber-600">
               <span className="leading-tight">Desconto Qtd</span>
               <span className="flex-shrink-0">-{formatCurrency(quantityDiscount, locale)}</span>
             </div>
           )}
           {paymentMethod === PaymentMethod.PIX && pixDiscount > 0 && (
-            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-green-500">
+            <div className="flex justify-between items-center gap-3 text-xs font-normal uppercase tracking-wide md:tracking-widest text-green-500">
               <span className="leading-tight">Desconto PIX (5%)</span>
               <span className="flex-shrink-0">-{formatCurrency(pixDiscount, locale)}</span>
             </div>
@@ -197,20 +197,20 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
           <ShippingStep checkout={checkout} />
 
           {cashbackUsed > 0 && (
-            <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-emerald-600">
+            <div className="flex justify-between items-center gap-3 text-xs font-normal uppercase tracking-wide md:tracking-widest text-emerald-600">
               <span className="leading-tight">Cashback</span>
               <span className="flex-shrink-0">-{formatCurrency(cashbackUsed, locale)}</span>
             </div>
           )}
 
           <div className="flex justify-between items-center pt-8 mt-6 border-t border-neutral-200">
-            <span className="text-xl font-black uppercase italic tracking-tighter">Total</span>
+            <span className="text-xl font-normal uppercase tracking-tighter">Total</span>
             <span className="text-4xl font-light tracking-tighter">{formatCurrency(finalTotal, locale)}</span>
           </div>
         </div>
         <div className="mt-12 p-8 bg-paper rounded-3xl border border-neutral-100 flex items-center gap-5 shadow-sm">
           <ShieldCheck className="w-6 h-6 text-neutral-300" />
-          <span className="text-xs font-black uppercase tracking-widest text-neutral-600 leading-loose">
+          <span className="text-xs font-normal uppercase tracking-widest text-neutral-600 leading-loose">
             Pagamento seguro via Asaas. Seus dados são protegidos com criptografia SSL 256 bits.
           </span>
         </div>

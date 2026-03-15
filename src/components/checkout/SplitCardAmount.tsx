@@ -207,7 +207,7 @@ export function SplitCardAmount({
           <ArrowLeftRight className="w-5 h-5" />
         </div>
         <div>
-          <h4 className="text-xs font-black uppercase tracking-wider">Dividir Valor</h4>
+          <h4 className="text-xs font-normal uppercase tracking-wider">Dividir Valor</h4>
           <p className="text-xs text-neutral-600 mt-0.5">
             Total: {formatCurrency(totalAmount, locale)}
           </p>
@@ -221,7 +221,7 @@ export function SplitCardAmount({
             key={option.label}
             type="button"
             onClick={() => handleQuickSplit(option.ratio)}
-            className={`px-4 py-2 rounded-lg text-[10px] font-bold transition-all ${
+            className={`px-4 py-2 rounded-lg text-[10px] font-normal transition-all ${
               isQuickSplitSelected(option.ratio)
                 ? 'bg-black text-white'
                 : 'bg-neutral-100 hover:bg-neutral-200'
@@ -234,7 +234,7 @@ export function SplitCardAmount({
 
       {/* Interactive Draggable Slider */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between text-xs font-bold text-neutral-600 uppercase tracking-wider px-1">
+        <div className="flex items-center justify-between text-xs font-normal text-neutral-600 uppercase tracking-wider px-1">
           <span>Cartão 1: {card1Percentage.toFixed(0)}%</span>
           <span className="text-amber-600">Cartão 2: {card2Percentage.toFixed(0)}%</span>
         </div>
@@ -252,7 +252,7 @@ export function SplitCardAmount({
             style={{ width: `${card1Percentage}%` }}
           >
             {card1Percentage >= 20 && (
-              <span className="text-white text-[10px] font-bold pr-3">
+              <span className="text-white text-[10px] font-normal pr-3">
                 {formatCurrency(card1Amount, locale)}
               </span>
             )}
@@ -274,7 +274,7 @@ export function SplitCardAmount({
             style={{ width: `${card2Percentage}%` }}
           >
             {card2Percentage >= 20 && (
-              <span className="text-amber-900 text-[10px] font-bold pl-3">
+              <span className="text-amber-900 text-[10px] font-normal pl-3">
                 {formatCurrency(card2Amount, locale)}
               </span>
             )}
@@ -293,7 +293,7 @@ export function SplitCardAmount({
         }`}>
           <div className="flex items-center gap-2 mb-3">
             <CreditCard className="w-4 h-4 text-neutral-800" />
-            <span className="text-xs font-black uppercase tracking-wider text-neutral-800">
+            <span className="text-xs font-normal uppercase tracking-wider text-neutral-800">
               Cartão 1
             </span>
           </div>
@@ -307,7 +307,7 @@ export function SplitCardAmount({
               onFocus={() => setCard1Focused(true)}
               onBlur={applyCard1Value}
               onKeyDown={(e) => handleKeyDown(e, applyCard1Value)}
-              className={`w-full pl-10 pr-4 py-3 bg-paper border rounded-xl text-lg font-bold focus:outline-none transition-all ${
+              className={`w-full pl-10 pr-4 py-3 bg-paper border rounded-xl text-lg font-normal focus:outline-none transition-all ${
                 !isValid && card1Amount > 0
                   ? 'border-red-300 focus:border-red-400'
                   : 'border-neutral-200 focus:border-neutral-400'
@@ -322,7 +322,7 @@ export function SplitCardAmount({
         }`}>
           <div className="flex items-center gap-2 mb-3">
             <CreditCard className="w-4 h-4 text-amber-600" />
-            <span className="text-xs font-black uppercase tracking-wider text-amber-700">
+            <span className="text-xs font-normal uppercase tracking-wider text-amber-700">
               Cartão 2
             </span>
           </div>
@@ -336,7 +336,7 @@ export function SplitCardAmount({
               onFocus={() => setCard2Focused(true)}
               onBlur={applyCard2Value}
               onKeyDown={(e) => handleKeyDown(e, applyCard2Value)}
-              className={`w-full pl-10 pr-4 py-3 bg-paper border rounded-xl text-lg font-bold focus:outline-none transition-all ${
+              className={`w-full pl-10 pr-4 py-3 bg-paper border rounded-xl text-lg font-normal focus:outline-none transition-all ${
                 !isValid && card2Amount > 0
                   ? 'border-red-300 focus:border-red-400'
                   : 'border-amber-200 focus:border-amber-400'
@@ -351,7 +351,7 @@ export function SplitCardAmount({
         <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
           <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
           <div>
-            <span className="text-xs font-black uppercase tracking-wider text-red-600 block">
+            <span className="text-xs font-normal uppercase tracking-wider text-red-600 block">
               {isMissing
                 ? `Faltando ${formatCurrency(Math.abs(difference), locale)}`
                 : `Sobrando ${formatCurrency(difference, locale)}`
@@ -370,10 +370,10 @@ export function SplitCardAmount({
           {/* Card 1 Installments */}
           <div className="p-4 rounded-2xl border border-neutral-200 bg-paper">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-6 h-6 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[10px] font-bold">
+              <div className="w-6 h-6 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[10px] font-normal">
                 1
               </div>
-              <span className="text-xs font-black uppercase tracking-wider">
+              <span className="text-xs font-normal uppercase tracking-wider">
                 Parcelas Cartão 1 ({formatCurrency(card1Amount, locale)})
               </span>
             </div>
@@ -391,10 +391,10 @@ export function SplitCardAmount({
           {/* Card 2 Installments */}
           <div className="p-4 rounded-2xl border border-amber-200 bg-paper">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold">
+              <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-normal">
                 2
               </div>
-              <span className="text-xs font-black uppercase tracking-wider">
+              <span className="text-xs font-normal uppercase tracking-wider">
                 Parcelas Cartão 2 ({formatCurrency(card2Amount, locale)})
               </span>
             </div>
@@ -418,19 +418,19 @@ export function SplitCardAmount({
         }`}>
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xs font-black uppercase tracking-wider text-neutral-700 block">
+              <span className="text-xs font-normal uppercase tracking-wider text-neutral-700 block">
                 Total com Taxas
               </span>
-              <span className="text-xl font-black">
+              <span className="text-xl font-normal">
                 {formatCurrency(totalWithFees, locale)}
               </span>
             </div>
             {totalFees > 0 && (
               <div className="text-right">
-                <span className="text-xs font-black uppercase tracking-wider text-amber-600 block">
+                <span className="text-xs font-normal uppercase tracking-wider text-amber-600 block">
                   Taxa Total
                 </span>
-                <span className="text-lg font-bold text-amber-600">
+                <span className="text-lg font-normal text-amber-600">
                   +{formatCurrency(totalFees, locale)}
                 </span>
               </div>

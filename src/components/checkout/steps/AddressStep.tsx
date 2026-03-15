@@ -71,7 +71,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           <div className="bg-paper rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-4 max-w-sm mx-4">
             <Loader2 className="w-12 h-12 animate-spin text-black" />
             <div className="text-center">
-              <h4 className="text-lg font-black uppercase tracking-tight">Buscando Endereço</h4>
+              <h4 className="text-lg font-normal uppercase tracking-tight">Buscando Endereço</h4>
               <p className="text-sm text-neutral-500 mt-1">Aguarde enquanto localizamos seu CEP...</p>
             </div>
           </div>
@@ -82,13 +82,13 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           <div className="p-4 bg-paper rounded-2xl">
             <MapPin className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-black uppercase italic tracking-tight text-neutral-900 font-serif">Endereço de Entrega</h3>
+          <h3 className="text-2xl font-normal uppercase tracking-tight text-neutral-900">Endereço de Entrega</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Saved Addresses Dropdown */}
           {currentUser && userAddresses.length > 0 && (
             <div className="md:col-span-2 space-y-2 animate-in fade-in slide-in-from-top-2">
-              <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+              <label className="text-xs font-normal uppercase tracking-widest text-neutral-600">
                 Endereços Salvos
               </label>
               <div className="relative">
@@ -96,7 +96,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                   value={selectedAddressId || ''}
                   onChange={(e) => handleSelectSavedAddress(e.target.value)}
                   disabled={loadingAddresses}
-                  className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black appearance-none cursor-pointer pr-12"
+                  className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-normal appearance-none cursor-pointer pr-12"
                 >
                   <option value="">+ Novo endereço</option>
                   {userAddresses.map((addr) => (
@@ -123,7 +123,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           )}
 
           <div className="md:col-span-2 space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-neutral-600">CEP</label>
+            <label className="text-xs font-normal uppercase tracking-widest text-neutral-600">CEP</label>
             <div className="relative">
               <input
                 data-testid="checkout-cep-input"
@@ -146,14 +146,14 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 type="button"
                 onClick={() => setShowInlineSearch(!showInlineSearch)}
                 data-testid="toggle-address-search"
-                className="text-xs font-black uppercase tracking-widest text-neutral-600 hover:text-black transition-colors flex items-center gap-2"
+                className="text-xs font-normal uppercase tracking-widest text-neutral-600 hover:text-black transition-colors flex items-center gap-2"
               >
                 <Navigation className="w-3 h-3" />
                 Não sei meu CEP
                 <ChevronDown className={`w-3 h-3 transition-transform ${showInlineSearch ? 'rotate-180' : ''}`} />
               </button>
               {cepError && (
-                <div className="flex items-center gap-2 text-xs text-red-500 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
+                <div className="flex items-center gap-2 text-xs text-red-500 font-normal uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
                   <AlertCircle className="w-3 h-3" />
                   {cepError}
                 </div>
@@ -164,12 +164,12 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             {showInlineSearch && (
               <div className="mt-4 p-4 bg-paper rounded-2xl border border-neutral-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+                  <label className="text-xs font-normal uppercase tracking-widest text-neutral-600">
                     Buscar por Rua ou Bairro
                   </label>
                   <div className="relative">
                     <input
-                      className="w-full p-4 pr-12 bg-paper border border-neutral-200 rounded-2xl text-sm font-black outline-none focus:border-black transition-all"
+                      className="w-full p-4 pr-12 bg-paper border border-neutral-200 rounded-2xl text-sm font-normal outline-none focus:border-black transition-all"
                       placeholder="Digite sua rua, bairro ou cidade..."
                       value={searchQuery}
                       onChange={(e) => handleSearchQueryChange(e.target.value)}
@@ -198,7 +198,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                         onClick={() => handleInlineSearchSelect(result)}
                         className="w-full p-4 bg-paper border border-neutral-100 rounded-xl text-left hover:border-black hover:bg-neutral-50 transition-all group"
                       >
-                        <p className="text-sm font-black uppercase tracking-tight group-hover:text-black">
+                        <p className="text-sm font-normal uppercase tracking-tight group-hover:text-black">
                           {result.text}
                         </p>
                         <p className="text-xs text-neutral-500 truncate mt-1">
@@ -212,25 +212,25 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 {/* Formulário manual se não encontrou */}
                 {searchQuery.length >= 3 && searchResults.length === 0 && !isSearching && (
                   <div className="pt-4 border-t border-neutral-200 space-y-4">
-                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                    <p className="text-xs font-normal uppercase tracking-widest text-neutral-500">
                       Não encontrou? Preencha manualmente:
                     </p>
                     <div className="grid grid-cols-1 gap-3">
                       <input
-                        className="w-full p-3 bg-paper border border-neutral-200 rounded-xl text-sm font-black outline-none focus:border-black transition-all"
+                        className="w-full p-3 bg-paper border border-neutral-200 rounded-xl text-sm font-normal outline-none focus:border-black transition-all"
                         placeholder="Rua / Logradouro"
                         value={manualAddress.street}
                         onChange={(e) => setManualAddress({ ...manualAddress, street: e.target.value })}
                       />
                       <div className="grid grid-cols-2 gap-3">
                         <input
-                          className="w-full p-3 bg-paper border border-neutral-200 rounded-xl text-sm font-black outline-none focus:border-black transition-all"
+                          className="w-full p-3 bg-paper border border-neutral-200 rounded-xl text-sm font-normal outline-none focus:border-black transition-all"
                           placeholder="Bairro"
                           value={manualAddress.neighborhood}
                           onChange={(e) => setManualAddress({ ...manualAddress, neighborhood: e.target.value })}
                         />
                         <input
-                          className="w-full p-3 bg-paper border border-neutral-200 rounded-xl text-sm font-black outline-none focus:border-black transition-all"
+                          className="w-full p-3 bg-paper border border-neutral-200 rounded-xl text-sm font-normal outline-none focus:border-black transition-all"
                           placeholder="Cidade"
                           value={manualAddress.city}
                           onChange={(e) => setManualAddress({ ...manualAddress, city: e.target.value })}
@@ -238,14 +238,14 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <input
-                          className="w-full p-3 bg-paper border border-neutral-200 rounded-xl text-sm font-black outline-none focus:border-black transition-all"
+                          className="w-full p-3 bg-paper border border-neutral-200 rounded-xl text-sm font-normal outline-none focus:border-black transition-all"
                           placeholder="Estado (UF)"
                           value={manualAddress.state}
                           onChange={(e) => setManualAddress({ ...manualAddress, state: e.target.value.toUpperCase() })}
                           maxLength={2}
                         />
                         <input
-                          className="w-full p-3 bg-paper border border-neutral-200 rounded-xl text-sm font-black font-mono outline-none focus:border-black transition-all"
+                          className="w-full p-3 bg-paper border border-neutral-200 rounded-xl text-sm font-normal font-mono outline-none focus:border-black transition-all"
                           placeholder="CEP"
                           value={manualAddress.cep}
                           onChange={(e) => {
@@ -257,7 +257,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                         />
                       </div>
                       {manualCepError && (
-                        <div className="flex items-center gap-2 text-xs text-red-500 font-bold uppercase tracking-widest">
+                        <div className="flex items-center gap-2 text-xs text-red-500 font-normal uppercase tracking-widest">
                           <AlertCircle className="w-3 h-3" />
                           {manualCepError}
                         </div>
@@ -269,7 +269,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                           setShowInlineSearch(false);
                         }}
                         disabled={!manualAddress.street || !manualAddress.city || !manualAddress.neighborhood}
-                        className="w-full py-3 bg-black text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-neutral-800 disabled:opacity-30 transition-all"
+                        className="w-full py-3 bg-black text-white rounded-xl text-xs font-normal uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-neutral-800 disabled:opacity-30 transition-all"
                       >
                         <Check className="w-4 h-4" /> Confirmar Endereço
                       </button>
@@ -285,10 +285,10 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
               {address.bairro?.trim() && (
                 <div className="bg-neutral-900 text-white p-6 rounded-[2rem] flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl border border-white/10 overflow-hidden relative">
                   <div className="relative z-10 flex-1">
-                    <span className="text-xs font-black uppercase tracking-widest text-white/40 block mb-2">
+                    <span className="text-xs font-normal uppercase tracking-widest text-white/40 block mb-2">
                       {isManualAddress ? 'Localização Confirmada' : 'Destino Identificado'}
                     </span>
-                    <h4 className="text-xl font-black uppercase italic tracking-tight mb-1 font-serif">
+                    <h4 className="text-xl font-normal uppercase tracking-tight mb-1">
                       {address.logradouro || (isManualAddress ? 'Rua não informada' : 'Endereço Identificado')}
                     </h4>
                     <p className="text-xs text-white/60 font-medium uppercase tracking-widest">
@@ -317,22 +317,22 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
               {/* Campos editáveis de Rua e Bairro */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+                  <label className="text-xs font-normal uppercase tracking-widest text-neutral-600">
                     Rua / Logradouro <span className="text-red-500">*</span>
                   </label>
                   <input
-                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-normal"
                     placeholder="Ex: Rua das Flores"
                     value={address?.logradouro || ''}
                     onChange={(e) => updateAddressField('logradouro', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+                  <label className="text-xs font-normal uppercase tracking-widest text-neutral-600">
                     Bairro <span className="text-red-500">*</span>
                   </label>
                   <input
-                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-normal"
                     placeholder="Ex: Centro"
                     value={address?.bairro || ''}
                     onChange={(e) => updateAddressField('bairro', e.target.value)}
@@ -342,18 +342,18 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Número <span className="text-red-500">*</span></label>
+                  <label className="text-xs font-normal uppercase tracking-widest text-neutral-600">Número <span className="text-red-500">*</span></label>
                   <input
-                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-normal"
                     placeholder="Ex: 123"
                     value={num}
                     onChange={(e) => setNum(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Complemento</label>
+                  <label className="text-xs font-normal uppercase tracking-widest text-neutral-600">Complemento</label>
                   <input
-                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                    className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-normal"
                     placeholder="Ex: Apto 12"
                     value={complement}
                     onChange={(e) => setComplement(e.target.value)}
@@ -363,9 +363,9 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             </div>
           )}
           <div className="md:col-span-2 space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-neutral-600">Nome do Destinatário</label>
+            <label className="text-xs font-normal uppercase tracking-widest text-neutral-600">Nome do Destinatário</label>
             <input
-              className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black uppercase"
+              className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-normal uppercase"
               placeholder="Nome Completo"
               value={recipientName}
               onChange={(e) => setRecipientName(e.target.value)}
@@ -373,11 +373,11 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           </div>
           {(!currentUser?.phone || !currentUser.phone.trim()) && (
             <div className="md:col-span-2 space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+              <label className="text-xs font-normal uppercase tracking-widest text-neutral-600">
                 Telefone <span className="text-red-500">*</span>
               </label>
               <input
-                className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                className="w-full p-4 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-normal"
                 placeholder="(11) 99999-9999"
                 value={phone}
                 onChange={(e) => setPhone(checkout.maskPhone(e.target.value))}
@@ -386,13 +386,13 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             </div>
           )}
           <div className="md:col-span-2 space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-neutral-600">
+              <label className="text-xs font-normal uppercase tracking-widest text-neutral-600">
                 CPF <span className="text-red-500">*</span>
               </label>
               <input
                 className={`w-full p-4 bg-paper border ${
                   cpfError ? 'border-red-300 bg-red-50/20' : cpf && cpf.replace(/\D/g, '').length === 11 && validateCPF(cpf) ? 'border-green-300' : cpf ? 'border-orange-200' : 'border-neutral-100'
-                } rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black`}
+                } rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-normal`}
                 placeholder="000.000.000-00"
                 value={cpf}
                 onChange={(e) => setCpf(maskCPF(e.target.value))}
@@ -416,7 +416,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             ((!currentUser?.phone || !currentUser.phone.trim()) && (!phone || phone.trim().length < 10)) ||
             (!currentUser?.cpf && (!cpf || cpf.replace(/\D/g, '').length !== 11 || !validateCPF(cpf)))
           }
-          className="w-full md:w-auto px-8 py-4 bg-black text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] shadow-xl flex items-center justify-center gap-3 hover:scale-[1.02] transition-all disabled:opacity-20 active:scale-95"
+          className="w-full md:w-auto px-8 py-4 bg-black text-white rounded-2xl text-xs font-normal uppercase tracking-[0.3em] shadow-xl flex items-center justify-center gap-3 hover:scale-[1.02] transition-all disabled:opacity-20 active:scale-95"
         >
           Confirmar e Pagar
         </button>

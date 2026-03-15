@@ -41,7 +41,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
         <div className="p-4 bg-paper rounded-2xl">
           <CreditCard className="w-6 h-6" />
         </div>
-        <h3 className="text-xl font-black uppercase italic tracking-tighter font-serif">Método de Pagamento</h3>
+        <h3 className="text-xl font-normal uppercase tracking-tighter">Método de Pagamento</h3>
       </div>
       
       {/* Method Selection */}
@@ -59,10 +59,10 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
         >
           <CreditCard className="w-8 h-8" />
           <div className="text-center">
-            <span className="text-[10px] font-black uppercase tracking-widest block mb-1">
+            <span className="text-[10px] font-normal uppercase tracking-widest block mb-1">
               Cartão de Crédito
             </span>
-            <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">
+            <span className="text-[10px] text-neutral-400 font-normal uppercase tracking-widest">
               Até 3x sem juros
             </span>
           </div>
@@ -76,14 +76,14 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
           }`}
         >
-          <div className="w-8 h-8 bg-black text-white rounded flex items-center justify-center font-black text-[10px]">
+          <div className="w-8 h-8 bg-black text-white rounded flex items-center justify-center font-normal text-[10px]">
             PIX
           </div>
           <div className="text-center">
-            <span className="text-[10px] font-black uppercase tracking-widest block mb-1">
+            <span className="text-[10px] font-normal uppercase tracking-widest block mb-1">
               PIX Instantâneo
             </span>
-            <span className="text-[10px] text-green-500 font-black uppercase tracking-widest">
+            <span className="text-[10px] text-green-500 font-normal uppercase tracking-widest">
               5% de desconto
             </span>
           </div>
@@ -95,7 +95,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
           {/* SAVED CARDS LIST */}
           {currentUser?.saved_cards && currentUser.saved_cards.length > 0 && (
             <div className="space-y-4">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-neutral-400 px-2">
+              <h4 className="text-[10px] font-normal uppercase tracking-widest text-neutral-400 px-2">
                 Cartões Salvos
               </h4>
               <div className="grid grid-cols-1 gap-4">
@@ -110,14 +110,14 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-neutral-500">
+                      <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[10px] font-normal uppercase tracking-widest text-neutral-500">
                         {card.brand}
                       </div>
                       <div>
-                        <p className="text-sm font-mono font-bold tracking-widest">
+                        <p className="text-sm font-mono font-normal tracking-widest">
                           •••• •••• •••• {card.last4}
                         </p>
-                        <p className="text-[10px] opacity-60 font-bold uppercase tracking-widest">
+                        <p className="text-[10px] opacity-60 font-normal uppercase tracking-widest">
                           Exp: {card.exp_month}/{card.exp_year}
                         </p>
                       </div>
@@ -129,7 +129,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                 ))}
               </div>
               {selectedSavedCardId && (
-                <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 flex items-center gap-3 text-[10px] font-bold text-neutral-500">
+                <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 flex items-center gap-3 text-[10px] font-normal text-neutral-500">
                   <Lock className="w-3 h-3" /> Usando token seguro criptografado. Nenhum dado sensível trafega pela rede.
                 </div>
               )}
@@ -141,7 +141,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
             <div className="space-y-8 bg-paper/50 p-8 rounded-[2.5rem] border border-neutral-100">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                  <label className="text-[10px] font-normal uppercase tracking-widest text-neutral-400">
                     Número do Cartão
                   </label>
                   <input
@@ -150,17 +150,17 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                  <label className="text-[10px] font-normal uppercase tracking-widest text-neutral-400">
                     Nome no Cartão
                   </label>
                   <input
-                    className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none font-black uppercase focus:border-black transition-all"
+                    className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none font-normal uppercase focus:border-black transition-all"
                     placeholder="NOME COMO IMPRESSO"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-6 md:col-span-2">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                    <label className="text-[10px] font-normal uppercase tracking-widest text-neutral-400">
                       Validade
                     </label>
                     <input
@@ -169,7 +169,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                    <label className="text-[10px] font-normal uppercase tracking-widest text-neutral-400">
                       CVC
                     </label>
                     <input
@@ -194,7 +194,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                     {saveCardForFuture && <Check className="w-3 h-3 text-white" />}
                   </div>
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-widest block">
+                    <span className="text-[10px] font-normal uppercase tracking-widest block">
                       Salvar Cartão
                     </span>
                     <span className="text-[10px] text-neutral-400 block mt-0.5">
@@ -214,7 +214,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
             <QrCode className="w-40 h-40 text-black" />
           </div>
           <div className="space-y-3">
-            <h4 className="text-xl font-black uppercase italic tracking-tighter">Escanear QR Code</h4>
+            <h4 className="text-xl font-normal uppercase tracking-tighter">Escanear QR Code</h4>
             <p className="text-xs text-white/40 max-w-xs mx-auto leading-relaxed">
               Abra o app do seu banco e aponte a câmera. O pagamento é processado instantaneamente.
             </p>
@@ -224,7 +224,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
             className="flex items-center gap-4 px-10 py-5 bg-paper/10 hover:bg-paper/20 border border-white/10 rounded-2xl transition-all group"
           >
             <Copy className="w-4 h-4 text-white/60 group-hover:text-white" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+            <span className="text-[10px] font-normal uppercase tracking-[0.3em]">
               {pixCopied ? 'Copiado!' : 'Copiar Chave PIX'}
             </span>
           </button>
@@ -234,13 +234,13 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       <div className="flex gap-4 pt-12">
         <button
           onClick={onBack}
-          className="px-10 py-6 border border-neutral-200 rounded-[2rem] text-[10px] font-black uppercase tracking-widest hover:bg-neutral-50 transition-all"
+          className="px-10 py-6 border border-neutral-200 rounded-[2rem] text-[10px] font-normal uppercase tracking-widest hover:bg-neutral-50 transition-all"
         >
           Voltar
         </button>
         <button
           onClick={onNext}
-          className="flex-1 py-8 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] transition-all active:scale-95"
+          className="flex-1 py-8 bg-black text-white rounded-[2rem] text-[10px] font-normal uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] transition-all active:scale-95"
         >
           Revisar Pedido <ChevronRight className="w-4 h-4" />
         </button>

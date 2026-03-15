@@ -5,6 +5,13 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.5] - 2026-03-15
+
+### Corrigido
+- **checkout (todos os componentes)**: todas as classes `font-black`, `font-bold`, `font-semibold`, `font-serif` e `italic` substituídas por `font-normal` — texto legível em todo o fluxo de checkout
+- **PixPaymentSection**: padding externo reduzido (`p-10 md:p-16` → `p-5`), `space-y-8` → `gap-5`, QR code ampliado (`w-40` → `w-52`), código PIX com `text-xs` legível, botão "Copiar" ocupa largura total
+- **BoletoSection**: padding externo reduzido, linha digitável exibida em `font-mono text-sm` sem truncar, botões Copiar/PDF com tamanho confortável, textos explicativos em `text-sm` (antes `text-[10px]`)
+
 ## [1.4.4] - 2026-03-13
 
 ### Corrigido

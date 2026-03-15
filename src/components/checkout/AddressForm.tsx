@@ -54,12 +54,12 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         <div className="p-4 bg-paper rounded-2xl">
           <MapPin className="w-6 h-6" />
         </div>
-        <h3 className="text-xl font-black uppercase italic tracking-tighter font-serif">Endereço de Entrega</h3>
+        <h3 className="text-xl font-normal uppercase tracking-tighter">Endereço de Entrega</h3>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="md:col-span-2 space-y-4">
-          <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">CEP</label>
+          <label className="text-[10px] font-normal uppercase tracking-widest text-neutral-400">CEP</label>
           <div className="relative">
             <input
               className={`w-full p-6 bg-paper border ${
@@ -78,12 +78,12 @@ export const AddressForm: React.FC<AddressFormProps> = ({
             <button
               type="button"
               onClick={onOpenMapPicker}
-              className="text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-black transition-colors flex items-center gap-2"
+              className="text-[10px] font-normal uppercase tracking-widest text-neutral-400 hover:text-black transition-colors flex items-center gap-2"
             >
               <Navigation className="w-3 h-3" /> Não sei meu CEP
             </button>
             {cepError && (
-              <div className="flex items-center gap-2 text-[10px] text-red-500 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
+              <div className="flex items-center gap-2 text-[10px] text-red-500 font-normal uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
                 <AlertCircle className="w-3 h-3" />
                 {cepError}
               </div>
@@ -95,10 +95,10 @@ export const AddressForm: React.FC<AddressFormProps> = ({
           <div className="md:col-span-2 space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="bg-neutral-900 text-white p-8 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-8 shadow-2xl border border-white/10 overflow-hidden relative">
               <div className="relative z-10 flex-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/40 block mb-2">
+                <span className="text-[10px] font-normal uppercase tracking-widest text-white/40 block mb-2">
                   {isManualAddress ? 'Localização Confirmada' : 'Destino Identificado'}
                 </span>
-                <h4 className="text-xl font-black uppercase italic tracking-tight mb-1">
+                <h4 className="text-xl font-normal uppercase tracking-tight mb-1">
                   {address.logradouro || (isManualAddress ? 'Rua não informada' : 'Endereço Identificado')}
                 </h4>
                 <p className="text-xs text-white/60 font-medium uppercase tracking-widest">
@@ -125,22 +125,22 @@ export const AddressForm: React.FC<AddressFormProps> = ({
             
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                <label className="text-[10px] font-normal uppercase tracking-widest text-neutral-400">
                   Número
                 </label>
                 <input
-                  className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                  className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-normal"
                   placeholder="Ex: 123"
                   value={num}
                   onChange={(e) => onNumChange(e.target.value)}
                 />
               </div>
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                <label className="text-[10px] font-normal uppercase tracking-widest text-neutral-400">
                   Complemento
                 </label>
                 <input
-                  className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black"
+                  className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-normal"
                   placeholder="Ex: Apto 12"
                   value={complement}
                   onChange={(e) => onComplementChange(e.target.value)}
@@ -151,11 +151,11 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         )}
         
         <div className="md:col-span-2 space-y-3">
-          <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+          <label className="text-[10px] font-normal uppercase tracking-widest text-neutral-400">
             Nome do Destinatário
           </label>
           <input
-            className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-black uppercase"
+            className="w-full p-6 bg-paper border border-neutral-100 rounded-2xl outline-none focus:bg-paper focus:border-black transition-all font-normal uppercase"
             placeholder="Nome Completo"
             defaultValue={currentUser?.full_name}
           />
@@ -165,7 +165,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
       <button
         onClick={onNext}
         disabled={!address || !num || !bestInternalShipping}
-        className="w-full md:w-auto px-16 py-8 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] transition-all disabled:opacity-20 active:scale-95"
+        className="w-full md:w-auto px-16 py-8 bg-black text-white rounded-[2rem] text-[10px] font-normal uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] transition-all disabled:opacity-20 active:scale-95"
       >
         Confirmar e Pagar <ChevronRight className="w-4 h-4" />
       </button>

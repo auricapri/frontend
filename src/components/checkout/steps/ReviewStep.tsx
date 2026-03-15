@@ -48,7 +48,7 @@ export function ReviewStep({ checkout }: { checkout: CheckoutState }) {
         <div className="w-24 h-24 bg-black text-white rounded-full flex items-center justify-center mb-10 shadow-2xl">
           <ShieldCheck className="w-12 h-12" />
         </div>
-        <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-4 font-serif">Finalização Segura</h3>
+        <h3 className="text-3xl font-normal uppercase tracking-tighter mb-4">Finalização Segura</h3>
         <p className="text-sm text-neutral-600 max-w-md mx-auto mb-8 leading-relaxed">
           Seu pedido passará por uma análise de segurança automática e será despachado em até 24h úteis.
         </p>
@@ -63,14 +63,14 @@ export function ReviewStep({ checkout }: { checkout: CheckoutState }) {
           <button
             onClick={() => setStep(2)}
             disabled={isSubmitting}
-            className="flex-1 px-8 py-6 border border-neutral-200 rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-neutral-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-8 py-6 border border-neutral-200 rounded-[2rem] text-xs font-normal uppercase tracking-widest hover:bg-neutral-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Editar
           </button>
           <button
             onClick={handleConfirmOrder}
             disabled={isSubmitting}
-            className="flex-[2] py-8 bg-black text-white rounded-[2rem] text-[11px] font-black uppercase tracking-[0.5em] shadow-2xl hover:scale-[1.05] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
+            className="flex-[2] py-8 bg-black text-white rounded-[2rem] text-[11px] font-normal uppercase tracking-[0.5em] shadow-2xl hover:scale-[1.05] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
           >
             {isSubmitting ? (
               <>

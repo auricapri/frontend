@@ -31,7 +31,7 @@ export function InstallmentSelector({
     return (
       <div className="flex items-center justify-center p-6 bg-paper rounded-2xl border border-neutral-100">
         <Loader2 className="w-5 h-5 animate-spin text-neutral-600" />
-        <span className="ml-3 text-xs font-bold uppercase tracking-widest text-neutral-600">
+        <span className="ml-3 text-xs font-normal uppercase tracking-widest text-neutral-600">
           Carregando parcelas...
         </span>
       </div>
@@ -47,7 +47,7 @@ export function InstallmentSelector({
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-black uppercase tracking-widest text-neutral-600 font-serif">
+          <h4 className="text-xs font-normal uppercase tracking-widest text-neutral-600">
             Parcelas
           </h4>
         </div>
@@ -59,7 +59,7 @@ export function InstallmentSelector({
             className="w-full p-4 bg-paper border border-neutral-200 rounded-xl flex items-center justify-between hover:border-neutral-300 transition-all"
           >
             <div className="text-left flex items-center gap-2">
-              <span className="text-sm font-bold">
+              <span className="text-sm font-normal">
                 {selectedOption
                   ? selectedOption.installments === 1
                     ? 'À vista'
@@ -73,19 +73,19 @@ export function InstallmentSelector({
               )}
               {/* À vista NUNCA tem taxa */}
               {selectedOption && selectedOption.installments === 1 && (
-                <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-normal text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
                   Sem juros
                 </span>
               )}
               {/* Parcelado com taxa */}
               {selectedOption && selectedOption.installments > 1 && selectedOption.feeAmount > 0 && (
-                <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-normal text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
                   +{formatCurrency(selectedOption.feeAmount, locale)} taxa
                 </span>
               )}
               {/* Parcelado sem taxa (promoção) */}
               {selectedOption && selectedOption.installments > 1 && (!selectedOption.feeAmount || selectedOption.feeAmount < 0.01) && (
-                <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-normal text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
                   Sem juros
                 </span>
               )}
@@ -113,7 +113,7 @@ export function InstallmentSelector({
                   >
                     <div className="text-left flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold">
+                        <span className="text-sm font-normal">
                           {isAvista ? 'À vista' : `${option.installments}x`}
                         </span>
                         <span className="text-xs text-neutral-700">
@@ -122,7 +122,7 @@ export function InstallmentSelector({
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         {isAvista ? (
-                          <span className="text-xs font-bold text-green-600">
+                          <span className="text-xs font-normal text-green-600">
                             Sem juros
                           </span>
                         ) : (
@@ -131,11 +131,11 @@ export function InstallmentSelector({
                               Total: {formatCurrency(option.totalValue, locale)}
                             </span>
                             {hasFee ? (
-                              <span className="text-xs font-bold text-amber-600">
+                              <span className="text-xs font-normal text-amber-600">
                                 (+{formatCurrency(option.feeAmount, locale)} de taxa)
                               </span>
                             ) : (
-                              <span className="text-xs font-bold text-green-600">
+                              <span className="text-xs font-normal text-green-600">
                                 Sem juros
                               </span>
                             )}
@@ -166,26 +166,26 @@ export function InstallmentSelector({
             }`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-black uppercase tracking-widest text-neutral-700 block">
+                  <span className="text-xs font-normal uppercase tracking-widest text-neutral-700 block">
                     {isAvista ? 'Pagamento à vista' : `${selectedOption.installments}x de`}
                   </span>
-                  <span className="text-xl font-black">
+                  <span className="text-xl font-normal">
                     {formatCurrency(selectedOption.installmentValue, locale)}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-black uppercase tracking-widest text-neutral-700 block">
+                  <span className="text-xs font-normal uppercase tracking-widest text-neutral-700 block">
                     Total a pagar
                   </span>
-                  <span className="text-lg font-bold">
+                  <span className="text-lg font-normal">
                     {formatCurrency(isAvista ? selectedOption.installmentValue : selectedOption.totalValue, locale)}
                   </span>
                   {hasFee ? (
-                    <span className="text-xs text-amber-600 font-bold block">
+                    <span className="text-xs text-amber-600 font-normal block">
                       Taxa: +{formatCurrency(selectedOption.feeAmount, locale)}
                     </span>
                   ) : (
-                    <span className="text-xs text-green-600 font-bold block">
+                    <span className="text-xs text-green-600 font-normal block">
                       Sem taxa de juros
                     </span>
                   )}
@@ -206,11 +206,11 @@ export function InstallmentSelector({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="text-xs font-black uppercase tracking-widest text-neutral-600 font-serif">
+        <h4 className="text-xs font-normal uppercase tracking-widest text-neutral-600">
           Parcelas
         </h4>
         {selectedHasFee && (
-          <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+          <span className="text-xs font-normal text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
             + {formatCurrency(selectedOption.feeAmount, locale)} de taxa
           </span>
         )}
@@ -237,7 +237,7 @@ export function InstallmentSelector({
               }`}
             >
               <div className="text-center">
-                <span className={`text-lg font-black ${isSelected ? 'text-white' : 'text-black'}`}>
+                <span className={`text-lg font-normal ${isSelected ? 'text-white' : 'text-black'}`}>
                   {isAvista ? '1x' : `${option.installments}x`}
                 </span>
                 <span className={`text-xs block mt-1 ${isSelected ? 'text-white/70' : 'text-neutral-700'}`}>
@@ -258,18 +258,18 @@ export function InstallmentSelector({
         }`}>
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xs font-black uppercase tracking-widest text-neutral-700 block">
+              <span className="text-xs font-normal uppercase tracking-widest text-neutral-700 block">
                 {selectedIsAvista ? 'Pagamento à vista' : `${selectedOption.installments}x de`}
               </span>
-              <span className="text-xl font-black">
+              <span className="text-xl font-normal">
                 {formatCurrency(selectedOption.installmentValue, locale)}
               </span>
             </div>
             <div className="text-right">
-              <span className="text-xs font-black uppercase tracking-widest text-neutral-700 block">
+              <span className="text-xs font-normal uppercase tracking-widest text-neutral-700 block">
                 Total
               </span>
-              <span className="text-lg font-bold">
+              <span className="text-lg font-normal">
                 {formatCurrency(selectedIsAvista ? selectedOption.installmentValue : selectedOption.totalValue, locale)}
               </span>
               {selectedHasFee ? (
