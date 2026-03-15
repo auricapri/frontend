@@ -5,6 +5,14 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.10] - 2026-03-15
+
+### Corrigido
+- **usePixBoletoState**: cupom 100% (ex: MADRINHA100) não quebra mais o checkout — quando `finalTotal <= 0`, order é criada normalmente e fluxo vai direto para sucesso sem tentar criar cobrança PIX/boleto (Asaas rejeita valor R$0)
+- **ShippingSelectionModal / ShippingStep**: nome da transportadora agora exibe apenas o nome legível — códigos numéricos do Melhor Envio (ex: "31") suprimidos; "31 — LOGGI" → "LOGGI"; transportadoras com código textual (ex: "PAC") mantêm formato "Correios — PAC"
+- **logistics.service.ts**: `calculateShippingOptions` aplica `Math.max(3, estimated_days + 2)` — mínimo de 3 dias úteis (D+2: 1 coleta + 1 margem) em todas as opções de transportadora
+- **logistics.service.ts**: `calculateExpressOption` corrigido para `Math.max(3, estimated_days + 2)` (antes só somava +2 sem garantir mínimo de 3 dias)
+
 ## [1.4.9] - 2026-03-15
 
 ### Corrigido

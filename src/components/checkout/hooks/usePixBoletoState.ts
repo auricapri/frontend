@@ -235,6 +235,12 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         addressComplement: complement || undefined,
       };
 
+      // If total is 0 (100% coupon + free shipping), skip payment creation entirely
+      if (finalTotal <= 0) {
+        onComplete(finalAddress, shippingToUse, effectivePaymentMethod, 0, saveCardForFuture, undefined, phone, cashbackUsed);
+        return order;
+      }
+
       // 3. Process payment based on method
       if (effectivePaymentMethod === PaymentMethod.PIX) {
         const pixSuccess = await createPixCharge(order.id, customerInfo);

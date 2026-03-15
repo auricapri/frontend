@@ -82,7 +82,8 @@ export class LogisticsService {
         cep: cleanCep,
       });
       if (Array.isArray(options) && options.length > 0) {
-        return options;
+        // +2 days buffer (pickup + safety) with minimum 3 business days
+        return options.map(o => ({ ...o, estimated_days: Math.max(3, o.estimated_days + 2) }));
       }
     } catch (err) {
       console.warn('Backend shipping options API error:', err);
@@ -101,7 +102,7 @@ export class LogisticsService {
       if (result && typeof result.available === 'boolean') {
         // +2 days buffer: 1 for pickup scheduling, 1 safety margin
         if (result.option) {
-          result.option = { ...result.option, estimated_days: result.option.estimated_days + 2 };
+          result.option = { ...result.option, estimated_days: Math.max(3, result.option.estimated_days + 2) };
         }
         return result;
       }

@@ -151,7 +151,7 @@ export function ShippingSelectionModal({
                   <div className="flex justify-between items-center">
                     <div>
                       <div className={`text-sm font-normal uppercase tracking-tight flex items-center gap-2 ${isSelected ? 'text-white' : ''}`}>
-                        {opt.method} — {opt.provider}
+                        {/^\d+$/.test(opt.method) ? opt.provider : `${opt.provider} — ${opt.method}`}
                         {isFastest && (
                           <span className={`text-[10px] font-normal px-1.5 py-0.5 rounded uppercase tracking-widest ${
                             isSelected ? 'bg-blue-400/20 text-blue-300' : 'bg-blue-50 text-blue-600'
