@@ -5,6 +5,13 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.13] - 2026-03-15
+
+### Corrigido
+- **useCheckoutState**: quando cupom muda e PIX/boleto já estava gerado, agora regenera automaticamente — cria novo pedido + nova cobrança com o valor correto; antes ficava em branco exigindo clique manual
+- **useCheckoutState**: valores de refs (`pixBoletoRef`, `paymentMethodRef`) garantem que o effect nunca usa closures obsoletas
+- **Segurança**: o valor do pagamento é SEMPRE calculado server-side a partir dos preços no DB + cupom do DB — `finalAmount` do frontend é apenas hint de display; backend recalcula `serverFinalAmount` independentemente e usa esse valor na ordem e na cobrança Asaas
+
 ## [1.4.12] - 2026-03-15
 
 ### Corrigido
