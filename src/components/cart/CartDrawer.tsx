@@ -141,8 +141,8 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
     return Math.min(appliedCoupon.discount_value, base);
   }, [appliedCoupon, subtotal, boxDiscount]);
   const rawTotal = subtotal - boxDiscount - couponDiscount;
-  // Gateway minimum: coupon can't bring total below R$1.00 (same rule as checkout + backend)
-  const finalTotal = appliedCoupon && rawTotal < 1.00 ? 1.00 : rawTotal;
+  // Gateway minimum: coupon can't bring total below R$5.00 (Asaas rejects values below R$5)
+  const finalTotal = appliedCoupon && rawTotal < 5.00 ? 5.00 : rawTotal;
 
   if (!isOpen) return null;
 
