@@ -48,6 +48,9 @@ export type ShippingCalculationState = {
   expressOption: InternalLogisticsInfo | null;
   selectedVarejoShipping: 'free' | 'express';
   setSelectedVarejoShipping: (choice: 'free' | 'express') => void;
+  // Carrier option selected from API (VAREJO paid options)
+  selectedVarejoCarrierOption: ShippingOption | null;
+  setVarejoCarrierOption: (opt: ShippingOption | null) => void;
   resetShipping: () => void;
   calculateLogistics: (destCep: string) => void;
   calculateLogisticsImmediate: (destCep: string) => Promise<void>;
@@ -67,6 +70,7 @@ export function useShippingCalculation(params: {
   const [selectedShippingOption, setSelectedShippingOption] = useState<ShippingOption | null>(null);
   const [expressOption, setExpressOption] = useState<InternalLogisticsInfo | null>(null);
   const [selectedVarejoShipping, setSelectedVarejoShippingState] = useState<'free' | 'express'>('free');
+  const [selectedVarejoCarrierOption, setSelectedVarejoCarrierOption] = useState<ShippingOption | null>(null);
 
   // Holds the free shipping InternalLogisticsInfo so we can restore it when switching back
   const freeShippingInfoRef = useRef<InternalLogisticsInfo | null>(null);
@@ -77,6 +81,7 @@ export function useShippingCalculation(params: {
 
   const setSelectedVarejoShipping = useCallback((choice: 'free' | 'express') => {
     setSelectedVarejoShippingState(choice);
+    setSelectedVarejoCarrierOption(null);
     if (choice === 'express' && expressOption) {
       // expressOption is already InternalLogisticsInfo with selected_carrier — use directly
       setBestInternalShipping(expressOption);
@@ -84,6 +89,23 @@ export function useShippingCalculation(params: {
       setBestInternalShipping(freeShippingInfoRef.current);
     }
   }, [expressOption]);
+
+  const setVarejoCarrierOption = useCallback((opt: ShippingOption | null) => {
+    setSelectedVarejoCarrierOption(opt);
+    setSelectedVarejoShippingState('free');
+    if (opt) {
+      setBestInternalShipping({
+        selected_carrier: opt.provider,
+        method: opt.method,
+        real_cost: opt.real_cost,
+        estimated_days: opt.estimated_days,
+        display_price_was: opt.display_price_was,
+        display_days_was: opt.display_days_was,
+      });
+    } else if (freeShippingInfoRef.current) {
+      setBestInternalShipping(freeShippingInfoRef.current);
+    }
+  }, []);
 
   // Função que faz o cálculo real (sem debounce)
   const calculateLogisticsImmediate = useCallback(
@@ -110,6 +132,7 @@ export function useShippingCalculation(params: {
         setSelectedShippingOption(null);
         setExpressOption(null);
         setSelectedVarejoShippingState('free');
+        setSelectedVarejoCarrierOption(null);
         freeShippingInfoRef.current = null;
         setCalculatingShipping(false);
         return;
@@ -124,6 +147,7 @@ export function useShippingCalculation(params: {
         setSelectedShippingOption(cached.selectedShippingOption);
         setExpressOption(cached.expressOption);
         setSelectedVarejoShippingState('free');
+        setSelectedVarejoCarrierOption(null);
         freeShippingInfoRef.current = cached.bestInternalShipping;
         setCalculatingShipping(false);
         return;
@@ -136,6 +160,7 @@ export function useShippingCalculation(params: {
       setSelectedShippingOption(null);
       setExpressOption(null);
       setSelectedVarejoShippingState('free');
+      setSelectedVarejoCarrierOption(null);
       freeShippingInfoRef.current = null;
 
       try {
@@ -172,10 +197,11 @@ export function useShippingCalculation(params: {
             display_days_was: cheapest.display_days_was,
           };
         } else {
-          // Varejo — fetch free shipping and express option in parallel
-          const [logisticsInfo, expressResult] = await Promise.all([
+          // Varejo — fetch free shipping, express option, and paid carrier options in parallel
+          const [logisticsInfo, expressResult, carrierOptionsResult] = await Promise.all([
             logisticsService.calculateShipping(cleanedCep, address || undefined),
             logisticsService.calculateExpressOption(cleanedCep),
+            logisticsService.calculateShippingOptions(cleanedCep, address || undefined).catch(() => [] as ShippingOption[]),
           ]);
 
           resultShippingDisplay = {
@@ -191,6 +217,11 @@ export function useShippingCalculation(params: {
           resultExpressOption = expressResult.available && expressResult.option
             ? expressResult.option
             : null;
+
+          // Paid carrier options for VAREJO (real_cost > 0, faster than free option)
+          resultShippingOptions = Array.isArray(carrierOptionsResult)
+            ? carrierOptionsResult.filter(o => o.real_cost > 0)
+            : [];
         }
 
         // Store free shipping info so user can switch back from express
@@ -251,6 +282,7 @@ export function useShippingCalculation(params: {
         setSelectedShippingOption(cached.selectedShippingOption);
         setExpressOption(cached.expressOption);
         setSelectedVarejoShippingState('free');
+        setSelectedVarejoCarrierOption(null);
         freeShippingInfoRef.current = cached.bestInternalShipping;
         return;
       }
@@ -270,6 +302,7 @@ export function useShippingCalculation(params: {
     setSelectedShippingOption(null);
     setExpressOption(null);
     setSelectedVarejoShippingState('free');
+    setSelectedVarejoCarrierOption(null);
     freeShippingInfoRef.current = null;
   }, []);
 
@@ -283,6 +316,8 @@ export function useShippingCalculation(params: {
     expressOption,
     selectedVarejoShipping,
     setSelectedVarejoShipping,
+    selectedVarejoCarrierOption,
+    setVarejoCarrierOption,
     resetShipping,
     calculateLogistics,
     calculateLogisticsImmediate,

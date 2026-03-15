@@ -55,13 +55,15 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
     );
   }
 
-  // VAREJO with express option: show free vs express choice
+  // VAREJO with options: show free + express + carrier choices
+  const varejoCarrierOptions = shipping.shippingOptions.filter(o => o.real_cost > 0);
   if (
     userMode !== UserMode.ATACADO &&
     !shipping.calculatingShipping &&
-    shipping.expressOption &&
-    shipping.shippingDisplay
+    shipping.shippingDisplay &&
+    (shipping.expressOption || varejoCarrierOptions.length > 0)
   ) {
+    const isFreeSelected = shipping.selectedVarejoShipping === 'free' && !shipping.selectedVarejoCarrierOption;
     return (
       <div className="space-y-2">
         <div className="text-xs font-normal uppercase tracking-widest text-neutral-600 mb-2">Opção de Entrega</div>
@@ -70,9 +72,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
         <button
           onClick={() => shipping.setSelectedVarejoShipping('free')}
           className={`w-full p-3 rounded-xl border-2 transition-all text-left ${
-            shipping.selectedVarejoShipping === 'free'
-              ? 'border-neutral-900 bg-paper'
-              : 'border-neutral-100 hover:border-neutral-300'
+            isFreeSelected ? 'border-neutral-900 bg-paper' : 'border-neutral-100 hover:border-neutral-300'
           }`}
         >
           <div className="flex justify-between items-center">
@@ -90,30 +90,60 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
         </button>
 
         {/* Express shipping button */}
-        <button
-          onClick={() => shipping.setSelectedVarejoShipping('express')}
-          className={`w-full p-3 rounded-xl border-2 transition-all text-left ${
-            shipping.selectedVarejoShipping === 'express'
-              ? 'border-neutral-900 bg-paper'
-              : 'border-neutral-100 hover:border-neutral-300'
-          }`}
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <div className="text-[11px] font-normal uppercase tracking-tight flex items-center gap-1.5">
-                <Zap className="w-3 h-3 text-blue-600" />
-                Entrega Expressa
-                <span className="text-[10px] font-normal uppercase tracking-widest text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                  Mais Rápido
-                </span>
+        {shipping.expressOption && (
+          <button
+            onClick={() => shipping.setSelectedVarejoShipping('express')}
+            className={`w-full p-3 rounded-xl border-2 transition-all text-left ${
+              shipping.selectedVarejoShipping === 'express'
+                ? 'border-neutral-900 bg-paper'
+                : 'border-neutral-100 hover:border-neutral-300'
+            }`}
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="text-[11px] font-normal uppercase tracking-tight flex items-center gap-1.5">
+                  <Zap className="w-3 h-3 text-blue-600" />
+                  Entrega Expressa
+                  <span className="text-[10px] font-normal uppercase tracking-widest text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                    Mais Rápido
+                  </span>
+                </div>
+                <div className="text-[10px] text-neutral-500 mt-0.5">{shipping.expressOption.estimated_days} dias úteis</div>
               </div>
-              <div className="text-[10px] text-neutral-500 mt-0.5">{shipping.expressOption.estimated_days} dias úteis</div>
+              <div className="text-[12px] font-normal tracking-tighter">
+                {formatCurrency(shipping.expressOption.real_cost, locale)}
+              </div>
             </div>
-            <div className="text-[12px] font-normal tracking-tighter">
-              {formatCurrency(shipping.expressOption.real_cost, locale)}
-            </div>
-          </div>
-        </button>
+          </button>
+        )}
+
+        {/* Carrier options */}
+        {varejoCarrierOptions.map((opt, idx) => {
+          const isSelected =
+            shipping.selectedVarejoCarrierOption?.method === opt.method &&
+            shipping.selectedVarejoCarrierOption?.provider === opt.provider;
+          return (
+            <button
+              key={idx}
+              onClick={() => shipping.setVarejoCarrierOption(opt)}
+              className={`w-full p-3 rounded-xl border-2 transition-all text-left ${
+                isSelected ? 'border-neutral-900 bg-paper' : 'border-neutral-100 hover:border-neutral-300'
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="text-[11px] font-normal uppercase tracking-tight">
+                    {opt.method} — {opt.provider}
+                  </div>
+                  <div className="text-[10px] text-neutral-500 mt-0.5">{opt.estimated_days} dias úteis</div>
+                </div>
+                <div className="text-[12px] font-normal tracking-tighter">
+                  {formatCurrency(opt.real_cost, locale)}
+                </div>
+              </div>
+            </button>
+          );
+        })}
       </div>
     );
   }

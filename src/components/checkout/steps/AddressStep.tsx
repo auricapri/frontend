@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { AlertCircle, Check, Loader2, MapPin, Navigation, Search, ChevronDown } from 'lucide-react';
 import { type CheckoutState } from '../hooks/useCheckoutState';
 import { maskCep, normalizeCepDigits, validateCPF } from '../../../utils/masks';
+import { UserMode } from '../../../types';
+import { ShippingSelectionModal } from './ShippingSelectionModal';
 
 export function AddressStep({ checkout }: { checkout: CheckoutState }) {
   const {
@@ -48,6 +50,8 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
 
   // State para busca inline (mobile-friendly)
   const [showInlineSearch, setShowInlineSearch] = useState(false);
+  // State para modal de seleção de frete (VAREJO apenas)
+  const [showShippingModal, setShowShippingModal] = useState(false);
 
   // Atualizar campo do endereço
   const updateAddressField = (field: string, value: string) => {
@@ -406,7 +410,14 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
             </div>
         </div>
         <button
-          onClick={() => address && setStep(2)}
+          onClick={() => {
+            if (!address) return;
+            if (checkout.userMode === UserMode.ATACADO) {
+              setStep(2);
+            } else {
+              setShowShippingModal(true);
+            }
+          }}
           disabled={
             !address ||
             !address.logradouro?.trim() ||
@@ -421,6 +432,23 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           Confirmar e Pagar
         </button>
       </section>
+
+      {showShippingModal && (
+        <ShippingSelectionModal
+          freeOption={shipping.bestInternalShipping}
+          freeDisplayDays={shipping.shippingDisplay?.days ?? 0}
+          freeDisplayPrice={shipping.shippingDisplay?.price ?? 0}
+          expressOption={shipping.expressOption}
+          carrierOptions={shipping.shippingOptions}
+          locale={checkout.locale}
+          isCalculating={shipping.calculatingShipping}
+          onSelectFree={() => shipping.setSelectedVarejoShipping('free')}
+          onSelectExpress={() => shipping.setSelectedVarejoShipping('express')}
+          onSelectCarrier={(opt) => shipping.setVarejoCarrierOption(opt)}
+          onConfirm={() => { setShowShippingModal(false); setStep(2); }}
+          onClose={() => setShowShippingModal(false)}
+        />
+      )}
     </>
   );
 }
