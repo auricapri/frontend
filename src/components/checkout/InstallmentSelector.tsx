@@ -216,7 +216,7 @@ export function InstallmentSelector({
         )}
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
         {options.map((option) => {
           const isSelected = option.installments === selectedInstallments;
           const isAvista = option.installments === 1;

@@ -5,7 +5,7 @@
  * but internally delegates to smaller, focused hooks.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { PaymentMethod } from '../../../constants/enums';
 import { Locale } from '../../../i18n';
 import { maskCPF, maskPhone, unmask } from '../../../utils/masks';
@@ -175,6 +175,21 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     pixData: pixBoleto.pixData,
     boletoData: pixBoleto.boletoData,
   });
+
+  // Reset PIX/boleto data when coupon changes (new coupon → old QR code is invalid)
+  const prevCouponCodeRef = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    const newCode = coupon.appliedCoupon?.code ?? null;
+    if (prevCouponCodeRef.current === undefined) {
+      prevCouponCodeRef.current = newCode;
+      return;
+    }
+    if (prevCouponCodeRef.current !== newCode) {
+      prevCouponCodeRef.current = newCode;
+      pixBoleto.resetPaymentData();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coupon.appliedCoupon?.code]);
 
   // Scroll to top on step change
   useEffect(() => {

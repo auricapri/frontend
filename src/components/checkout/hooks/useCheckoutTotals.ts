@@ -76,8 +76,11 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
 
   // Total before wallet (after all unconditional discounts + shipping)
   const totalBeforeWallet = useMemo(() => {
-    return discountedSubtotal - pixDiscount + shippingCost;
-  }, [discountedSubtotal, pixDiscount, shippingCost]);
+    const raw = discountedSubtotal - pixDiscount + shippingCost;
+    // Gateway minimum: coupon-applied orders must be at least R$1.00 (Asaas rejects R$0 charges)
+    if (manualCouponDiscount > 0 && raw < 1.00) return 1.00;
+    return raw;
+  }, [discountedSubtotal, pixDiscount, shippingCost, manualCouponDiscount]);
 
   // Cashback used (limited to available balance and positive total)
   const cashbackUsed = useMemo(() => {
