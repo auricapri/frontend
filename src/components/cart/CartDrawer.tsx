@@ -140,7 +140,9 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
     if (appliedCoupon.discount_type === 'percentage') return Math.round(base * (appliedCoupon.discount_value / 100) * 100) / 100;
     return Math.min(appliedCoupon.discount_value, base);
   }, [appliedCoupon, subtotal, boxDiscount]);
-  const finalTotal = subtotal - boxDiscount - couponDiscount;
+  const rawTotal = subtotal - boxDiscount - couponDiscount;
+  // Gateway minimum: coupon can't bring total below R$1.00 (same rule as checkout + backend)
+  const finalTotal = appliedCoupon && rawTotal < 1.00 ? 1.00 : rawTotal;
 
   if (!isOpen) return null;
 
