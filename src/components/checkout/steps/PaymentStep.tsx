@@ -240,7 +240,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
         />
       )}
 
-      {(pixReady || boletoReady) ? (
+      {(pixReady || boletoReady) && paymentMethod !== PaymentMethod.CREDIT_CARD ? (
         <div className="flex gap-4 pt-6">
           <button
             onClick={() => setStep(1)}
