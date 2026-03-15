@@ -28,7 +28,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <div className="text-[11px] font-normal uppercase tracking-tight">
-                    {option.method} - {option.provider}
+                    {/^\d+$/.test(option.method) ? option.provider : `${option.provider} — ${option.method}`}
                   </div>
                   <div className="flex gap-2 mt-1">
                     {isCheapest && (
@@ -133,7 +133,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
               <div className="flex justify-between items-center">
                 <div>
                   <div className="text-[11px] font-normal uppercase tracking-tight">
-                    {opt.method} — {opt.provider}
+                    {/^\d+$/.test(opt.method) ? opt.provider : `${opt.provider} — ${opt.method}`}
                   </div>
                   <div className="text-[10px] text-neutral-500 mt-0.5">{opt.estimated_days} dias úteis</div>
                 </div>
