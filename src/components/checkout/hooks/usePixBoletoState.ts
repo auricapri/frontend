@@ -2,8 +2,8 @@
  * usePixBoletoState - Manages PIX QR code generation and Boleto creation
  */
 
-import { useCallback, useMemo, useState } from 'react';
-import { PaymentMethod } from '../../../constants/enums';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { OrderStatus, PaymentMethod } from '../../../constants/enums';
 import { PaymentsApi } from '../../../api/payments.api';
 import { OrdersApi } from '../../../api/orders.api';
 import { UsersApi } from '../../../api/users.api';
@@ -55,6 +55,14 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
 
   // General payment processing state
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+
+  // Polling: track order waiting for PIX confirmation
+  const [pendingPixOrderId, setPendingPixOrderId] = useState<string | null>(null);
+  // Stable ref to completion args so polling closure always has latest values
+  const pixCompletionArgsRef = useRef<Parameters<typeof onComplete> | null>(null);
+  // Stable ref to onComplete so effect doesn't restart interval on every render
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   // Create PIX charge - returns true if successful, false otherwise
   const createPixCharge = useCallback(async (orderId: string, customerInfo: CustomerPaymentInfo): Promise<boolean> => {
@@ -150,7 +158,44 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     setPixError(null);
     setBoletoData(null);
     setBoletoError(null);
+    setPendingPixOrderId(null);
+    pixCompletionArgsRef.current = null;
   }, []);
+
+  // Poll order status every 5s after PIX is generated — calls onComplete when CONFIRMED
+  useEffect(() => {
+    if (!pendingPixOrderId) return;
+
+    const INTERVAL_MS = 5000;
+    const MAX_POLLS = 72; // ~6 minutes
+    let count = 0;
+
+    const timer = setInterval(async () => {
+      count++;
+      if (count > MAX_POLLS) {
+        clearInterval(timer);
+        setPendingPixOrderId(null);
+        return;
+      }
+      try {
+        const order = await ordersApi.getById(pendingPixOrderId);
+        if (order?.status === OrderStatus.CONFIRMED) {
+          clearInterval(timer);
+          setPendingPixOrderId(null);
+          const args = pixCompletionArgsRef.current;
+          if (args) {
+            pixCompletionArgsRef.current = null;
+            onCompleteRef.current(...args);
+          }
+        }
+      } catch {
+        // Ignore transient errors — will retry on next tick
+      }
+    }, INTERVAL_MS);
+
+    return () => clearInterval(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingPixOrderId, ordersApi]);
 
   // Complete order flow: create order then process payment
   const completeOrderWithPayment = useCallback(async (overridePaymentMethod?: PaymentMethod) => {
@@ -253,6 +298,11 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         if (pixSuccess && step !== 2) {
           setStep(2);
         }
+        if (pixSuccess) {
+          // Store args so the polling effect can call onComplete when order is CONFIRMED
+          pixCompletionArgsRef.current = [finalAddress, shippingToUse, effectivePaymentMethod, finalTotal, saveCardForFuture, undefined, phone, cashbackUsed];
+          setPendingPixOrderId(order.id);
+        }
         // If failed, user stays on current step to see the error
       } else if (effectivePaymentMethod === PaymentMethod.BOLETO) {
         await createBoletoCharge(order.id, customerInfo);
@@ -303,6 +353,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     resetPaymentData,
     step,
     setStep,
+    setPendingPixOrderId,
   ]);
 
   return {

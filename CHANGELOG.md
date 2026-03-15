@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.23] - 2026-03-15
+
+### Corrigido — CRÍTICO
+- **usePixBoletoState**: adicionado polling de 5s após geração do QR code PIX — antes o site nunca detectava que o pagamento foi confirmado e ficava mostrando o timer indefinidamente; agora chama `ordersApi.getById()` a cada 5s e ao receber `status: CONFIRMED` chama `onComplete()` automaticamente avançando para a confirmação do pedido (máximo 6 minutos / 72 polls antes de desistir)
+
 ## [1.4.22] - 2026-03-15
 
 ### Corrigido
