@@ -9,6 +9,7 @@ import { OrdersApi } from '../../../api/orders.api';
 import { UsersApi } from '../../../api/users.api';
 import { UserMode } from '../../../types';
 import type {
+  CardData,
   CustomerPaymentInfo,
   PixData,
   BoletoData,
@@ -38,6 +39,10 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     appliedCouponId,
     appliedCouponCode,
     onPixPaymentConfirmed,
+    cardData,
+    cardToken,
+    selectedInstallments,
+    selectedInstallmentCode,
   } = params;
 
   const paymentsApi = useMemo(() => new PaymentsApi(), []);
@@ -53,6 +58,9 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
   const [boletoData, setBoletoData] = useState<BoletoData | null>(null);
   const [boletoLoading, setBoletoLoading] = useState(false);
   const [boletoError, setBoletoError] = useState<string | null>(null);
+
+  // Credit card error state
+  const [creditCardError, setCreditCardError] = useState<string | null>(null);
 
   // General payment processing state
   const [paymentProcessing, setPaymentProcessing] = useState(false);
@@ -162,6 +170,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     setPixError(null);
     setBoletoData(null);
     setBoletoError(null);
+    setCreditCardError(null);
     setPendingPixOrderId(null);
     pixCompletionArgsRef.current = null;
   }, []);
@@ -320,9 +329,42 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
           setStep(2);
         }
       } else if (effectivePaymentMethod === PaymentMethod.CREDIT_CARD) {
-        // For credit card, we need card data
-        // This will be handled by the original onComplete flow
-        onComplete(finalAddress, shippingToUse, effectivePaymentMethod, finalTotal, saveCardForFuture, undefined, phone, cashbackUsed);
+        // Validate: we need either card data or a saved card token
+        if (!cardData && !cardToken) {
+          const errorMsg = 'Dados do cartão são obrigatórios';
+          setCreditCardError(errorMsg);
+          throw new Error(errorMsg);
+        }
+
+        const creditCardResult = await paymentsApi.processPayment({
+          orderId: order.id,
+          method: 'credit_card',
+          installments: selectedInstallments || 1,
+          installmentCode: selectedInstallmentCode,
+          card: cardData ? {
+            holderName: cardData.holderName,
+            number: cardData.number.replace(/\s/g, ''),
+            expiryMonth: cardData.expiryMonth,
+            expiryYear: cardData.expiryYear,
+            cvv: cardData.cvv,
+          } : undefined,
+          cardToken: cardToken || undefined,
+          saveCard: saveCardForFuture,
+          customerInfo,
+        });
+
+        if (creditCardResult.success) {
+          // Success: clear cart and show success overlay (same as PIX confirmation)
+          if (onPixPaymentConfirmedRef.current) {
+            onPixPaymentConfirmedRef.current();
+          } else {
+            onCompleteRef.current(finalAddress, shippingToUse, effectivePaymentMethod, finalTotal, saveCardForFuture, creditCardResult.paymentId, phone, cashbackUsed);
+          }
+        } else {
+          const errorMsg = 'Pagamento recusado. Verifique os dados do cartão.';
+          setCreditCardError(errorMsg);
+          throw new Error(errorMsg);
+        }
       }
 
       return order;
@@ -333,6 +375,8 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         setPixError(errorMsg);
       } else if (effectivePaymentMethod === PaymentMethod.BOLETO) {
         setBoletoError(errorMsg);
+      } else if (effectivePaymentMethod === PaymentMethod.CREDIT_CARD) {
+        setCreditCardError(errorMsg);
       }
       throw error;
     } finally {
@@ -363,6 +407,10 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     step,
     setStep,
     setPendingPixOrderId,
+    cardData,
+    cardToken,
+    selectedInstallments,
+    selectedInstallmentCode,
   ]);
 
   return {
@@ -377,6 +425,9 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     boletoLoading,
     boletoError,
     createBoletoCharge,
+
+    // Credit card error
+    creditCardError,
 
     // General
     paymentProcessing,

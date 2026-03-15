@@ -15,7 +15,7 @@ import type {
   UserMode as UserModeType,
   UserProfile,
 } from '../../../types';
-import type { InstallmentOption, PixData, BoletoData, PaymentResponse } from '../../../types/payment.types';
+import type { InstallmentOption, PixData, BoletoData, PaymentResponse, CardData } from '../../../types/payment.types';
 import type { ShippingCalculationState } from './useShippingCalculation';
 
 // ============================================================================
@@ -307,6 +307,11 @@ export interface UsePixBoletoStateParams {
   appliedCouponId?: string | null;
   appliedCouponCode?: string | null;
   onPixPaymentConfirmed?: () => void;
+  // Credit card specific
+  cardData?: CardData | null;
+  cardToken?: string | null;
+  selectedInstallments?: number;
+  selectedInstallmentCode?: string;
 }
 
 export interface UsePixBoletoStateReturn {
@@ -322,6 +327,9 @@ export interface UsePixBoletoStateReturn {
   boletoError: string | null;
   createBoletoCharge: (orderId: string, customerInfo: CustomerPaymentInfo) => Promise<PaymentResponse>;
 
+  // Credit card error
+  creditCardError: string | null;
+
   // General
   paymentProcessing: boolean;
   setPaymentProcessing: (processing: boolean) => void;
@@ -332,6 +340,7 @@ export interface UsePixBoletoStateReturn {
 // Re-export types for convenience
 export type {
   AddressData,
+  CardData,
   CartItem,
   Coupon,
   InternalLogisticsInfo,

@@ -5,6 +5,14 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.31] - 2026-03-15
+
+### Corrigido — CRÍTICO
+- **ReviewStep.tsx**: pagamento via cartão de crédito nunca era processado no Asaas — o botão "Concluir Compra" chamava `payment.handleCompleteOrder()` (= `handlePlaceOrder`) que apenas criava o registro do pedido no banco sem nunca chamar `paymentsApi.processPayment`; corrigido para todos os métodos de pagamento (PIX, Boleto, Cartão) passarem por `completeOrderWithPayment`
+- **usePixBoletoState.ts**: adicionado branch de cartão de crédito em `completeOrderWithPayment` que chama `paymentsApi.processPayment` com os dados do cartão/token, parcelas e CPF do cliente; em caso de sucesso, dispara `onPixPaymentConfirmedRef` (mesma tela de agradecimento do PIX) em vez de `onComplete` (que criaria pedido duplicado)
+- **usePixBoletoState.ts**: `creditCardError` exposto no retorno do hook; `ReviewStep` agora exibe erros de cartão (`pixError || boletoError || creditCardError`)
+- **useCheckoutState.ts**: dados do cartão (`cardData`, `cardToken`, `selectedInstallments`, `selectedInstallmentCode`) passados para `usePixBoletoState` para que o hook tenha todos os dados necessários ao processar o pagamento
+
 ## [1.4.30] - 2026-03-15
 
 ### Corrigido

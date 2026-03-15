@@ -156,6 +156,21 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     appliedCouponId: coupon.appliedCoupon?.id ?? null,
     appliedCouponCode: coupon.appliedCoupon?.code ?? null,
     onPixPaymentConfirmed,
+    // Credit card data for payment processing
+    cardData: creditCard.cardNumber ? {
+      holderName: creditCard.cardName,
+      number: creditCard.cardNumber,
+      expiryMonth: creditCard.cardExpiry.split('/')[0] || '',
+      expiryYear: creditCard.cardExpiry.split('/')[1]
+        ? '20' + creditCard.cardExpiry.split('/')[1]
+        : '',
+      cvv: creditCard.cardCvc,
+    } : null,
+    cardToken: creditCard.selectedSavedCardId
+      ? currentUser?.saved_cards?.find((c: any) => c.id === creditCard.selectedSavedCardId)?.gateway_token ?? null
+      : null,
+    selectedInstallments: installment.selectedInstallments,
+    selectedInstallmentCode: installment.selectedInstallmentCode,
   });
 
   // Payment processing
@@ -380,6 +395,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     boletoData: pixBoleto.boletoData,
     boletoLoading: pixBoleto.boletoLoading,
     boletoError: pixBoleto.boletoError,
+    creditCardError: pixBoleto.creditCardError,
     paymentProcessing: pixBoleto.paymentProcessing,
     setPaymentProcessing: pixBoleto.setPaymentProcessing,
     createPixCharge: pixBoleto.createPixCharge,

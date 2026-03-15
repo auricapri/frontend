@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Loader2 } from 'lucide-react';
-import { PaymentMethod } from '../../../constants/enums';
 import { type CheckoutState } from '../hooks/useCheckoutState';
 
 export function ReviewStep({ checkout }: { checkout: CheckoutState }) {
   const {
     setStep,
-    payment,
     paymentMethod,
     paymentProcessing,
     completeOrderWithPayment,
     pixError,
-    boletoError
+    boletoError,
+    creditCardError,
   } = checkout;
 
   // isSubmitting is set synchronously on the very first click, before any async work,
@@ -25,14 +24,10 @@ export function ReviewStep({ checkout }: { checkout: CheckoutState }) {
     setIsSubmitting(true);
 
     try {
-      if (paymentMethod === PaymentMethod.PIX || paymentMethod === PaymentMethod.BOLETO) {
-        await completeOrderWithPayment();
-        // The function will redirect to step 2 to show QR code / boleto
-      } else {
-        // Credit card: handleCompleteOrder triggers isProcessingOrder overlay in the
-        // parent app layer. isSubmitting stays true for the lifetime of this handler.
-        payment.handleCompleteOrder();
-      }
+      // All payment methods go through completeOrderWithPayment:
+      // - PIX/Boleto: creates order → generates QR/boleto → redirects to step 2
+      // - Credit card: creates order → charges Asaas → shows success overlay
+      await completeOrderWithPayment();
     } catch (error) {
       console.error('Error completing order:', error);
       // Error is already set in the state by completeOrderWithPayment;
@@ -40,7 +35,7 @@ export function ReviewStep({ checkout }: { checkout: CheckoutState }) {
       setIsSubmitting(false);
     }
   };
-  const error = pixError || boletoError;
+  const error = pixError || boletoError || creditCardError;
 
   return (
     <section className="space-y-12 animate-in fade-in slide-in-from-left duration-700 text-center py-20 bg-paper/50 rounded-[4rem] border border-dashed border-neutral-200">
