@@ -23,6 +23,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
     itemsWithCoupon,
     itemsWithoutCoupon,
     locale,
+    effectiveCouponDiscount,
     manualCouponDiscount,
     paymentMethod,
     pixDiscount,
@@ -169,10 +170,10 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
               <span className="flex-shrink-0">-{formatCurrency(preAppliedDiscount, locale)}</span>
             </div>
           )}
-          {manualCouponDiscount > 0 && (
+          {effectiveCouponDiscount > 0 && (
             <div className="flex justify-between items-center gap-3 text-xs font-normal uppercase tracking-wide md:tracking-widest text-emerald-600">
               <span className="leading-tight">Cupom {appliedCoupon?.code}</span>
-              <span className="flex-shrink-0">-{formatCurrency(manualCouponDiscount, locale)}</span>
+              <span className="flex-shrink-0">-{formatCurrency(effectiveCouponDiscount, locale)}</span>
             </div>
           )}
           {(bundleDiscount ?? 0) > 0 && (

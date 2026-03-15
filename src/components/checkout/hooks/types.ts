@@ -68,6 +68,8 @@ export interface UseCheckoutTotalsReturn {
   totalBeforeWallet: number;
   cashbackUsed: number;
   finalTotal: number;
+  /** Display-capped coupon discount — never exceeds what would bring subtotal below R$1 */
+  effectiveCouponDiscount: number;
 }
 
 // ============================================================================
@@ -302,6 +304,7 @@ export interface UsePixBoletoStateParams {
   saveCardForFuture: boolean;
   step: number;
   setStep: (step: number) => void;
+  appliedCouponId?: string | null;
 }
 
 export interface UsePixBoletoStateReturn {

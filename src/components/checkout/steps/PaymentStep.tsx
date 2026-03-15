@@ -1,8 +1,9 @@
-import { useCallback } from 'react';
-import { ChevronRight, CreditCard, FileText, Loader2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ChevronRight, CreditCard, FileText, Info, Loader2 } from 'lucide-react';
 import { PaymentMethod } from '../../../constants/enums';
 import { type CheckoutState } from '../hooks/useCheckoutState';
 import { LoadingModal } from '../../ui/LoadingModal';
+import { Modal } from '../../ui/Modal';
 import { CashbackToggle } from './CashbackToggle';
 import { CreditCardForm } from './CreditCardForm';
 import { PixPaymentSection } from './PixPaymentSection';
@@ -57,27 +58,53 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
     paymentProcessing,
   } = checkout;
 
+  const [asaasNoticeOpen, setAsaasNoticeOpen] = useState(false);
+  const asaasShownThisSession = useRef(false);
+
+  const tryShowAsaasNotice = useCallback(() => {
+    if (asaasShownThisSession.current) return;
+    const count = parseInt(localStorage.getItem('asaas_notice_count') ?? '0', 10);
+    if (count % 3 === 0) {
+      asaasShownThisSession.current = true;
+      setAsaasNoticeOpen(true);
+    }
+  }, []);
+
+  const handleDismissAsaasNotice = useCallback(() => {
+    setAsaasNoticeOpen(false);
+    const count = parseInt(localStorage.getItem('asaas_notice_count') ?? '0', 10);
+    localStorage.setItem('asaas_notice_count', String(count + 1));
+  }, []);
+
+  // Fallback for auto-regeneration (coupon change triggers new PIX/boleto from parent)
+  useEffect(() => {
+    if (!pixData && !boletoData) return;
+    tryShowAsaasNotice();
+  }, [pixData, boletoData, tryShowAsaasNotice]);
+
   const handleSelectPix = useCallback(async () => {
     setPaymentMethod(PaymentMethod.PIX);
     if (!pixData && !pixLoading) {
       try {
         await completeOrderWithPayment(PaymentMethod.PIX);
+        tryShowAsaasNotice();
       } catch {
         // Error stored in pixError state via usePixBoletoState
       }
     }
-  }, [setPaymentMethod, pixData, pixLoading, completeOrderWithPayment]);
+  }, [setPaymentMethod, pixData, pixLoading, completeOrderWithPayment, tryShowAsaasNotice]);
 
   const handleSelectBoleto = useCallback(async () => {
     setPaymentMethod(PaymentMethod.BOLETO);
     if (!boletoData && !boletoLoading) {
       try {
         await completeOrderWithPayment(PaymentMethod.BOLETO);
+        tryShowAsaasNotice();
       } catch {
         // Error stored in boletoError state via usePixBoletoState
       }
     }
-  }, [setPaymentMethod, boletoData, boletoLoading, completeOrderWithPayment]);
+  }, [setPaymentMethod, boletoData, boletoLoading, completeOrderWithPayment, tryShowAsaasNotice]);
 
   const handleToggleSplit = useCallback(() => {
     setSplitCards(!splitCards);
@@ -101,6 +128,8 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
   const boletoReady = !!(boletoData?.barCode);
   const isGenerating = pixLoading || paymentProcessing || boletoLoading;
 
+  const paymentLabel = paymentMethod === PaymentMethod.PIX ? 'PIX' : 'Boleto';
+
   return (
     <section className="space-y-6 animate-in fade-in slide-in-from-left duration-700">
       <LoadingModal
@@ -108,6 +137,34 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
         message={pixLoading ? 'Gerando PIX' : boletoLoading ? 'Gerando Boleto' : 'Processando pagamento'}
         subMessage="Por favor, aguarde enquanto preparamos seu pagamento"
       />
+
+      <Modal isOpen={asaasNoticeOpen} onClose={handleDismissAsaasNotice} size="sm">
+        <div className="flex flex-col items-center gap-5 p-2 text-center">
+          <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
+            <Info className="w-6 h-6 text-amber-500" />
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-sm font-normal uppercase tracking-widest">Aviso sobre e-mail</h4>
+            <p className="text-xs text-neutral-600 leading-relaxed">
+              Caso você receba um e-mail de cobrança via {paymentLabel} do nosso sistema de pagamentos
+              (Asaas), não se preocupe — isso é automático e esperado.
+            </p>
+            <p className="text-xs text-neutral-600 leading-relaxed">
+              Se você desistir da compra, basta desconsiderar o e-mail. Nenhum valor será cobrado
+              enquanto o pagamento não for confirmado.
+            </p>
+            <p className="text-xs text-neutral-400 leading-relaxed mt-1">
+              Atenciosamente,<br />Auricapri
+            </p>
+          </div>
+          <button
+            onClick={handleDismissAsaasNotice}
+            className="w-full py-3 bg-black text-white rounded-xl text-xs font-normal uppercase tracking-widest hover:bg-neutral-800 transition-all"
+          >
+            Entendi
+          </button>
+        </div>
+      </Modal>
 
       <div className="flex items-center gap-4 mb-4">
         <div className="p-4 bg-paper rounded-2xl">

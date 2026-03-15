@@ -31,7 +31,7 @@ type PendingRequest<T> = Promise<T>;
 class CacheService {
   private memoryCache: Map<string, CacheEntry<unknown>> = new Map();
   private pendingRequests: Map<string, PendingRequest<unknown>> = new Map();
-  private readonly STORAGE_PREFIX = 'auricapri_cache_v1_';
+  private readonly STORAGE_PREFIX = 'auricapri_cache_v2_';
   private readonly MAX_STORAGE_SIZE = 4 * 1024 * 1024;
   private readonly MAX_MEMORY_ENTRIES = 100;
   private readonly MAX_MEMORY_SIZE = 10 * 1024 * 1024;

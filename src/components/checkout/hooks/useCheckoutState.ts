@@ -152,6 +152,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     saveCardForFuture: creditCard.saveCardForFuture,
     step,
     setStep,
+    appliedCouponId: coupon.appliedCoupon?.id ?? null,
   });
 
   // Payment processing
@@ -367,6 +368,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     pixDiscount: totals.pixDiscount,
     cashbackUsed: totals.cashbackUsed,
     finalTotal: totals.finalTotal,
+    effectiveCouponDiscount: totals.effectiveCouponDiscount,
 
     // PIX/Boleto
     pixData: pixBoleto.pixData,
