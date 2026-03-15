@@ -5,6 +5,12 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.32] - 2026-03-15
+
+### Adicionado
+- **tests/unit/hooks/useCheckoutTotals.test.ts**: 17 novos testes cobrindo cálculo de `finalTotal` — cupom + crédito_card, cupom + PIX, cashback, troca de método de pagamento, e invariante "nunca negativo"
+- **tests/unit/hooks/payment-amount-integrity.test.ts**: 10 novos testes verificando que `ordersApi.create({ finalAmount })` recebe exatamente o total exibido ao cliente; inclui regressão do bug de cartão de crédito sem desconto
+
 ## [1.4.31] - 2026-03-15
 
 ### Corrigido — CRÍTICO
