@@ -71,12 +71,12 @@ const INPUT_CLASS =
   'w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none font-mono text-sm md:text-base tracking-wide md:tracking-widest focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all';
 
 const INPUT_CLASS_TEXT =
-  'w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none text-sm md:text-base font-black uppercase focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all';
+  'w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none text-sm md:text-base font-normal uppercase focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all';
 
 const INPUT_CLASS_SHORT =
   'w-full p-4 md:p-6 bg-neutral-900 text-white border border-neutral-800 rounded-xl md:rounded-2xl outline-none text-sm md:text-base focus:border-neutral-600 focus:ring-1 md:focus:ring-2 focus:ring-neutral-700 placeholder:text-neutral-700 transition-all';
 
-const LABEL_CLASS = 'text-[10px] md:text-xs font-black uppercase tracking-wide md:tracking-widest text-neutral-600';
+const LABEL_CLASS = 'text-[10px] md:text-xs font-normal uppercase tracking-wide md:tracking-widest text-neutral-600';
 
 interface SavedCardListProps {
   savedCards: SavedCard[];
@@ -113,12 +113,12 @@ function SavedCardList({ savedCards, selectedId, excludeId, onSelect, onDeselect
             }`}
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-neutral-700">
+              <div className="w-10 h-6 bg-neutral-200 rounded flex items-center justify-center text-[10px] font-normal uppercase tracking-widest text-neutral-700">
                 {card.brand}
               </div>
               <div>
-                <p className="text-sm font-mono font-bold tracking-widest">•••• •••• •••• {card.last4}</p>
-                <p className="text-xs opacity-60 font-bold uppercase tracking-widest">
+                <p className="text-sm font-mono font-normal tracking-widest">•••• •••• •••• {card.last4}</p>
+                <p className="text-xs opacity-60 font-normal uppercase tracking-widest">
                   {card.exp_month != null && card.exp_year != null ? `Exp: ${card.exp_month}/${card.exp_year}` : ''}
                 </p>
               </div>
@@ -128,7 +128,7 @@ function SavedCardList({ savedCards, selectedId, excludeId, onSelect, onDeselect
         ))}
       </div>
       {selectedId && (
-        <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 flex items-center gap-3 text-[10px] font-bold text-neutral-700">
+        <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 flex items-center gap-3 text-[10px] font-normal text-neutral-700">
           <Lock className="w-3 h-3" /> Usando token seguro criptografado. Nenhum dado sensível trafega pela rede.
         </div>
       )}
@@ -224,7 +224,7 @@ function CardFields({
             {saveCardForFuture && <Check className="w-3 h-3 text-black" />}
           </div>
           <div className="flex-1">
-            <span className="text-[11px] md:text-xs font-bold uppercase tracking-wide md:tracking-wider block text-white">Salvar Cartão</span>
+            <span className="text-[11px] md:text-xs font-normal uppercase tracking-wide md:tracking-wider block text-white">Salvar Cartão</span>
             <span className="text-[10px] md:text-xs text-neutral-600 block mt-0.5 leading-snug">Armazenamento seguro criptografado para compras futuras.</span>
           </div>
         </div>
@@ -274,7 +274,7 @@ export function CreditCardForm({
     <div className="space-y-12 animate-in fade-in slide-in-from-top-4 duration-500">
       {finalTotal >= 500 && (
         <div className="flex items-center justify-between p-4 border-b border-neutral-100">
-          <span className="text-xs font-black uppercase tracking-wider text-neutral-900">Dividir em dois cartões</span>
+          <span className="text-xs font-normal uppercase tracking-wider text-neutral-900">Dividir em dois cartões</span>
           <button
             onClick={onToggleSplit}
             className={`relative w-12 h-6 rounded-full transition-all duration-300 ${splitCards ? 'bg-black' : 'bg-neutral-300'}`}
@@ -323,7 +323,7 @@ export function CreditCardForm({
       )}
 
       <div className="space-y-6">
-        <h4 className="text-xs font-black uppercase tracking-wider text-neutral-600 px-2 font-serif">
+        <h4 className="text-xs font-normal uppercase tracking-wider text-neutral-600 px-2">
           {splitCards ? 'Cartão 1' : 'Cartão de Pagamento'}
         </h4>
 
@@ -359,7 +359,7 @@ export function CreditCardForm({
 
       {splitCards && finalTotal >= 500 && (
         <div className="space-y-6 pt-6 border-t border-neutral-200">
-          <h4 className="text-xs font-black uppercase tracking-wider text-neutral-600 px-2 font-serif">Cartão 2</h4>
+          <h4 className="text-xs font-normal uppercase tracking-wider text-neutral-600 px-2">Cartão 2</h4>
 
           {savedCards.length > 0 && (
             <SavedCardList

@@ -272,7 +272,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
         <div className="absolute top-6 left-6 right-20 z-10">
           <div className="relative group">
             <input
-              className="w-full p-6 pr-16 bg-paper border-none rounded-2xl shadow-2xl text-xs font-black uppercase tracking-widest outline-none placeholder:text-neutral-300"
+              className="w-full p-6 pr-16 bg-paper border-none rounded-2xl shadow-2xl text-xs font-normal uppercase tracking-widest outline-none placeholder:text-neutral-300"
               placeholder="Busque sua rua e cidade..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -295,7 +295,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
                   onClick={() => handleSelectSearchResult(res)}
                   className="w-full p-4 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors"
                 >
-                  <p className="text-[10px] font-black uppercase tracking-widest">{res.text}</p>
+                  <p className="text-[10px] font-normal uppercase tracking-widest">{res.text}</p>
                   <p className="text-[10px] text-neutral-400 truncate">{res.place_name}</p>
                 </button>
               ))}
@@ -307,8 +307,8 @@ export const MapPicker: React.FC<MapPickerProps> = ({
         {(manualAddress.street && manualAddress.city) && (
           <div className="absolute bottom-6 left-6 right-6 z-10">
             <div className="bg-paper rounded-2xl shadow-2xl p-4 mb-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">Endereço Selecionado:</p>
-              <p className="text-xs font-black uppercase">
+              <p className="text-[10px] font-normal uppercase tracking-widest text-neutral-400 mb-1">Endereço Selecionado:</p>
+              <p className="text-xs font-normal uppercase">
                 {manualAddress.street}
                 {manualAddress.neighborhood && `, ${manualAddress.neighborhood}`}
                 {manualAddress.city && `, ${manualAddress.city}`}
@@ -319,7 +319,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
             <button
               onClick={confirmManualAddress}
               disabled={!manualAddress.street || !manualAddress.city}
-              className="w-full py-6 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95 disabled:opacity-20 transition-all"
+              className="w-full py-6 bg-black text-white rounded-2xl text-[10px] font-normal uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95 disabled:opacity-20 transition-all"
             >
               <Check className="w-4 h-4" /> Confirmar Localização
             </button>

@@ -50,13 +50,13 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
           <div>
             <button
               onClick={onBack}
-              className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-black transition-colors mb-4"
+              className="flex items-center gap-3 text-[10px] font-normal uppercase tracking-widest text-neutral-400 hover:text-black transition-colors mb-4"
             >
               <ArrowLeft className="w-4 h-4" /> Voltar à Loja
             </button>
-            <h1 className="text-4xl font-black tracking-tighter uppercase italic font-serif">Finalizar Pedido</h1>
+            <h1 className="text-4xl font-normal tracking-tighter uppercase">Finalizar Pedido</h1>
             {giftDeliveryLocation && (
-              <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+              <p className="mt-2 text-[10px] font-normal uppercase tracking-widest text-neutral-500">
                 Presente para: <span className="text-black">{giftDeliveryLocation}</span>
               </p>
             )}
@@ -72,7 +72,7 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
                   <s.icon className="w-4 h-4" />
                 </div>
                 <span
-                  className={`text-[10px] font-black uppercase tracking-widest ${
+                  className={`text-[10px] font-normal uppercase tracking-widest ${
                     checkout.step >= s.id ? 'text-black' : 'text-neutral-500'
                   }`}
                 >

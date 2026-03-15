@@ -63,7 +63,7 @@ function getCardBrand(number: string): { brand: string; logo: React.ReactNode; c
       color: 'from-yellow-500 to-yellow-600',
       logo: (
         <div className="flex items-center gap-1">
-          <span className="text-2xl font-black text-black">elo</span>
+          <span className="text-2xl font-normal text-black">elo</span>
         </div>
       )
     };
@@ -76,7 +76,7 @@ function getCardBrand(number: string): { brand: string; logo: React.ReactNode; c
       color: 'from-red-600 to-red-800',
       logo: (
         <div className="flex items-center">
-          <span className="text-xl font-black text-white">HIPERCARD</span>
+          <span className="text-xl font-normal text-white">HIPERCARD</span>
         </div>
       )
     };
@@ -157,7 +157,7 @@ export function CreditCardPreview({
                 <span className="text-[7px] md:text-[10px] uppercase tracking-widest text-white/40 block mb-1">
                   Titular do Cartão
                 </span>
-                <span className="text-xs md:text-sm font-bold text-white uppercase tracking-wider">
+                <span className="text-xs md:text-sm font-normal text-white uppercase tracking-wider">
                   {displayName}
                 </span>
               </div>
@@ -188,12 +188,12 @@ export function CreditCardPreview({
           <div className="flex-1 p-6 flex flex-col justify-center">
             <div className="flex items-center gap-4">
               <div className="flex-1 h-10 bg-paper/90 rounded flex items-center justify-end px-4">
-                <span className="font-mono text-neutral-900 italic text-sm tracking-widest">
+                <span className="font-mono text-neutral-900 text-sm tracking-widest">
                   {displayName}
                 </span>
               </div>
               <div className="w-16 h-10 bg-paper rounded flex items-center justify-center">
-                <span className="font-mono text-neutral-900 font-bold tracking-widest">
+                <span className="font-mono text-neutral-900 font-normal tracking-widest">
                   {cardCvc || '•••'}
                 </span>
               </div>

@@ -11,7 +11,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
   if (userMode === UserMode.ATACADO && shipping.shippingOptions.length > 0) {
     return (
       <div className="space-y-3">
-        <div className="text-xs font-black uppercase tracking-widest text-neutral-600 mb-2">Opções de Frete</div>
+        <div className="text-xs font-normal uppercase tracking-widest text-neutral-600 mb-2">Opções de Frete</div>
         {shipping.shippingOptions.map((option, idx) => {
           const isSelected = shipping.selectedShippingOption?.method === option.method;
           const isCheapest = option.real_cost === Math.min(...shipping.shippingOptions.map((o) => o.real_cost));
@@ -27,24 +27,24 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <div className="text-[11px] font-black uppercase tracking-tight">
+                  <div className="text-[11px] font-normal uppercase tracking-tight">
                     {option.method} - {option.provider}
                   </div>
                   <div className="flex gap-2 mt-1">
                     {isCheapest && (
-                      <span className="text-xs font-bold uppercase tracking-widest text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                      <span className="text-xs font-normal uppercase tracking-widest text-green-600 bg-green-50 px-2 py-0.5 rounded">
                         Mais Barato
                       </span>
                     )}
                     {isFastest && (
-                      <span className="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                      <span className="text-xs font-normal uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
                         Mais Rápido
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[12px] font-black tracking-tighter">{formatCurrency(option.display_price_was, locale)}</div>
+                  <div className="text-[12px] font-normal tracking-tighter">{formatCurrency(option.display_price_was, locale)}</div>
                   <div className="text-xs text-neutral-600 uppercase tracking-widest mt-0.5">{option.estimated_days} dias</div>
                 </div>
               </div>
@@ -64,7 +64,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
   ) {
     return (
       <div className="space-y-2">
-        <div className="text-xs font-black uppercase tracking-widest text-neutral-600 mb-2">Opção de Entrega</div>
+        <div className="text-xs font-normal uppercase tracking-widest text-neutral-600 mb-2">Opção de Entrega</div>
 
         {/* Free shipping button */}
         <button
@@ -77,14 +77,14 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
         >
           <div className="flex justify-between items-center">
             <div>
-              <div className="text-[11px] font-black uppercase tracking-tight">Frete Grátis</div>
+              <div className="text-[11px] font-normal uppercase tracking-tight">Frete Grátis</div>
               <div className="text-[10px] text-neutral-500 mt-0.5">{shipping.shippingDisplay.days} dias úteis</div>
             </div>
             <div className="text-right">
               <div className="text-[11px] text-neutral-400 line-through decoration-red-500 decoration-2">
                 {formatCurrency(shipping.shippingDisplay.price, locale)}
               </div>
-              <div className="text-[12px] font-black text-green-600">GRÁTIS</div>
+              <div className="text-[12px] font-normal text-green-600">GRÁTIS</div>
             </div>
           </div>
         </button>
@@ -100,16 +100,16 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
         >
           <div className="flex justify-between items-center">
             <div>
-              <div className="text-[11px] font-black uppercase tracking-tight flex items-center gap-1.5">
+              <div className="text-[11px] font-normal uppercase tracking-tight flex items-center gap-1.5">
                 <Zap className="w-3 h-3 text-blue-600" />
                 Entrega Expressa
-                <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-normal uppercase tracking-widest text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
                   Mais Rápido
                 </span>
               </div>
               <div className="text-[10px] text-neutral-500 mt-0.5">{shipping.expressOption.estimated_days} dias úteis</div>
             </div>
-            <div className="text-[12px] font-black tracking-tighter">
+            <div className="text-[12px] font-normal tracking-tighter">
               {formatCurrency(shipping.expressOption.real_cost, locale)}
             </div>
           </div>
@@ -121,7 +121,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
   // VAREJO default: show GRÁTIS or loading
   return (
     <>
-      <div className="flex justify-between items-center gap-3 text-xs font-black uppercase tracking-wide md:tracking-widest text-neutral-600">
+      <div className="flex justify-between items-center gap-3 text-xs font-normal uppercase tracking-wide md:tracking-widest text-neutral-600">
         <span className="flex-shrink-0">Frete</span>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {shipping.calculatingShipping ? (
@@ -133,7 +133,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
               <span className="line-through text-neutral-500 decoration-red-500 decoration-2 font-medium text-[10px]">
                 {formatCurrency(shipping.shippingDisplay.price, locale)}
               </span>
-              <span className="text-green-500 font-black">GRÁTIS</span>
+              <span className="text-green-500 font-normal">GRÁTIS</span>
             </>
           ) : (
             <span className="text-neutral-300">Aguardando CEP</span>
@@ -141,7 +141,7 @@ export function ShippingStep({ checkout }: { checkout: CheckoutState }) {
         </div>
       </div>
       {shipping.shippingDisplay && !shipping.calculatingShipping && (
-        <div className="text-right text-[10px] font-bold text-neutral-500 uppercase tracking-wide md:tracking-widest">
+        <div className="text-right text-[10px] font-normal text-neutral-500 uppercase tracking-wide md:tracking-widest">
           {shipping.shippingDisplay.days} dias úteis
         </div>
       )}

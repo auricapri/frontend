@@ -70,7 +70,7 @@ export function PixCountdown({ expiresAt, onExpired }: PixCountdownProps) {
       <div className="bg-red-500/20 border border-red-500/50 rounded-2xl px-6 py-4 flex items-center gap-3">
         <AlertTriangle className="w-5 h-5 text-red-400" />
         <div>
-          <span className="text-red-400 text-sm font-bold block">QR Code expirado</span>
+          <span className="text-red-400 text-sm font-normal block">QR Code expirado</span>
           <span className="text-red-400/60 text-xs">Gere um novo QR Code para continuar</span>
         </div>
       </div>
@@ -84,7 +84,7 @@ export function PixCountdown({ expiresAt, onExpired }: PixCountdownProps) {
         : 'bg-paper/10 border border-white/10'
     }`}>
       <Clock className={`w-4 h-4 ${isExpiring ? 'text-red-400' : 'text-white/60'}`} />
-      <span className={`font-mono font-bold text-lg ${isExpiring ? 'text-red-400' : 'text-white'}`}>
+      <span className={`font-mono font-normal text-lg ${isExpiring ? 'text-red-400' : 'text-white'}`}>
         {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
       </span>
       <span className="text-xs text-white/40">para pagar</span>

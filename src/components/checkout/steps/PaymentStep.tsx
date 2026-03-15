@@ -113,7 +113,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
         <div className="p-4 bg-paper rounded-2xl">
           <CreditCard className="w-6 h-6" />
         </div>
-        <h3 className="text-2xl font-black uppercase italic tracking-tight text-neutral-900 font-serif">Método de Pagamento</h3>
+        <h3 className="text-2xl font-normal uppercase tracking-tight text-neutral-900">Método de Pagamento</h3>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -127,8 +127,8 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
         >
           <CreditCard className="w-7 h-7" />
           <div className="text-center">
-            <span className="text-xs font-black uppercase tracking-wider block mb-1">Cartão de Crédito</span>
-            <span className="text-xs text-neutral-600 font-bold uppercase tracking-widest">Até 10x</span>
+            <span className="text-xs font-normal uppercase tracking-wider block mb-1">Cartão de Crédito</span>
+            <span className="text-xs text-neutral-600 font-normal uppercase tracking-widest">Até 10x</span>
           </div>
         </button>
         <button
@@ -139,10 +139,10 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
               : 'border-neutral-100 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'
           }`}
         >
-          <div className="w-7 h-7 bg-black text-white rounded flex items-center justify-center font-black text-[10px]">PIX</div>
+          <div className="w-7 h-7 bg-black text-white rounded flex items-center justify-center font-normal text-[10px]">PIX</div>
           <div className="text-center">
-            <span className="text-xs font-black uppercase tracking-wider block mb-1">PIX Instantâneo</span>
-            <span className="text-xs text-green-500 font-black uppercase tracking-widest">5% de desconto</span>
+            <span className="text-xs font-normal uppercase tracking-wider block mb-1">PIX Instantâneo</span>
+            <span className="text-xs text-green-500 font-normal uppercase tracking-widest">5% de desconto</span>
           </div>
         </button>
         <button
@@ -155,8 +155,8 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
         >
           <FileText className="w-7 h-7" />
           <div className="text-center">
-            <span className="text-xs font-black uppercase tracking-wider block mb-1">Boleto Bancário</span>
-            <span className="text-xs text-neutral-600 font-bold uppercase tracking-widest">Vence em 3 dias</span>
+            <span className="text-xs font-normal uppercase tracking-wider block mb-1">Boleto Bancário</span>
+            <span className="text-xs text-neutral-600 font-normal uppercase tracking-widest">Vence em 3 dias</span>
           </div>
         </button>
       </div>
@@ -244,7 +244,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
         <div className="flex gap-4 pt-12">
           <button
             onClick={() => setStep(1)}
-            className="flex-1 px-10 py-6 border border-neutral-200 rounded-[2rem] text-xs font-black uppercase tracking-wider hover:bg-neutral-50 transition-all"
+            className="flex-1 px-10 py-6 border border-neutral-200 rounded-[2rem] text-xs font-normal uppercase tracking-wider hover:bg-neutral-50 transition-all"
           >
             Voltar ao Endereço
           </button>
@@ -254,7 +254,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
           <button
             onClick={() => setStep(1)}
             disabled={isGenerating}
-            className="px-10 py-6 border border-neutral-200 rounded-[2rem] text-xs font-black uppercase tracking-wider hover:bg-neutral-50 transition-all disabled:opacity-50"
+            className="px-10 py-6 border border-neutral-200 rounded-[2rem] text-xs font-normal uppercase tracking-wider hover:bg-neutral-50 transition-all disabled:opacity-50"
           >
             Voltar
           </button>
@@ -262,7 +262,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
             <button
               onClick={() => setStep(3)}
               disabled={splitCards && !splitCardsValid}
-              className={`flex-1 py-8 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 transition-all ${
+              className={`flex-1 py-8 bg-black text-white rounded-[2rem] text-[10px] font-normal uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 transition-all ${
                 splitCards && !splitCardsValid
                   ? 'opacity-40 cursor-not-allowed'
                   : 'hover:scale-[1.02] active:scale-95'
@@ -271,7 +271,7 @@ export function PaymentStep({ checkout }: { checkout: CheckoutState }) {
               Revisar Pedido <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
-            <div className="flex-1 py-8 bg-neutral-100 text-neutral-400 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4">
+            <div className="flex-1 py-8 bg-neutral-100 text-neutral-400 rounded-[2rem] text-[10px] font-normal uppercase tracking-[0.4em] flex items-center justify-center gap-4">
               {isGenerating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
