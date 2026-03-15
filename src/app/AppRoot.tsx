@@ -228,6 +228,7 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
     handleUpdateQuantity,
     isProcessingOrder: orderProcessing.isProcessingOrder,
     orderResult: orderProcessing.orderResult,
+    setOrderResult: orderProcessing.setOrderResult,
     handleCloseOrderResult: orderProcessing.handleCloseOrderResult,
     handlePlaceOrder: orderProcessing.handlePlaceOrder,
     handleCheckoutIntent,

@@ -184,16 +184,16 @@ export function useOrderProcessing(params: {
 
   const handleCloseOrderResult = useCallback(() => {
     const wasSuccess = orderResult?.status === 'success';
-    const order = orderResult?.fullOrder;
     setOrderResult(null);
-    if (wasSuccess && order) {
-      onNavigate('receipt');
+    if (wasSuccess) {
+      onNavigate('home');
     }
   }, [onNavigate, orderResult]);
 
   return {
     isProcessingOrder,
     orderResult,
+    setOrderResult,
     lastSuccessOrder,
     setLastSuccessOrder,
     validateCartStock,

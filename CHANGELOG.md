@@ -5,6 +5,16 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.29] - 2026-03-15
+
+### Adicionado
+- **OrderResultOverlay.tsx**: nova tela de pós-compra persistente — substitui overlay de fechamento automático por tela de agradecimento com animação de checkmark, mini tutorial em 3 passos ("como acompanhar seu pedido") e botão "Continuar Comprando"
+- **useOrderProcessing.ts**: `setOrderResult` exposto no retorno do hook para permitir que o fluxo PIX dispare o overlay de sucesso
+
+### Corrigido
+- **useOrderProcessing.ts**: `handleCloseOrderResult` navegava para `'receipt'` após sucesso; corrigido para navegar para `'home'`
+- **AppLayout.tsx**: `onPixPaymentConfirmed` agora chama `setOrderResult({ status: 'success' })` após limpar o carrinho e navegar para home — PIX e cartão exibem a mesma tela de agradecimento
+
 ## [1.4.28] - 2026-03-15
 
 ### Corrigido — CRÍTICO

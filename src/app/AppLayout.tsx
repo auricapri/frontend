@@ -99,6 +99,7 @@ export function AppLayout(props: {
 
     isProcessingOrder: boolean;
     orderResult: any;
+    setOrderResult: (result: { status: 'success' | 'error'; orderId?: string; message?: string } | null) => void;
     handleCloseOrderResult: () => void;
     handlePlaceOrder: (...args: any[]) => Promise<void>;
     handleCheckoutIntent: () => void;
@@ -473,6 +474,7 @@ export function AppLayout(props: {
                   app.setCartItems([]);
                   app.onRefetchStoreData();
                   app.onNavigate('home');
+                  app.setOrderResult({ status: 'success' });
                 }}
                 locale={app.locale}
                 t={app.t}
