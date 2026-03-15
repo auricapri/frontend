@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.12] - 2026-03-15
+
+### Corrigido
+- **CheckoutViewV2**: espaçamento do header reduzido — `pt-24` → `pt-16`, `mb-20` → `mb-8`, `gap-8` → `gap-6`; grid principal `gap-20` → `gap-10`; coluna interna `space-y-16` → `space-y-8` — elimina o espaço gigante entre o botão "Voltar à Loja" e o conteúdo
+
 ## [1.4.11] - 2026-03-15
 
 ### Corrigido

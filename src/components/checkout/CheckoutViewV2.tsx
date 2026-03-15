@@ -44,13 +44,13 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
   const checkout = useCheckoutState({ items, currentUser, storeConfig, userMode, onComplete, locale, initialStep, products });
 
   return (
-    <div className="min-h-screen bg-paper text-neutral-900 flex flex-col pt-24 pb-20 relative">
+    <div className="min-h-screen bg-paper text-neutral-900 flex flex-col pt-16 pb-12 relative">
       <div className="max-w-[1400px] mx-auto w-full px-6 md:px-12">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-20">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
             <button
               onClick={onBack}
-              className="flex items-center gap-3 text-[10px] font-normal uppercase tracking-widest text-neutral-400 hover:text-black transition-colors mb-4"
+              className="flex items-center gap-3 text-[10px] font-normal uppercase tracking-widest text-neutral-400 hover:text-black transition-colors mb-3"
             >
               <ArrowLeft className="w-4 h-4" /> Voltar à Loja
             </button>
@@ -85,8 +85,8 @@ const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeCo
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
-          <div className="lg:col-span-7 space-y-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="lg:col-span-7 space-y-8">
             <React.Suspense fallback={
               <div className="flex items-center justify-center min-h-[400px]">
                 <Loader2 className="w-8 h-8 animate-spin text-gray-600" />
