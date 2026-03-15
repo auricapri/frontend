@@ -18,7 +18,7 @@ export function useInstallmentState(params: UseInstallmentStateParams): UseInsta
   // Single card installments
   const [installmentOptions, setInstallmentOptions] = useState<InstallmentOption[]>([]);
   const [selectedInstallments, setSelectedInstallments] = useState(1);
-  const [selectedInstallmentCode, setSelectedInstallmentCode] = useState('INST_1');
+  const [selectedInstallmentCode, setSelectedInstallmentCode] = useState('INST_ABSORBED');
   const [installmentsLoading, setInstallmentsLoading] = useState(false);
 
   // Split card amounts
@@ -27,10 +27,10 @@ export function useInstallmentState(params: UseInstallmentStateParams): UseInsta
 
   // Split card installments
   const [card1Installments, setCard1Installments] = useState(1);
-  const [card1InstallmentCode, setCard1InstallmentCode] = useState('INST_1');
+  const [card1InstallmentCode, setCard1InstallmentCode] = useState('INST_ABSORBED');
   const [card1Options, setCard1Options] = useState<InstallmentOption[]>([]);
   const [card2Installments, setCard2Installments] = useState(1);
-  const [card2InstallmentCode, setCard2InstallmentCode] = useState('INST_1');
+  const [card2InstallmentCode, setCard2InstallmentCode] = useState('INST_ABSORBED');
   const [card2Options, setCard2Options] = useState<InstallmentOption[]>([]);
 
   // Auto-split amounts when splitCards is toggled
@@ -59,7 +59,7 @@ export function useInstallmentState(params: UseInstallmentStateParams): UseInsta
       // Reset to 1x if current selection is invalid
       if (selectedInstallments > response.maxInstallments) {
         setSelectedInstallments(1);
-        setSelectedInstallmentCode('INST_1');
+        setSelectedInstallmentCode('INST_ABSORBED');
       }
     } catch (error) {
       console.error('Failed to load installment options:', error);
@@ -85,11 +85,11 @@ export function useInstallmentState(params: UseInstallmentStateParams): UseInsta
       // Reset installments if invalid
       if (card1Installments > card1Response.maxInstallments) {
         setCard1Installments(1);
-        setCard1InstallmentCode('INST_1');
+        setCard1InstallmentCode('INST_ABSORBED');
       }
       if (card2Installments > card2Response.maxInstallments) {
         setCard2Installments(1);
-        setCard2InstallmentCode('INST_1');
+        setCard2InstallmentCode('INST_ABSORBED');
       }
     } catch (error) {
       console.error('Failed to load split card options:', error);

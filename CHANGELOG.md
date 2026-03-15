@@ -5,6 +5,12 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.33] - 2026-03-15
+
+### Corrigido — CRÍTICO
+- **useInstallmentState.ts**: código padrão de parcela era `'INST_1'` (inválido); backend só aceita `'INST_ABSORBED'` ou `'INST_REPASSE'` — corrigido todos os defaults para `'INST_ABSORBED'`
+- **usePixBoletoState.ts**: adicionado polling de fallback a cada 30s que consulta `/api/payments/pix-verify/:orderId` direto no backend (que por sua vez consulta Asaas diretamente); resolve casos onde webhook falha/não chega — PIX agora tem duas linhas de confirmação independentes
+
 ## [1.4.32] - 2026-03-15
 
 ### Adicionado

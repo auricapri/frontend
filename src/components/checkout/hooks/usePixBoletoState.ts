@@ -180,9 +180,23 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     if (!pendingPixOrderId) return;
 
     const INTERVAL_MS = 1000;
+    const FALLBACK_INTERVAL_MS = 30000; // 30s — verify directly on Asaas
     const MAX_POLLS = 600; // 10 minutes
     let count = 0;
 
+    const handleConfirmed = () => {
+      setPendingPixOrderId(null);
+      if (onPixPaymentConfirmedRef.current) {
+        pixCompletionArgsRef.current = null;
+        onPixPaymentConfirmedRef.current();
+      } else {
+        const args = pixCompletionArgsRef.current;
+        pixCompletionArgsRef.current = null;
+        if (args) onCompleteRef.current(...args);
+      }
+    };
+
+    // Primary poll: check order status in DB (updated by webhook)
     const timer = setInterval(async () => {
       count++;
       if (count > MAX_POLLS) {
@@ -194,24 +208,35 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         const order = await ordersApi.getById(pendingPixOrderId);
         if (order?.status === OrderStatus.CONFIRMED) {
           clearInterval(timer);
-          setPendingPixOrderId(null);
-          // Use dedicated callback if provided (clears cart + navigates home without creating a duplicate order)
-          if (onPixPaymentConfirmedRef.current) {
-            pixCompletionArgsRef.current = null;
-            onPixPaymentConfirmedRef.current();
-          } else {
-            // Fallback: call onComplete (legacy path, may create duplicate order)
-            const args = pixCompletionArgsRef.current;
-            pixCompletionArgsRef.current = null;
-            if (args) onCompleteRef.current(...args);
-          }
+          clearInterval(fallbackTimer);
+          handleConfirmed();
         }
       } catch {
         // Ignore transient errors — will retry on next tick
       }
     }, INTERVAL_MS);
 
-    return () => clearInterval(timer);
+    // Fallback poll: query Asaas directly every 30s (self-heals when webhook fails)
+    const fallbackTimer = setInterval(async () => {
+      try {
+        const { apiClient } = await import('../../../api/client');
+        const result = await apiClient.get<{ orderStatus: string; confirmed: boolean }>(
+          `/payments/pix-verify/${pendingPixOrderId}`
+        );
+        if (result.confirmed) {
+          clearInterval(timer);
+          clearInterval(fallbackTimer);
+          handleConfirmed();
+        }
+      } catch {
+        // Ignore — webhook path may still deliver
+      }
+    }, FALLBACK_INTERVAL_MS);
+
+    return () => {
+      clearInterval(timer);
+      clearInterval(fallbackTimer);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingPixOrderId, ordersApi]);
 
