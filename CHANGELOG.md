@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.15] - 2026-03-15
+
+### Corrigido
+- **PaymentStep**: botão "Revisar Pedido" voltava a aparecer quando cartão era selecionado após PIX/boleto gerado — condição `(pixReady || boletoReady)` agora também verifica `paymentMethod !== CREDIT_CARD`
+
 ## [1.4.14] - 2026-03-15
 
 ### Corrigido
