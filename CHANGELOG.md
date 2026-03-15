@@ -5,6 +5,14 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.8] - 2026-03-15
+
+### Corrigido
+- **CartDrawer**: cupom agora validado via API ao clicar OK — mostra desconto imediato no total, erro se inválido, badge verde com código aplicado; loader no botão durante validação; Enter no campo submete
+- **useCouponState**: auto-aplica cupom salvo no sessionStorage ao abrir o checkout (quando itens carregam)
+- **logistics.service.ts**: `calculateExpressOption` adiciona +2 dias ao prazo da transportadora (1 dia coleta + 1 margem)
+- **ShippingSelectionModal**: texto alterado para "Para alterar, role até embaixo na tela de checkout"
+
 ## [1.4.7] - 2026-03-15
 
 ### Corrigido

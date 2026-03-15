@@ -1,12 +1,13 @@
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { X, Minus, Plus, Trash2, ArrowRight, Ticket, ChevronDown, Sparkles } from 'lucide-react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { X, Minus, Plus, Trash2, ArrowRight, Ticket, ChevronDown, Sparkles, Check, Loader2 } from 'lucide-react';
 import { CartItem, Product, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import BoxSavingsIndicator, { calculateQuantityDiscount } from './BoxSavingsIndicator';
 import { getOptimizedImageUrl, handleImageError } from '../../utils/image';
 import { computeAccessoryBundleDiscount, isAccessoryItem, ACCESSORY_BUNDLE_DISCOUNT_PCT } from '../../utils/product';
+import { CouponsApi } from '../../api/coupons.api';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -36,23 +37,61 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCouponOpen, setIsCouponOpen] = useState(false);
   const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
   const [showBundleToast, setShowBundleToast] = useState(false);
   const prevHasBundleRef = useRef(false);
+  const couponsApi = useMemo(() => new CouponsApi(), []);
 
-  // Load saved coupon code from sessionStorage
+  // Restore applied coupon from sessionStorage when drawer opens
   useEffect(() => {
+    if (!isOpen) return;
     const saved = sessionStorage.getItem('cart_coupon_code');
-    if (saved) setCouponCode(saved);
+    const savedType = sessionStorage.getItem('cart_coupon_type');
+    const savedValue = sessionStorage.getItem('cart_coupon_value');
+    if (saved && savedType && savedValue) {
+      setAppliedCoupon({ code: saved, discount_type: savedType, discount_value: parseFloat(savedValue) });
+    }
   }, [isOpen]);
 
-  const handleSaveCoupon = () => {
+  const handleApplyCoupon = useCallback(async () => {
     const code = couponCode.trim().toUpperCase();
-    if (code) {
+    if (!code) return;
+
+    setCouponLoading(true);
+    setCouponError(null);
+
+    try {
+      const coupon = await couponsApi.getByCode(code);
+      if (!coupon) {
+        setCouponError('Cupom inválido ou expirado');
+        return;
+      }
+      if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+        setCouponError('Este cupom expirou');
+        return;
+      }
+      setAppliedCoupon({ code, discount_type: coupon.discount_type, discount_value: coupon.discount_value });
       sessionStorage.setItem('cart_coupon_code', code);
-    } else {
-      sessionStorage.removeItem('cart_coupon_code');
+      sessionStorage.setItem('cart_coupon_type', coupon.discount_type);
+      sessionStorage.setItem('cart_coupon_value', String(coupon.discount_value));
+      setCouponCode('');
+      setIsCouponOpen(false);
+    } catch {
+      setCouponError('Erro ao validar cupom. Tente novamente.');
+    } finally {
+      setCouponLoading(false);
     }
-  };
+  }, [couponCode, couponsApi]);
+
+  const handleRemoveCoupon = useCallback(() => {
+    setAppliedCoupon(null);
+    setCouponError(null);
+    sessionStorage.removeItem('cart_coupon_code');
+    sessionStorage.removeItem('cart_coupon_type');
+    sessionStorage.removeItem('cart_coupon_value');
+  }, []);
 
   const getLoc = (obj: any) => {
     if (!obj) return "";
@@ -95,7 +134,13 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
   const subtotal = items.reduce((sum, item) => sum + (getEffectivePrice(item) * item.quantity), 0);
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
   const { discountValue: boxDiscount } = calculateQuantityDiscount(totalQuantity, subtotal);
-  const finalTotal = subtotal - boxDiscount;
+  const couponDiscount = useMemo(() => {
+    if (!appliedCoupon) return 0;
+    const base = subtotal - boxDiscount;
+    if (appliedCoupon.discount_type === 'percentage') return Math.round(base * (appliedCoupon.discount_value / 100) * 100) / 100;
+    return Math.min(appliedCoupon.discount_value, base);
+  }, [appliedCoupon, subtotal, boxDiscount]);
+  const finalTotal = subtotal - boxDiscount - couponDiscount;
 
   if (!isOpen) return null;
 
@@ -220,6 +265,11 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                    `-${formatCurrency(boxDiscount, locale)}`}
                 </p>
               )}
+              {couponDiscount > 0 && appliedCoupon && (
+                <p className="text-[10px] text-emerald-600 text-right font-bold uppercase tracking-wider">
+                  Cupom {appliedCoupon.code}: -{formatCurrency(couponDiscount, locale)}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center gap-2 mb-3 text-green-700">
@@ -229,40 +279,52 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
 
             {/* Coupon Code Input */}
             <div className="mb-3">
-              <button
-                onClick={() => setIsCouponOpen(!isCouponOpen)}
-                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-black transition-colors"
-              >
-                <Ticket className="w-3.5 h-3.5" strokeWidth={1.5} />
-                <span>Tem cupom de desconto?</span>
-                <ChevronDown className={`w-3 h-3 transition-transform ${isCouponOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {isCouponOpen && (
-                <div className="flex gap-2 mt-2">
-                  <input
-                    type="text"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    onBlur={handleSaveCoupon}
-                    placeholder="CÓDIGO DO CUPOM"
-                    className="flex-1 px-3 py-2 border border-neutral-200 rounded-lg text-xs uppercase tracking-wider font-bold focus:outline-none focus:border-black transition-colors"
-                  />
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">{appliedCoupon.code}</span>
+                  </div>
+                  <button onClick={handleRemoveCoupon} className="text-neutral-400 hover:text-red-500 transition-colors ml-2">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <>
                   <button
-                    onClick={handleSaveCoupon}
-                    disabled={!couponCode.trim()}
-                    className="px-4 py-2 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-30"
+                    onClick={() => { setIsCouponOpen(!isCouponOpen); setCouponError(null); }}
+                    className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-black transition-colors"
                   >
-                    OK
+                    <Ticket className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    <span>Tem cupom de desconto?</span>
+                    <ChevronDown className={`w-3 h-3 transition-transform ${isCouponOpen ? 'rotate-180' : ''}`} />
                   </button>
-                </div>
-              )}
-              {couponCode && !isCouponOpen && (
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10px] font-bold text-green-600 uppercase tracking-wider">Cupom: {couponCode}</span>
-                  <button onClick={() => { setCouponCode(''); sessionStorage.removeItem('cart_coupon_code'); }} className="text-[10px] text-neutral-400 hover:text-red-500 transition-colors">
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
+                  {isCouponOpen && (
+                    <div className="mt-2 space-y-1.5">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(null); }}
+                          onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                          placeholder="CÓDIGO DO CUPOM"
+                          className="flex-1 px-3 py-2 border border-neutral-200 rounded-lg text-xs uppercase tracking-wider font-bold focus:outline-none focus:border-black transition-colors"
+                          autoFocus
+                        />
+                        <button
+                          onClick={handleApplyCoupon}
+                          disabled={couponLoading || !couponCode.trim()}
+                          className="px-4 py-2 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-30 flex items-center gap-1.5"
+                        >
+                          {couponLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'OK'}
+                        </button>
+                      </div>
+                      {couponError && (
+                        <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider">{couponError}</p>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

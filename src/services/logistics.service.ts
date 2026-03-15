@@ -99,6 +99,10 @@ export class LogisticsService {
         { cep: cleanCep }
       );
       if (result && typeof result.available === 'boolean') {
+        // +2 days buffer: 1 for pickup scheduling, 1 safety margin
+        if (result.option) {
+          result.option = { ...result.option, estimated_days: result.option.estimated_days + 2 };
+        }
         return result;
       }
     } catch (err) {
