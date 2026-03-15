@@ -153,6 +153,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     step,
     setStep,
     appliedCouponId: coupon.appliedCoupon?.id ?? null,
+    appliedCouponCode: coupon.appliedCoupon?.code ?? null,
   });
 
   // Payment processing

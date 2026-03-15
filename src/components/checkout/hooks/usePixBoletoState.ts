@@ -36,6 +36,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     step,
     setStep,
     appliedCouponId,
+    appliedCouponCode,
   } = params;
 
   const paymentsApi = useMemo(() => new PaymentsApi(), []);
@@ -211,6 +212,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         subtotal: subtotal,
         finalAmount: finalTotal,
         couponId: appliedCouponId ?? null,
+        couponCode: appliedCouponCode ?? null,
         cashbackUsed: cashbackUsed > 0 ? cashbackUsed : undefined,
       });
 

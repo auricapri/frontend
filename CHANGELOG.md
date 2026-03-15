@@ -5,6 +5,12 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.21] - 2026-03-15
+
+### Corrigido — CRÍTICO
+- **usePixBoletoState / ordersApi**: `couponCode` agora enviado junto com `couponId` como fallback robusto — `Coupon.id` é campo opcional (`id?: string`) e pode ser `undefined`, fazendo `?? null` enviar `null` ao backend e pular o desconto; com `couponCode` (campo obrigatório) o backend sempre consegue resolver o cupom mesmo quando o `id` está ausente
+- **types.ts / useCheckoutState**: `appliedCouponCode` propagado por todo o chain de hooks (types → usePixBoletoState → useCheckoutState)
+
 ## [1.4.20] - 2026-03-15
 
 ### Corrigido — CRÍTICO

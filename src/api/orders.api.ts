@@ -32,6 +32,7 @@ export class OrdersApi {
     subtotal: number;
     finalAmount: number;
     couponId?: string | null;
+    couponCode?: string | null;
     cashbackUsed?: number;
   }): Promise<Order> {
     const { addressData, logisticsInfo } = order;
