@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.22] - 2026-03-15
+
+### Corrigido
+- **useCheckoutTotals**: piso mínimo alterado de R$1,00 → R$5,00 — Asaas rejeita cobranças abaixo de R$5; cupons de 100% agora exibem e cobram R$5,00 (tanto `totalBeforeWallet` quanto `effectiveCouponDiscount` respeitam o novo piso)
+
 ## [1.4.21] - 2026-03-15
 
 ### Corrigido — CRÍTICO

@@ -77,8 +77,8 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
   // Total before wallet (after all unconditional discounts + shipping)
   const totalBeforeWallet = useMemo(() => {
     const raw = discountedSubtotal - pixDiscount + shippingCost;
-    // Gateway minimum: coupon-applied orders must be at least R$1.00 (Asaas rejects R$0 charges)
-    if (manualCouponDiscount > 0 && raw < 1.00) return 1.00;
+    // Gateway minimum: coupon-applied orders must be at least R$5.00 (Asaas rejects values below R$5)
+    if (manualCouponDiscount > 0 && raw < 5.00) return 5.00;
     return raw;
   }, [discountedSubtotal, pixDiscount, shippingCost, manualCouponDiscount]);
 
@@ -96,7 +96,7 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
   // e.g. 100% coupon on R$329 product with R$35 box discount → cap at R$293, not R$329
   const effectiveCouponDiscount = useMemo(() => {
     if (manualCouponDiscount <= 0) return 0;
-    const maxDiscount = Math.max(0, subtotal - bundleDiscount - quantityDiscount - 1.00);
+    const maxDiscount = Math.max(0, subtotal - bundleDiscount - quantityDiscount - 5.00);
     return Math.min(manualCouponDiscount, maxDiscount);
   }, [manualCouponDiscount, subtotal, bundleDiscount, quantityDiscount]);
 
