@@ -66,7 +66,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
             >
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                  <span className="text-xs font-medium text-neutral-400">
                     ID: {order.id.slice(0, 8)}
                   </span>
                   {order.wishlist_slug && (
@@ -80,7 +80,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                     </span>
                   )}
                 </div>
-                <h4 className="text-sm font-black font-serif uppercase tracking-tight italic">
+                <h4 className="text-sm font-semibold">
                   {new Date(order.created_at).toLocaleDateString(locale)}
                 </h4>
                 <div className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                       isCancelled ? 'bg-red-500' : isDelivered ? 'bg-green-500' : 'bg-orange-400'
                     }`}
                   />
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${isCancelled ? 'text-red-600' : 'text-neutral-600'}`}>
+                  <span className={`text-xs font-medium ${isCancelled ? 'text-red-600' : 'text-neutral-600'}`}>
                     {isCancelled ? 'Cancelado' : order.status}
                   </span>
                 </div>
@@ -108,7 +108,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                 )}
               </div>
               <div className="text-right flex items-center gap-6">
-                <span className="text-xl font-light tracking-tighter">
+                <span className="text-xl font-semibold">
                   {formatCurrency(order.total || 0, locale)}
                 </span>
                 <ChevronRight className="w-5 h-5 text-neutral-300 group-hover:translate-x-1 transition-transform" />
@@ -161,7 +161,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
             window.history.pushState({ view: 'my-returns' }, '', '/my-returns');
             window.location.href = '/my-returns';
           }}
-          className="w-full flex items-center justify-center gap-3 py-4 border border-neutral-200 rounded-[2rem] hover:bg-neutral-50 transition-all text-[10px] font-black uppercase tracking-widest group"
+          className="w-full flex items-center justify-center gap-3 py-4 border border-neutral-200 rounded-[2rem] hover:bg-neutral-50 transition-all text-sm font-medium group"
         >
           <RotateCcw className="w-4 h-4 group-hover:rotate-[-45deg] transition-transform" />
           Minhas Devolucoes

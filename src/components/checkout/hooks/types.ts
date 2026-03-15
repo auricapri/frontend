@@ -306,6 +306,7 @@ export interface UsePixBoletoStateParams {
   setStep: (step: number) => void;
   appliedCouponId?: string | null;
   appliedCouponCode?: string | null;
+  onPixPaymentConfirmed?: () => void;
 }
 
 export interface UsePixBoletoStateReturn {

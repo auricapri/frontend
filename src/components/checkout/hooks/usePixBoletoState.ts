@@ -37,6 +37,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     setStep,
     appliedCouponId,
     appliedCouponCode,
+    onPixPaymentConfirmed,
   } = params;
 
   const paymentsApi = useMemo(() => new PaymentsApi(), []);
@@ -63,6 +64,9 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
   // Stable ref to onComplete so effect doesn't restart interval on every render
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
+  // Stable ref to the post-confirmation callback (clears cart + navigates home)
+  const onPixPaymentConfirmedRef = useRef(onPixPaymentConfirmed);
+  onPixPaymentConfirmedRef.current = onPixPaymentConfirmed;
 
   // Create PIX charge - returns true if successful, false otherwise
   const createPixCharge = useCallback(async (orderId: string, customerInfo: CustomerPaymentInfo): Promise<boolean> => {
@@ -182,10 +186,15 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         if (order?.status === OrderStatus.CONFIRMED) {
           clearInterval(timer);
           setPendingPixOrderId(null);
-          const args = pixCompletionArgsRef.current;
-          if (args) {
+          // Use dedicated callback if provided (clears cart + navigates home without creating a duplicate order)
+          if (onPixPaymentConfirmedRef.current) {
             pixCompletionArgsRef.current = null;
-            onCompleteRef.current(...args);
+            onPixPaymentConfirmedRef.current();
+          } else {
+            // Fallback: call onComplete (legacy path, may create duplicate order)
+            const args = pixCompletionArgsRef.current;
+            pixCompletionArgsRef.current = null;
+            if (args) onCompleteRef.current(...args);
           }
         }
       } catch {

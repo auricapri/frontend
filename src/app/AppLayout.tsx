@@ -102,6 +102,7 @@ export function AppLayout(props: {
     handleCloseOrderResult: () => void;
     handlePlaceOrder: (...args: any[]) => Promise<void>;
     handleCheckoutIntent: () => void;
+    onRefetchStoreData: () => void;
 
     signOut: () => Promise<any>;
 
@@ -468,6 +469,11 @@ export function AppLayout(props: {
                 userMode={app.userMode}
                 onBack={() => app.onNavigate('home')}
                 onComplete={app.handlePlaceOrder}
+                onPixPaymentConfirmed={() => {
+                  app.setCartItems([]);
+                  app.onRefetchStoreData();
+                  app.onNavigate('home');
+                }}
                 locale={app.locale}
                 t={app.t}
                 products={app.products}

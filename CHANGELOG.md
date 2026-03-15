@@ -5,6 +5,15 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.25] - 2026-03-15
+
+### Corrigido
+- **usePixBoletoState.ts**: após PIX confirmado por polling, chama novo callback `onPixPaymentConfirmed` (limpa carrinho + navega para home) em vez de `onComplete` — elimina bug de pedido duplicado que ocorria quando `handlePlaceOrder` era chamado novamente após o pedido PIX já ter sido criado
+- **AppLayout.tsx**: `onPixPaymentConfirmed` definido para chamar `setCartItems([])`, `onRefetchStoreData()` e `onNavigate('home')`
+
+### Alterado
+- **OrdersTab.tsx**: fonte normalizada — removidos `font-serif`, `italic`, `font-light`, `tracking-tighter`, `font-black uppercase tracking-widest`; substituídos por `font-semibold`, `font-medium`, `text-xs` para melhor legibilidade de IDs, datas, status e valores
+
 ## [1.4.24] - 2026-03-15
 
 ### Corrigido

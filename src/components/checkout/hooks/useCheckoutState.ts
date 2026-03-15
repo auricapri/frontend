@@ -47,13 +47,14 @@ export type UseCheckoutStateParams = {
     phone?: string,
     cashbackUsed?: number
   ) => void;
+  onPixPaymentConfirmed?: () => void;
   locale: Locale;
   initialStep?: number;
   products?: Product[];
 };
 
 export function useCheckoutState(params: UseCheckoutStateParams) {
-  const { items, currentUser, storeConfig, userMode, onComplete, locale, initialStep, products = [] } = params;
+  const { items, currentUser, storeConfig, userMode, onComplete, onPixPaymentConfirmed, locale, initialStep, products = [] } = params;
 
   // Step management
   const [step, setStep] = useState(initialStep ?? 1);
@@ -154,6 +155,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     setStep,
     appliedCouponId: coupon.appliedCoupon?.id ?? null,
     appliedCouponCode: coupon.appliedCoupon?.code ?? null,
+    onPixPaymentConfirmed,
   });
 
   // Payment processing

@@ -32,6 +32,7 @@ interface CheckoutViewProps {
   initialStep?: number;
   giftDeliveryLocation?: string;
   products?: Product[];
+  onPixPaymentConfirmed?: () => void;
 }
 
 const steps = [
@@ -40,8 +41,8 @@ const steps = [
   { id: 3, title: 'Revisão', shortTitle: 'Rev.', icon: ShieldCheck },
 ] as const;
 
-const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, userMode, onBack, onComplete, locale, t: _t, initialStep, giftDeliveryLocation, products }) => {
-  const checkout = useCheckoutState({ items, currentUser, storeConfig, userMode, onComplete, locale, initialStep, products });
+const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, userMode, onBack, onComplete, onPixPaymentConfirmed, locale, t: _t, initialStep, giftDeliveryLocation, products }) => {
+  const checkout = useCheckoutState({ items, currentUser, storeConfig, userMode, onComplete, onPixPaymentConfirmed, locale, initialStep, products });
 
   return (
     <div className="min-h-screen bg-paper text-neutral-900 flex flex-col pt-16 pb-12 relative">
