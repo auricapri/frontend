@@ -166,12 +166,12 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     pixCompletionArgsRef.current = null;
   }, []);
 
-  // Poll order status every 5s after PIX is generated — calls onComplete when CONFIRMED
+  // Poll order status every 1s after PIX is generated — calls onComplete when CONFIRMED
   useEffect(() => {
     if (!pendingPixOrderId) return;
 
-    const INTERVAL_MS = 5000;
-    const MAX_POLLS = 72; // ~6 minutes
+    const INTERVAL_MS = 1000;
+    const MAX_POLLS = 600; // 10 minutes
     let count = 0;
 
     const timer = setInterval(async () => {

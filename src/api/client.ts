@@ -57,6 +57,9 @@ class ApiClient {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
       headers,
+      // Always bypass browser cache — SPA with auth tokens, stale API responses
+      // cause hard-to-debug bugs (e.g. PIX polling returning cached 'pending').
+      cache: 'no-store',
     });
 
     if (!response.ok) {

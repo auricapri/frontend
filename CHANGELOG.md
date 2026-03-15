@@ -5,6 +5,12 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.28] - 2026-03-15
+
+### Corrigido — CRÍTICO
+- **api/client.ts**: adicionado `cache: 'no-store'` em todas as requisições `fetch` — sem isso, o browser cacheava o `GET /orders/:id` e todos os polls do PIX retornavam o status `pending` antigo, impedindo que a confirmação fosse detectada
+- **usePixBoletoState.ts**: intervalo do polling PIX reduzido de 5s → 1s; limite aumentado de 72 → 600 polls (~10 minutos)
+
 ## [1.4.27] - 2026-03-15
 
 ### Corrigido
