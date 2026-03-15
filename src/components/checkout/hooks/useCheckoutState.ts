@@ -99,6 +99,8 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
         shipping.selectedVarejoShipping === 'express' &&
         shipping.expressOption
       ? shipping.expressOption.real_cost
+      : userMode !== UserMode.ATACADO && shipping.selectedVarejoCarrierOption
+      ? shipping.selectedVarejoCarrierOption.real_cost
       : 0;
 
   // Accessory bundle discount

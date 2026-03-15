@@ -5,6 +5,17 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.6] - 2026-03-15
+
+### Adicionado
+- **ShippingSelectionModal**: modal de seleção de frete exibido após confirmar endereço (VAREJO) — mostra opção grátis (PAC) + expresso + opções de transportadora da API; "Para alterar, role até embaixo"
+- **useShippingCalculation**: para VAREJO, agora também consulta `calculateShippingOptions` em paralelo — `shippingOptions` passa a conter opções pagas de transportadora; novo estado `selectedVarejoCarrierOption` + `setVarejoCarrierOption`
+- **ShippingStep (sidebar)**: VAREJO agora exibe todas as opções de transportadora além de grátis/expresso; seleção de carrier via `setVarejoCarrierOption`
+- **useCheckoutState**: `shippingCost` considera `selectedVarejoCarrierOption.real_cost` quando transportadora paga é selecionada no VAREJO
+
+### Alterado
+- **AddressStep**: botão "Confirmar e Pagar" abre `ShippingSelectionModal` para VAREJO; para ATACADO continua indo direto ao passo 2 (opções já disponíveis na sidebar)
+
 ## [1.4.5] - 2026-03-15
 
 ### Corrigido

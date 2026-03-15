@@ -33,6 +33,8 @@ const shippingMock = {
   expressOption: null,
   selectedVarejoShipping: 'free' as const,
   setSelectedVarejoShipping: vi.fn(),
+  selectedVarejoCarrierOption: null,
+  setVarejoCarrierOption: vi.fn(),
 };
 
 // ---------------------------------------------------------------------------
