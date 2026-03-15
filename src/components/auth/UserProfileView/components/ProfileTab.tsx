@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { Phone, Loader2, LogOut, Trash2 } from 'lucide-react';
 import { UserProfile } from '../../../../types';
 import { Locale } from '../../../../i18n';
-import { supabase } from '../../../../utils/supabase';
 import { maskPhone, maskCPF } from '../../../../utils/masks';
 import { ProfileFormState } from '../types';
 import { LoyaltyCard } from './LoyaltyCard';
@@ -39,8 +38,10 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    // Delegate entirely to the app-level signOut (which calls supabase.auth.signOut
+    // + clears localStorage). Calling signOut here directly AND via onLogout caused
+    // a double sign-out with two SIGNED_OUT events, triggering race conditions.
     onLogout?.();
   };
 

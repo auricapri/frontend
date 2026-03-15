@@ -2,12 +2,13 @@
 /// Full-screen overlay showing order details and tracking
 
 import React from 'react';
-import { ArrowLeft, X, Truck, Download } from 'lucide-react';
+import { ArrowLeft, X, Truck, Download, AlertTriangle } from 'lucide-react';
 import { Order } from '../../../../types';
 import { Locale } from '../../../../i18n';
 import { formatCurrency } from '../../../../utils/currency';
 import { GetLocFn } from '../types';
 import { getOptimizedImageUrl } from '../../../../utils/image';
+import { useAuthContext } from '../../../../context/AuthContext';
 
 interface OrderDetailOverlayProps {
   order: Order;
@@ -26,6 +27,9 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
   onClose,
   onViewReceipt,
 }) => {
+  const { currentUser } = useAuthContext();
+  const isCancelled = order.status?.toLowerCase() === 'cancelled';
+
   const getTrackProgress = (status?: string) => {
     const s = status?.toLowerCase();
     if (s === 'delivered' || s === 'entregue') return '100%';
@@ -53,43 +57,68 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-8 no-scrollbar space-y-12">
-        {/* Tracking Card */}
-        <div className="bg-neutral-50 p-8 rounded-[2.5rem] border border-neutral-100 space-y-8">
-          <div className="flex items-center gap-6">
-            <div className="p-4 bg-black text-white rounded-2xl">
-              <Truck className="w-6 h-6" />
+        {/* Status Card: cancellation notice or tracking */}
+        {isCancelled ? (
+          <div className="bg-red-50 border border-red-200 p-8 rounded-[2.5rem] space-y-5">
+            <div className="flex items-center gap-5">
+              <div className="p-4 bg-red-100 rounded-2xl flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <span className="text-[10px] font-medium uppercase tracking-widest text-red-400">
+                  Status do Pedido
+                </span>
+                <p className="text-sm font-bold text-red-700 uppercase tracking-tight mt-0.5">
+                  Cancelado e Reembolsado
+                </p>
+              </div>
             </div>
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                {t('auth.tracking')}
+            <p className="text-sm text-red-700 leading-relaxed">
+              Seu pedido foi cancelado e o valor pago será reembolsado automaticamente. Um de nossos colaboradores entrará em contato em breve
+              {currentUser?.email ? <> pelo <strong>e-mail {currentUser.email}</strong></> : ''}
+              {currentUser?.email && currentUser?.phone ? ' e' : ''}
+              {currentUser?.phone ? <> pelo <strong>WhatsApp {currentUser.phone}</strong></> : ''}
+              {' '}para esclarecimentos.
+            </p>
+          </div>
+        ) : (
+          <div className="bg-neutral-50 p-8 rounded-[2.5rem] border border-neutral-100 space-y-8">
+            <div className="flex items-center gap-6">
+              <div className="p-4 bg-black text-white rounded-2xl">
+                <Truck className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                  {t('auth.tracking')}
+                </span>
+                <p className="text-sm font-black uppercase tracking-tight">
+                  {order.tracking_code || 'Aguardando Despacho'}
+                </p>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="relative h-2 bg-neutral-200 rounded-full overflow-hidden">
+              <div
+                className="absolute inset-0 bg-black transition-all duration-1000"
+                style={{ width: getTrackProgress(order.status) }}
+              />
+            </div>
+
+            {/* Progress Labels */}
+            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-neutral-400">
+              <span>Processando</span>
+              <span
+                className={
+                  order.status === 'shipped' || order.status === 'delivered' ? 'text-black' : ''
+                }
+              >
+                Enviado
               </span>
-              <p className="text-sm font-black uppercase tracking-tight">
-                {order.tracking_code || 'Aguardando Despacho'}
-              </p>
+              <span className={order.status === 'delivered' ? 'text-black' : ''}>Entregue</span>
             </div>
           </div>
-
-          {/* Progress Bar */}
-          <div className="relative h-2 bg-neutral-200 rounded-full overflow-hidden">
-            <div
-              className="absolute inset-0 bg-black transition-all duration-1000"
-              style={{ width: getTrackProgress(order.status) }}
-            />
-          </div>
-
-          {/* Progress Labels */}
-          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-neutral-400">
-            <span>Processando</span>
-            <span
-              className={
-                order.status === 'shipped' || order.status === 'delivered' ? 'text-black' : ''
-              }
-            >
-              Enviado
-            </span>
-            <span className={order.status === 'delivered' ? 'text-black' : ''}>Entregue</span>
-          </div>
-        </div>
+        )}
 
         {/* Order Items */}
         <div className="space-y-6">

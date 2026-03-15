@@ -5,6 +5,14 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.27] - 2026-03-15
+
+### Corrigido
+- **useAuth.ts**: race condition que relogava o usuário após logout — adicionado contador de sequência (`seq`) no `onAuthStateChange`; fetches de perfil assíncronos descartam o resultado se um evento mais novo (ex: SIGNED_OUT) chegou enquanto o fetch estava em andamento
+- **ProfileTab.tsx**: double sign-out eliminado — removida chamada direta a `supabase.auth.signOut()` que disparava dois eventos `SIGNED_OUT` simultâneos; agora delega inteiramente ao `onLogout()` do app
+- **OrderDetailOverlay.tsx**: pedidos cancelados agora mostram card de cancelamento com mensagem de reembolso e dados de contato (e-mail/WhatsApp) em vez da barra de rastreamento "Aguardando Despacho"
+- **OrdersTab.tsx**: aviso de cancelamento no card da lista simplificado para uma linha compacta ("Cancelado e reembolsado — toque para detalhes") para evitar compressão visual
+
 ## [1.4.25] - 2026-03-15
 
 ### Corrigido

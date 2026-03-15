@@ -95,15 +95,9 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                 </div>
 
                 {isCancelled && (
-                  <div className="flex items-start gap-2 mt-3 bg-red-50 border border-red-100 rounded-xl p-3">
-                    <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-red-700 leading-relaxed">
-                      Pedido cancelado e reembolsado. Um de nossos colaboradores entrará em contato em breve
-                      {currentUser?.email ? <> pelo <strong>e-mail cadastrado</strong></> : ''}
-                      {currentUser?.email && currentUser?.phone ? ' e' : ''}
-                      {currentUser?.phone ? <> pelo <strong>WhatsApp</strong></> : ''}
-                      .
-                    </p>
+                  <div className="flex items-center gap-2 mt-2 text-red-600">
+                    <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="text-xs font-medium">Cancelado e reembolsado — toque para detalhes</span>
                   </div>
                 )}
               </div>

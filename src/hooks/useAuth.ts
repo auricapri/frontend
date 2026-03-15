@@ -14,7 +14,15 @@ export const useAuth = () => {
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
   useEffect(() => {
+    // Sequence counter: each auth event increments it. Async profile fetches
+    // capture their sequence value and discard results if a newer event has
+    // already arrived (prevents stale TOKEN_REFRESHED fetch from overwriting
+    // a SIGNED_OUT that arrived while the fetch was in-flight).
+    let seq = 0;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const mySeq = ++seq;
+
       if (session?.user) {
         const previousUid = previousUidRef.current;
         previousUidRef.current = session.user.id;
@@ -29,8 +37,13 @@ export const useAuth = () => {
             },
           });
 
+          // Discard if a newer auth event (e.g. SIGNED_OUT) arrived while fetching
+          if (mySeq !== seq) return;
+
           if (!response.ok) throw new Error(`Profile fetch failed: ${response.status}`);
           const profile = await response.json();
+
+          if (mySeq !== seq) return;
           setCurrentUser(profile as UserProfile);
 
           // Merge cart on login (fire-and-forget)
@@ -59,6 +72,7 @@ export const useAuth = () => {
             }
           }
         } catch (err) {
+          if (mySeq !== seq) return;
           logger.error('Error fetching profile', err, { context: 'useAuth' });
           // Fallback profile
           const fallback: UserProfile = {
