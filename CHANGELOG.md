@@ -5,6 +5,12 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.9] - 2026-03-15
+
+### Corrigido
+- **CreditCardForm**: redução de padding/spacing excessivo — `space-y-12` → `space-y-4`, inputs `p-4 md:p-6` → `p-3`, CardFields container `p-4 md:p-6 lg:p-8` → `p-4`, InstallmentSelector container `p-6` → `p-4`, gaps `gap-4 md:gap-6` → `gap-3`
+- **InstallmentSelector**: parcelas 4–10x agora aparecem corretamente "com taxas" (DB `payment_gateway_config` corrigido: `fee_percentage=0.0299`, `antRate=0.0199`, `max_installments=10`; antes tinha valores em % causando `feeAmount` negativo e falsamente mostrando "sem juros")
+
 ## [1.4.8] - 2026-03-15
 
 ### Corrigido
