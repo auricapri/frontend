@@ -5,6 +5,41 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.20] - 2026-03-15
+
+### Corrigido — CRÍTICO
+- **usePixBoletoState / ordersApi**: `couponId` agora é enviado ao criar o pedido — antes nunca era passado, fazendo o backend calcular sempre o preço cheio sem aplicar o desconto do cupom; cliente via PIX/boleto era cobrado o valor original mesmo com cupom ativo
+- **orders.api.ts**: adicionado `couponId?: string | null` à interface de `create()`
+- **useCheckoutState → usePixBoletoState**: `appliedCouponId: coupon.appliedCoupon?.id` propagado corretamente pelo chain de hooks
+
+## [1.4.19] - 2026-03-15
+
+### Corrigido
+- **cache.service**: versão do prefixo localStorage `v1` → `v2` — invalida cache antigo imediatamente após atualização de estoque; clientes verão dados atualizados sem precisar aguardar o TTL de 5 min
+
+### Banco de dados
+- **product_variants**: +5 `stock_quantity` em todas as 315 variantes (stock_quantity = stock_quantity + 5); mínimo agora 5, máximo 55
+- **coupons**: cupom MARCUS100 criado — 100% de desconto, ativo
+
+## [1.4.18] - 2026-03-15
+
+### Corrigido
+- **PaymentStep**: modal de aviso Asaas agora dispara ao receber `pixData` ou `boletoData` (trigger direto no dado, não em `pixReady` que exigia `qrCodeImage`) — resolve caso onde modal não abria; contador salvo em `localStorage` (`asaas_notice_count`): aparece na 1ª cobrança e a cada 3 dismissals (`count % 3 === 0`)
+
+## [1.4.17] - 2026-03-15
+
+### Adicionado
+- **PaymentStep**: modal informativo exibido automaticamente (uma vez por sessão) assim que PIX ou boleto é gerado, explicando que um e-mail de cobrança do sistema Asaas pode ter sido enviado e pode ser desconsiderado se a compra for abandonada
+
+### Corrigido
+- **CheckoutSidebar**: desconto de cupom agora exibe `effectiveCouponDiscount` (valor capeado) em vez do desconto bruto — cupom 100% não exibe mais valor maior que o subtotal, quebrando o breakdown visual; ex: produto R$329, caixa -R$35, cupom -R$293, total R$1,00
+- **useCheckoutTotals**: novo campo `effectiveCouponDiscount` = `min(manualCouponDiscount, max(0, subtotal − bundleDiscount − quantityDiscount − 1,00))` para uso exclusivo em display; `manualCouponDiscount` continua inalterado internamente para os cálculos de `discountedSubtotal`
+
+## [1.4.16] - 2026-03-15
+
+### Corrigido
+- **PaymentStep**: botão "Revisar Pedido" voltava a aparecer quando cartão era selecionado após PIX/boleto gerado — condição `(pixReady || boletoReady)` agora também verifica `paymentMethod !== CREDIT_CARD`
+
 ## [1.4.15] - 2026-03-15
 
 ### Corrigido

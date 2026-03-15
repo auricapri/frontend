@@ -92,6 +92,14 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
     return Math.max(0, totalBeforeWallet - cashbackUsed);
   }, [totalBeforeWallet, cashbackUsed]);
 
+  // Capped coupon for display only — prevents sidebar showing a coupon larger than what's left
+  // e.g. 100% coupon on R$329 product with R$35 box discount → cap at R$293, not R$329
+  const effectiveCouponDiscount = useMemo(() => {
+    if (manualCouponDiscount <= 0) return 0;
+    const maxDiscount = Math.max(0, subtotal - bundleDiscount - quantityDiscount - 1.00);
+    return Math.min(manualCouponDiscount, maxDiscount);
+  }, [manualCouponDiscount, subtotal, bundleDiscount, quantityDiscount]);
+
   return {
     subtotal,
     originalSubtotal,
@@ -103,5 +111,6 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
     totalBeforeWallet,
     cashbackUsed,
     finalTotal,
+    effectiveCouponDiscount,
   };
 }
