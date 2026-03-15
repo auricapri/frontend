@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.34] - 2026-03-15
+
+### Corrigido
+- **usePixBoletoState.ts**: email do cliente para pagamento usava apenas `currentUser.email` (tabela `profiles`), que pode estar vazio em perfis antigos; corrigido para usar `session.user.email` como fallback garantido (sempre preenchido pela autenticação Supabase) — resolve erro "informe o email do titular" ao pagar no cartão
+
 ## [1.4.33] - 2026-03-15
 
 ### Corrigido — CRÍTICO

@@ -317,9 +317,11 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
       }
 
       // 2. Build customer info for payment
+      // Email: profile tem prioridade, mas session.user.email é fallback garantido
+      const email = currentUser?.email || session.user.email || '';
       const customerInfo: CustomerPaymentInfo = {
-        name: currentUser?.full_name || '',
-        email: currentUser?.email || '',
+        name: currentUser?.full_name || session.user.user_metadata?.full_name || '',
+        email,
         cpfCnpj: cpfToUse.replace(/\D/g, ''),
         phone: phone.replace(/\D/g, ''),
         postalCode: address.cep?.replace(/\D/g, '') || '',
