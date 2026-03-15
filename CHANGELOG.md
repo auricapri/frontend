@@ -5,6 +5,12 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.24] - 2026-03-15
+
+### Corrigido
+- **OrderReceipt.tsx**: status "Confirmado" estava hardcoded — agora exibe status real do pedido; cancelado mostra vermelho com banner de aviso informando reembolso e que um colaborador entrará em contato pelo e-mail e/ou WhatsApp cadastrado
+- **OrdersTab.tsx**: ponto de status cancelado agora aparece vermelho (antes laranja igual a "pendente"); adicionado banner inline com mensagem de contato pós-cancelamento
+
 ## [1.4.23] - 2026-03-15
 
 ### Corrigido — CRÍTICO

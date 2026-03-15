@@ -2,8 +2,9 @@
 /// Displays order history with review buttons
 
 import React from 'react';
-import { Loader2, ShoppingBag, ChevronRight, Star, DollarSign, RotateCcw } from 'lucide-react';
+import { Loader2, ShoppingBag, ChevronRight, Star, DollarSign, RotateCcw, AlertTriangle } from 'lucide-react';
 import { Order } from '../../../../types';
+import { useAuthContext } from '../../../../context/AuthContext';
 import { Locale } from '../../../../i18n';
 import { formatCurrency } from '../../../../utils/currency';
 import { OrdersState } from '../types';
@@ -24,6 +25,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
   onSelectOrder,
 }) => {
   const { orders, loading, orderReviews } = ordersState;
+  const { currentUser } = useAuthContext();
 
   if (loading) {
     return (
@@ -50,6 +52,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
       {orders.map(order => {
         const orderStatus = order.status?.toLowerCase();
         const isDelivered = orderStatus === 'delivered' || orderStatus === 'entregue';
+        const isCancelled = orderStatus === 'cancelled';
         const hasReview = orderReviews[order.id] || false;
 
         return (
@@ -83,13 +86,26 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                 <div className="flex items-center gap-2">
                   <div
                     className={`w-2 h-2 rounded-full ${
-                      isDelivered ? 'bg-green-500' : 'bg-orange-400'
+                      isCancelled ? 'bg-red-500' : isDelivered ? 'bg-green-500' : 'bg-orange-400'
                     }`}
                   />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-600">
-                    {order.status}
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${isCancelled ? 'text-red-600' : 'text-neutral-600'}`}>
+                    {isCancelled ? 'Cancelado' : order.status}
                   </span>
                 </div>
+
+                {isCancelled && (
+                  <div className="flex items-start gap-2 mt-3 bg-red-50 border border-red-100 rounded-xl p-3">
+                    <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-red-700 leading-relaxed">
+                      Pedido cancelado e reembolsado. Um de nossos colaboradores entrará em contato em breve
+                      {currentUser?.email ? <> pelo <strong>e-mail cadastrado</strong></> : ''}
+                      {currentUser?.email && currentUser?.phone ? ' e' : ''}
+                      {currentUser?.phone ? <> pelo <strong>WhatsApp</strong></> : ''}
+                      .
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="text-right flex items-center gap-6">
                 <span className="text-xl font-light tracking-tighter">

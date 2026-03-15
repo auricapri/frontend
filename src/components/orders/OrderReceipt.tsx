@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Download, MessageCircle, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Download, MessageCircle, Check, Loader2, X, AlertTriangle } from 'lucide-react';
 import { Order, OrderItem, OrderReview } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
@@ -179,11 +179,33 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
             </div>
             <div className="flex justify-between">
                <span className="uppercase font-bold text-neutral-400 print:text-black">STATUS</span>
-               <div className="flex items-center gap-1.5 text-green-600 font-bold uppercase print:text-black">
-                  <Check className="w-3 h-3" /> Confirmado
-               </div>
+               {order.status === OrderStatus.CANCELLED ? (
+                 <div className="flex items-center gap-1.5 text-red-600 font-bold uppercase print:text-black">
+                   <X className="w-3 h-3" /> Cancelado
+                 </div>
+               ) : (
+                 <div className="flex items-center gap-1.5 text-green-600 font-bold uppercase print:text-black">
+                   <Check className="w-3 h-3" /> {order.status === OrderStatus.PENDING ? 'Pendente' : 'Confirmado'}
+                 </div>
+               )}
             </div>
          </div>
+
+         {order.status === OrderStatus.CANCELLED && (
+           <div className="bg-red-50 border border-red-200 rounded-xl p-5 mb-6 flex gap-3 items-start no-print">
+             <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+             <div className="space-y-1">
+               <p className="text-sm font-bold text-red-800">Pedido cancelado e reembolsado</p>
+               <p className="text-xs text-red-700 leading-relaxed">
+                 Um de nossos colaboradores entrará em contato em breve
+                 {currentUser?.email ? <> pelo <strong>e-mail {currentUser.email}</strong></> : ''}
+                 {currentUser?.email && currentUser?.phone ? ' e' : ''}
+                 {currentUser?.phone ? <> pelo <strong>WhatsApp {currentUser.phone}</strong></> : ''}
+                 {' '}para esclarecimentos.
+               </p>
+             </div>
+           </div>
+         )}
 
          <div className="border-b border-dashed border-neutral-300 mb-8 opacity-50 print:opacity-100 print:border-black"></div>
 
