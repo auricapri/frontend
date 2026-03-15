@@ -43,11 +43,11 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
       <header className="h-24 px-8 flex items-center justify-between border-b border-neutral-100">
         <button
           onClick={onClose}
-          className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-black"
+          className="flex items-center gap-3 text-sm font-medium text-neutral-400 hover:text-black"
         >
           <ArrowLeft className="w-4 h-4" /> {t('nav.back')}
         </button>
-        <h4 className="text-sm font-black font-serif uppercase tracking-tight italic">
+        <h4 className="text-sm font-semibold">
           Pedido {order.id.slice(0, 8)}
         </h4>
         <button onClick={onClose} className="p-3 bg-neutral-50 rounded-full">
@@ -65,10 +65,10 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
                 <AlertTriangle className="w-6 h-6 text-red-600" />
               </div>
               <div>
-                <span className="text-[10px] font-medium uppercase tracking-widest text-red-400">
+                <span className="text-xs font-medium text-red-400">
                   Status do Pedido
                 </span>
-                <p className="text-sm font-bold text-red-700 uppercase tracking-tight mt-0.5">
+                <p className="text-sm font-semibold text-red-700 mt-0.5">
                   Cancelado e Reembolsado
                 </p>
               </div>
@@ -88,10 +88,10 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
                 <Truck className="w-6 h-6" />
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                <span className="text-xs font-medium text-neutral-500">
                   {t('auth.tracking')}
                 </span>
-                <p className="text-sm font-black uppercase tracking-tight">
+                <p className="text-sm font-semibold">
                   {order.tracking_code || 'Aguardando Despacho'}
                 </p>
               </div>
@@ -106,7 +106,7 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
             </div>
 
             {/* Progress Labels */}
-            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-neutral-400">
+            <div className="flex justify-between text-xs font-medium text-neutral-400">
               <span>Processando</span>
               <span
                 className={
@@ -122,7 +122,7 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
 
         {/* Order Items */}
         <div className="space-y-6">
-          <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-300 px-2">
+          <h5 className="text-xs font-semibold text-neutral-400 px-2">
             Itens do Pedido
           </h5>
           {(order.items || []).map(item => (
@@ -138,16 +138,16 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
                 decoding="async"
               />
               <div className="flex-1">
-                <h6 className="text-[11px] font-black uppercase tracking-tight">
+                <h6 className="text-sm font-semibold">
                   {getLoc(item.name)}
                 </h6>
-                <p className="text-[10px] text-neutral-400 uppercase font-bold tracking-widest mt-1">
+                <p className="text-xs text-neutral-400 mt-1">
                   {getLoc(item.color_name)} | {item.size}
                 </p>
-                <p className="text-[10px] font-black mt-1">Qtd: {item.quantity}</p>
+                <p className="text-xs font-medium text-neutral-500 mt-1">Qtd: {item.quantity}</p>
               </div>
               <div className="flex flex-col items-end gap-3">
-                <span className="text-sm font-black tracking-tighter">
+                <span className="text-sm font-semibold">
                   {formatCurrency(item.price * item.quantity, locale)}
                 </span>
               </div>
@@ -157,16 +157,16 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
 
         {/* Total and Receipt */}
         <div className="pt-8 border-t border-neutral-100 space-y-6">
-          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-neutral-400">
-            <span>Total Pago</span>
-            <span className="text-xl text-black font-light tracking-tighter">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium text-neutral-500">Total Pago</span>
+            <span className="text-xl text-black font-semibold">
               {formatCurrency(order.total || 0, locale)}
             </span>
           </div>
 
           <button
             onClick={onViewReceipt}
-            className="w-full py-5 border border-neutral-200 rounded-[2rem] flex items-center justify-center gap-3 hover:bg-neutral-50 transition-all text-[10px] font-black uppercase tracking-widest group"
+            className="w-full py-5 border border-neutral-200 rounded-[2rem] flex items-center justify-center gap-3 hover:bg-neutral-50 transition-all text-sm font-medium group"
           >
             <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
             Baixar Comprovante Fiscal

@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.30] - 2026-03-15
+
+### Corrigido
+- **OrderDetailOverlay.tsx**: fonte normalizada em todo o overlay de detalhe do pedido — removidos `font-black`, `font-serif`, `italic`, `tracking-widest`, `tracking-tight`, `tracking-tighter`, `uppercase` nos textos de conteúdo; substituídos por `font-semibold`/`font-medium` com tamanhos legíveis
+
 ## [1.4.29] - 2026-03-15
 
 ### Adicionado
