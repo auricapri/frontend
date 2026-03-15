@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.14] - 2026-03-15
+
+### Corrigido
+- **CartDrawer**: `finalTotal` agora respeita o mínimo de R$1,00 quando cupom está aplicado — antes mostrava R$0,00 para cupons 100% (ex: MADRINHA100); mesma regra do checkout e do backend
+
 ## [1.4.13] - 2026-03-15
 
 ### Corrigido
