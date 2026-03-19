@@ -72,7 +72,14 @@ export const useAuth = () => {
             }
           }
         } catch (err) {
-          if (mySeq !== seq) return;
+          if (mySeq !== seq) {
+            // Stale event: a newer auth event fired while we were fetching.
+            // That newer event will call setIsLoading(false) itself — but we
+            // must also clear loading here to avoid it staying true indefinitely
+            // if the newer event's own fetch also fails with a stale check.
+            setIsLoading(false);
+            return;
+          }
           logger.error('Error fetching profile', err, { context: 'useAuth' });
           // Fallback profile
           const fallback: UserProfile = {

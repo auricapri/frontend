@@ -5,6 +5,17 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.37] - 2026-03-19
+
+### Corrigido — CRÍTICO
+- **usePixBoletoState.ts**: pedido duplicado em checkout com cupom 100% (finalTotal=0) — `onComplete` (= `handlePlaceOrder`) era chamado após o pedido já ter sido criado; corrigido para usar `onPixPaymentConfirmedRef` quando disponível, evitando segunda chamada a `ordersApi.create()`
+- **useAuth.ts**: `isLoading` ficava preso em `true` quando profile fetch falha com evento de auth mais recente já em fila — `setIsLoading(false)` agora é chamado antes do early return no catch
+- **useCheckoutState.ts**: `new LogisticsService()` era instanciado a cada render, causando recriação de `calculateLogisticsImmediate` e chamadas excessivas à API de frete — corrigido com `useMemo`
+- **useWishlist.ts**: `new WishlistApi()` era instanciado a cada render com closure stale no `useEffect` — corrigido com `useRef`
+- **useAddressState.ts**: fetch ao ViaCEP sem `AbortController` no `useEffect` causava setState em componente desmontado — adicionado `controller.abort()` no cleanup
+- **useCart.ts**: `cart_token` da URL era validado apenas pelo prefixo `cs_`; adicionada regex `/^cs_[a-zA-Z0-9_-]{10,64}$/` e `encodeURIComponent` para prevenir path traversal
+- **usePixBoletoState.ts**: polling PIX sem guard de desmontagem permitia chamadas de estado após unmount; `fallbackTimer` referenciado antes de declaração (TDZ frágil); intervalo fixo de 1s/600 polls gerava carga excessiva — refatorado para backoff exponencial (2s→10s, 120 polls), guard `cancelled`, fallbackTimer declarado antes do timer principal
+
 ## [1.4.36] - 2026-03-19
 
 ### Adicionado

@@ -175,16 +175,19 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     pixCompletionArgsRef.current = null;
   }, []);
 
-  // Poll order status every 1s after PIX is generated — calls onComplete when CONFIRMED
+  // Poll order status after PIX is generated — calls onComplete when CONFIRMED.
+  // Primary poll uses exponential backoff (2s → 4s → ... capped at 10s).
+  // Fallback poll queries Asaas directly every 30s as self-heal when webhook fails.
   useEffect(() => {
     if (!pendingPixOrderId) return;
 
-    const INTERVAL_MS = 1000;
-    const FALLBACK_INTERVAL_MS = 30000; // 30s — verify directly on Asaas
-    const MAX_POLLS = 600; // 10 minutes
+    const FALLBACK_INTERVAL_MS = 30000;
+    const MAX_POLLS = 120; // ~10 minutes at avg 5s interval
     let count = 0;
+    let cancelled = false;
 
     const handleConfirmed = () => {
+      if (cancelled) return;
       setPendingPixOrderId(null);
       if (onPixPaymentConfirmedRef.current) {
         pixCompletionArgsRef.current = null;
@@ -196,35 +199,16 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
       }
     };
 
-    // Primary poll: check order status in DB (updated by webhook)
-    const timer = setInterval(async () => {
-      count++;
-      if (count > MAX_POLLS) {
-        clearInterval(timer);
-        setPendingPixOrderId(null);
-        return;
-      }
-      try {
-        const order = await ordersApi.getById(pendingPixOrderId);
-        if (order?.status === OrderStatus.CONFIRMED) {
-          clearInterval(timer);
-          clearInterval(fallbackTimer);
-          handleConfirmed();
-        }
-      } catch {
-        // Ignore transient errors — will retry on next tick
-      }
-    }, INTERVAL_MS);
-
-    // Fallback poll: query Asaas directly every 30s (self-heals when webhook fails)
+    // Fallback poll declared first so primary timer callback can reference it safely
     const fallbackTimer = setInterval(async () => {
+      if (cancelled) return;
       try {
         const { apiClient } = await import('../../../api/client');
         const result = await apiClient.get<{ orderStatus: string; confirmed: boolean }>(
           `/payments/pix-verify/${pendingPixOrderId}`
         );
         if (result.confirmed) {
-          clearInterval(timer);
+          clearInterval(primaryTimer);
           clearInterval(fallbackTimer);
           handleConfirmed();
         }
@@ -233,8 +217,41 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
       }
     }, FALLBACK_INTERVAL_MS);
 
+    // Primary poll: exponential backoff starting at 2s, capped at 10s
+    let currentInterval = 2000;
+    let primaryTimer: ReturnType<typeof setTimeout>;
+
+    const schedulePoll = () => {
+      primaryTimer = setTimeout(async () => {
+        if (cancelled) return;
+        count++;
+        if (count > MAX_POLLS) {
+          clearInterval(fallbackTimer);
+          if (!cancelled) setPendingPixOrderId(null);
+          return;
+        }
+        try {
+          const order = await ordersApi.getById(pendingPixOrderId);
+          if (order?.status === OrderStatus.CONFIRMED) {
+            clearInterval(fallbackTimer);
+            handleConfirmed();
+            return;
+          }
+        } catch {
+          // Ignore transient errors — will retry on next tick
+        }
+        if (!cancelled) {
+          currentInterval = Math.min(currentInterval * 1.5, 10000);
+          schedulePoll();
+        }
+      }, currentInterval);
+    };
+
+    schedulePoll();
+
     return () => {
-      clearInterval(timer);
+      cancelled = true;
+      clearTimeout(primaryTimer);
       clearInterval(fallbackTimer);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -329,9 +346,15 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         addressComplement: complement || undefined,
       };
 
-      // If total is 0 (100% coupon + free shipping), skip payment creation entirely
+      // If total is 0 (100% coupon + free shipping), skip payment creation entirely.
+      // Use onPixPaymentConfirmed if available to avoid calling onComplete (= handlePlaceOrder),
+      // which would create a second order — the order was already created above.
       if (finalTotal <= 0) {
-        onComplete(finalAddress, shippingToUse, effectivePaymentMethod, 0, saveCardForFuture, undefined, phone, cashbackUsed);
+        if (onPixPaymentConfirmedRef.current) {
+          onPixPaymentConfirmedRef.current();
+        } else {
+          onComplete(finalAddress, shippingToUse, effectivePaymentMethod, 0, saveCardForFuture, undefined, phone, cashbackUsed);
+        }
         return order;
       }
 

@@ -61,8 +61,8 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CREDIT_CARD);
   const [useCashback, setUseCashback] = useState(false);
 
-  // Logistics service
-  const logisticsService = new LogisticsService();
+  // Logistics service — stable reference to avoid recreating shipping callbacks on every render
+  const logisticsService = useMemo(() => new LogisticsService(), []);
 
   // Compose hooks - shipping first as other hooks depend on it
   const shipping = useShippingCalculation({ logisticsService, userMode, address: null });

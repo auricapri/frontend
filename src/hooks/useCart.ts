@@ -96,9 +96,10 @@ export const useCart = (products: Product[], assets: Asset[]) => {
     const params = new URLSearchParams(window.location.search);
     const cartToken = params.get('cart_token');
 
-    if (cartToken && cartToken.startsWith('cs_')) {
+    const CART_TOKEN_REGEX = /^cs_[a-zA-Z0-9_-]{10,64}$/;
+    if (cartToken && CART_TOKEN_REGEX.test(cartToken)) {
       const tokenApi = new CartApi();
-      tokenApi.loadCartByToken(cartToken)
+      tokenApi.loadCartByToken(encodeURIComponent(cartToken))
         .then(session => {
           if (session.items && session.items.length > 0) {
             setCartItems(session.items);

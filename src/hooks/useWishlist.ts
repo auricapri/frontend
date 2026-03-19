@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { WishlistApi } from '../api/wishlist.api';
 
 export const useWishlist = (userId?: string) => {
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
-  const wishlistApi = new WishlistApi();
+  const wishlistApi = useRef(new WishlistApi()).current;
 
   useEffect(() => {
     if (!userId) {

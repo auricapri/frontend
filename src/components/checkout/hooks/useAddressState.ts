@@ -307,9 +307,10 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
       !loadingCep &&
       addressLoaded
     ) {
+      const controller = new AbortController();
       setLoadingCep(true);
 
-      fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`)
+      fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`, { signal: controller.signal })
         .then(res => res.json())
         .then(data => {
           if (data.erro) {
@@ -330,12 +331,15 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
           // Calculate shipping
           shipping.calculateLogistics(cleanedCep);
         })
-        .catch(() => {
+        .catch(err => {
+          if (err?.name === 'AbortError') return;
           setCepError('Erro ao consultar CEP');
         })
         .finally(() => {
           setLoadingCep(false);
         });
+
+      return () => controller.abort();
     }
   }, [cep, address?.logradouro, address?.bairro, loadingCep, addressLoaded, shipping]);
 
