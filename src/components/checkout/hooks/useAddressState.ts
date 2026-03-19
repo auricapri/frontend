@@ -157,7 +157,7 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
         shipping.calculateLogistics(cleanedCep);
       }
     }
-  }, [userAddresses, shipping]);
+  }, [userAddresses, shipping.calculateLogistics, shipping.resetShipping]);
 
   // Load WhatsApp prefill data on mount (if no logged-in user with default address)
   useEffect(() => {
@@ -205,7 +205,7 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
     } catch {
       // Ignore parse errors
     }
-  }, [address, addressLoaded, hasUserEditedCep, currentUser?.default_address, shipping]);
+  }, [address, addressLoaded, hasUserEditedCep, currentUser?.default_address, shipping.calculateLogistics, shipping.resetShipping]);
 
   // Load default address on mount
   useEffect(() => {
@@ -291,7 +291,7 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
         }, 100);
       }
     }
-  }, [address, addressLoaded, currentUser?.default_address, hasUserEditedCep, shipping]);
+  }, [address, addressLoaded, currentUser?.default_address, hasUserEditedCep, shipping.calculateLogistics]);
 
   // Effect to lookup ViaCEP when CEP is programmatically set but address is incomplete
   useEffect(() => {
@@ -310,11 +310,10 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
       !viaCepAutoLoadingRef.current &&  // use ref — NOT loadingCep state (would cause cleanup loop)
       addressLoaded
     ) {
-      const controller = new AbortController();
+      // Auto-lookup runs silently — no loadingCep/overlay (user never typed this CEP)
       viaCepAutoLoadingRef.current = true;
-      setLoadingCep(true);
 
-      fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`, { signal: controller.signal })
+      fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`)
         .then(res => res.json())
         .then(data => {
           if (data.erro) {
@@ -338,15 +337,13 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
         })
         .finally(() => {
           viaCepAutoLoadingRef.current = false;
-          setLoadingCep(false);
         });
-
-      return () => controller.abort();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   // loadingCep omitido intencionalmente — substituído por viaCepAutoLoadingRef para evitar
   // cleanup loop: setLoadingCep(true) → re-render → cleanup abort → finally setLoadingCep(false) → loop
-  }, [cep, address?.logradouro, address?.bairro, addressLoaded, shipping]);
+  // shipping omitido — apenas shipping.calculateLogistics é usado, e é estável após fix do shippingDisplayRef
+  }, [cep, address?.logradouro, address?.bairro, addressLoaded, shipping.calculateLogistics]);
 
   // Handle CEP change with debounce and ViaCEP lookup
   const handleCepChange = useCallback((val: string) => {
@@ -453,7 +450,7 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
         }
       }, 500);
     }
-  }, [selectedAddressId, address, shipping]);
+  }, [selectedAddressId, address, shipping.calculateLogistics, shipping.resetShipping]);
 
   return {
     // CEP state

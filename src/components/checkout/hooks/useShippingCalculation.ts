@@ -75,6 +75,9 @@ export function useShippingCalculation(params: {
   // Holds the free shipping InternalLogisticsInfo so we can restore it when switching back
   const freeShippingInfoRef = useRef<InternalLogisticsInfo | null>(null);
 
+  // Ref mirrors shippingDisplay so calculateLogisticsImmediate can guard without being in deps
+  const shippingDisplayRef = useRef<ShippingDisplay>(null);
+
   // Refs para debounce
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastCepRef = useRef<string>('');
@@ -113,7 +116,7 @@ export function useShippingCalculation(params: {
       const cleanedCep = destCep.replace(/\D/g, '');
 
       // Evita recálculo se o CEP não mudou
-      if (cleanedCep === lastCepRef.current && shippingDisplay !== null) {
+      if (cleanedCep === lastCepRef.current && shippingDisplayRef.current !== null) {
         return;
       }
       lastCepRef.current = cleanedCep;
@@ -127,6 +130,7 @@ export function useShippingCalculation(params: {
           display_price_was: 0,
           display_days_was: 0,
         });
+        shippingDisplayRef.current = null;
         setShippingDisplay(null);
         setShippingOptions([]);
         setSelectedShippingOption(null);
@@ -141,6 +145,7 @@ export function useShippingCalculation(params: {
       // Verifica cache
       const cached = getCachedResult(cleanedCep, userMode);
       if (cached) {
+        shippingDisplayRef.current = cached.shippingDisplay;
         setShippingDisplay(cached.shippingDisplay);
         setBestInternalShipping(cached.bestInternalShipping);
         setShippingOptions(cached.shippingOptions);
@@ -154,6 +159,7 @@ export function useShippingCalculation(params: {
       }
 
       setCalculatingShipping(true);
+      shippingDisplayRef.current = null;
       setShippingDisplay(null);
       setBestInternalShipping(null);
       setShippingOptions([]);
@@ -228,6 +234,7 @@ export function useShippingCalculation(params: {
         freeShippingInfoRef.current = resultBestInternalShipping;
 
         // Atualiza estados
+        shippingDisplayRef.current = resultShippingDisplay;
         setShippingDisplay(resultShippingDisplay);
         setBestInternalShipping(resultBestInternalShipping);
         setShippingOptions(resultShippingOptions);
@@ -255,7 +262,9 @@ export function useShippingCalculation(params: {
         setCalculatingShipping(false);
       }
     },
-    [address, logisticsService, userMode, shippingDisplay]
+    // shippingDisplay removed — replaced by shippingDisplayRef to avoid recreating on every display update
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [address, logisticsService, userMode]
   );
 
   // Função com debounce de 500ms
@@ -296,6 +305,7 @@ export function useShippingCalculation(params: {
   );
 
   const resetShipping = useCallback(() => {
+    shippingDisplayRef.current = null;
     setShippingDisplay(null);
     setBestInternalShipping(null);
     setShippingOptions([]);

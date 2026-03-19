@@ -5,6 +5,17 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.40] - 2026-03-19
+
+### Corrigido
+- **useAddressState.ts**: auto-lookup de CEP (para endereços salvos sem bairro) exibia o overlay full-screen "Buscando Endereço" de forma indevida — o usuário nunca digitou o CEP, então o loading deve ser silencioso; corrigido removendo `setLoadingCep(true/false)` e o `AbortController` do effect de auto-lookup; `viaCepAutoLoadingRef` continua guardando o estado de loading para prevenir chamadas duplicadas; o overlay agora aparece **apenas** em lookups iniciados pelo usuário via `handleCepChange`
+
+## [1.4.39] - 2026-03-19
+
+### Corrigido
+- **useShippingCalculation.ts**: `calculateLogisticsImmediate` tinha `shippingDisplay` no array de deps do `useCallback` — cada atualização de frete recriava a função, cascateando para `calculateLogistics` e gerando um novo objeto `shipping` a cada render; corrigido com `shippingDisplayRef` (ref que espelha o estado) eliminando `shippingDisplay` dos deps
+- **useAddressState.ts**: todos os `useEffect` e `useCallback` tinham o objeto `shipping` inteiro nos deps — como `shipping` é um novo objeto literal a cada render, todos esses effects re-executavam desnecessariamente após cada atualização de frete, causando flickering ao entrar no checkout; corrigido substituindo `shipping` por `shipping.calculateLogistics` / `shipping.resetShipping` (referências estáveis após fix acima)
+
 ## [1.4.38] - 2026-03-19
 
 ### Corrigido — URGENTE
