@@ -217,7 +217,9 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
       }
     }, FALLBACK_INTERVAL_MS);
 
-    // Primary poll: exponential backoff starting at 2s, capped at 10s
+    // Primary poll: gentle backoff starting at 2s, capped at 5s
+    // Growth factor 1.2x: 2s → 2.4s → 2.9s → 3.5s → 4.2s → 5s (cap)
+    // ~60% fewer requests than fixed 1s while still feeling near-instant to the user
     let currentInterval = 2000;
     let primaryTimer: ReturnType<typeof setTimeout>;
 
@@ -241,7 +243,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
           // Ignore transient errors — will retry on next tick
         }
         if (!cancelled) {
-          currentInterval = Math.min(currentInterval * 1.5, 10000);
+          currentInterval = Math.min(currentInterval * 1.2, 5000);
           schedulePoll();
         }
       }, currentInterval);
