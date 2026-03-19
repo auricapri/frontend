@@ -18,6 +18,7 @@ const OrderReceipt = React.lazy(() => import('../components/orders/OrderReceipt'
 const SharedWishlistPage = React.lazy(() => import('../pages/SharedWishlistPage'));
 const SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').then(m => ({ default: m.SearchResultsPage })));
 const MyReturnsPage = React.lazy(() => import('../pages/MyReturnsPage').then(m => ({ default: m.MyReturnsPage })));
+const MyOrdersPage = React.lazy(() => import('../pages/MyOrdersPage').then(m => ({ default: m.MyOrdersPage })));
 const ReturnRequestForm = React.lazy(() => import('../components/returns/ReturnRequestForm'));
 const AffiliatePage = React.lazy(() => import('../pages/AffiliatePage').then(m => ({ default: m.AffiliatePage })));
 const AuthDrawer = React.lazy(() => import('../components/auth/AuthDrawer'));
@@ -132,6 +133,18 @@ export function AppRouter(props: {
           locale={app.locale}
           onBack={() => app.onNavigate('home')}
           onRequestReturn={() => app.onNavigate('request-return')}
+        />
+      </Suspense>
+    );
+  }
+
+  if (app.currentView === 'my-orders') {
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <MyOrdersPage
+          locale={app.locale}
+          onNavigate={app.onNavigate}
+          onOpenAuth={() => app.setIsAuthOpen(true)}
         />
       </Suspense>
     );

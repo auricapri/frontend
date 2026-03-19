@@ -16,6 +16,7 @@ interface CartContextType {
   error: string | null;
   refreshCart: () => Promise<void>;
   syncCartToServer: () => Promise<{ success: boolean; error?: string }>;
+  mergeFromServer: () => Promise<void>;
   needsServerSync: boolean;
 }
 
@@ -38,9 +39,10 @@ interface CartProviderProps {
 export const CartProvider: React.FC<CartProviderProps> = ({ children, products, assets }) => {
   const cart = useCart(products, assets);
 
-  // Listen for cart merge event after login
+  // Listen for cart merge event after login.
+  // Use mergeFromServer so local items (added as guest) take precedence over server items.
   const handleCartMerged = useCallback(() => {
-    cart.refreshCart();
+    cart.mergeFromServer();
   }, [cart]);
 
   useEffect(() => {

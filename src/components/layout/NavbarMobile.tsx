@@ -18,7 +18,7 @@ export interface NavbarMobileProps {
   currentUser?: UserProfile | null;
   userMode: UserMode;
   onToggleMode: () => void;
-  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery', target?: string) => void;
+  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery' | 'my-orders', target?: string) => void;
   onOpenAuth: () => void;
   onOpenWishlist: () => void;
   onOpenCoupons: () => void;
@@ -51,7 +51,7 @@ export const NavbarMobile: React.FC<NavbarMobileProps> = ({
   const getLoc = React.useMemo(() => createGetLoc(currentLocale), [currentLocale]);
 
   const handleNav = useCallback(
-    (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery', target?: string) => {
+    (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery' | 'my-orders', target?: string) => {
       onNavigate(view, target);
       onClose();
     },
@@ -79,7 +79,7 @@ export const NavbarMobile: React.FC<NavbarMobileProps> = ({
 
   const handleMyOrders = useCallback(() => {
     onClose();
-    onNavigate('my-orders' as any);
+    onNavigate('my-orders');
   }, [onClose, onNavigate]);
 
   const handleWishlist = useCallback(() => {

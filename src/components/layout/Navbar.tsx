@@ -17,7 +17,7 @@ interface NavbarProps {
   onLogout?: () => void;
   userMode: UserMode;
   onToggleMode: () => void;
-  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery', target?: string) => void;
+  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery' | 'my-orders', target?: string) => void;
   isScrolled: boolean;
   isProductView?: boolean;
   onBack?: () => void;
@@ -77,7 +77,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const topOffset = showTestBanner ? 'top-20' : 'top-8';
 
   const handleNav = useCallback(
-    (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery', target?: string) => {
+    (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery' | 'my-orders', target?: string) => {
       onNavigate(view, target);
       setIsMenuOpen(false);
     },

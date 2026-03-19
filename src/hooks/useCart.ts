@@ -247,6 +247,23 @@ export const useCart = (products: Product[], assets: Asset[]) => {
     }
   }, [cartItems, cartApi]);
 
+  // Called after login cart merge: adds server-only items without overwriting local ones.
+  // Local cart is the source of truth for items added this session.
+  const mergeFromServer = useCallback(async () => {
+    try {
+      const serverCart = await cartApi.getCart();
+      if (!serverCart.items || serverCart.items.length === 0) return;
+      setCartItems(prev => {
+        const localVariantIds = new Set(prev.map(i => i.variant_id));
+        const newItems = serverCart.items.filter(i => !localVariantIds.has(i.variant_id));
+        if (newItems.length === 0) return prev;
+        return [...prev, ...newItems];
+      });
+    } catch (err) {
+      logger.warn('mergeFromServer failed, keeping local cart', err, { context: 'useCart' });
+    }
+  }, [cartApi]);
+
   const validateStock = useCallback((): { valid: boolean; error?: string } => {
     return cartService.validateStock(cartItems, products, assets);
   }, [cartItems, products, assets, cartService]);
@@ -269,6 +286,7 @@ export const useCart = (products: Product[], assets: Asset[]) => {
     error,
     refreshCart: loadCart,
     syncCartToServer,
+    mergeFromServer,
     needsServerSync,
   };
 };

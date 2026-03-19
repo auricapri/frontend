@@ -5,6 +5,18 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.36] - 2026-03-19
+
+### Adicionado
+- **MyOrdersPage.tsx**: nova página `/meus-pedidos` com histórico de pedidos do cliente autenticado; exibe status com badge colorido, total, data e atalho para avaliação (pedidos entregues); redireciona para login se não autenticado
+- **AppRouter.tsx**: rota `my-orders` com lazy load para `MyOrdersPage`
+- **useNavigation.ts**: view `my-orders` adicionada ao tipo `AppView`; mapeamento `/meus-pedidos` ↔ `my-orders`
+
+### Corrigido
+- **useCart.ts**: adicionado método `mergeFromServer` — após login, carrinho local é mantido como fonte de verdade; itens do servidor com `variant_id` diferente são adicionados sem sobrescrever os locais; resolve bug onde variante/imagem do produto era resetada após login de usuário não autenticado
+- **CartContext.tsx**: evento `cart-merged` agora chama `mergeFromServer` em vez de `refreshCart`, preservando o estado local do carrinho
+- **NavbarMobile.tsx / Navbar.tsx**: tipos de `onNavigate` expandidos para incluir `'my-orders'`
+
 ## [1.4.35] - 2026-03-18
 
 ### Corrigido
