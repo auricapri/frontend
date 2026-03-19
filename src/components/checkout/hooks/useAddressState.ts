@@ -316,10 +316,7 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
       fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`)
         .then(res => res.json())
         .then(data => {
-          if (data.erro) {
-            setCepError('CEP não encontrado');
-            return;
-          }
+          if (data.erro) return; // CEP não encontrado — silencioso (usuário não digitou este CEP)
 
           setAddress({
             logradouro: data.logradouro || '',
@@ -331,9 +328,8 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
           setCepError(null);
           shipping.calculateLogistics(cleanedCep);
         })
-        .catch(err => {
-          if (err?.name === 'AbortError') return;
-          setCepError('Erro ao consultar CEP');
+        .catch(() => {
+          // Falha silenciosa — auto-lookup é transparente ao usuário
         })
         .finally(() => {
           viaCepAutoLoadingRef.current = false;

@@ -9,6 +9,7 @@ e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/
 
 ### Corrigido
 - **useAddressState.ts**: auto-lookup de CEP (para endereços salvos sem bairro) exibia o overlay full-screen "Buscando Endereço" de forma indevida — o usuário nunca digitou o CEP, então o loading deve ser silencioso; corrigido removendo `setLoadingCep(true/false)` e o `AbortController` do effect de auto-lookup; `viaCepAutoLoadingRef` continua guardando o estado de loading para prevenir chamadas duplicadas; o overlay agora aparece **apenas** em lookups iniciados pelo usuário via `handleCepChange`
+- **useAddressState.ts**: auto-lookup silencioso agora suprime erros do ViaCEP — se o CEP do endereço salvo não for encontrado na API, não exibe "ERRO AO CONSULTAR CEP" (o usuário não digitou o CEP; falha é silenciosa e o usuário preenche os campos manualmente)
 
 ## [1.4.39] - 2026-03-19
 
