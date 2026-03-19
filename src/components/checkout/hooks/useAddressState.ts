@@ -17,6 +17,9 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
   const [loadingCep, setLoadingCep] = useState(false);
   const [cepError, setCepError] = useState<string | null>(null);
   const [hasUserEditedCep, setHasUserEditedCep] = useState(false);
+  // Ref to guard against concurrent auto-lookups without putting loadingCep in effect deps
+  // (loadingCep in deps causes cleanup to abort the in-flight fetch on every setLoadingCep call)
+  const viaCepAutoLoadingRef = useRef(false);
 
   // Address form
   const [address, setAddress] = useState<AddressData | null>(null);
@@ -304,10 +307,11 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
     if (
       cleanedCep.length === 8 &&
       addressIncomplete &&
-      !loadingCep &&
+      !viaCepAutoLoadingRef.current &&  // use ref — NOT loadingCep state (would cause cleanup loop)
       addressLoaded
     ) {
       const controller = new AbortController();
+      viaCepAutoLoadingRef.current = true;
       setLoadingCep(true);
 
       fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`, { signal: controller.signal })
@@ -318,7 +322,6 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
             return;
           }
 
-          // Update address with ViaCEP data
           setAddress({
             logradouro: data.logradouro || '',
             bairro: data.bairro || '',
@@ -327,8 +330,6 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
             cep: cep,
           });
           setCepError(null);
-
-          // Calculate shipping
           shipping.calculateLogistics(cleanedCep);
         })
         .catch(err => {
@@ -336,12 +337,16 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
           setCepError('Erro ao consultar CEP');
         })
         .finally(() => {
+          viaCepAutoLoadingRef.current = false;
           setLoadingCep(false);
         });
 
       return () => controller.abort();
     }
-  }, [cep, address?.logradouro, address?.bairro, loadingCep, addressLoaded, shipping]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // loadingCep omitido intencionalmente — substituído por viaCepAutoLoadingRef para evitar
+  // cleanup loop: setLoadingCep(true) → re-render → cleanup abort → finally setLoadingCep(false) → loop
+  }, [cep, address?.logradouro, address?.bairro, addressLoaded, shipping]);
 
   // Handle CEP change with debounce and ViaCEP lookup
   const handleCepChange = useCallback((val: string) => {

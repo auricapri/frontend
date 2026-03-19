@@ -49,7 +49,6 @@ export interface CustomerPaymentInfo {
 
 export interface UseCheckoutTotalsParams {
   items: CartItem[];
-  manualCouponDiscount: number;
   bundleDiscount?: number;
   shippingCost: number;
   paymentMethod: PaymentMethod;
@@ -68,8 +67,6 @@ export interface UseCheckoutTotalsReturn {
   totalBeforeWallet: number;
   cashbackUsed: number;
   finalTotal: number;
-  /** Display-capped coupon discount — never exceeds what would bring subtotal below R$1 */
-  effectiveCouponDiscount: number;
 }
 
 // ============================================================================
@@ -149,7 +146,6 @@ export interface UseCreditCardStateReturn {
 export interface UseInstallmentStateParams {
   finalTotal: number;
   paymentMethod: PaymentMethod;
-  isInfluencerCoupon: boolean;
 }
 
 export interface UseInstallmentStateReturn {
@@ -304,8 +300,6 @@ export interface UsePixBoletoStateParams {
   saveCardForFuture: boolean;
   step: number;
   setStep: (step: number) => void;
-  appliedCouponId?: string | null;
-  appliedCouponCode?: string | null;
   onPixPaymentConfirmed?: () => void;
   // Credit card specific
   cardData?: CardData | null;

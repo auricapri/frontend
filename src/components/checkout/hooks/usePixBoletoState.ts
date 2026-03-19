@@ -36,8 +36,6 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
     saveCardForFuture,
     step,
     setStep,
-    appliedCouponId,
-    appliedCouponCode,
     onPixPaymentConfirmed,
     cardData,
     cardToken,
@@ -318,8 +316,6 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         paymentMethod: effectivePaymentMethod,
         subtotal: subtotal,
         finalAmount: finalTotal,
-        couponId: appliedCouponId ?? null,
-        couponCode: appliedCouponCode ?? null,
         cashbackUsed: cashbackUsed > 0 ? cashbackUsed : undefined,
       });
 

@@ -25,7 +25,6 @@ import { computeAccessoryBundleDiscount } from '../../../utils/product';
 import type { Product } from '../../../types';
 import { useShippingCalculation } from './useShippingCalculation';
 import { useCheckoutTotals } from './useCheckoutTotals';
-import { useCouponState } from './useCouponState';
 import { useCreditCardState } from './useCreditCardState';
 import { useInstallmentState } from './useInstallmentState';
 import { useAddressState } from './useAddressState';
@@ -86,12 +85,6 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     shipping,
   });
 
-  // Coupon state
-  const coupon = useCouponState({
-    items,
-    locale,
-  });
-
   // Calculate shipping cost
   const shippingCost =
     userMode === UserMode.ATACADO && shipping.selectedShippingOption
@@ -106,14 +99,13 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
 
   // Accessory bundle discount
   const bundleDiscount = useMemo(
-    () => computeAccessoryBundleDiscount(coupon.checkoutItems, products),
-    [coupon.checkoutItems, products]
+    () => computeAccessoryBundleDiscount(items, products),
+    [items, products]
   );
 
   // Totals
   const totals = useCheckoutTotals({
-    items: coupon.checkoutItems,
-    manualCouponDiscount: coupon.manualCouponDiscount,
+    items,
     bundleDiscount,
     shippingCost,
     paymentMethod,
@@ -125,7 +117,6 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
   const installment = useInstallmentState({
     finalTotal: totals.finalTotal,
     paymentMethod,
-    isInfluencerCoupon: coupon.appliedCoupon?.is_influencer ?? false,
   });
 
   // Credit card state
@@ -153,8 +144,6 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     saveCardForFuture: creditCard.saveCardForFuture,
     step,
     setStep,
-    appliedCouponId: coupon.appliedCoupon?.id ?? null,
-    appliedCouponCode: coupon.appliedCoupon?.code ?? null,
     onPixPaymentConfirmed,
     // Credit card data for payment processing
     cardData: creditCard.cardNumber ? {
@@ -195,36 +184,6 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     boletoData: pixBoleto.boletoData,
   });
 
-  // Keep refs up-to-date so the coupon-change effect never uses stale closures
-  const pixBoletoRef = useRef(pixBoleto);
-  pixBoletoRef.current = pixBoleto;
-  const paymentMethodRef = useRef(paymentMethod);
-  paymentMethodRef.current = paymentMethod;
-
-  // When coupon changes: reset stale PIX/boleto QR code and auto-regenerate with new amount.
-  // NOTE: the authoritative payment amount is ALWAYS server-calculated from DB prices + coupon.
-  // The frontend's finalTotal is a display hint; the backend recomputes it independently.
-  const prevCouponCodeRef = useRef<string | null | undefined>(undefined);
-  useEffect(() => {
-    const newCode = coupon.appliedCoupon?.code ?? null;
-    if (prevCouponCodeRef.current === undefined) {
-      prevCouponCodeRef.current = newCode;
-      return;
-    }
-    if (prevCouponCodeRef.current !== newCode) {
-      prevCouponCodeRef.current = newCode;
-      const pb = pixBoletoRef.current;
-      const pm = paymentMethodRef.current;
-      const hadPaymentData = !!(pb.pixData || pb.boletoData);
-      pb.resetPaymentData();
-      // Auto-regenerate PIX/Boleto with new order+amount when QR was already shown
-      if (hadPaymentData && (pm === PaymentMethod.PIX || pm === PaymentMethod.BOLETO)) {
-        pb.completeOrderWithPayment(pm).catch(() => { /* error surfaced in pixError/boletoError */ });
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coupon.appliedCoupon?.code]);
-
   // Scroll to top on step change
   useEffect(() => {
     const mainContainer = document.getElementById('main-content');
@@ -250,6 +209,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     locale,
     step,
     setStep,
+    items,
 
     // Address state
     cep: addressState.cep,
@@ -363,19 +323,6 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     handleSelectCard2Installments: installment.handleSelectCard2Installments,
     finalTotalWithFees: installment.finalTotalWithFees,
 
-    // Coupon
-    couponCode: coupon.couponCode,
-    setCouponCode: coupon.setCouponCode,
-    couponLoading: coupon.couponLoading,
-    couponError: coupon.couponError,
-    appliedCoupon: coupon.appliedCoupon,
-    checkoutItems: coupon.checkoutItems,
-    itemsWithCoupon: coupon.itemsWithCoupon,
-    itemsWithoutCoupon: coupon.itemsWithoutCoupon,
-    manualCouponDiscount: coupon.manualCouponDiscount,
-    handleApplyCoupon: coupon.handleApplyCoupon,
-    handleRemoveCoupon: coupon.handleRemoveCoupon,
-
     // Totals
     subtotal: totals.subtotal,
     originalSubtotal: totals.originalSubtotal,
@@ -386,7 +333,6 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     pixDiscount: totals.pixDiscount,
     cashbackUsed: totals.cashbackUsed,
     finalTotal: totals.finalTotal,
-    effectiveCouponDiscount: totals.effectiveCouponDiscount,
 
     // PIX/Boleto
     pixData: pixBoleto.pixData,

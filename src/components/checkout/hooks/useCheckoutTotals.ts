@@ -22,7 +22,6 @@ import type { UseCheckoutTotalsParams, UseCheckoutTotalsReturn } from './types';
 export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutTotalsReturn {
   const {
     items,
-    manualCouponDiscount,
     bundleDiscount: bundleDiscountParam = 0,
     shippingCost,
     paymentMethod,
@@ -64,10 +63,10 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
     return discountValue;
   }, [totalItemCount, subtotal]);
 
-  // Subtotal after bundle, coupon and quantity discounts (base for PIX discount, excludes shipping)
+  // Subtotal after bundle and quantity discounts (base for PIX discount, excludes shipping)
   const discountedSubtotal = useMemo(() => {
-    return Math.max(0, subtotal - bundleDiscount - manualCouponDiscount - quantityDiscount);
-  }, [subtotal, bundleDiscount, manualCouponDiscount, quantityDiscount]);
+    return Math.max(0, subtotal - bundleDiscount - quantityDiscount);
+  }, [subtotal, bundleDiscount, quantityDiscount]);
 
   // PIX discount (5% applied on discountedSubtotal only — excludes shipping per SEFAZ-SP RC 28518/2023)
   const pixDiscount = useMemo(() => {
@@ -76,11 +75,8 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
 
   // Total before wallet (after all unconditional discounts + shipping)
   const totalBeforeWallet = useMemo(() => {
-    const raw = discountedSubtotal - pixDiscount + shippingCost;
-    // Gateway minimum: coupon-applied orders must be at least R$5.00 (Asaas rejects values below R$5)
-    if (manualCouponDiscount > 0 && raw < 5.00) return 5.00;
-    return raw;
-  }, [discountedSubtotal, pixDiscount, shippingCost, manualCouponDiscount]);
+    return discountedSubtotal - pixDiscount + shippingCost;
+  }, [discountedSubtotal, pixDiscount, shippingCost]);
 
   // Cashback used (limited to available balance and positive total)
   const cashbackUsed = useMemo(() => {
@@ -91,14 +87,6 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
   const finalTotal = useMemo(() => {
     return Math.max(0, totalBeforeWallet - cashbackUsed);
   }, [totalBeforeWallet, cashbackUsed]);
-
-  // Capped coupon for display only — prevents sidebar showing a coupon larger than what's left
-  // e.g. 100% coupon on R$329 product with R$35 box discount → cap at R$293, not R$329
-  const effectiveCouponDiscount = useMemo(() => {
-    if (manualCouponDiscount <= 0) return 0;
-    const maxDiscount = Math.max(0, subtotal - bundleDiscount - quantityDiscount - 5.00);
-    return Math.min(manualCouponDiscount, maxDiscount);
-  }, [manualCouponDiscount, subtotal, bundleDiscount, quantityDiscount]);
 
   return {
     subtotal,
@@ -111,6 +99,5 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
     totalBeforeWallet,
     cashbackUsed,
     finalTotal,
-    effectiveCouponDiscount,
   };
 }

@@ -5,6 +5,20 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.38] - 2026-03-19
+
+### Corrigido — URGENTE
+- **useAddressState.ts**: looping de busca de CEP causado pelo AbortController adicionado na sessão anterior — `loadingCep` no array de deps fazia o cleanup abortar o fetch a cada `setLoadingCep(true)`, reiniciando o ciclo indefinidamente; corrigido com `viaCepAutoLoadingRef` para guardar o estado de loading via ref em vez de dep do effect
+
+### Removido
+- **Cupons** removidos completamente do checkout:
+  - `CheckoutSidebar`: seção de input de cupom, badge de cupom aplicado, linhas de desconto de cupom
+  - `useCheckoutState`: `useCouponState` removido, efeito de re-geração de PIX/boleto por mudança de cupom removido
+  - `useCheckoutTotals`: `manualCouponDiscount` removido, `effectiveCouponDiscount` removido, gateway minimum check R$5 removido
+  - `usePixBoletoState`: `appliedCouponId` e `appliedCouponCode` removidos da criação de pedido
+  - `useInstallmentState`: `isInfluencerCoupon` removido (hardcoded `false`)
+  - `hooks/types.ts`: interfaces limpas de todos os campos de cupom
+
 ## [1.4.37] - 2026-03-19
 
 ### Corrigido — CRÍTICO
