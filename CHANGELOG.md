@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.35] - 2026-03-18
+
+### Corrigido
+- **tracking.service.ts**: removida exclusão intencional da homepage (`/`) do evento `page_view` — corrige sub-contagem severa de visitas e distorção do funil de conversão
+
 ## [1.4.34] - 2026-03-15
 
 ### Corrigido

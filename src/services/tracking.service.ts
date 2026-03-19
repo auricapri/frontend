@@ -400,9 +400,6 @@ export class TrackingService {
       const ok = await this.sendEvent(payload);
       if (!ok) this.enqueueEvent(payload);
     } else {
-      if (input.event === 'page_view' && (path === '/' || path === '')) {
-        return;
-      }
       if (input.event === 'product_view' && !input.productId) {
         return;
       }
