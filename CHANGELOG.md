@@ -5,6 +5,22 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.41] - 2026-03-19
+
+### Corrigido — CRÍTICO (performance)
+- **utils/image.ts**: endpoint errado do Supabase para image transforms — o código usava `/storage/v1/object/public/` que ignora todos os parâmetros `width`, `height`, `quality` e `format`; corrigido para `/storage/v1/render/image/public/` que é o endpoint correto de transformação de imagens
+- **utils/image.ts**: `format: 'webp'` não é suportado por esta versão do Supabase (retorna 400); corrigido para `format: 'avif'` que é suportado e oferece compressão superior
+
+### Impacto medido
+Antes (object/public com webp): imagens de 1.3–2MB por arquivo, 59MB total na homepage
+Depois (render/image com avif): ~60–230KB por imagem dependendo do tamanho — redução de **30–60x**
+
+| Tamanho | Antes | Depois (AVIF) |
+|---------|-------|---------------|
+| 300px (thumbnail) | ~2MB | ~61KB |
+| 450px (small) | ~2MB | ~103KB |
+| 900px (large) | ~2MB | ~232KB |
+
 ## [1.4.40] - 2026-03-19
 
 ### Corrigido

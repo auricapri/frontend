@@ -2,7 +2,7 @@ interface ImageTransformOptions {
   width?: number;
   height?: number;
   quality?: number;
-  format?: 'origin' | 'webp';
+  format?: 'origin' | 'avif';
   resize?: 'cover' | 'contain' | 'fill';
 }
 
@@ -23,9 +23,9 @@ const IMAGE_SIZES: Record<string, ImageSize> = {
   xlarge: { width: 1200, height: 1600, label: '1200w' },
 };
 
-const SUPABASE_STORAGE_URL_PATTERN = /supabase\.co\/storage\/v1\/object\/public\//;
+const SUPABASE_STORAGE_URL_PATTERN = /supabase\.co\/storage\/v1\/(object|render\/image)\/public\//;
 
-function isSupabaseStorageUrl(url: string): boolean {
+export function isSupabaseStorageUrl(url: string): boolean {
   return SUPABASE_STORAGE_URL_PATTERN.test(url);
 }
 
@@ -52,7 +52,14 @@ function transformSupabaseUrl(url: string, options: ImageTransformOptions): stri
     return url;
   }
 
-  const urlObj = new URL(url);
+  // Supabase image transforms require the /render/image/ endpoint.
+  // /object/public/ serves raw files and ignores all transform params.
+  const renderUrl = url.replace(
+    '/storage/v1/object/public/',
+    '/storage/v1/render/image/public/'
+  );
+
+  const urlObj = new URL(renderUrl);
   const params = new URLSearchParams();
 
   if (options.width) {
@@ -94,7 +101,7 @@ export function getOptimizedImageUrl(
     width: options.width ?? sizeConfig.width,
     height: options.height ?? sizeConfig.height,
     quality: options.quality ?? (size === 'thumbnail' ? 75 : 80),
-    format: options.format ?? 'webp',
+    format: options.format ?? 'avif',
     resize: options.resize ?? 'cover',
   });
 }
@@ -178,5 +185,5 @@ export function getPlaceholderUrl(width: number = 300, height: number = 400): st
   return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}'%3E%3Crect fill='%23f5f5f5' width='100%25' height='100%25'/%3E%3C/svg%3E`;
 }
 
-export { IMAGE_SIZES, isSupabaseStorageUrl };
+export { IMAGE_SIZES };
 export type { ImageTransformOptions, ImageSize };
