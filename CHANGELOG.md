@@ -5,6 +5,14 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.42] - 2026-03-21
+
+### Corrigido
+- **AddressStep.tsx**: removido overlay full-screen bloqueante durante busca de CEP — substituído por indicador inline sutil "Buscando endereço..." abaixo do campo de CEP; o spinner dentro do campo já existia e continua presente
+- **useAddressState.ts**: ao digitar um novo CEP, o endereço anterior (de busca anterior) é limpo imediatamente em vez de permanecer visível com dados desatualizados; endereços salvos selecionados explicitamente (`selectedAddressId`) não são afetados
+- **CheckoutViewV2.tsx**: adicionada prop `onAuthRequired` e detecção de logout durante o checkout — quando o usuário efetua logout enquanto está no checkout, o modal de autenticação é aberto automaticamente com `pendingCheckout = true`
+- **AppLayout.tsx**: passa `onAuthRequired` para `<CheckoutView>` com `setIsAuthOpen(true)` e `setPendingCheckout(true)`
+
 ## [1.4.41] - 2026-03-19
 
 ### Corrigido — CRÍTICO (performance)

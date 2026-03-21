@@ -365,8 +365,15 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
       return;
     }
 
-    // Don't clear existing address while user types - wait for complete CEP
+    // If user is typing a new CEP and has an existing address from a previous lookup,
+    // clear it immediately to avoid showing stale data
     if (cleaned.length < 8) {
+      if (address && !selectedAddressId) {
+        // Clear stale address (only if it's not a manually selected saved address)
+        setAddress(null);
+        setIsManualAddress(false);
+        shipping.resetShipping();
+      }
       return;
     }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ArrowLeft, CreditCard, MapPin, ShieldCheck, Loader2 } from 'lucide-react';
 import { type AddressData, type CartItem, type InternalLogisticsInfo, type Product, type StoreConfig, type UserMode, type UserProfile } from '../../types';
 import { type Locale } from '../../i18n';
@@ -33,6 +33,7 @@ interface CheckoutViewProps {
   giftDeliveryLocation?: string;
   products?: Product[];
   onPixPaymentConfirmed?: () => void;
+  onAuthRequired?: () => void;
 }
 
 const steps = [
@@ -41,8 +42,18 @@ const steps = [
   { id: 3, title: 'Revisão', shortTitle: 'Rev.', icon: ShieldCheck },
 ] as const;
 
-const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, userMode, onBack, onComplete, onPixPaymentConfirmed, locale, t: _t, initialStep, giftDeliveryLocation, products }) => {
+const CheckoutView: React.FC<CheckoutViewProps> = ({ items, currentUser, storeConfig, userMode, onBack, onComplete, onPixPaymentConfirmed, locale, t: _t, initialStep, giftDeliveryLocation, products, onAuthRequired }) => {
   const checkout = useCheckoutState({ items, currentUser, storeConfig, userMode, onComplete, onPixPaymentConfirmed, locale, initialStep, products });
+
+  const prevUserRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (prevUserRef.current && !currentUser) {
+      // User signed out while in checkout — require re-login
+      onAuthRequired?.();
+    }
+    prevUserRef.current = !!currentUser;
+  }, [currentUser, onAuthRequired]);
 
   return (
     <div className="min-h-screen bg-paper text-neutral-900 flex flex-col pt-16 pb-12 relative">

@@ -69,18 +69,6 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
 
   return (
     <>
-      {/* Blocking loading overlay for CEP lookup */}
-      {loadingCep && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
-          <div className="bg-paper rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-4 max-w-sm mx-4">
-            <Loader2 className="w-12 h-12 animate-spin text-black" />
-            <div className="text-center">
-              <h4 className="text-lg font-normal uppercase tracking-tight">Buscando Endereço</h4>
-              <p className="text-sm text-neutral-500 mt-1">Aguarde enquanto localizamos seu CEP...</p>
-            </div>
-          </div>
-        </div>
-      )}
       <section className="space-y-6 animate-in fade-in slide-in-from-left duration-700">
         <div className="flex items-center gap-4 mb-6">
           <div className="p-4 bg-paper rounded-2xl">
@@ -163,6 +151,11 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                 </div>
               )}
             </div>
+            {loadingCep && (
+              <p className="text-xs text-neutral-400 font-normal uppercase tracking-widest animate-in fade-in">
+                Buscando endereço...
+              </p>
+            )}
 
             {/* Busca de Endereço Inline (mobile-friendly) */}
             {showInlineSearch && (

@@ -479,6 +479,10 @@ export function AppLayout(props: {
                 locale={app.locale}
                 t={app.t}
                 products={app.products}
+                onAuthRequired={() => {
+                  app.setIsAuthOpen(true);
+                  app.setPendingCheckout(true);
+                }}
               />
             </Suspense>
           </>
