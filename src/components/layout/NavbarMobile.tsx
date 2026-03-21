@@ -4,7 +4,6 @@ import { UserMode, Collection, UserProfile } from '../../types';
 import { Gender } from '../../constants/enums';
 import { Locale } from '../../i18n';
 import { createGetLoc } from '../../utils/localization';
-import { NavbarUserMenu } from './NavbarUserMenu';
 
 export interface NavbarMobileProps {
   isOpen: boolean;
@@ -67,25 +66,6 @@ export const NavbarMobile: React.FC<NavbarMobileProps> = ({
     [onSelectCollection, onClose],
   );
 
-  const handleLogout = useCallback(() => {
-    if (onLogout) onLogout();
-    onClose();
-  }, [onLogout, onClose]);
-
-  const handleMyAccount = useCallback(() => {
-    onClose();
-    onOpenAuth();
-  }, [onClose, onOpenAuth]);
-
-  const handleMyOrders = useCallback(() => {
-    onClose();
-    onNavigate('my-orders');
-  }, [onClose, onNavigate]);
-
-  const handleWishlist = useCallback(() => {
-    onClose();
-    onOpenWishlist();
-  }, [onClose, onOpenWishlist]);
 
   if (!isOpen) return null;
 
@@ -215,17 +195,6 @@ export const NavbarMobile: React.FC<NavbarMobileProps> = ({
               </a>
             </div>
 
-            {/* User Profile Section — inside scroll so it doesn't push footer off screen */}
-            {isLoggedIn && currentUser && (
-              <NavbarUserMenu
-                currentUser={currentUser}
-                onMyAccount={handleMyAccount}
-                onMyOrders={handleMyOrders}
-                onWishlist={handleWishlist}
-                onLogout={handleLogout}
-                t={t}
-              />
-            )}
           </div>
 
           {/* Menu Footer */}
