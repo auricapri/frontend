@@ -1,5 +1,5 @@
 /**
- * useMapPicker - Encapsulates all Mapbox-related functionality for the address picker modal
+ * useMapPicker - Address search (Nominatim/OSM) + optional Mapbox minimap display
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -7,6 +7,77 @@ import { MAPBOX_TOKEN, getMapboxStyle } from '../../../utils/mapbox';
 import { loadMapbox } from '../../../utils/loadMapbox';
 import { maskCep, normalizeCepDigits } from '../../../utils/masks';
 import type { MapboxFeature, ManualAddressState, UseMapPickerParams, UseMapPickerReturn } from './types';
+
+// Brazilian state name → 2-letter abbreviation
+const BR_STATES: Record<string, string> = {
+  acre: 'AC', alagoas: 'AL', amapa: 'AP', amazonas: 'AM',
+  bahia: 'BA', ceara: 'CE', 'distrito federal': 'DF', 'espirito santo': 'ES',
+  goias: 'GO', maranhao: 'MA', 'mato grosso': 'MT', 'mato grosso do sul': 'MS',
+  'minas gerais': 'MG', para: 'PA', paraiba: 'PB', parana: 'PR',
+  pernambuco: 'PE', piaui: 'PI', 'rio de janeiro': 'RJ', 'rio grande do norte': 'RN',
+  'rio grande do sul': 'RS', rondonia: 'RO', roraima: 'RR', 'santa catarina': 'SC',
+  'sao paulo': 'SP', sergipe: 'SE', tocantins: 'TO',
+};
+function brStateCode(name: string): string {
+  const norm = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return BR_STATES[norm] ?? name.substring(0, 2).toUpperCase();
+}
+
+// Nominatim address result → MapboxFeature shape (reuses existing types/UI)
+interface NominatimResult {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
+  type?: string;
+  address?: {
+    road?: string;
+    suburb?: string;
+    neighbourhood?: string;
+    city?: string;
+    town?: string;
+    village?: string;
+    state?: string;
+    postcode?: string;
+  };
+}
+function nominatimToFeature(r: NominatimResult): MapboxFeature {
+  const addr = r.address ?? {};
+  const road = addr.road || r.display_name.split(',')[0] || '';
+  const neighborhood = addr.suburb || addr.neighbourhood || '';
+  const city = addr.city || addr.town || addr.village || '';
+  const state = addr.state ? brStateCode(addr.state) : '';
+  const postcode = addr.postcode || '';
+  const lon = parseFloat(r.lon);
+  const lat = parseFloat(r.lat);
+  return {
+    id: String(r.place_id),
+    type: 'Feature',
+    place_type: [r.type || 'address'],
+    relevance: 1,
+    properties: {},
+    text: road,
+    place_name: r.display_name,
+    center: [lon, lat],
+    geometry: { type: 'Point', coordinates: [lon, lat] },
+    context: [
+      ...(neighborhood ? [{ id: 'neighborhood.0', text: neighborhood }] : []),
+      ...(city ? [{ id: 'place.0', text: city }] : []),
+      ...(state ? [{ id: 'region.0', text: state, short_code: `BR-${state}` }] : []),
+      ...(postcode ? [{ id: 'postcode.0', text: postcode }] : []),
+    ],
+  };
+}
+
+async function searchNominatim(query: string): Promise<MapboxFeature[]> {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=6&countrycodes=br&addressdetails=1`;
+  const res = await fetch(url, {
+    headers: { 'Accept-Language': 'pt-BR,pt', 'User-Agent': 'Auricapri-Checkout/1.0' },
+  });
+  if (!res.ok) return [];
+  const data: NominatimResult[] = await res.json();
+  return Array.isArray(data) ? data.map(nominatimToFeature) : [];
+}
 
 export function useMapPicker(params: UseMapPickerParams): UseMapPickerReturn {
   const { addressState, shipping } = params;
@@ -42,19 +113,13 @@ export function useMapPicker(params: UseMapPickerParams): UseMapPickerReturn {
   const pickerMarkerRef = useRef<any>(null);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch coordinates from Mapbox
+  // Fetch coordinates via Nominatim (no token required)
   const fetchCoordinates = async (query: string): Promise<[number, number] | null> => {
     try {
-      const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=br&limit=1`
-      );
-      if (!res.ok) throw new Error('Geocoding failed');
-      const data = await res.json();
-      if (data.features && data.features.length > 0) {
-        return data.features[0].center;
-      }
+      const features = await searchNominatim(query);
+      if (features.length > 0) return features[0].center;
     } catch {
-      return null;
+      // fall through
     }
     return null;
   };
@@ -300,54 +365,47 @@ export function useMapPicker(params: UseMapPickerParams): UseMapPickerReturn {
     };
   }, [isMapPickerOpen, mapboxLoaded, updatePickerMarker]);
 
-  // Handle picker search
+  // Handle picker search (used by Enter key / search button)
   const handlePickerSearch = async () => {
     if (!searchQuery) return;
     setIsSearching(true);
     try {
-      const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${MAPBOX_TOKEN}&country=br&limit=5&types=address,place,locality,neighborhood`
-      );
-      const data = await res.json();
-      setSearchResults(data.features || []);
+      const features = await searchNominatim(searchQuery);
+      setSearchResults(features);
     } catch {
-      return;
+      setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
   };
 
-  // Handle search query change with debounce
+  // Handle search query change with debounce (600ms — avoids hammering Nominatim)
   const handleSearchQueryChange = useCallback((query: string) => {
     setSearchQuery(query);
 
-    // Clear previous debounce
     if (searchDebounceRef.current) {
       clearTimeout(searchDebounceRef.current);
       searchDebounceRef.current = null;
     }
 
-    // Clear results if query too short
     if (query.trim().length < 3) {
       setSearchResults([]);
+      setIsSearching(false);
       return;
     }
 
-    // Debounce 400ms before search
+    // Show spinner only after debounce fires, not while user is still typing
     searchDebounceRef.current = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=br&limit=5&types=address,place,locality,neighborhood`
-        );
-        const data = await res.json();
-        setSearchResults(data.features || []);
+        const features = await searchNominatim(query);
+        setSearchResults(features);
       } catch {
         setSearchResults([]);
       } finally {
         setIsSearching(false);
       }
-    }, 400);
+    }, 600);
   }, []);
 
   // Handle selecting a search result
