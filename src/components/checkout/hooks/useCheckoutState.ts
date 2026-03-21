@@ -85,17 +85,21 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     shipping,
   });
 
+  // Familia coupon: frete sempre zero quando ativo
+  const isFamiliaActive = !!sessionStorage.getItem('familia_coupon_code');
+
   // Calculate shipping cost
-  const shippingCost =
-    userMode === UserMode.ATACADO && shipping.selectedShippingOption
-      ? shipping.selectedShippingOption.display_price_was
-      : userMode !== UserMode.ATACADO &&
-        shipping.selectedVarejoShipping === 'express' &&
-        shipping.expressOption
-      ? shipping.expressOption.real_cost
-      : userMode !== UserMode.ATACADO && shipping.selectedVarejoCarrierOption
-      ? shipping.selectedVarejoCarrierOption.real_cost
-      : 0;
+  const shippingCost = isFamiliaActive
+    ? 0
+    : userMode === UserMode.ATACADO && shipping.selectedShippingOption
+    ? shipping.selectedShippingOption.display_price_was
+    : userMode !== UserMode.ATACADO &&
+      shipping.selectedVarejoShipping === 'express' &&
+      shipping.expressOption
+    ? shipping.expressOption.real_cost
+    : userMode !== UserMode.ATACADO && shipping.selectedVarejoCarrierOption
+    ? shipping.selectedVarejoCarrierOption.real_cost
+    : 0;
 
   // Accessory bundle discount
   const bundleDiscount = useMemo(

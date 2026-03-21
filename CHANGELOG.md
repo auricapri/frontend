@@ -5,6 +5,18 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.43] - 2026-03-21
+
+### Adicionado
+- **Sistema de Cupom Família** (feature completa):
+  - `hooks/useFamiliaCoupon.ts`: hook que gerencia o estado da sessão familia — `activateFamilia` chama `GET /api/products/familia`, armazena código em `sessionStorage`, expõe `isFamiliaActive` / `familiaProducts`
+  - `api/products.api.ts`: método `getAllFamilia()` → `GET /api/products/familia`
+  - `app/AppRoot.tsx`: integra `useFamiliaCoupon`; quando ativo, `products` no `app` object são substituídos pelos preços familia (grid de produtos reflete automaticamente)
+  - `app/AppLayout.tsx`: passa props `isFamiliaActive`, `familiaLoading`, `familiaError`, `onActivateFamilia`, `onDeactivateFamilia` para `CouponsDrawer`
+  - `components/cart/CouponsDrawer.tsx`: seção "Acesso Exclusivo" no topo — input de código, feedback de estado, botão de desativar quando ativo
+  - `components/checkout/hooks/useCheckoutState.ts`: quando familia ativo (sessionStorage), `shippingCost = 0` — frete zerado na exibição do checkout
+  - `components/checkout/hooks/usePixBoletoState.ts`: passa `couponCode: familiaCouponCode` para `ordersApi.create()` — backend valida e aplica preços de custo server-side
+
 ## [1.4.42] - 2026-03-21
 
 ### Corrigido

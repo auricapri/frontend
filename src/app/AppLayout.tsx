@@ -84,6 +84,12 @@ export function AppLayout(props: {
     setIsWishlistOpen: (v: boolean) => void;
     isCouponsOpen: boolean;
     setIsCouponsOpen: (v: boolean) => void;
+    isFamiliaActive: boolean;
+    activeFamiliaCoupon: string | null;
+    familiaLoading: boolean;
+    familiaError: string | null;
+    activateFamiliaCoupon: (code: string) => Promise<void>;
+    deactivateFamiliaCoupon: () => void;
     isAuthOpen: boolean;
     setIsAuthOpen: (v: boolean) => void;
     pendingCheckout: boolean;
@@ -677,7 +683,16 @@ export function AppLayout(props: {
       </Suspense>
 
       <Suspense fallback={null}>
-        <CouponsDrawer isOpen={app.isCouponsOpen} onClose={() => app.setIsCouponsOpen(false)} t={app.t} />
+        <CouponsDrawer
+          isOpen={app.isCouponsOpen}
+          onClose={() => app.setIsCouponsOpen(false)}
+          t={app.t}
+          isFamiliaActive={app.isFamiliaActive}
+          familiaLoading={app.familiaLoading}
+          familiaError={app.familiaError}
+          onActivateFamilia={app.activateFamiliaCoupon}
+          onDeactivateFamilia={app.deactivateFamiliaCoupon}
+        />
       </Suspense>
 
       <Suspense fallback={null}>

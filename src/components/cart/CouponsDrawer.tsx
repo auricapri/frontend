@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { X, Ticket, Copy, Check } from 'lucide-react';
+import { X, Ticket, Copy, Check, Sparkles } from 'lucide-react';
 import { Coupon } from '../../types';
 import { couponsApi } from '../../api/instances';
 
@@ -8,10 +8,25 @@ interface CouponsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   t: (key: string) => any;
+  isFamiliaActive: boolean;
+  familiaLoading: boolean;
+  familiaError: string | null;
+  onActivateFamilia: (code: string) => Promise<void>;
+  onDeactivateFamilia: () => void;
 }
 
-const CouponsDrawer: React.FC<CouponsDrawerProps> = ({ isOpen, onClose, t }) => {
+const CouponsDrawer: React.FC<CouponsDrawerProps> = ({
+  isOpen,
+  onClose,
+  t,
+  isFamiliaActive,
+  familiaLoading,
+  familiaError,
+  onActivateFamilia,
+  onDeactivateFamilia,
+}) => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [exclusiveCode, setExclusiveCode] = useState('');
 
   const { data: coupons = [], isLoading } = useQuery<Coupon[]>({
     queryKey: ['coupons', 'public'],
@@ -54,24 +69,29 @@ const CouponsDrawer: React.FC<CouponsDrawerProps> = ({ isOpen, onClose, t }) => 
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  const handleApplyExclusive = async () => {
+    if (!exclusiveCode.trim()) return;
+    await onActivateFamilia(exclusiveCode);
+  };
+
   if (!isOpen) return null;
 
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity"
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div className="fixed top-0 right-0 h-full w-full md:w-[400px] bg-paper z-[70] shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 md:p-8 border-b border-gray-100">
           <div className="flex items-center space-x-3">
-             <Ticket className="w-5 h-5" />
-             <h2 className="text-xl font-light font-serif tracking-widest uppercase">{t('nav.coupons')}</h2>
+            <Ticket className="w-5 h-5" />
+            <h2 className="text-xl font-light font-serif tracking-widest uppercase">{t('nav.coupons')}</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <X className="w-5 h-5" />
@@ -80,60 +100,105 @@ const CouponsDrawer: React.FC<CouponsDrawerProps> = ({ isOpen, onClose, t }) => 
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-gray-50/50 no-scrollbar">
-           <p className="text-sm text-gray-500 mb-6">Ofertas disponíveis para sua próxima compra.</p>
-           
-           {isLoading ? (
-             <div className="flex items-center justify-center py-12">
-               <p className="text-sm text-gray-400">Carregando ofertas...</p>
-             </div>
-           ) : coupons.length === 0 ? (
-             <div className="flex items-center justify-center py-12">
-               <p className="text-sm text-gray-400">Nenhuma oferta disponível no momento.</p>
-             </div>
-           ) : (
-             <div className="space-y-4">
-                {coupons.map((coupon) => (
-                  <div key={coupon.code} className="bg-paper p-5 rounded-lg border border-gray-100 shadow-sm relative overflow-hidden group">
-                     <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <span className={`inline-block text-[10px] font-bold px-2 py-1 rounded mb-2 uppercase tracking-wider ${getCouponColor(coupon)}`}>
-                              {formatDiscount(coupon)} OFF
-                          </span>
-                          <h3 className="font-serif text-sm font-medium text-gray-900">Código: {coupon.code}</h3>
-                          {coupon.min_purchase_amount && (
-                            <p className="text-xs text-gray-500 mt-1">Compra mínima: R$ {coupon.min_purchase_amount.toFixed(2)}</p>
-                          )}
-                          <p className="text-xs text-gray-400 mt-1">{formatExpires(coupon)}</p>
-                        </div>
-                     </div>
-                     
-                     <div className="flex items-center justify-between bg-gray-50 p-3 rounded border border-gray-200 border-dashed">
-                        <code className="text-sm font-mono font-bold tracking-wider text-gray-700">{coupon.code}</code>
-                        <button 
-                          onClick={() => handleCopy(coupon.code)}
-                          className="flex items-center space-x-1 text-xs font-medium uppercase tracking-wider hover:text-black transition-colors"
-                        >
-                           {copiedCode === coupon.code ? (
-                               <>
-                                  <Check className="w-3 h-3 text-green-500" />
-                                  <span className="text-green-500">Copiado</span>
-                               </>
-                           ) : (
-                               <>
-                                  <Copy className="w-3 h-3" />
-                                  <span>Copiar</span>
-                               </>
-                           )}
-                        </button>
-                     </div>
-                     
-                     {/* Decorative Circles */}
-                     <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-gray-50 rounded-full" />
-                     <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-gray-50 rounded-full" />
+
+          {/* Acesso Exclusivo — Cupom Familia */}
+          <div className="mb-6 p-4 border border-dashed border-amber-300 rounded-lg bg-amber-50/30">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+              <p className="text-xs font-semibold uppercase tracking-widest text-amber-800">
+                Acesso Exclusivo
+              </p>
+            </div>
+            {isFamiliaActive ? (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-green-700 font-medium">
+                  Preços exclusivos ativos
+                </span>
+                <button
+                  onClick={onDeactivateFamilia}
+                  className="text-xs text-gray-500 underline hover:text-gray-700 transition-colors"
+                >
+                  Desativar
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={exclusiveCode}
+                  onChange={(e) => setExclusiveCode(e.target.value.toUpperCase())}
+                  placeholder="Código exclusivo"
+                  className="flex-1 text-sm border border-gray-300 rounded px-3 py-1.5 bg-white focus:outline-none focus:border-amber-400 uppercase"
+                  onKeyDown={(e) => e.key === 'Enter' && handleApplyExclusive()}
+                />
+                <button
+                  onClick={handleApplyExclusive}
+                  disabled={familiaLoading || !exclusiveCode.trim()}
+                  className="text-sm px-3 py-1.5 border border-gray-300 rounded bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {familiaLoading ? '...' : 'Aplicar'}
+                </button>
+              </div>
+            )}
+            {familiaError && (
+              <p className="text-xs text-red-600 mt-2">{familiaError}</p>
+            )}
+          </div>
+
+          <p className="text-sm text-gray-500 mb-6">Ofertas disponíveis para sua próxima compra.</p>
+
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-sm text-gray-400">Carregando ofertas...</p>
+            </div>
+          ) : coupons.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-sm text-gray-400">Nenhuma oferta disponível no momento.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {coupons.map((coupon) => (
+                <div key={coupon.code} className="bg-paper p-5 rounded-lg border border-gray-100 shadow-sm relative overflow-hidden group">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <span className={`inline-block text-[10px] font-bold px-2 py-1 rounded mb-2 uppercase tracking-wider ${getCouponColor(coupon)}`}>
+                        {formatDiscount(coupon)} OFF
+                      </span>
+                      <h3 className="font-serif text-sm font-medium text-gray-900">Código: {coupon.code}</h3>
+                      {coupon.min_purchase_amount && (
+                        <p className="text-xs text-gray-500 mt-1">Compra mínima: R$ {coupon.min_purchase_amount.toFixed(2)}</p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-1">{formatExpires(coupon)}</p>
+                    </div>
                   </div>
-                ))}
-             </div>
-           )}
+
+                  <div className="flex items-center justify-between bg-gray-50 p-3 rounded border border-gray-200 border-dashed">
+                    <code className="text-sm font-mono font-bold tracking-wider text-gray-700">{coupon.code}</code>
+                    <button
+                      onClick={() => handleCopy(coupon.code)}
+                      className="flex items-center space-x-1 text-xs font-medium uppercase tracking-wider hover:text-black transition-colors"
+                    >
+                      {copiedCode === coupon.code ? (
+                        <>
+                          <Check className="w-3 h-3 text-green-500" />
+                          <span className="text-green-500">Copiado</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          <span>Copiar</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Decorative Circles */}
+                  <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-gray-50 rounded-full" />
+                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-gray-50 rounded-full" />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>

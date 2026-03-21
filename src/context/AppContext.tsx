@@ -2,6 +2,7 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { Product, Category, Collection, Banner, Coupon, Asset, SizeGuide, StoreConfig, UserMode } from '../types';
 import { Locale } from '../i18n';
 import { useStoreData } from '../hooks/useStoreData';
+import { useFamiliaCoupon } from '../hooks/useFamiliaCoupon';
 
 interface AppContextType {
   products: Product[];
@@ -18,6 +19,14 @@ interface AppContextType {
   userMode: UserMode;
   setUserMode: (mode: UserMode) => void;
   refetchStoreData: () => void;
+  // Familia coupon
+  isFamiliaActive: boolean;
+  familiaLoading: boolean;
+  familiaError: string | null;
+  activeFamiliaCoupon: string | null;
+  activateFamiliaCoupon: (code: string) => Promise<void>;
+  deactivateFamiliaCoupon: () => void;
+  displayProducts: Product[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -46,6 +55,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({
   setUserMode
 }) => {
   const storeData = useStoreData();
+  const familia = useFamiliaCoupon();
+
+  // Quando familia ativo, usar preços de custo nos produtos
+  const displayProducts = familia.isFamiliaActive && familia.familiaProducts
+    ? familia.familiaProducts
+    : storeData.products;
 
   return (
     <AppContext.Provider
@@ -55,11 +70,17 @@ export const AppProvider: React.FC<AppProviderProps> = ({
         setLocale,
         userMode,
         setUserMode,
-        refetchStoreData: storeData.refetch
+        refetchStoreData: storeData.refetch,
+        isFamiliaActive: familia.isFamiliaActive,
+        familiaLoading: familia.familiaLoading,
+        familiaError: familia.familiaError,
+        activeFamiliaCoupon: familia.activeFamiliaCoupon,
+        activateFamiliaCoupon: familia.activateFamilia,
+        deactivateFamiliaCoupon: familia.deactivateFamilia,
+        displayProducts,
       }}
     >
       {children}
     </AppContext.Provider>
   );
 };
-

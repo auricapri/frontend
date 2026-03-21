@@ -308,6 +308,9 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
 
       const finalAddress = { ...address, numero: num, complemento: complement };
 
+      // Familia coupon: armazenado em sessionStorage quando ativo
+      const familiaCouponCode = sessionStorage.getItem('familia_coupon_code') || undefined;
+
       // 1. Create order first
       const order = await ordersApi.create({
         items: items,
@@ -317,6 +320,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         subtotal: subtotal,
         finalAmount: finalTotal,
         cashbackUsed: cashbackUsed > 0 ? cashbackUsed : undefined,
+        couponCode: familiaCouponCode,
       });
 
       // Salva CPF no perfil se foi alterado ou ainda não estava salvo

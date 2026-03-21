@@ -10,6 +10,7 @@ import { useAppState } from './hooks/useAppState';
 import { useOrderProcessing } from './hooks/useOrderProcessing';
 import { AppProviders } from './AppProviders';
 import { AppRouter } from './AppRouter';
+import { useFamiliaCoupon } from '../hooks/useFamiliaCoupon';
 
 interface StoreDataProps {
   products: Product[];
@@ -47,7 +48,7 @@ function useImageReloadOnVisible() {
 function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
   useImageReloadOnVisible();
   const {
-    products,
+    products: storeProducts,
     categories,
     collections,
     banners,
@@ -58,6 +59,12 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
     isLoading,
     refetchStoreData,
   } = storeData;
+
+  const familia = useFamiliaCoupon();
+  // Quando familia ativo, exibir preços de custo no grid de produtos
+  const products = familia.isFamiliaActive && familia.familiaProducts
+    ? familia.familiaProducts
+    : storeProducts;
 
   const { currentUser, isLoading: isAuthLoading, userOrders, signOut } = useAuthContext();
   const { wishlistIds, toggleWishlist } = useWishlist(currentUser?.id);
@@ -234,6 +241,13 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
     handleCheckoutIntent,
     signOut,
     onRefetchStoreData: refetchStoreData,
+    // Familia coupon
+    isFamiliaActive: familia.isFamiliaActive,
+    activeFamiliaCoupon: familia.activeFamiliaCoupon,
+    familiaLoading: familia.familiaLoading,
+    familiaError: familia.familiaError,
+    activateFamiliaCoupon: familia.activateFamilia,
+    deactivateFamiliaCoupon: familia.deactivateFamilia,
   };
 
   return (

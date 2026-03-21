@@ -66,4 +66,12 @@ export class ProductsApi {
   async deleteBatch(ids: string[]): Promise<{ success: string[]; failed: Array<{ id: string; error: string }> }> {
     return apiClient.delete<{ success: string[]; failed: Array<{ id: string; error: string }> }>('/products/batch', { ids });
   }
+
+  /**
+   * Retorna produtos com preços baseados em custo para usuários autorizados (cupom FAMILIA).
+   * Requer autenticação — o backend valida se o userId está na whitelist.
+   */
+  async getAllFamilia(): Promise<Product[]> {
+    return apiClient.get<Product[]>('/products/familia');
+  }
 }
