@@ -17,9 +17,6 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
     handleCepChange,
     isManualAddress,
     loadingCep,
-    mapContainerRef,
-    mapError,
-    mapboxLoaded,
     manualAddress,
     num,
     complement,
@@ -292,22 +289,6 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
                       {address.bairro} — {address.localidade}, {address.uf}
                     </p>
                   </div>
-                  {isManualAddress && !!address.cep && (
-                    <div
-                      ref={mapContainerRef}
-                      data-testid="checkout-minimap"
-                      className="w-full md:w-48 h-48 rounded-[2rem] bg-paper/5 border border-white/10 overflow-hidden relative shadow-inner"
-                    >
-                      {(mapError || !mapboxLoaded) && (
-                        <div className="w-full h-full flex items-center justify-center bg-neutral-800">
-                          <div className="text-center">
-                            <MapPin className="w-6 h-6 text-white/20 mx-auto mb-2" />
-                            <p className="text-xs text-white/40">Carregando mapa...</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               )}
 
