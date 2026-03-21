@@ -5,6 +5,20 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.44] - 2026-03-21
+
+### Melhorado
+- **components/product/detail/ImageGallery.tsx**: qualidade das imagens no product detail significativamente aumentada
+  - Desktop: todas as imagens agora usam `xlarge` (1200×1600) com `quality: 90` em vez de `large`/`medium` com quality 80 — visível na ampliação de detalhes
+  - Mobile: gallery passa de `size="medium" quality=75` para `size="large" quality=90` com srcSet `medium/large/xlarge` — browser seleciona o tamanho correto por DPR
+  - Grid de produtos (ProductCard) mantém `small`/`thumbnail` para carregamento rápido — não afetado
+
+### Corrigido
+- **components/product/detail/ImageGallery.tsx**: imagem da galeria aparecia "cortada" em monitores menores (ex: 1080p)
+  - Container de cada imagem desktop recebe `max-h-[88vh] overflow-hidden flex items-center justify-center`
+  - Imagem: `max-h-[88vh] object-contain` garante que a foto completa sempre caiba na viewport sem clipping
+  - Ao clicar a imagem abre no ZoomModal em tamanho xlarge para visualização total
+
 ## [1.4.43] - 2026-03-21
 
 ### Adicionado

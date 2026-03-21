@@ -78,7 +78,7 @@ export function ImageGallery(props: {
                   setIsZoomOpen(true);
                 }
               }}
-              className="relative bg-paper cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2"
+              className="relative bg-paper cursor-zoom-in group rounded-[1.5rem] lg:rounded-[2.5rem] shadow-sm border border-neutral-100 transition-all focus:outline-2 focus:outline-black focus:outline-offset-2 overflow-hidden max-h-[88vh] flex items-center justify-center"
               onClick={() => {
                 setZoomImgIndex(idx);
                 setIsZoomOpen(true);
@@ -92,9 +92,9 @@ export function ImageGallery(props: {
                 onNavigateToProduct={onNavigateToProduct}
               >
                 <img
-                  src={getOptimizedImageUrl(imgData.url, idx < 2 ? 'large' : 'medium')}
+                  src={getOptimizedImageUrl(imgData.url, 'xlarge', { quality: 90 })}
                   alt={`${getLoc(product.name)} view ${idx + 1}`}
-                  className="w-full h-auto transition-transform duration-[1.5s] ease-out group-hover:scale-105"
+                  className="w-full h-auto max-h-[88vh] object-contain transition-transform duration-[1.5s] ease-out group-hover:scale-105"
                   loading={idx < 2 ? 'eager' : 'lazy'}
                   decoding="async"
                 />
@@ -161,7 +161,9 @@ export function ImageGallery(props: {
                     src={imgData.url}
                     alt={`${getLoc(product.name)} - ${getLoc(activeVariantColorName || {})} - Vista ${idx + 1}`}
                     className="w-full h-full"
-                    size="medium"
+                    size="large"
+                    quality={90}
+                    srcSetSizes={['medium', 'large', 'xlarge']}
                     priority={idx === 0}
                     objectFit="contain"
                   />
