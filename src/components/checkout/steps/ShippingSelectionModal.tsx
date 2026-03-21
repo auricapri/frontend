@@ -93,9 +93,11 @@ export function ShippingSelectionModal({
                   <div className="flex items-center gap-2">
                     {selected === 'free' && <Check className="w-4 h-4 text-green-400 shrink-0" />}
                     <div className="text-right">
-                      <div className={`text-xs line-through ${selected === 'free' ? 'text-white/40' : 'text-neutral-400'}`}>
-                        {formatCurrency(freeDisplayPrice, locale)}
-                      </div>
+                      {freeDisplayPrice > 0 && (
+                        <div className={`text-xs line-through ${selected === 'free' ? 'text-white/40' : 'text-neutral-400'}`}>
+                          {formatCurrency(freeDisplayPrice, locale)}
+                        </div>
+                      )}
                       <div className={`text-sm font-normal ${selected === 'free' ? 'text-green-400' : 'text-green-600'}`}>
                         GRÁTIS
                       </div>

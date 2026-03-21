@@ -244,7 +244,7 @@ export function useMapPicker(params: UseMapPickerParams): UseMapPickerReturn {
     [mapboxLoaded]
   );
 
-  // Parse and set address from Mapbox feature
+  // Parse and set address from search result — also applies to checkout state
   const parseAndSetAddress = async (feature: MapboxFeature) => {
     const context = feature.context || [];
     const neighborhood =
@@ -256,6 +256,21 @@ export function useMapPicker(params: UseMapPickerParams): UseMapPickerReturn {
     let postcode = context.find((c) => c.id.startsWith('postcode'))?.text || '';
     const street = feature.text || feature.place_name?.split(',')[0] || '';
 
+    const applyToCheckout = (finalNeighborhood: string, formattedCep: string) => {
+      addressState.setAddress({
+        logradouro: street,
+        bairro: finalNeighborhood,
+        localidade: city,
+        uf: state,
+        cep: formattedCep || undefined,
+      });
+      addressState.setIsManualAddress(true);
+      if (formattedCep) {
+        addressState.setCep(formattedCep);
+        shipping.calculateLogistics(normalizeCepDigits(formattedCep));
+      }
+    };
+
     if (!postcode && street && city && state) {
       try {
         const searchUrl = `https://viacep.com.br/ws/${state}/${city}/${encodeURIComponent(street)}/json/`;
@@ -264,33 +279,25 @@ export function useMapPicker(params: UseMapPickerParams): UseMapPickerReturn {
 
         if (Array.isArray(data) && data.length > 0 && !data[0].erro) {
           postcode = data[0].cep || '';
-          // Ensure neighborhood is never empty (backend requires min 1 char)
           const finalNeighborhood = neighborhood || data[0].bairro || 'Centro';
+          const rawCep = normalizeCepDigits(postcode);
+          const formattedCep = rawCep ? maskCep(rawCep) : '';
 
-          setManualAddress({
-            street,
-            neighborhood: finalNeighborhood,
-            city,
-            state,
-            cep: postcode ? postcode.replace(/(\d{5})(\d{3})/, '$1-$2') : '',
-          });
+          setManualAddress({ street, neighborhood: finalNeighborhood, city, state, cep: formattedCep });
+          applyToCheckout(finalNeighborhood, formattedCep);
           return;
         }
       } catch {
-        // If lookup fails, still set address with fallback for neighborhood
+        // fall through to Nominatim data
       }
     }
 
-    // Ensure neighborhood is never empty (backend requires min 1 char)
     const finalNeighborhood = neighborhood || 'Centro';
+    const rawCep = normalizeCepDigits(postcode);
+    const formattedCep = rawCep ? maskCep(rawCep) : '';
 
-    setManualAddress({
-      street,
-      neighborhood: finalNeighborhood,
-      city,
-      state,
-      cep: postcode ? postcode.replace(/(\d{5})(\d{3})/, '$1-$2') : '',
-    });
+    setManualAddress({ street, neighborhood: finalNeighborhood, city, state, cep: formattedCep });
+    applyToCheckout(finalNeighborhood, formattedCep);
   };
 
   // Initialize picker map when modal opens

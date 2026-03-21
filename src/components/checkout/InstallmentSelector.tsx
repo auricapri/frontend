@@ -77,14 +77,14 @@ export function InstallmentSelector({
                   Sem juros
                 </span>
               )}
-              {/* Parcelado com taxa */}
-              {selectedOption && selectedOption.installments > 1 && selectedOption.feeAmount > 0 && (
+              {/* Parcelado com taxa (somente >3x) */}
+              {selectedOption && selectedOption.installments > 3 && selectedOption.feeAmount > 0 && (
                 <span className="text-xs font-normal text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
                   +{formatCurrency(selectedOption.feeAmount, locale)} taxa
                 </span>
               )}
-              {/* Parcelado sem taxa (promoção) */}
-              {selectedOption && selectedOption.installments > 1 && (!selectedOption.feeAmount || selectedOption.feeAmount < 0.01) && (
+              {/* 1x-3x: sempre sem juros */}
+              {selectedOption && selectedOption.installments > 1 && (selectedOption.installments <= 3 || !selectedOption.feeAmount || selectedOption.feeAmount < 0.01) && (
                 <span className="text-xs font-normal text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
                   Sem juros
                 </span>
@@ -97,8 +97,8 @@ export function InstallmentSelector({
             <div className="absolute top-full left-0 right-0 mt-2 bg-paper border border-neutral-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
               {options.map((option) => {
                 const isAvista = option.installments === 1;
-                // À vista NUNCA tem taxa, independente do que vier do backend
-                const hasFee = !isAvista && option.feeAmount > 0;
+                // 1x-3x sempre sem taxa (regra de negócio Auricapri)
+                const hasFee = option.installments > 3 && option.feeAmount > 0;
                 return (
                   <button
                     key={option.installments}
@@ -156,8 +156,8 @@ export function InstallmentSelector({
         {/* Summary below dropdown */}
         {selectedOption && (() => {
           const isAvista = selectedOption.installments === 1;
-          // À vista NUNCA tem taxa
-          const hasFee = !isAvista && selectedOption.feeAmount > 0;
+          // 1x-3x sempre sem taxa (regra de negócio Auricapri)
+          const hasFee = selectedOption.installments > 3 && selectedOption.feeAmount > 0;
           return (
             <div className={`p-4 rounded-xl border ${
               hasFee
@@ -199,9 +199,9 @@ export function InstallmentSelector({
   }
 
   // Full mode: grid of options
-  // À vista NUNCA tem taxa
+  // 1x-3x sempre sem taxa (regra de negócio Auricapri)
   const selectedIsAvista = selectedOption?.installments === 1;
-  const selectedHasFee = !selectedIsAvista && selectedOption && selectedOption.feeAmount > 0;
+  const selectedHasFee = selectedOption && selectedOption.installments > 3 && selectedOption.feeAmount > 0;
 
   return (
     <div className="space-y-4">
@@ -220,8 +220,8 @@ export function InstallmentSelector({
         {options.map((option) => {
           const isSelected = option.installments === selectedInstallments;
           const isAvista = option.installments === 1;
-          // À vista NUNCA tem taxa
-          const hasFee = !isAvista && option.feeAmount > 0;
+          // 1x-3x sempre sem taxa (regra de negócio Auricapri)
+          const hasFee = option.installments > 3 && option.feeAmount > 0;
 
           return (
             <button
