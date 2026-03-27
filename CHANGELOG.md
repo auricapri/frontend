@@ -5,6 +5,17 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.47] - 2026-03-27
+
+### Corrigido
+- **AboutUs**: imagem da esquerda agora fica fixa enquanto conteúdo da direita rola independentemente (`h-screen overflow-hidden` + `overflow-y-auto` no painel direito)
+- **AboutUs**: nomes simplificados para "Marcus Lirio & Raquel Lirio"
+- **ProductGridBody**: masonry CSS columns → CSS Grid uniforme (`grid-cols-2/3/4`) — todos os cards com mesmo tamanho
+
+### Adicionado
+- **Coleções**: Fitness, Inverno e Copa criadas no Supabase
+- **Coleção Vício**: desativada
+
 ## [1.4.46] - 2026-03-23
 
 ### Corrigido
