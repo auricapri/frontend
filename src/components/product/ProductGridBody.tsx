@@ -90,9 +90,9 @@ export const ProductGridBody: React.FC<ProductGridBodyProps> = ({
           )}
         </div>
       ) : (
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-2 md:gap-3 px-2 md:px-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 px-2 md:px-3">
           {products.map((p, index) => (
-            <div key={p.id} className="break-inside-avoid mb-2 md:mb-3">
+            <div key={p.id}>
               <ProductCard
                 product={p}
                 priority={index < 6}

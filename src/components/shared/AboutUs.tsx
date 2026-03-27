@@ -25,7 +25,7 @@ const AboutUs: React.FC<AboutUsProps> = ({ config, locale, onBack }) => {
     'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop';
 
   return (
-    <div className="w-full min-h-screen overflow-y-auto bg-paper text-neutral-900">
+    <div className="w-full h-screen overflow-hidden bg-paper text-neutral-900 flex flex-col">
 
       {/* Back button — mix-blend-difference so it reads over any bg */}
       <div className="fixed top-0 left-0 w-full z-50 p-6 md:p-12 mix-blend-difference text-white pointer-events-none">
@@ -35,10 +35,10 @@ const AboutUs: React.FC<AboutUsProps> = ({ config, locale, onBack }) => {
         </button>
       </div>
 
-      <div className="flex flex-col lg:flex-row min-h-screen">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
 
-        {/* ── Left: sticky image with quote overlay ── */}
-        <div className="lg:w-[45%] h-[65vh] lg:h-screen lg:sticky lg:top-0 relative overflow-hidden bg-neutral-200 flex-shrink-0">
+        {/* ── Left: fixed image panel ── */}
+        <div className="lg:w-[45%] h-[40vh] lg:h-full relative overflow-hidden bg-neutral-200 flex-shrink-0">
           <img
             src={image}
             alt="Auricapri — Nossa História"
@@ -55,8 +55,8 @@ const AboutUs: React.FC<AboutUsProps> = ({ config, locale, onBack }) => {
           </div>
         </div>
 
-        {/* ── Right: story content ── */}
-        <div className="lg:w-[55%] flex flex-col py-28 px-10 lg:px-20 xl:px-28 bg-paper">
+        {/* ── Right: scrollable story content ── */}
+        <div className="lg:w-[55%] flex flex-col overflow-y-auto py-28 px-10 lg:px-20 xl:px-28 bg-paper">
           <div className="animate-in slide-in-from-bottom-8 duration-700 delay-100">
 
             {/* Label + brand name */}
@@ -94,11 +94,8 @@ const AboutUs: React.FC<AboutUsProps> = ({ config, locale, onBack }) => {
               <span className="text-[10px] font-black uppercase tracking-[0.5em] text-neutral-400 mb-4 block">
                 Fundadores
               </span>
-              <p className="font-serif text-3xl font-light italic text-neutral-800 mb-1">
-                Marcus &amp; Raquel
-              </p>
-              <p className="text-xs tracking-widest text-neutral-400 uppercase">
-                Lírio da Cruz · Garcia Lírio
+              <p className="font-serif text-3xl font-light italic text-neutral-800">
+                Marcus Lirio &amp; Raquel Lirio
               </p>
             </div>
 
