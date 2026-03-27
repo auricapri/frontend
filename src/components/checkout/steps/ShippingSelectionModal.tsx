@@ -11,6 +11,11 @@ type ModalTab = 'address' | 'shipping';
 const isCarrierChoice = (s: ShippingChoice): s is { carrier: ShippingOption } =>
   s !== 'free' && s !== 'express';
 
+function applyFreightMarkup(cost: number): number {
+  const multiplier = cost <= 20 ? 1.4 : 1.2;
+  return Math.round(cost * multiplier * 100) / 100;
+}
+
 interface ShippingSelectionModalProps {
   freeOption: InternalLogisticsInfo | null;
   freeDisplayDays: number;
@@ -62,7 +67,11 @@ export function ShippingSelectionModal({
     } else if (selected === 'express') {
       onSelectExpress();
     } else {
-      onSelectCarrier(selected.carrier);
+      const markedUp: ShippingOption = {
+        ...selected.carrier,
+        real_cost: applyFreightMarkup(selected.carrier.real_cost),
+      };
+      onSelectCarrier(markedUp);
     }
     onConfirm();
   }, [selected, onSelectFree, onSelectExpress, onSelectCarrier, onConfirm]);
@@ -157,15 +166,8 @@ export function ShippingSelectionModal({
                       </div>
                       <div className="flex items-center gap-2">
                         {selected === 'free' && <Check className="w-4 h-4 text-green-400 shrink-0" />}
-                        <div className="text-right">
-                          {freeDisplayPrice > 0 && (
-                            <div className={`text-xs line-through ${selected === 'free' ? 'text-white/40' : 'text-neutral-400'}`}>
-                              {formatCurrency(freeDisplayPrice, locale)}
-                            </div>
-                          )}
-                          <div className={`text-sm font-normal ${selected === 'free' ? 'text-green-400' : 'text-green-600'}`}>
-                            GRÁTIS
-                          </div>
+                        <div className={`text-sm font-normal ${selected === 'free' ? 'text-green-400' : 'text-green-600'}`}>
+                          GRÁTIS
                         </div>
                       </div>
                     </div>
@@ -195,7 +197,7 @@ export function ShippingSelectionModal({
                       <div className="flex items-center gap-2">
                         {selected === 'express' && <Check className="w-4 h-4 text-green-400 shrink-0" />}
                         <span className={`text-sm font-normal ${selected === 'express' ? 'text-white' : ''}`}>
-                          {formatCurrency(expressOption.real_cost, locale)}
+                          {formatCurrency(applyFreightMarkup(expressOption.real_cost), locale)}
                         </span>
                       </div>
                     </div>
@@ -232,7 +234,7 @@ export function ShippingSelectionModal({
                         <div className="flex items-center gap-2">
                           {isSelected && <Check className="w-4 h-4 text-green-400 shrink-0" />}
                           <span className={`text-sm font-normal ${isSelected ? 'text-white' : ''}`}>
-                            {formatCurrency(opt.real_cost, locale)}
+                            {formatCurrency(applyFreightMarkup(opt.real_cost), locale)}
                           </span>
                         </div>
                       </div>
