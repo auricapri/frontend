@@ -69,8 +69,9 @@ export function AppLayout(props: {
     handleUpdateQuantity: (id: string, delta: number) => void;
 
     wishlistIds: string[];
+    wishlistVariantIds: Record<string, string>;
     toggleWishlist: (id: string) => Promise<void>;
-    handleToggleWishlist: (id: string) => Promise<void>;
+    handleToggleWishlist: (id: string, variantId?: string | null) => Promise<void>;
     handleBuyAllWishlist: () => void;
 
     activeProduct: Product | null;
@@ -387,7 +388,7 @@ export function AppLayout(props: {
                 onAddToCart={app.addToCart}
                 onBack={() => app.onNavigate('home', 'collection')}
                 isWishlisted={app.wishlistIds.includes(app.activeProduct.id)}
-                onToggleWishlist={() => app.handleToggleWishlist(app.activeProduct!.id)}
+                onToggleWishlist={(variantId) => app.handleToggleWishlist(app.activeProduct!.id, variantId)}
                 t={app.t}
                 locale={app.locale}
                 currentUser={app.currentUser}
@@ -668,6 +669,7 @@ export function AppLayout(props: {
           isOpen={app.isWishlistOpen}
           onClose={() => app.setIsWishlistOpen(false)}
           items={filterProductsForMode(app.products.filter((p) => app.wishlistIds.includes(p.id)), app.userMode)}
+          wishlistVariantIds={app.wishlistVariantIds}
           userMode={app.userMode}
           onRemoveItem={async (id) => {
             await app.toggleWishlist(id);

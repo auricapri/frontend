@@ -3,18 +3,22 @@ import { WishlistApi } from '../api/wishlist.api';
 
 export const useWishlist = (userId?: string) => {
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
+  // productId → variantId (the variant the owner specifically wants)
+  const [wishlistVariantIds, setWishlistVariantIds] = useState<Record<string, string>>({});
   const wishlistApi = useRef(new WishlistApi()).current;
 
   useEffect(() => {
     if (!userId) {
       setWishlistIds([]);
+      setWishlistVariantIds({});
       return;
     }
 
     const fetchWishlist = async () => {
       try {
-        const productIds = await wishlistApi.getAll();
+        const { productIds, variantIds } = await wishlistApi.getAll();
         setWishlistIds(productIds);
+        setWishlistVariantIds(variantIds ?? {});
       } catch (err) {
         console.error('Error fetching wishlist:', err);
       }
@@ -23,7 +27,7 @@ export const useWishlist = (userId?: string) => {
     fetchWishlist();
   }, [userId]);
 
-  const toggleWishlist = async (productId: string): Promise<boolean> => {
+  const toggleWishlist = async (productId: string, variantId?: string | null): Promise<boolean> => {
     if (!userId) return false;
 
     const isWishlisted = wishlistIds.includes(productId);
@@ -32,9 +36,17 @@ export const useWishlist = (userId?: string) => {
       if (isWishlisted) {
         await wishlistApi.remove(productId);
         setWishlistIds(prev => prev.filter(id => id !== productId));
+        setWishlistVariantIds(prev => {
+          const next = { ...prev };
+          delete next[productId];
+          return next;
+        });
       } else {
-        await wishlistApi.add(productId);
+        await wishlistApi.add(productId, variantId);
         setWishlistIds(prev => [...prev, productId]);
+        if (variantId) {
+          setWishlistVariantIds(prev => ({ ...prev, [productId]: variantId }));
+        }
       }
       return true;
     } catch (err) {
@@ -45,8 +57,8 @@ export const useWishlist = (userId?: string) => {
 
   return {
     wishlistIds,
+    wishlistVariantIds,
     toggleWishlist,
-    isWishlisted: (productId: string) => wishlistIds.includes(productId)
+    isWishlisted: (productId: string) => wishlistIds.includes(productId),
   };
 };
-

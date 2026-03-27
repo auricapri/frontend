@@ -67,7 +67,7 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
     : storeProducts;
 
   const { currentUser, isLoading: isAuthLoading, userOrders, signOut } = useAuthContext();
-  const { wishlistIds, toggleWishlist } = useWishlist(currentUser?.id);
+  const { wishlistIds, wishlistVariantIds, toggleWishlist } = useWishlist(currentUser?.id);
 
   // Use CartContext - single source of truth for cart state
   const cart = useCartContext();
@@ -169,13 +169,13 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
   );
 
   const handleToggleWishlist = useCallback(
-    async (id: string) => {
+    async (id: string, variantId?: string | null) => {
       if (!currentUser) {
         appState.showToast('Faça login para salvar favoritos', 'info');
         appState.setIsAuthOpen(true);
         return;
       }
-      const ok = await toggleWishlist(id);
+      const ok = await toggleWishlist(id, variantId);
       if (!ok) {
         appState.showToast('Erro ao atualizar favoritos. Tente novamente.', 'error');
       }
@@ -228,6 +228,7 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
     cartItems,
     setCartItems,
     wishlistIds,
+    wishlistVariantIds,
     toggleWishlist,
     handleToggleWishlist,
     handleBuyAllWishlist,

@@ -4,16 +4,16 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api'
 
 export interface WishlistResponse {
   productIds: string[];
+  variantIds: Record<string, string>;
 }
 
 export class WishlistApi {
-  async getAll(): Promise<string[]> {
-    const response = await apiClient.get<WishlistResponse>('/wishlist');
-    return response.productIds;
+  async getAll(): Promise<WishlistResponse> {
+    return apiClient.get<WishlistResponse>('/wishlist');
   }
 
-  async add(productId: string): Promise<void> {
-    await apiClient.post('/wishlist', { productId });
+  async add(productId: string, variantId?: string | null): Promise<void> {
+    await apiClient.post('/wishlist', { productId, variantId: variantId ?? null });
   }
 
   async remove(productId: string): Promise<void> {
@@ -29,7 +29,7 @@ export class WishlistApi {
    * Get shared wishlist by slug - PUBLIC route, no authentication required
    * Uses direct fetch to avoid token issues
    */
-  async getSharedWishlist(slug: string): Promise<{ user_id: string; product_ids: string[] }> {
+  async getSharedWishlist(slug: string): Promise<{ user_id: string; owner_name: string | null; items: Array<{ product_id: string; variant_id: string | null }>; product_ids: string[] }> {
     const response = await fetch(`${API_BASE_URL}/wishlist/shared/${slug}`, {
       method: 'GET',
       headers: {

@@ -29,19 +29,21 @@ interface WishlistDrawerProps {
   t: (key: string) => any;
   locale: Locale;
   currentUserId?: string;
+  wishlistVariantIds?: Record<string, string>;
 }
 
-const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ 
-  isOpen, 
-  onClose, 
-  items, 
-  userMode, 
+const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
+  isOpen,
+  onClose,
+  items,
+  userMode,
   onRemoveItem,
   onSelectProduct,
   onBuyAll,
   t,
   locale,
-  currentUserId
+  currentUserId,
+  wishlistVariantIds = {},
 }) => {
   const getLoc = (obj: any) => {
     if (!obj) return "";
@@ -214,7 +216,12 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
             <>
               {/* Items Grid - 2 columns */}
               <div className="grid grid-cols-2 gap-3 md:gap-4">
-                {items.map((item) => (
+                {items.map((item) => {
+                  const selectedVariantId = wishlistVariantIds[item.id];
+                  const selectedVariant = selectedVariantId
+                    ? item.variants?.find(v => v.id === selectedVariantId)
+                    : null;
+                  return (
                   <div key={item.id} className="relative">
                     <ProductCard
                       product={item}
@@ -227,6 +234,20 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                       showColorSwatches={true}
                       onClick={() => { onSelectProduct(item); onClose(); }}
                     />
+                    {/* Selected variant badge */}
+                    {selectedVariant && (
+                      <div className="absolute bottom-2 left-2 right-8 flex items-center gap-1 bg-black/80 backdrop-blur-sm text-white rounded-lg px-2 py-1 z-10">
+                        {selectedVariant.color_hex && (
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0 border border-white/30"
+                            style={{ backgroundColor: selectedVariant.color_hex }}
+                          />
+                        )}
+                        <span className="text-[9px] font-bold uppercase tracking-wider truncate">
+                          {[getLoc(selectedVariant.color_name), selectedVariant.size].filter(Boolean).join(' · ')}
+                        </span>
+                      </div>
+                    )}
                     {/* Remove from wishlist button */}
                     <button
                       onClick={(e) => { e.stopPropagation(); onRemoveItem(item.id); }}
@@ -236,7 +257,8 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Share & Gift Section */}

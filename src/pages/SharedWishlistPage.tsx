@@ -28,7 +28,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   onOpenAuth,
   slug
 }) => {
-  const [wishlistData, setWishlistData] = useState<{ user_id: string; product_ids: string[] } | null>(null);
+  const [wishlistData, setWishlistData] = useState<{ user_id: string; owner_name: string | null; items: Array<{ product_id: string; variant_id: string | null }>; product_ids: string[] } | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,13 +81,17 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
 
         setProducts(wishlistProducts);
 
-        // Build cart items
+        // Build cart items — use the variant the owner specifically selected
+        const variantMap = new Map(data.items.map(i => [i.product_id, i.variant_id]));
         const items: CartItem[] = (Array.isArray(wishlistProducts) ? wishlistProducts : []).flatMap(product => {
           if (!product || !product.variants || !Array.isArray(product.variants)) {
             return [];
           }
-          
-          const variant = product.variants[0];
+
+          const preferredVariantId = variantMap.get(product.id);
+          const variant = (preferredVariantId
+            ? product.variants.find(v => v.id === preferredVariantId)
+            : null) ?? product.variants.find(v => v.stock_quantity > 0) ?? product.variants[0];
           if (!variant || variant.stock_quantity === 0) return [];
 
           return [{
@@ -272,11 +276,24 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       )}
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="mb-12">
+          {wishlistData?.owner_name && (
+            <div className="inline-flex items-center gap-2 mb-5 px-4 py-2 bg-neutral-950 text-white rounded-full">
+              <GiftIcon className="w-3.5 h-3.5 text-neutral-300 shrink-0" />
+              <span className="text-[10px] font-black uppercase tracking-widest">
+                De um presente incrível para{' '}
+                <span className="text-white">{wishlistData.owner_name}</span>
+              </span>
+            </div>
+          )}
           <h1 className="font-serif text-4xl font-black uppercase tracking-tighter mb-4 italic">
-            Wishlist Compartilhada
+            {wishlistData?.owner_name
+              ? `Lista de Desejos de ${wishlistData.owner_name}`
+              : 'Wishlist Compartilhada'}
           </h1>
           <p className="text-neutral-500 text-[10px] font-bold uppercase tracking-widest">
-            Compre itens desta curadoria exclusiva como presente
+            {wishlistData?.owner_name
+              ? `Escolha um presente especial para ${wishlistData.owner_name}`
+              : 'Compre itens desta curadoria exclusiva como presente'}
           </p>
           {deliveryInfo?.hasAddress && deliveryInfo.city && (
             <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">

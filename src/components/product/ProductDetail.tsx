@@ -1,7 +1,7 @@
 /// Product Detail
 /// Main orchestrator component using modular sub-components
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Product, UserMode, CartItem, UserProfile, Coupon, SizeGuide, Category, ProductReview } from '../../types';
 import { Locale } from '../../i18n';
 import ProductReviews from './ProductReviews';
@@ -40,7 +40,7 @@ interface ProductDetailProps {
   onAddToCart: (item: CartItem) => void;
   onBack: () => void;
   isWishlisted: boolean;
-  onToggleWishlist: () => void;
+  onToggleWishlist: (variantId?: string | null) => void;
   t: (key: string) => any;
   locale: Locale;
   currentUser: UserProfile | null;
@@ -98,6 +98,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
   const actionsRef = useRef<HTMLDivElement>(null);
   const showStickyBar = useStickyBar({ threshold: 200 });
+
+  // Pass the currently selected variant ID when toggling wishlist
+  const handleWishlistToggle = useCallback(() => {
+    onToggleWishlist(activeVariant?.id ?? null);
+  }, [onToggleWishlist, activeVariant]);
 
   // Product images
   const {
@@ -343,7 +348,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 addDisabled={!activeVariant || activeVariant.stock_quantity === 0}
                 addLabel={activeVariant?.stock_quantity === 0 ? t('product.outOfStock') : t('product.addToCart')}
                 isWishlisted={isWishlisted}
-                onToggleWishlist={onToggleWishlist}
+                onToggleWishlist={handleWishlistToggle}
                 isShareOpen={isShareOpen}
                 onToggleShare={() => setIsShareOpen(!isShareOpen)}
                 linkCopied={linkCopied}
@@ -438,7 +443,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       <MobileStickyBar
         isVisible={showStickyBar}
         isWishlisted={isWishlisted}
-        onToggleWishlist={onToggleWishlist}
+        onToggleWishlist={handleWishlistToggle}
         isShareOpen={isShareOpen}
         onToggleShare={() => setIsShareOpen(!isShareOpen)}
         linkCopied={linkCopied}
