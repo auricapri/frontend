@@ -37,6 +37,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   const [itemsToCheckout, setCheckoutItems] = useState<CartItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [deliveryInfo, setDeliveryInfo] = useState<{ hasAddress: boolean; city?: string; state?: string } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -150,15 +151,36 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   };
 
   const handleBuyItem = (productId: string) => {
-    if (!currentUser) {
-      onOpenAuth();
-      return;
-    }
+    if (!currentUser) { onOpenAuth(); return; }
     if (deliveryInfo && !deliveryInfo.hasAddress) return;
     const item = cartItems.find(i => i.product_id === productId);
-    if (item) {
-      setCheckoutItems([item]);
-      setShowCheckout(true);
+    if (item) { setCheckoutItems([item]); setShowCheckout(true); }
+  };
+
+  const toggleSelection = (productId: string) => {
+    if (!currentUser) { onOpenAuth(); return; }
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(productId)) next.delete(productId);
+      else next.add(productId);
+      return next;
+    });
+  };
+
+  const handleBuySelected = () => {
+    if (!currentUser) { onOpenAuth(); return; }
+    if (deliveryInfo && !deliveryInfo.hasAddress) return;
+    const items = cartItems.filter(i => selectedIds.has(i.product_id));
+    if (items.length === 0) return;
+    setCheckoutItems(items);
+    setShowCheckout(true);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === products.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(products.map(p => p.id)));
     }
   };
 
@@ -334,29 +356,65 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-20">
+            {/* Select all / count bar */}
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={handleSelectAll}
+                className="text-[10px] font-black uppercase tracking-widest text-neutral-500 hover:text-black transition-colors"
+              >
+                {selectedIds.size === products.length ? 'Desmarcar Todos' : 'Selecionar Todos'}
+              </button>
+              {selectedIds.size > 0 && (
+                <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                  {selectedIds.size} {selectedIds.size === 1 ? 'item selecionado' : 'itens selecionados'}
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-32">
               {products.map(product => {
                 if (!product) return null;
+                const isSelected = selectedIds.has(product.id);
 
                 return (
-                  <div key={product.id || Math.random()} className="relative group">
-                    <ProductCard
-                      product={product}
-                      userMode={userMode}
-                      locale={locale}
-                      variant="grid"
-                      showWishlist={false}
-                      showQuickAdd={false}
-                      showDiscountBadge={true}
-                      showColorSwatches={true}
-                    />
-                    {/* Gift overlay on hover */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 z-10">
+                  <div key={product.id} className="relative group">
+                    <div
+                      className={`transition-all duration-200 ${isSelected ? 'ring-2 ring-black ring-offset-2 rounded-2xl' : ''}`}
+                    >
+                      <ProductCard
+                        product={product}
+                        userMode={userMode}
+                        locale={locale}
+                        variant="grid"
+                        showWishlist={false}
+                        showQuickAdd={false}
+                        showDiscountBadge={true}
+                        showColorSwatches={true}
+                      />
+                    </div>
+
+                    {/* Selection toggle — always visible */}
+                    <button
+                      onClick={() => toggleSelection(product.id)}
+                      className={`absolute top-2 left-2 z-10 w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-sm ${
+                        isSelected
+                          ? 'bg-black text-white'
+                          : 'bg-white/90 backdrop-blur-sm text-neutral-400 hover:text-black border border-neutral-200'
+                      }`}
+                      aria-label={isSelected ? 'Remover seleção' : 'Selecionar item'}
+                    >
+                      {isSelected
+                        ? <CheckIcon className="w-3.5 h-3.5" />
+                        : <PlusIcon className="w-3 h-3" />}
+                    </button>
+
+                    {/* Quick buy — on hover */}
+                    <div className="absolute inset-x-2 bottom-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                       <button
                         onClick={() => handleBuyItem(product.id)}
-                        className="w-full py-3 bg-paper text-black rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                        className="w-full py-2.5 bg-black text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-xl hover:bg-neutral-800 active:scale-95 transition-all"
                       >
-                        Presentear Este Item
+                        Presentear só este
                       </button>
                     </div>
                   </div>
@@ -364,18 +422,35 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
               })}
             </div>
 
-            <div className="flex justify-center border-t border-neutral-100 pt-20">
-              <button
-                onClick={handleBuyAll}
-                disabled={!!currentUser && (!Array.isArray(cartItems) || cartItems.length === 0)}
-                className="px-16 py-8 bg-black text-white rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-105 active:scale-95 disabled:opacity-20 transition-all flex items-center gap-4"
-              >
-                {currentUser ? (
-                  <>Comprar Toda a Curadoria <ArrowRight className="w-4 h-4" /></>
-                ) : (
-                  <>Entre e compre toda a curadoria <ArrowRight className="w-4 h-4" /></>
+            {/* Sticky bottom action bar */}
+            <div className="fixed bottom-0 inset-x-0 z-30 px-4 pb-6 pt-3 bg-gradient-to-t from-paper via-paper/95 to-transparent pointer-events-none">
+              <div className="max-w-lg mx-auto flex flex-col gap-2 pointer-events-auto">
+                {selectedIds.size > 0 && (
+                  <button
+                    onClick={handleBuySelected}
+                    className="w-full py-4 bg-black text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                  >
+                    <GiftIcon className="w-4 h-4" />
+                    Presentear {selectedIds.size} {selectedIds.size === 1 ? 'item' : 'itens'}
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 )}
-              </button>
+                <button
+                  onClick={handleBuyAll}
+                  disabled={!!currentUser && (!Array.isArray(cartItems) || cartItems.length === 0)}
+                  className={`w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-20 ${
+                    selectedIds.size > 0
+                      ? 'bg-neutral-100 text-black hover:bg-neutral-200'
+                      : 'bg-black text-white shadow-2xl hover:scale-[1.02]'
+                  }`}
+                >
+                  {currentUser ? (
+                    <>Comprar Toda a Curadoria ({cartItems.length}) <ArrowRight className="w-4 h-4" /></>
+                  ) : (
+                    <>Entre e compre toda a curadoria <ArrowRight className="w-4 h-4" /></>
+                  )}
+                </button>
+              </div>
             </div>
           </>
         )}
@@ -399,6 +474,18 @@ const ArrowRight = ({ className }: { className?: string }) => (
 const Loader2 = ({ className }: { className?: string }) => (
   <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+);
+
+const CheckIcon = ({ className }: { className?: string }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+const PlusIcon = ({ className }: { className?: string }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
   </svg>
 );
 

@@ -5,6 +5,25 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.48] - 2026-03-27
+
+### Adicionado
+- **SharedWishlistPage**: seleção múltipla de itens — botão circular `+/✓` em cada card; barra sticky com "Presentear N itens" aparece quando há seleção; "Selecionar Todos / Desmarcar Todos" no topo
+- **SharedWishlistPage**: badge "De um presente incrível para [Nome]" no cabeçalho identifica para quem é a wishlist
+- **SharedWishlistPage**: hover rápido "Presentear só este" em cada card para compra direta de um item
+- **SharedWishlistPage**: checkout usa variante específica salva pelo dono (`variant_id`); se não houver, cai para primeiro em estoque
+- **WishlistDrawer**: badge de cor/tamanho na variante salva pelo dono (cor + tamanho escolhidos)
+- **useWishlist**: `wishlistVariantIds` para rastrear qual variante o dono escolheu por produto
+- **ProductDetail**: salva variante ativa ao adicionar à wishlist
+- **Backend wishlist routes**: corrigido `addressData` com nomes de campos do ViaCEP; `variantId` aceito no POST; `owner_name` retornado no GET shared (primeiro nome apenas); `variantIds` map no GET
+- **Backend wishlist repository**: suporte a `variant_id` na tabela, `SharedWishlistData` com `owner_name`, `items[]`
+- **DB**: `variant_id UUID FK product_variants` adicionado à tabela `wishlist`; constraint UNIQUE em `share_slug` removida (fix do link de compartilhamento)
+- **Backend logistics.service**: markup de frete centralizado no backend (`applyFreightMarkup` — ×1.4 ≤ R$20, ×1.2 > R$20); frontend nunca calcula markup
+
+### Corrigido
+- **Wishlist share link**: constraint `wishlist_share_slug_key` causava erro 23505 ao atualizar múltiplas linhas com mesmo slug — removida via Supabase Management API
+- **PIX na wishlist gift**: `addressData.numero: String must contain at least 1 character(s)` — campos `numero` e `complemento` omitidos (são opcionais, Zod rejeita string vazia)
+
 ## [1.4.47] - 2026-03-27
 
 ### Corrigido
