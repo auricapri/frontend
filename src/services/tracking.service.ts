@@ -16,6 +16,7 @@ type TrackingEventType =
   | 'cart_add'
   | 'cart_remove'
   | 'checkout_start'
+  | 'address_confirmed'
   | 'purchase';
 
 type ConsentState = {

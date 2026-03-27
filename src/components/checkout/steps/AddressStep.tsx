@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { AlertCircle, Check, Loader2, MapPin, Navigation, Search, ChevronDown } from 'lucide-react';
 import { type CheckoutState } from '../hooks/useCheckoutState';
 import { maskCep, normalizeCepDigits, validateCPF } from '../../../utils/masks';
 import { UserMode } from '../../../types';
 import { ShippingSelectionModal } from './ShippingSelectionModal';
+import { trackingService } from '../../../services/tracking.service';
 
 export function AddressStep({ checkout }: { checkout: CheckoutState }) {
   const {
@@ -49,6 +50,36 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
   const [showInlineSearch, setShowInlineSearch] = useState(false);
   // State para modal de seleção de frete (VAREJO apenas)
   const [showShippingModal, setShowShippingModal] = useState(false);
+
+  // Callback chamado quando usuário confirma o endereço na aba 1 do modal
+  const handleAddressConfirmed = useCallback(() => {
+    const street = [address?.logradouro, num].filter(Boolean).join(', ');
+    const meta: Record<string, unknown> = {
+      street,
+      neighborhood: address?.bairro ?? '',
+      city: address?.localidade ?? '',
+      uf: address?.uf ?? '',
+      confirmed_at: new Date().toISOString(),
+    };
+    if (complement) meta.complement = complement;
+    if (cep) meta.cep = cep;
+
+    // Registrar confirmação ignorando configuração de consentimento de analytics
+    // pois é dado operacional/legal, não análise de comportamento
+    void trackingService.trackEvent({
+      event: 'address_confirmed',
+      userId: currentUser?.id,
+      metadata: meta,
+      consent: { analytics: true, geolocation: false },
+    });
+
+    // Backup local como auditoria
+    try {
+      const log = JSON.parse(localStorage.getItem('address_confirmation_log') || '[]') as unknown[];
+      log.push({ ...meta, session_id: localStorage.getItem('tracking_session_id') });
+      localStorage.setItem('address_confirmation_log', JSON.stringify(log.slice(-20)));
+    } catch { /* ignore */ }
+  }, [address, num, complement, cep, currentUser?.id]);
 
   // Atualizar campo do endereço
   const updateAddressField = (field: string, value: string) => {
@@ -421,6 +452,10 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
           onSelectCarrier={(opt) => shipping.setVarejoCarrierOption(opt)}
           onConfirm={() => { setShowShippingModal(false); setStep(2); }}
           onClose={() => setShowShippingModal(false)}
+          addressLine1={[address?.logradouro, num].filter(Boolean).join(', ')}
+          addressLine2={[complement, address?.bairro, [address?.localidade, address?.uf].filter(Boolean).join(' ')].filter(Boolean).join(' — ')}
+          cep={cep}
+          onAddressConfirmed={handleAddressConfirmed}
         />
       )}
     </>
