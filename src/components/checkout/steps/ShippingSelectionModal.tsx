@@ -11,11 +11,6 @@ type ModalTab = 'address' | 'shipping';
 const isCarrierChoice = (s: ShippingChoice): s is { carrier: ShippingOption } =>
   s !== 'free' && s !== 'express';
 
-function applyFreightMarkup(cost: number): number {
-  const multiplier = cost <= 20 ? 1.4 : 1.2;
-  return Math.round(cost * multiplier * 100) / 100;
-}
-
 interface ShippingSelectionModalProps {
   freeOption: InternalLogisticsInfo | null;
   freeDisplayDays: number;
@@ -67,11 +62,7 @@ export function ShippingSelectionModal({
     } else if (selected === 'express') {
       onSelectExpress();
     } else {
-      const markedUp: ShippingOption = {
-        ...selected.carrier,
-        real_cost: applyFreightMarkup(selected.carrier.real_cost),
-      };
-      onSelectCarrier(markedUp);
+      onSelectCarrier(selected.carrier);
     }
     onConfirm();
   }, [selected, onSelectFree, onSelectExpress, onSelectCarrier, onConfirm]);
@@ -197,7 +188,7 @@ export function ShippingSelectionModal({
                       <div className="flex items-center gap-2">
                         {selected === 'express' && <Check className="w-4 h-4 text-green-400 shrink-0" />}
                         <span className={`text-sm font-normal ${selected === 'express' ? 'text-white' : ''}`}>
-                          {formatCurrency(applyFreightMarkup(expressOption.real_cost), locale)}
+                          {formatCurrency(expressOption.real_cost, locale)}
                         </span>
                       </div>
                     </div>
@@ -234,7 +225,7 @@ export function ShippingSelectionModal({
                         <div className="flex items-center gap-2">
                           {isSelected && <Check className="w-4 h-4 text-green-400 shrink-0" />}
                           <span className={`text-sm font-normal ${isSelected ? 'text-white' : ''}`}>
-                            {formatCurrency(applyFreightMarkup(opt.real_cost), locale)}
+                            {formatCurrency(opt.real_cost, locale)}
                           </span>
                         </div>
                       </div>

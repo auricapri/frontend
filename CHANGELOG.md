@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.46] - 2026-03-23
+
+### Corrigido
+- **ShippingSelectionModal**: removido cálculo de markup de frete do frontend — `applyFreightMarkup` eliminado. Frontend agora exibe `real_cost` diretamente, que o backend já retorna com markup aplicado (×1.4 ≤ R$20, ×1.2 > R$20)
+
 ## [1.4.45] - 2026-03-23
 
 ### Adicionado
