@@ -48,6 +48,8 @@ export function useNavigation(params: UseNavigationParams) {
   const { locale, currentUser, isAuthLoading, showToast, products, isStoreLoading } = params;
 
   const mainRef = useRef<HTMLElement>(null);
+  const savedScrollTop = useRef<number>(0);
+  const currentViewRef = useRef<AppView>('home');
   const [isScrolled, setIsScrolled] = useState(false);
 
   const extractProductSlug = useCallback((pathname: string): string | null => {
@@ -105,6 +107,7 @@ export function useNavigation(params: UseNavigationParams) {
 
   const [currentView, setCurrentView] = useState<AppView>(() => {
     const view = getViewFromPath(window.location.pathname);
+    currentViewRef.current = view;
     if (view !== 'home') {
       document.body.classList.add('loaded');
     }
@@ -165,9 +168,21 @@ export function useNavigation(params: UseNavigationParams) {
   useEffect(() => {
     const handlePopState = () => {
       const view = getViewFromPath(window.location.pathname);
+      const fromProduct = currentViewRef.current === 'product';
+      currentViewRef.current = view;
       setCurrentView(view);
 
+      if (fromProduct && savedScrollTop.current > 0 && mainRef.current) {
+        const target = savedScrollTop.current;
+        savedScrollTop.current = 0;
+        // Let the DOM update before restoring
+        requestAnimationFrame(() => {
+          mainRef.current?.scrollTo({ top: target, behavior: 'instant' });
+        });
+      }
+
       if (view === 'product') {
+        savedScrollTop.current = mainRef.current?.scrollTop ?? 0;
         const slug = extractProductSlug(window.location.pathname);
         if (slug) {
           loadProductFromSlug(slug);
@@ -211,6 +226,14 @@ export function useNavigation(params: UseNavigationParams) {
 
   const handleNavigate = useCallback(
     (view: Exclude<AppView, 'admin-login' | 'delivery-login' | 'shared-wishlist' | 'order-review'>, targetSection?: string, product?: Product) => {
+      const fromProduct = currentViewRef.current === 'product';
+
+      // Save scroll before entering product; restore it when leaving
+      if (view === 'product') {
+        savedScrollTop.current = mainRef.current?.scrollTop ?? 0;
+      }
+
+      currentViewRef.current = view;
       setCurrentView(view);
       if (view !== '404') {
         let path = '';
@@ -247,7 +270,14 @@ export function useNavigation(params: UseNavigationParams) {
       }
 
       if (mainRef.current) {
-        mainRef.current.scrollTo({ top: 0, behavior: 'instant' });
+        if (fromProduct && savedScrollTop.current > 0) {
+          // Restore position the user was at before opening the product
+          const target = savedScrollTop.current;
+          mainRef.current.scrollTo({ top: target, behavior: 'instant' });
+          savedScrollTop.current = 0;
+        } else {
+          mainRef.current.scrollTo({ top: 0, behavior: 'instant' });
+        }
       }
 
       if (view === 'home') {
@@ -260,7 +290,8 @@ export function useNavigation(params: UseNavigationParams) {
       }
 
       setTimeout(() => {
-        if (view === 'home' && targetSection) {
+        // Only scroll to section if we're NOT restoring a saved position from product
+        if (view === 'home' && targetSection && !fromProduct) {
           const el = document.getElementById(targetSection);
           if (el && mainRef.current) {
             mainRef.current.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });

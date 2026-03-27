@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.49] - 2026-03-27
+
+### Corrigido
+- **useNavigation**: ao voltar do detalhe do produto, a página anterior restaura a posição de scroll exata onde o usuário estava — não retorna mais ao topo
+
 ## [1.4.48] - 2026-03-27
 
 ### Adicionado
