@@ -5,6 +5,23 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.51] - 2026-03-27
+
+### Adicionado
+- **SizeGuideModal**: zoom clicável na imagem do guia de tamanhos — clique/toque na imagem alterna entre modo ajustado e modo ampliado (200% no mobile, 150% no desktop); botão ZoomIn/ZoomOut no canto superior; suporte a pinch-to-zoom nativo com `touch-action: pinch-zoom`
+
+### Corrigido (Supabase — sem deploy frontend)
+- **Coleções Fitness, Inverno, Copa**: imagem de capa adicionada para as 3 coleções que estavam sem foto
+- **Vínculos produto-coleção**: 164 novos vínculos criados — 55 fitness, 21 inverno, 10 copa, 78 plus size
+- **Categorias de produtos**: 45 produtos realocados para categorias corretas (vestidos em blusas → vestidos; macacões em blusas → bodies/macaquinhos; conjuntos em vestidos/saias/alfaiataria → conjuntos; plus size em outras → plus size)
+
+## [1.4.50] - 2026-03-27
+
+### Corrigido
+- **Produto Vestido Florença**: variantes incorretas (SKU 053/054 — Dulce) separadas em novo produto "Vestido Dulce"; Florença mantém apenas variantes azul (SKU 021)
+- **Acessórios (15 produtos)**: ordem de `variant_images` invertida — foto solo do produto aparece primeiro na galeria (em vez da foto com modelo)
+- **Vestido Valencia**: 12 imagens AI-geradas carregadas do diretório local (`nana_modas/valencia/`) e associadas às variantes correspondentes no Supabase
+
 ## [1.4.49] - 2026-03-27
 
 ### Corrigido
