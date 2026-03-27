@@ -5,6 +5,12 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.45] - 2026-03-23
+
+### Adicionado
+- **ShippingSelectionModal** — modal de frete agora tem 2 passos: (1) Confirmar Endereço, (2) Escolher Entrega. Usuário vê o endereço completo antes de prosseguir, elimina reclamações de endereço errado
+- **tracking.service** — novo evento `address_confirmed` registrado com os dados do endereço (rua, número, bairro, cidade, UF, CEP) + backup em `localStorage['address_confirmation_log']`. Registra que o usuário verificou e autorizou o endereço
+
 ## [1.4.44] - 2026-03-21
 
 ### Melhorado
