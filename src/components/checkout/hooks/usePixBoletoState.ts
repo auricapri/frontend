@@ -321,6 +321,7 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
         finalAmount: finalTotal,
         cashbackUsed: cashbackUsed > 0 ? cashbackUsed : undefined,
         couponCode: familiaCouponCode,
+        userMode: userMode,
       });
 
       // Salva CPF no perfil se foi alterado ou ainda não estava salvo

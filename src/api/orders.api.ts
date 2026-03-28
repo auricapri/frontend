@@ -34,6 +34,7 @@ export class OrdersApi {
     couponId?: string | null;
     couponCode?: string | null;
     cashbackUsed?: number;
+    userMode?: string;
   }): Promise<Order> {
     const { addressData, logisticsInfo } = order;
 

@@ -5,6 +5,15 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.53] - 2026-03-27
+
+### Adicionado
+- **CartDrawer**: campo de cupom oculto para usuários em modo atacado (`userMode === ATACADO`)
+- **useCheckoutTotals**: `pixDiscount` e `quantityDiscount` zerados para modo atacado
+- **useCheckoutState**: `userMode` repassado ao `useCheckoutTotals`
+- **usePixBoletoState**: `userMode` incluído no payload de criação de pedido
+- **orders.api.ts**: campo `userMode` adicionado ao payload de `create()`
+
 ## [1.4.52] - 2026-03-27
 
 ### Corrigido

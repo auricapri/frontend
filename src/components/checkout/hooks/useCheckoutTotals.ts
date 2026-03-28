@@ -16,6 +16,7 @@
 
 import { useMemo } from 'react';
 import { PaymentMethod } from '../../../constants/enums';
+import { UserMode } from '../../../types';
 import { calculateQuantityDiscount } from '../../cart/BoxSavingsIndicator';
 import type { UseCheckoutTotalsParams, UseCheckoutTotalsReturn } from './types';
 
@@ -27,7 +28,10 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
     paymentMethod,
     availableCashback,
     useCashback,
+    userMode,
   } = params;
+
+  const isAtacado = userMode === UserMode.ATACADO;
 
   const safeItems = Array.isArray(items) ? items : [];
 
@@ -58,10 +62,12 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
   }, [safeItems]);
 
   // Quantity discount based on box optimization (3 items per box, R$35 savings per shared item)
+  // Atacado customers have no discounts
   const quantityDiscount = useMemo(() => {
+    if (isAtacado) return 0;
     const { discountValue } = calculateQuantityDiscount(totalItemCount, subtotal);
     return discountValue;
-  }, [totalItemCount, subtotal]);
+  }, [isAtacado, totalItemCount, subtotal]);
 
   // Subtotal after bundle and quantity discounts (base for PIX discount, excludes shipping)
   const discountedSubtotal = useMemo(() => {
@@ -69,9 +75,11 @@ export function useCheckoutTotals(params: UseCheckoutTotalsParams): UseCheckoutT
   }, [subtotal, bundleDiscount, quantityDiscount]);
 
   // PIX discount (5% applied on discountedSubtotal only — excludes shipping per SEFAZ-SP RC 28518/2023)
+  // Atacado customers have no discounts
   const pixDiscount = useMemo(() => {
+    if (isAtacado) return 0;
     return paymentMethod === PaymentMethod.PIX ? discountedSubtotal * 0.05 : 0;
-  }, [paymentMethod, discountedSubtotal]);
+  }, [isAtacado, paymentMethod, discountedSubtotal]);
 
   // Total before wallet (after all unconditional discounts + shipping)
   const totalBeforeWallet = useMemo(() => {

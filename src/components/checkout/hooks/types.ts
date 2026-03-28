@@ -54,6 +54,7 @@ export interface UseCheckoutTotalsParams {
   paymentMethod: PaymentMethod;
   availableCashback: number;
   useCashback: boolean;
+  userMode?: UserModeType;
 }
 
 export interface UseCheckoutTotalsReturn {

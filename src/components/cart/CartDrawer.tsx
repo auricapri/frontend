@@ -27,7 +27,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
   onClose,
   items,
   products = [],
-  userMode: _userMode,
+  userMode,
   onUpdateQuantity,
   onRemoveItem,
   onCheckout,
@@ -279,8 +279,8 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
               <span className="text-[10px] font-bold uppercase tracking-wider">Frete grátis para todo o Brasil</span>
             </div>
 
-            {/* Coupon Code Input */}
-            <div className="mb-3">
+            {/* Coupon Code Input — hidden for atacado customers */}
+            {userMode !== UserMode.ATACADO && <div className="mb-3">
               {appliedCoupon ? (
                 <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
                   <div className="flex items-center gap-2">
@@ -328,7 +328,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                   )}
                 </>
               )}
-            </div>
+            </div>}
 
             <button
               onClick={async () => {

@@ -115,6 +115,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
     paymentMethod,
     availableCashback: currentUser?.loyalty?.cashback_balance || 0,
     useCashback,
+    userMode,
   });
 
   // Installments
