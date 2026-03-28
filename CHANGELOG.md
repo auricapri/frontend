@@ -5,6 +5,11 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.52] - 2026-03-27
+
+### Corrigido
+- **CouponsDrawer**: aba "Ofertas" agora chama endpoint público `/coupons` (filtra `is_public = true`) em vez do endpoint admin `/coupons/all` — cupons pessoais (LEVELUP-*, MARCUS100, FAMILIA, etc.) não aparecem mais na vitrine pública
+
 ## [1.4.51] - 2026-03-27
 
 ### Adicionado

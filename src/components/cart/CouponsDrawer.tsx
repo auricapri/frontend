@@ -30,7 +30,7 @@ const CouponsDrawer: React.FC<CouponsDrawerProps> = ({
 
   const { data: coupons = [], isLoading } = useQuery<Coupon[]>({
     queryKey: ['coupons', 'public'],
-    queryFn: () => couponsApi.getAll(),
+    queryFn: () => couponsApi.getAllActive(),
     staleTime: 5 * 60 * 1000,
     enabled: isOpen,
   });
