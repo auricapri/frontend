@@ -274,23 +274,26 @@ export function searchProducts(
   products: Product[],
   locale: Locale = 'pt'
 ): Product[] {
-  const normalizedQuery = query.toLowerCase().trim();
+  const norm = (s: string) =>
+    s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const normalizedQuery = norm(query.trim());
   if (!normalizedQuery) return products;
 
   return products.filter(product => {
     const getLoc = (obj: any): string => {
       if (!obj) return '';
-      if (typeof obj === 'string') return obj.toLowerCase();
+      if (typeof obj === 'string') return norm(obj);
       if (typeof obj === 'object') {
-        return (obj[locale] || obj['pt'] || obj['en'] || '').toLowerCase();
+        return norm(obj[locale] || obj['pt'] || obj['en'] || '');
       }
-      return String(obj).toLowerCase();
+      return norm(String(obj));
     };
 
-    // Search in product name
     if (getLoc(product.name).includes(normalizedQuery)) return true;
-    // Search in description
     if (getLoc(product.description).includes(normalizedQuery)) return true;
+    if (Array.isArray((product as any).tags)) {
+      if ((product as any).tags.some((tag: string) => norm(tag).includes(normalizedQuery))) return true;
+    }
     return false;
   });
 }

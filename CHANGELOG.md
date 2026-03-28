@@ -14,6 +14,12 @@ e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/
 - **usePixBoletoState**: `userMode` incluído no payload de criação de pedido
 - **orders.api.ts**: campo `userMode` adicionado ao payload de `create()`
 
+## [1.4.53] - 2026-03-28
+
+### Corrigido
+- **Busca de produtos**: resultados agora encontram produtos com acentos — `slugify()` removia os acentos da query, mas `searchProducts()` não normalizava o texto dos produtos, causando zero resultados para qualquer termo acentuado (calças, coleção, etc.)
+- **Busca**: incluída pesquisa no campo `tags` do produto além de nome e descrição
+
 ## [1.4.52] - 2026-03-27
 
 ### Corrigido
