@@ -326,7 +326,7 @@ export function AppLayout(props: {
                 wishlistIds={app.wishlistIds}
                 onToggleWishlist={app.handleToggleWishlist}
                 onAddToCart={app.addToCart}
-                onGoToCart={() => app.onNavigate('checkout')}
+                onGoToCart={app.handleCheckoutIntent}
                 t={app.t}
                 locale={app.locale}
                 isLoading={app.isLoading}
