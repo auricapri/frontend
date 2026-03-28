@@ -5,6 +5,13 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.56] - 2026-03-28
+
+### Corrigido
+- **useFamiliaCoupon**: `activateFamilia` verifica sessão Supabase antes de chamar a API — retorna mensagem amigável "Faça login para acessar os preços exclusivos" em vez de erro 401
+- **CouponsDrawer**: input com `min-w-0` + botão "Aplicar" com `shrink-0 whitespace-nowrap` para evitar overflow do container em mobile
+- **Cupom PROMO10**: desativado no banco de dados (estava ativo por engano)
+
 ## [1.4.55] - 2026-03-28
 
 ### Corrigido

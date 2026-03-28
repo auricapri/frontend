@@ -25,6 +25,17 @@ export function useFamiliaCoupon(userId?: string | null) {
 
   const activateFamilia = useCallback(async (code: string) => {
     if (!code.trim()) return;
+
+    // Check auth before hitting the backend (avoids "Missing or invalid authorization header")
+    const { supabase } = await import('../utils/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      if (isMountedRef.current) {
+        setFamiliaError('Faça login para acessar os preços exclusivos.');
+      }
+      return;
+    }
+
     setFamiliaLoading(true);
     setFamiliaError(null);
     try {

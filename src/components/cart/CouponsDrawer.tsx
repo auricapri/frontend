@@ -122,19 +122,19 @@ const CouponsDrawer: React.FC<CouponsDrawerProps> = ({
                 </button>
               </div>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex gap-2 overflow-hidden">
                 <input
                   type="text"
                   value={exclusiveCode}
                   onChange={(e) => setExclusiveCode(e.target.value.toUpperCase())}
                   placeholder="Código exclusivo"
-                  className="flex-1 text-sm border border-gray-300 rounded px-3 py-1.5 bg-white focus:outline-none focus:border-amber-400 uppercase"
+                  className="flex-1 min-w-0 text-sm border border-gray-300 rounded px-3 py-1.5 bg-white focus:outline-none focus:border-amber-400 uppercase"
                   onKeyDown={(e) => e.key === 'Enter' && handleApplyExclusive()}
                 />
                 <button
                   onClick={handleApplyExclusive}
                   disabled={familiaLoading || !exclusiveCode.trim()}
-                  className="text-sm px-3 py-1.5 border border-gray-300 rounded bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="shrink-0 text-sm px-3 py-1.5 border border-gray-300 rounded bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
                 >
                   {familiaLoading ? '...' : 'Aplicar'}
                 </button>
