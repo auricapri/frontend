@@ -169,8 +169,11 @@ export function findActiveVariant(
 ): ProductVariant | undefined {
   if (!variants?.length) return undefined;
 
+  // Treat null/undefined and '' as equivalent so products without a
+  // color_hex (single-color items) still match when selectedColorHex is ''.
+  const targetHex = colorHex || '';
   return variants.find(
-    v => v.size === size && v.color_hex === colorHex && v.is_active
+    v => v.size === size && (v.color_hex || '') === targetHex && v.is_active
   );
 }
 

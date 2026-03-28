@@ -4,12 +4,19 @@ import { Product } from '../types';
 
 const SESSION_KEY = 'familia_coupon_code';
 
-export function useFamiliaCoupon() {
+/**
+ * @param userId - passa o userId do currentUser quando disponível.
+ *                 O restauro automático do sessionStorage só ocorre
+ *                 quando o userId está confirmado (evita erro 401 de
+ *                 race condition entre Supabase auth init e mount do hook).
+ */
+export function useFamiliaCoupon(userId?: string | null) {
   const [activeFamiliaCoupon, setActiveFamiliaCoupon] = useState<string | null>(null);
   const [familiaProducts, setFamiliaProducts] = useState<Product[] | null>(null);
   const [familiaLoading, setFamiliaLoading] = useState(false);
   const [familiaError, setFamiliaError] = useState<string | null>(null);
   const isMountedRef = useRef(true);
+  const restoredRef = useRef(false);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -42,13 +49,25 @@ export function useFamiliaCoupon() {
     sessionStorage.removeItem(SESSION_KEY);
   }, []);
 
-  // Restaurar sessão salva ao montar
+  // Restaurar sessão salva — mas apenas quando o userId estiver confirmado.
+  // Sem userId, Supabase ainda não inicializou a sessão e o getAuthToken()
+  // retorna null, causando "Missing or invalid authorization header".
   useEffect(() => {
+    if (!userId || restoredRef.current) return;
+    restoredRef.current = true;
     const saved = sessionStorage.getItem(SESSION_KEY);
     if (saved) {
       activateFamilia(saved);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId, activateFamilia]);
+
+  // Se o usuário fez logout, desativar o familia e limpar sessionStorage
+  useEffect(() => {
+    if (userId === null && activeFamiliaCoupon) {
+      deactivateFamilia();
+      restoredRef.current = false;
+    }
+  }, [userId, activeFamiliaCoupon, deactivateFamilia]);
 
   return {
     activeFamiliaCoupon,

@@ -5,6 +5,27 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.55] - 2026-03-28
+
+### Corrigido
+- **useFamiliaCoupon**: restauro do sessionStorage agora aguarda o `userId` estar disponível, eliminando race condition com inicialização assíncrona do Supabase que causava "Missing or invalid authorization header" ao abrir o app
+- **useFamiliaCoupon**: ao fazer logout, desativa automaticamente o modo familia e reseta o flag de restore
+- **AppRoot / AppContext**: passam `currentUser?.id` ao `useFamiliaCoupon` para sincronizar com o estado de auth
+- **findActiveVariant**: `null` e `''` tratados como equivalentes em `color_hex`, corrigindo seleção de tamanho em produtos sem cor definida (todos os tamanhos adicionavam sempre o primeiro do array)
+- **useVariantSelection**: auto-seleção de tamanho não exige mais que a cor esteja selecionada, funciona para produtos sem `color_hex`
+
+## [1.4.54] - 2026-03-28
+
+### Corrigido (DB)
+- **Agrupamento de produtos fitness**: 13 produtos que representavam o mesmo modelo em cores diferentes foram consolidados em 4 produtos com múltiplas variantes de cor:
+  - "Conjunto Fitness Cropped e Calça Legging" → Off-White + Rosê + Bege (9 variantes)
+  - "Conjunto Fitness Canelado Top e Calça" → Bordô + Burgundy (6 variantes)
+  - "Conjunto Fitness Texturizado Top e Calça" → Azul Marinho + Cinza (6 variantes)
+  - "Conjunto Fitness Top e Calça Legging" → Preto + Rosê + Rosa Claro + Nude + Rosé + Rosa (18 variantes)
+- 9 produtos redundantes removidos (soft-delete)
+- Slugs e nomes atualizados para serem neutros em relação à cor
+- Bootstrap carrega agora todas as imagens de cores por produto
+
 ## [1.4.53] - 2026-03-27
 
 ### Adicionado

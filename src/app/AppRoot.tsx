@@ -60,13 +60,12 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
     refetchStoreData,
   } = storeData;
 
-  const familia = useFamiliaCoupon();
+  const { currentUser, isLoading: isAuthLoading, userOrders, signOut } = useAuthContext();
+  const familia = useFamiliaCoupon(currentUser?.id);
   // Quando familia ativo, exibir preços de custo no grid de produtos
   const products = familia.isFamiliaActive && familia.familiaProducts
     ? familia.familiaProducts
     : storeProducts;
-
-  const { currentUser, isLoading: isAuthLoading, userOrders, signOut } = useAuthContext();
   const { wishlistIds, wishlistVariantIds, toggleWishlist } = useWishlist(currentUser?.id);
 
   // Use CartContext - single source of truth for cart state

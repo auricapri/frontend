@@ -112,9 +112,9 @@ export function useVariantSelection({
     }
   }, [colors, selectedColorHex]);
 
-  // Auto-select first size when color is selected
+  // Auto-select first size when color is selected (or when there are no colors)
   useEffect(() => {
-    if (selectedColorHex && sizes.length > 0 && !selectedSize) {
+    if (sizes.length > 0 && !selectedSize) {
       setSelectedSize(sizes[0]);
     }
   }, [selectedColorHex, sizes, selectedSize]);

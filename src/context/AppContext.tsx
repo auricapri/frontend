@@ -3,6 +3,7 @@ import { Product, Category, Collection, Banner, Coupon, Asset, SizeGuide, StoreC
 import { Locale } from '../i18n';
 import { useStoreData } from '../hooks/useStoreData';
 import { useFamiliaCoupon } from '../hooks/useFamiliaCoupon';
+import { useAuthContext } from './AuthContext';
 
 interface AppContextType {
   products: Product[];
@@ -55,7 +56,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({
   setUserMode
 }) => {
   const storeData = useStoreData();
-  const familia = useFamiliaCoupon();
+  const { currentUser } = useAuthContext();
+  const familia = useFamiliaCoupon(currentUser?.id);
 
   // Quando familia ativo, usar preços de custo nos produtos
   const displayProducts = familia.isFamiliaActive && familia.familiaProducts
