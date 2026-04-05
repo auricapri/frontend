@@ -262,7 +262,7 @@ export function AppLayout(props: {
         onNavigate={app.onNavigate}
         isScrolled={app.currentView !== 'home' || app.isScrolled}
         isProductView={app.currentView === 'product' || app.currentView === 'collection'}
-        onBack={() => app.onNavigate('home', 'collection')}
+        onBack={() => app.currentView === 'product' ? app.handleBackFromProduct() : app.onNavigate('home', 'collection')}
         isLoggedIn={!!app.currentUser}
         t={app.t}
         currentLocale={app.locale}
