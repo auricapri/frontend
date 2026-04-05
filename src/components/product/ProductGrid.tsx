@@ -59,8 +59,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const { cartItems, subtotal } = useCartContext();
   const itemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [activeCategory, setActiveCategory] = useState<string>(
+    () => sessionStorage.getItem('grid_active_category') || 'All'
+  );
+  const [currentPage, setCurrentPage] = useState<number>(
+    () => parseInt(sessionStorage.getItem('grid_current_page') || '1', 10)
+  );
   const [quickAddProduct, setQuickAddProduct] = useState<Product | null>(null);
   const [quickAddColorHex, setQuickAddColorHex] = useState<string | null>(null);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -85,12 +89,15 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   const handleCategoryChange = useCallback((category: string) => {
     setActiveCategory(category);
+    sessionStorage.setItem('grid_active_category', category);
     setCurrentPage(1);
+    sessionStorage.setItem('grid_current_page', '1');
     setTimeout(scrollToFilters, 100);
   }, []);
 
   const handlePageChange = useCallback((newPage: number) => {
     setCurrentPage(newPage);
+    sessionStorage.setItem('grid_current_page', String(newPage));
     setTimeout(scrollToFilters, 100);
   }, []);
 
