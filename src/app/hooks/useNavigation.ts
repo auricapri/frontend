@@ -50,6 +50,7 @@ export function useNavigation(params: UseNavigationParams) {
   const mainRef = useRef<HTMLElement>(null);
   const savedScrollTop = useRef<number>(0);
   const currentViewRef = useRef<AppView>('home');
+  const previousViewRef = useRef<AppView>('home');
   const [isScrolled, setIsScrolled] = useState(false);
 
   const extractProductSlug = useCallback((pathname: string): string | null => {
@@ -230,6 +231,7 @@ export function useNavigation(params: UseNavigationParams) {
 
       // Save scroll before entering product; restore it when leaving
       if (view === 'product') {
+        previousViewRef.current = currentViewRef.current;
         savedScrollTop.current = mainRef.current?.scrollTop ?? 0;
       }
 
@@ -302,6 +304,19 @@ export function useNavigation(params: UseNavigationParams) {
     [getProductSlug, locale]
   );
 
+  const handleBackFromProduct = useCallback(() => {
+    const prev = previousViewRef.current;
+    if (prev === 'collection') {
+      handleNavigate('collection');
+    } else if (prev === 'new-arrivals') {
+      handleNavigate('new-arrivals');
+    } else if (prev === 'search-results') {
+      handleNavigate('search-results', searchSlug);
+    } else {
+      handleNavigate('home', 'collection');
+    }
+  }, [handleNavigate, searchSlug]);
+
   const handleScroll = useCallback(() => {
     if (!mainRef.current) return;
     const top = mainRef.current.scrollTop;
@@ -321,6 +336,7 @@ export function useNavigation(params: UseNavigationParams) {
     isScrolled,
     handleScroll,
     handleNavigate,
+    handleBackFromProduct,
     getProductSlug,
   };
 }

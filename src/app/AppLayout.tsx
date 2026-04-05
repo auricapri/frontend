@@ -116,6 +116,7 @@ export function AppLayout(props: {
 
     searchSlug: string;
     onNavigate: (view: any, targetSection?: string, product?: Product) => void;
+    handleBackFromProduct: () => void;
   };
 }) {
   const { app } = props;
@@ -386,7 +387,7 @@ export function AppLayout(props: {
                 coupons={app.coupons}
                 userMode={app.userMode}
                 onAddToCart={app.addToCart}
-                onBack={() => app.onNavigate('home', 'collection')}
+                onBack={app.handleBackFromProduct}
                 isWishlisted={app.wishlistIds.includes(app.activeProduct.id)}
                 onToggleWishlist={(variantId) => app.handleToggleWishlist(app.activeProduct!.id, variantId)}
                 t={app.t}

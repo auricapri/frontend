@@ -140,6 +140,7 @@ export function useAppState(params: UseAppStateParams) {
     isScrolled: navigation.isScrolled,
     handleScroll: navigation.handleScroll,
     handleNavigate: navigation.handleNavigate,
+    handleBackFromProduct: navigation.handleBackFromProduct,
 
     // Checkout
     pendingCheckout,
