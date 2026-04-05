@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Product, UserMode, Category, Collection, Coupon } from '../../types';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Locale } from '../../i18n';
@@ -70,6 +70,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [internalGender, setInternalGender] = useState<Gender>(Gender.FEMALE);
   const isMobile = useIsMobile();
+  const isFirstRender = useRef(true);
 
   const selectedGender = externalGender ?? internalGender;
 
@@ -110,6 +111,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       setInternalGender(gender);
     }
     setActiveCategory('All');
+    sessionStorage.setItem('grid_active_category', 'All');
+    sessionStorage.setItem('grid_current_page', '1');
   }, [onGenderChange]);
 
   const handleQuickAdd = useCallback((product: Product, colorHex?: string | null) => {
@@ -152,7 +155,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   } = useProductFilters({ products: categoryFilteredProducts, activeCategory, userMode });
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     setCurrentPage(1);
+    sessionStorage.setItem('grid_current_page', '1');
   }, [activeCategory, selectedSizes, selectedColorFamilies, priceMin, priceMax, sortBy]);
 
   const totalPages = Math.ceil(filteredAndSortedProducts.length / ITEMS_PER_PAGE);
