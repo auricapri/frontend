@@ -70,7 +70,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [internalGender, setInternalGender] = useState<Gender>(Gender.FEMALE);
   const isMobile = useIsMobile();
-  const isFirstRender = useRef(true);
 
   const selectedGender = externalGender ?? internalGender;
 
@@ -154,13 +153,41 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     hasActiveFilters,
   } = useProductFilters({ products: categoryFilteredProducts, activeCategory, userMode });
 
+  // Ref com os valores de filtro da renderização anterior (por conteúdo, não referência).
+  // Comparamos por valor para não resetar a página quando useProductFilters re-inicializa
+  // seus estados internos com os mesmos valores (referências novas mas conteúdo igual).
+  const prevFiltersRef = useRef({
+    activeCategory,
+    sizes: selectedSizes.join(','),
+    colors: selectedColorFamilies.join(','),
+    priceMin,
+    priceMax,
+    sortBy,
+  });
+
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
+    const prev = prevFiltersRef.current;
+    const changed =
+      prev.activeCategory !== activeCategory ||
+      prev.sizes !== selectedSizes.join(',') ||
+      prev.colors !== selectedColorFamilies.join(',') ||
+      prev.priceMin !== priceMin ||
+      prev.priceMax !== priceMax ||
+      prev.sortBy !== sortBy;
+
+    prevFiltersRef.current = {
+      activeCategory,
+      sizes: selectedSizes.join(','),
+      colors: selectedColorFamilies.join(','),
+      priceMin,
+      priceMax,
+      sortBy,
+    };
+
+    if (changed) {
+      setCurrentPage(1);
+      sessionStorage.setItem('grid_current_page', '1');
     }
-    setCurrentPage(1);
-    sessionStorage.setItem('grid_current_page', '1');
   }, [activeCategory, selectedSizes, selectedColorFamilies, priceMin, priceMax, sortBy]);
 
   const totalPages = Math.ceil(filteredAndSortedProducts.length / ITEMS_PER_PAGE);
