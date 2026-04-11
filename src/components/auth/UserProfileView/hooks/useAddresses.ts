@@ -15,6 +15,7 @@ export interface NewAddressData {
   state_province: string;
   postal_code: string;
   recipient_name?: string;
+  set_as_primary?: boolean;
 }
 
 interface UseAddressesParams {
@@ -74,7 +75,8 @@ export const useAddresses = ({ userId, onUpdate, enabled = false }: UseAddresses
     try {
       const { UsersApi } = await import('../../../../api/users.api');
       const usersApi = new UsersApi();
-      await usersApi.createAddress({
+      const setAsPrimary = data.set_as_primary || addresses.length === 0;
+      const newAddress = await usersApi.createAddress({
         line1: `${data.street_address}${data.number ? `, ${data.number}` : ''}`,
         line2: data.complement || undefined,
         neighborhood: data.neighborhood || undefined,
@@ -82,8 +84,12 @@ export const useAddresses = ({ userId, onUpdate, enabled = false }: UseAddresses
         state: data.state_province,
         postal_code: data.postal_code,
         country: 'BR',
-        is_default: addresses.length === 0,
+        is_default: setAsPrimary,
       });
+      // If marking as primary explicitly, ensure all others are unset via the dedicated endpoint
+      if (setAsPrimary && newAddress?.id && addresses.length > 0) {
+        await usersApi.setDefaultAddress(newAddress.id);
+      }
       await queryClient.invalidateQueries({ queryKey: ['user-addresses', userId] });
       return true;
     } catch (err: unknown) {

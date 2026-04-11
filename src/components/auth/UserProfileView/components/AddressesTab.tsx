@@ -2,7 +2,7 @@
 /// Displays saved addresses with management actions and inline add form
 
 import React, { useState, useCallback } from 'react';
-import { Loader2, MapPin, Check, Trash2, Plus, Search, X } from 'lucide-react';
+import { Loader2, MapPin, Check, Trash2, Plus, Search, X, Gift } from 'lucide-react';
 import { AddressesState } from '../types';
 import { NewAddressData } from '../hooks/useAddresses';
 
@@ -40,6 +40,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
   const { addresses, loading, settingDefault, deletingAddress } = addressesState;
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<AddressFormValues>(EMPTY_FORM);
+  const [setAsPrimary, setSetAsPrimary] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
   const [cepError, setCepError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -82,9 +83,10 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
       state_province: form.uf,
       postal_code: form.cep.replace(/\D/g, ''),
       recipient_name: form.recipient_name || undefined,
+      set_as_primary: setAsPrimary,
     });
     setSaving(false);
-    if (ok) { setForm(EMPTY_FORM); setShowForm(false); }
+    if (ok) { setForm(EMPTY_FORM); setSetAsPrimary(false); setShowForm(false); }
   }, [form, onAdd]);
 
   const canAdd = addresses.length < MAX_ADDRESSES;
@@ -103,17 +105,31 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-[10px] font-black font-serif uppercase tracking-[0.3em] text-neutral-300">
           Meus Endereços
         </h3>
         <span className="text-[10px] text-neutral-400">{addresses.length}/{MAX_ADDRESSES}</span>
       </div>
 
+      {/* Wishlist delivery info banner */}
+      <div className="flex items-start gap-3 p-4 bg-neutral-50 border border-neutral-100 rounded-2xl mb-6">
+        <Gift className="w-4 h-4 text-neutral-400 flex-shrink-0 mt-0.5" />
+        <p className="text-[10px] text-neutral-500 leading-relaxed font-medium">
+          O <span className="font-black text-neutral-700">Endereço Principal</span> é usado como endereço de entrega quando alguém presenteia você pela sua lista de desejos.
+          {!addresses.some(a => a.is_default) && addresses.length > 0 && (
+            <span className="block mt-1 text-amber-600 font-black">Defina um endereço principal para receber presentes.</span>
+          )}
+        </p>
+      </div>
+
       {addresses.length === 0 && !showForm && (
         <div className="py-12 text-center space-y-4">
           <MapPin className="w-12 h-12 text-neutral-100 mx-auto" />
           <p className="text-sm text-neutral-400 font-medium">Nenhum endereço salvo</p>
+          <p className="text-[10px] text-neutral-400 max-w-xs mx-auto">
+            Cadastre seu endereço principal para que amigos possam te presentear pela lista de desejos.
+          </p>
         </div>
       )}
 
@@ -128,12 +144,18 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
         >
           <div className="flex justify-between items-start gap-4">
             <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <MapPin className={`w-4 h-4 ${addr.is_default ? 'text-white/60' : 'text-neutral-400'}`} />
                 {addr.is_default && (
-                  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-paper/20 rounded-full">
-                    Padrão
-                  </span>
+                  <>
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-paper/20 rounded-full">
+                      Endereço Principal
+                    </span>
+                    <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-white/10 rounded-full text-white/70">
+                      <Gift className="w-2.5 h-2.5" />
+                      Wishlist
+                    </span>
+                  </>
                 )}
               </div>
               <h4 className="text-sm font-black font-serif uppercase tracking-tight">
@@ -156,7 +178,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
                   className="px-4 py-2 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {settingDefault === addr.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                  Definir Padrão
+                  Definir como Principal
                 </button>
               )}
               <button
@@ -181,7 +203,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
         <div className="p-6 rounded-[2rem] border border-neutral-200 bg-neutral-50 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Novo Endereço</span>
-            <button onClick={() => { setShowForm(false); setForm(EMPTY_FORM); setCepError(null); }} className="text-neutral-400 hover:text-black transition-colors">
+            <button onClick={() => { setShowForm(false); setForm(EMPTY_FORM); setCepError(null); setSetAsPrimary(false); }} className="text-neutral-400 hover:text-black transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -239,6 +261,32 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({
               onChange={e => setForm(f => ({ ...f, recipient_name: e.target.value }))}
             />
           </div>
+
+          {/* Set as primary toggle */}
+          {addresses.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setSetAsPrimary(p => !p)}
+              className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all text-left ${
+                setAsPrimary
+                  ? 'bg-neutral-900 border-neutral-800 text-white'
+                  : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-400'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                setAsPrimary ? 'border-white bg-white' : 'border-neutral-300'
+              }`}>
+                {setAsPrimary && <Check className="w-3 h-3 text-neutral-900" />}
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest">Definir como Endereço Principal</p>
+                <p className={`text-[10px] mt-0.5 ${setAsPrimary ? 'text-white/60' : 'text-neutral-400'}`}>
+                  Usado para entrega de presentes via lista de desejos
+                </p>
+              </div>
+              <Gift className={`w-4 h-4 ml-auto flex-shrink-0 ${setAsPrimary ? 'text-white/60' : 'text-neutral-300'}`} />
+            </button>
+          )}
 
           <button
             onClick={handleSave}

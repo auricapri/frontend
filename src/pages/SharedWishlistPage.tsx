@@ -318,17 +318,25 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
               : 'Compre itens desta curadoria exclusiva como presente'}
           </p>
           {deliveryInfo?.hasAddress && deliveryInfo.city && (
-            <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-              Entrega para:{' '}
-              <span className="text-black">
-                {deliveryInfo.city}{deliveryInfo.state ? `, ${deliveryInfo.state}` : ''}
-              </span>
-            </p>
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 bg-neutral-50 border border-neutral-100 rounded-2xl">
+              <MapPinIcon className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" />
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Endereço de entrega</p>
+                <p className="text-[11px] font-bold text-neutral-800">
+                  {deliveryInfo.city}{deliveryInfo.state ? `, ${deliveryInfo.state}` : ''}
+                  <span className="ml-2 text-[9px] font-black text-neutral-400">(endereço principal de {wishlistData?.owner_name?.split(' ')[0] ?? 'quem recebe'})</span>
+                </p>
+              </div>
+            </div>
           )}
           {deliveryInfo && !deliveryInfo.hasAddress && (
-            <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-red-500">
-              Atenção: o dono desta wishlist não possui endereço cadastrado. Compras não estão disponíveis no momento.
-            </p>
+            <div className="mt-4 flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-100 rounded-2xl">
+              <AlertIcon className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-[10px] font-bold text-red-600 leading-relaxed">
+                {wishlistData?.owner_name?.split(' ')[0] ?? 'O dono'} ainda não cadastrou um endereço principal.
+                Compras não estão disponíveis até que um endereço seja cadastrado.
+              </p>
+            </div>
           )}
         </div>
 
@@ -486,6 +494,18 @@ const CheckIcon = ({ className }: { className?: string }) => (
 const PlusIcon = ({ className }: { className?: string }) => (
   <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
+const MapPinIcon = ({ className }: { className?: string }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+  </svg>
+);
+
+const AlertIcon = ({ className }: { className?: string }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
   </svg>
 );
 

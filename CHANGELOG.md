@@ -5,6 +5,20 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.61] - 2026-04-11
+
+### Adicionado
+- **Endereço Principal em Meus Endereços**:
+  - Banner informativo: "O Endereço Principal é usado como endereço de entrega quando alguém presenteia você pela sua lista de desejos"
+  - Badge renomeado de "Padrão" → "Endereço Principal" com tag "Wishlist" no card do endereço ativo
+  - Botão renomeado de "Definir Padrão" → "Definir como Principal"
+  - Formulário de novo endereço: toggle "Definir como Endereço Principal" com ícone de presente e descrição
+  - `NewAddressData.set_as_primary?: boolean` — se marcado, chama `setDefaultAddress` após criar
+  - Estado vazio: instrução para cadastrar endereço para receber presentes via wishlist
+- **SharedWishlistPage**: delivery info redesenhada
+  - Mostra cidade/estado do endereço principal do dono com label descritivo
+  - Erro de "sem endereço" agora mostra nome do dono e instrução clara
+
 ## [1.4.60] - 2026-04-11
 
 ### Adicionado
