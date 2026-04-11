@@ -20,4 +20,5 @@ export interface Order {
   gift_from_user_id?: string | null;
   user_id?: string;
   cashback_used?: number;
+  expires_at?: string | null;
 }

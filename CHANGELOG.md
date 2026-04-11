@@ -5,6 +5,15 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.59] - 2026-04-11
+
+### Adicionado
+- **Temporizador de expiração** em Minhas Compras: pedidos pending exibem contagem regressiva `HH:MM:SS` até o vencimento
+  - `useOrderCountdown(expiresAt)` — hook que atualiza a cada segundo
+  - `OrderCountdownBadge` — badge inline: cinza normal, laranja pulsante < 1h, vermelho quando expirado
+  - `Order.expires_at?` adicionado ao tipo do frontend
+  - `expires_at = null` quando pagamento confirmado (não exibe mais o timer)
+
 ## [1.4.58] - 2026-04-11
 
 ### Adicionado

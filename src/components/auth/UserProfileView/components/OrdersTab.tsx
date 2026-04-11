@@ -2,13 +2,39 @@
 /// Displays order history with review buttons
 
 import React, { useState, useCallback } from 'react';
-import { Loader2, ShoppingBag, ChevronRight, Star, DollarSign, RotateCcw, AlertTriangle, CreditCard } from 'lucide-react';
+import { Loader2, ShoppingBag, ChevronRight, Star, DollarSign, RotateCcw, AlertTriangle, CreditCard, Clock } from 'lucide-react';
 import { Order } from '../../../../types';
 import { useAuthContext } from '../../../../context/AuthContext';
 import { Locale } from '../../../../i18n';
 import { formatCurrency } from '../../../../utils/currency';
 import { OrdersState } from '../types';
 import { ChangePaymentModal } from '../../../orders/ChangePaymentModal';
+import { useOrderCountdown } from '../../../../hooks/useOrderCountdown';
+
+interface OrderCountdownBadgeProps {
+  expiresAt: string | null | undefined;
+}
+
+function OrderCountdownBadge({ expiresAt }: OrderCountdownBadgeProps) {
+  const { label, isExpired, isUrgent } = useOrderCountdown(expiresAt);
+
+  if (!expiresAt) return null;
+
+  return (
+    <div
+      className={`flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg text-xs font-medium w-fit ${
+        isExpired
+          ? 'bg-red-100 text-red-700'
+          : isUrgent
+          ? 'bg-orange-100 text-orange-700 animate-pulse'
+          : 'bg-neutral-100 text-neutral-600'
+      }`}
+    >
+      <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+      {isExpired ? 'Pagamento expirado' : `Expira em ${label}`}
+    </div>
+  );
+}
 
 interface OrdersTabProps {
   ordersState: OrdersState;
@@ -116,19 +142,22 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
               </div>
             </div>
 
-            {/* Change Payment — Pending Orders */}
-            {isPending && currentUser && (
-              <div className="mt-4 pt-4 border-t border-neutral-200">
-                <button
-                  onClick={e => {
-                    e.stopPropagation();
-                    setChangePaymentOrder(order);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors text-sm font-medium"
-                >
-                  <CreditCard className="w-4 h-4" />
-                  Trocar meio de pagamento
-                </button>
+            {/* Countdown + Change Payment — Pending Orders */}
+            {isPending && (
+              <div className="mt-4 pt-4 border-t border-neutral-200 space-y-3">
+                <OrderCountdownBadge expiresAt={order.expires_at} />
+                {currentUser && (
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      setChangePaymentOrder(order);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors text-sm font-medium"
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    Trocar meio de pagamento
+                  </button>
+                )}
               </div>
             )}
 
