@@ -1,13 +1,14 @@
 /// Orders Tab Component
 /// Displays order history with review buttons
 
-import React from 'react';
-import { Loader2, ShoppingBag, ChevronRight, Star, DollarSign, RotateCcw, AlertTriangle } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { Loader2, ShoppingBag, ChevronRight, Star, DollarSign, RotateCcw, AlertTriangle, CreditCard } from 'lucide-react';
 import { Order } from '../../../../types';
 import { useAuthContext } from '../../../../context/AuthContext';
 import { Locale } from '../../../../i18n';
 import { formatCurrency } from '../../../../utils/currency';
 import { OrdersState } from '../types';
+import { ChangePaymentModal } from '../../../orders/ChangePaymentModal';
 
 interface OrdersTabProps {
   ordersState: OrdersState;
@@ -26,6 +27,11 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
 }) => {
   const { orders, loading, orderReviews } = ordersState;
   const { currentUser } = useAuthContext();
+  const [changePaymentOrder, setChangePaymentOrder] = useState<Order | null>(null);
+
+  const handleChangePaymentSuccess = useCallback(() => {
+    setChangePaymentOrder(null);
+  }, []);
 
   if (loading) {
     return (
@@ -53,6 +59,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
         const orderStatus = order.status?.toLowerCase();
         const isDelivered = orderStatus === 'delivered' || orderStatus === 'entregue';
         const isCancelled = orderStatus === 'cancelled';
+        const isPending = orderStatus === 'pending';
         const hasReview = orderReviews[order.id] || false;
 
         return (
@@ -109,6 +116,22 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
               </div>
             </div>
 
+            {/* Change Payment — Pending Orders */}
+            {isPending && currentUser && (
+              <div className="mt-4 pt-4 border-t border-neutral-200">
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    setChangePaymentOrder(order);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors text-sm font-medium"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Trocar meio de pagamento
+                </button>
+              </div>
+            )}
+
             {/* Review Section for Delivered Orders */}
             {isDelivered && (
               <div className="mt-4 pt-4 border-t border-neutral-200">
@@ -161,6 +184,16 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
           Minhas Devolucoes
         </button>
       </div>
+
+      {changePaymentOrder && currentUser && (
+        <ChangePaymentModal
+          order={changePaymentOrder}
+          currentUser={currentUser}
+          locale={locale}
+          onClose={() => setChangePaymentOrder(null)}
+          onSuccess={handleChangePaymentSuccess}
+        />
+      )}
     </div>
   );
 };

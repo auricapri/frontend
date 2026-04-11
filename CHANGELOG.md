@@ -5,6 +5,13 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.57] - 2026-04-10
+
+### Adicionado
+- **Trocar meio de pagamento** em Minhas Compras: botão "Trocar meio de pagamento" aparece em pedidos com status `pending`
+- **`ChangePaymentModal`** (`components/orders/ChangePaymentModal.tsx`): modal com seleção de método (PIX ou Cartão), formulário de dados do cliente, exibição do QR code PIX e formulário de cartão de crédito inline
+- **`OrdersApi.changePaymentMethod`**: método que chama `PATCH /api/orders/:id/payment-method`
+
 ## [1.4.56] - 2026-03-28
 
 ### Corrigido

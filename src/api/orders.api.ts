@@ -94,4 +94,8 @@ export class OrdersApi {
   async getStatusHistory(orderId: string): Promise<OrderStatusHistoryEntry[]> {
     return apiClient.get<OrderStatusHistoryEntry[]>(`/orders/${orderId}/status-history`);
   }
+
+  async changePaymentMethod(orderId: string, newPaymentMethod: PaymentMethod): Promise<void> {
+    await apiClient.patch(`/orders/${orderId}/payment-method`, { newPaymentMethod });
+  }
 }
