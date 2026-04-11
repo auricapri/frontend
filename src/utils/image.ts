@@ -24,26 +24,60 @@ const IMAGE_SIZES: Record<string, ImageSize> = {
 };
 
 const SUPABASE_STORAGE_URL_PATTERN = /supabase\.co\/storage\/v1\/(object|render\/image)\/public\//;
+const SUPABASE_BUCKET_PATH_PATTERN = /supabase\.co\/storage\/v1\/(?:object|render\/image)\/public\/(.+)/;
+
+// S3 + CloudFront CDN — fallback quando Supabase Storage falhar
+// Espelha o mesmo path: {bucket}/{path}
+const CDN_FALLBACK_URL = (typeof import.meta !== 'undefined' ? import.meta.env?.VITE_CDN_URL : '') || '';
 
 export function isSupabaseStorageUrl(url: string): boolean {
   return SUPABASE_STORAGE_URL_PATTERN.test(url);
 }
 
 /**
- * @deprecated R2 fallback removed — all images served from Supabase Storage Pro.
- * Kept for backwards compatibility — returns empty string.
+ * Converte URL do Supabase Storage para URL do CDN de fallback (CloudFront/S3).
+ * Remove query params (transforms do Supabase não funcionam no CDN).
+ * Retorna '' se CDN não configurado ou URL não é do Supabase.
+ */
+export function getCDNFallbackUrl(supabaseUrl: string): string {
+  if (!CDN_FALLBACK_URL) return '';
+  const withoutParams = supabaseUrl.split('?')[0];
+  const match = withoutParams.match(SUPABASE_BUCKET_PATH_PATTERN);
+  if (!match) return '';
+  return `${CDN_FALLBACK_URL}/${match[1]}`;
+}
+
+/**
+ * @deprecated Use getCDNFallbackUrl. Kept for backwards compatibility.
  */
 export function getR2FallbackUrl(_supabaseUrl: string): string {
   return '';
 }
 
 /**
- * Image onError handler — falls back to placeholder on error.
- * Use on <img> elements: onError={(e) => handleImageError(e)}
+ * Image onError handler — circuit breaker:
+ * 1. Supabase falha → tenta CDN de fallback (S3/CloudFront)
+ * 2. CDN falha → mostra placeholder
+ *
+ * Use: onError={(e) => handleImageError(e)}
  */
 export function handleImageError(event: React.SyntheticEvent<HTMLImageElement, Event>): void {
   const img = event.currentTarget;
+
+  // Já está no placeholder — para
   if (img.src === PLACEHOLDER_IMAGE || img.src.startsWith('data:')) return;
+
+  // Primeira falha: tenta CDN se a URL era do Supabase
+  if (isSupabaseStorageUrl(img.src) && !img.dataset.cdnFallbackTried) {
+    const cdnUrl = getCDNFallbackUrl(img.src);
+    if (cdnUrl) {
+      img.dataset.cdnFallbackTried = '1';
+      img.src = cdnUrl;
+      return;
+    }
+  }
+
+  // Fallback final: placeholder
   img.src = PLACEHOLDER_IMAGE;
 }
 

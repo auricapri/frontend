@@ -5,6 +5,16 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.58] - 2026-04-11
+
+### Adicionado
+- **Circuit breaker de imagens** (`utils/image.ts`): `handleImageError` agora tenta CDN S3/CloudFront antes de cair no placeholder
+  - Supabase falha → tenta `https://d1amatg8s15cf5.cloudfront.net/{bucket}/{path}`
+  - CDN falha → placeholder SVG inline
+  - `data-cdn-fallback-tried` evita loop infinito
+- **`getCDNFallbackUrl`**: converte URL do Supabase para URL do CloudFront (sem query params de transform)
+- **`VITE_CDN_URL`** adicionado ao `.env`: `https://d1amatg8s15cf5.cloudfront.net`
+
 ## [1.4.57] - 2026-04-10
 
 ### Adicionado
