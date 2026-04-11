@@ -5,6 +5,15 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.60] - 2026-04-11
+
+### Adicionado
+- **Confirmação de endereço** no fluxo de Trocar Meio de Pagamento: nova tela `address` exibida antes do formulário de pagamento
+  - Pré-preenchida com `shipping_address_snapshot` do pedido (logradouro, número, complemento, bairro, cidade, UF, CEP)
+  - Todos os campos editáveis — cliente pode corrigir antes de processar o pagamento
+  - Validação: CEP e número obrigatórios
+  - Botão Voltar retorna à seleção de método; Confirmar e continuar avança para PIX ou cartão
+
 ## [1.4.59] - 2026-04-11
 
 ### Adicionado

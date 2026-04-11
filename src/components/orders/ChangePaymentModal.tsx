@@ -1,7 +1,7 @@
 /// ChangePaymentModal — Trocar meio de pagamento de pedido pendente
 
 import { useState, useCallback, useMemo } from 'react';
-import { Loader2, QrCode, Copy, Check, CreditCard, X } from 'lucide-react';
+import { Loader2, QrCode, Copy, Check, CreditCard, X, MapPin } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -13,7 +13,7 @@ import { PaymentsApi } from '../../api/payments.api';
 import { formatCurrency } from '../../utils/currency';
 import { Locale } from '../../i18n';
 
-type Step = 'choose' | 'pix-form' | 'pix-qr' | 'card-form' | 'card-success' | 'error';
+type Step = 'choose' | 'address' | 'pix-form' | 'pix-qr' | 'card-form' | 'card-success' | 'error';
 
 interface ChangePaymentModalProps {
   order: Order;
@@ -37,6 +37,7 @@ export function ChangePaymentModal({
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [copied, setCopied] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
 
   // PIX result
   const [pixQrImage, setPixQrImage] = useState('');
@@ -47,45 +48,62 @@ export function ChangePaymentModal({
   const [cpf, setCpf] = useState(currentUser.cpf ?? '');
   const [phone, setPhone] = useState(currentUser.phone ?? '');
 
+  // Address — pre-filled from order snapshot, editable
+  const snapAddr = useMemo(() => {
+    const snap = order.shipping_address_snapshot as any ?? {};
+    return {
+      logradouro: snap.logradouro ?? snap.street ?? '',
+      numero: snap.numero ?? snap.number ?? '',
+      complemento: snap.complemento ?? snap.complement ?? '',
+      bairro: snap.bairro ?? snap.neighborhood ?? '',
+      localidade: snap.localidade ?? snap.city ?? '',
+      uf: snap.uf ?? snap.state ?? '',
+      cep: snap.cep ?? snap.postalCode ?? '',
+    };
+  }, [order.shipping_address_snapshot]);
+
+  const [logradouro, setLogradouro] = useState(snapAddr.logradouro);
+  const [numero, setNumero] = useState(snapAddr.numero);
+  const [complemento, setComplemento] = useState(snapAddr.complemento);
+  const [bairro, setBairro] = useState(snapAddr.bairro);
+  const [localidade, setLocalidade] = useState(snapAddr.localidade);
+  const [uf, setUf] = useState(snapAddr.uf);
+  const [cep, setCep] = useState(snapAddr.cep);
+
   // Credit card fields
   const [cardNumber, setCardNumber] = useState('');
   const [cardHolder, setCardHolder] = useState(currentUser.full_name);
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
 
-  const address = useMemo(() => {
-    const snap = order.shipping_address_snapshot as any;
-    return {
-      postalCode: snap?.cep ?? snap?.postalCode ?? '',
-      addressNumber: snap?.numero ?? snap?.number ?? '',
-      addressComplement: snap?.complemento ?? snap?.complement ?? '',
-    };
-  }, [order.shipping_address_snapshot]);
-
   const buildCustomerInfo = useCallback(() => ({
     name: currentUser.full_name,
     email: currentUser.email,
     cpfCnpj: cpf.replace(/\D/g, ''),
     phone: phone.replace(/\D/g, ''),
-    postalCode: address.postalCode.replace(/\D/g, ''),
-    addressNumber: address.addressNumber,
-    addressComplement: address.addressComplement,
-  }), [currentUser, cpf, phone, address]);
+    postalCode: cep.replace(/\D/g, ''),
+    addressNumber: numero,
+    addressComplement: complemento,
+  }), [currentUser, cpf, phone, cep, numero, complemento]);
 
   const handleSelectPix = useCallback(() => {
     setErrorMsg('');
-    // If CPF or phone is missing, show form to collect them
-    if (!cpf || !phone) {
-      setStep('pix-form');
-    } else {
-      setStep('pix-form'); // always go through form to confirm data
-    }
-  }, [cpf, phone]);
+    setSelectedMethod(PaymentMethod.PIX);
+    setStep('address');
+  }, []);
 
   const handleSelectCard = useCallback(() => {
     setErrorMsg('');
-    setStep('card-form');
+    setSelectedMethod(PaymentMethod.CREDIT_CARD);
+    setStep('address');
   }, []);
+
+  const handleConfirmAddress = useCallback(() => {
+    if (!cep.replace(/\D/g, '')) { setErrorMsg('Informe o CEP'); return; }
+    if (!numero.trim()) { setErrorMsg('Informe o número'); return; }
+    setErrorMsg('');
+    setStep(selectedMethod === PaymentMethod.PIX ? 'pix-form' : 'card-form');
+  }, [cep, numero, selectedMethod]);
 
   const processPix = useCallback(async () => {
     const cleanCpf = cpf.replace(/\D/g, '');
@@ -207,6 +225,83 @@ export function ChangePaymentModal({
           </div>
         )}
 
+        {/* STEP: address */}
+        {step === 'address' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm text-neutral-500">
+              <MapPin className="w-4 h-4 text-neutral-400 flex-shrink-0" />
+              <span>Confirme o endereço de entrega:</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <Input
+                  label="Logradouro"
+                  value={logradouro}
+                  onChange={e => setLogradouro(e.target.value)}
+                  placeholder="Rua, Avenida..."
+                />
+              </div>
+              <div>
+                <Input
+                  label="Número"
+                  value={numero}
+                  onChange={e => setNumero(e.target.value)}
+                  placeholder="123"
+                />
+              </div>
+            </div>
+            <Input
+              label="Complemento"
+              value={complemento}
+              onChange={e => setComplemento(e.target.value)}
+              placeholder="Apto, Bloco... (opcional)"
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Bairro"
+                value={bairro}
+                onChange={e => setBairro(e.target.value)}
+                placeholder="Bairro"
+              />
+              <Input
+                label="CEP"
+                value={cep}
+                onChange={e => setCep(e.target.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2'))}
+                placeholder="00000-000"
+                maxLength={9}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <Input
+                  label="Cidade"
+                  value={localidade}
+                  onChange={e => setLocalidade(e.target.value)}
+                  placeholder="Cidade"
+                />
+              </div>
+              <div>
+                <Input
+                  label="UF"
+                  value={uf}
+                  onChange={e => setUf(e.target.value.toUpperCase().slice(0, 2))}
+                  placeholder="SP"
+                  maxLength={2}
+                />
+              </div>
+            </div>
+            {errorMsg && <p className="text-xs text-red-500">{errorMsg}</p>}
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => { setStep('choose'); setErrorMsg(''); }} className="flex-1">
+                Voltar
+              </Button>
+              <Button variant="primary" onClick={handleConfirmAddress} className="flex-1">
+                Confirmar e continuar
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* STEP: pix-form */}
         {step === 'pix-form' && (
           <div className="space-y-4">
@@ -225,7 +320,7 @@ export function ChangePaymentModal({
             />
             {errorMsg && <p className="text-xs text-red-500">{errorMsg}</p>}
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep('choose')} className="flex-1">Voltar</Button>
+              <Button variant="outline" onClick={() => { setStep('address'); setErrorMsg(''); }} className="flex-1">Voltar</Button>
               <Button variant="primary" onClick={processPix} isLoading={loading} className="flex-1">
                 Gerar QR code
               </Button>
@@ -315,7 +410,7 @@ export function ChangePaymentModal({
             </div>
             {errorMsg && <p className="text-xs text-red-500">{errorMsg}</p>}
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep('choose')} className="flex-1">Voltar</Button>
+              <Button variant="outline" onClick={() => { setStep('address'); setErrorMsg(''); }} className="flex-1">Voltar</Button>
               <Button variant="primary" onClick={processCard} isLoading={loading} className="flex-1">
                 Pagar
               </Button>
