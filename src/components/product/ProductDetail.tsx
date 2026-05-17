@@ -10,6 +10,7 @@ import { createGetLoc } from '../../utils/localization';
 import { getProductCoupon, applyCouponDiscount } from '../../utils/coupon';
 import { share, type SharePlatform } from '../../utils/share';
 import { createBreadcrumbSchema } from '../seo/schemas';
+import { jsonLdStringify } from '../../utils/jsonLd';
 import { productReviewsApi } from '../../api/instances';
 import { useImageHotspots } from '../../hooks/useImageHotspots';
 import { useVariantSelection } from '../../hooks/useVariantSelection';
@@ -264,7 +265,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       {/* Breadcrumb JSON-LD Schema */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdStringify(breadcrumbSchema) }}
       />
 
       {/* Visual Breadcrumb Navigation */}

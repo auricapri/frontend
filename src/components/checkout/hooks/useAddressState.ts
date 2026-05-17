@@ -165,7 +165,8 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
     if (currentUser?.default_address) return; // user's own address takes priority
 
     try {
-      const raw = localStorage.getItem('auricapri_checkout_prefill');
+      // LGPD: prefill stored in sessionStorage (see useCart.ts — writeSessionPrefill).
+      const raw = sessionStorage.getItem('auricapri_checkout_prefill');
       if (!raw) return;
       const entry = JSON.parse(raw);
       const prefill = entry?.data || entry; // handles both TTL-wrapped and plain
@@ -201,7 +202,7 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
       }
 
       // Clean up prefill after use
-      localStorage.removeItem('auricapri_checkout_prefill');
+      sessionStorage.removeItem('auricapri_checkout_prefill');
     } catch {
       // Ignore parse errors
     }
