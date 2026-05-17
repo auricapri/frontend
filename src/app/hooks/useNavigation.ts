@@ -226,7 +226,7 @@ export function useNavigation(params: UseNavigationParams) {
   }, [activeProduct?.id, currentView, locale]);
 
   const handleNavigate = useCallback(
-    (view: Exclude<AppView, 'admin-login' | 'delivery-login' | 'shared-wishlist' | 'order-review'>, targetSection?: string, product?: Product) => {
+    (view: AppView, targetSection?: string, product?: Product) => {
       const fromProduct = currentViewRef.current === 'product';
 
       // Save scroll before entering product; restore it when leaving

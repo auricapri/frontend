@@ -7,6 +7,7 @@ import { type Locale } from '../i18n';
 import { createGetLoc } from '../utils/localization';
 import { formatCurrency } from '../utils/currency';
 import { getOptimizedImageUrl } from '../utils/image';
+import type { AppView } from '../app/hooks/useNavigation';
 
 /* ─── Types ─── */
 
@@ -39,7 +40,7 @@ interface CategoryOption { id: string; name: string; }
 interface GalleryData { items: GalleryItem[]; categories: CategoryOption[]; }
 
 interface GalleryPageProps {
-  onNavigate: (view: string, target?: string, product?: Product) => void;
+  onNavigate: (view: AppView, target?: string, product?: Product) => void;
   onAddToCart: (item: CartItem) => void;
   locale: Locale;
 }

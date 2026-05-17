@@ -3,6 +3,7 @@ import { X, Search, Check, Loader2 } from 'lucide-react';
 import { MAPBOX_TOKEN } from '../../utils/mapbox';
 import { type AddressData } from '../../types';
 import { useDebounce } from '../../hooks/useDebounce';
+import type { MapboxContext, MapboxFeature, MapboxGL, MapboxMap, MapboxMarker } from '../../types/common/mapbox';
 
 interface MapPickerProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
   const [mapboxLoaded, setMapboxLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<MapboxFeature[]>([]);
   const [manualAddress, setManualAddress] = useState<ManualAddress>({
     street: '',
     neighborhood: '',
@@ -37,15 +38,14 @@ export const MapPicker: React.FC<MapPickerProps> = ({
     cep: ''
   });
 
-  const pickerMapRef = useRef<any>(null);
+  const pickerMapRef = useRef<MapboxMap | null>(null);
   const pickerContainerRef = useRef<HTMLDivElement>(null);
-  const pickerMarkerRef = useRef<any>(null);
+  const pickerMarkerRef = useRef<MapboxMarker | null>(null);
 
   // Check if Mapbox is loaded
   useEffect(() => {
     const checkMapbox = () => {
-      const win = window as any;
-      if (win.mapboxgl || win.mapboxLoaded) {
+      if (window.mapboxgl || (window as Window & { mapboxLoaded?: boolean }).mapboxLoaded) {
         setMapboxLoaded(true);
       } else {
         setTimeout(checkMapbox, 100);
@@ -56,20 +56,24 @@ export const MapPicker: React.FC<MapPickerProps> = ({
 
   const updatePickerMarker = useCallback((coords: [number, number]) => {
     if (!mapboxLoaded || !pickerMapRef.current) return;
-    
-    const win = window as any;
-    const mapboxgl = win.mapboxgl;
+
+    const mapboxgl: MapboxGL | undefined = window.mapboxgl;
     if (!mapboxgl) return;
 
     try {
       if (pickerMarkerRef.current) {
         pickerMarkerRef.current.remove();
       }
-      pickerMarkerRef.current = new mapboxgl.Marker({ color: '#000' })
+      const el = document.createElement('div');
+      el.style.backgroundColor = '#000';
+      el.style.width = '12px';
+      el.style.height = '12px';
+      el.style.borderRadius = '50%';
+      pickerMarkerRef.current = new mapboxgl.Marker(el)
         .setLngLat(coords)
         .addTo(pickerMapRef.current);
-    } catch (e) {
-      void e;
+    } catch {
+      return;
     }
   }, [mapboxLoaded]);
 
@@ -79,9 +83,8 @@ export const MapPicker: React.FC<MapPickerProps> = ({
       return;
     }
 
-    let picker: any = null; // allow: pragmatic any
-    const win = window as any;
-    const mapboxgl = win.mapboxgl;
+    let picker: MapboxMap | null = null;
+    const mapboxgl: MapboxGL | undefined = window.mapboxgl;
     
     if (!mapboxgl) {
       // Mapbox not available
@@ -117,8 +120,9 @@ export const MapPicker: React.FC<MapPickerProps> = ({
         }, 500);
       });
       
-      const handleMapClick = async (e: any) => { // allow: pragmatic any
-        const { lng, lat } = e.lngLat;
+      const handleMapClick = async (e: unknown) => {
+        const event = e as { lngLat: { lng: number; lat: number } };
+        const { lng, lat } = event.lngLat;
         updatePickerMarker([lng, lat]);
         try {
           const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}&country=br`);
@@ -145,13 +149,13 @@ export const MapPicker: React.FC<MapPickerProps> = ({
     };
   }, [isOpen, mapboxLoaded, updatePickerMarker]);
 
-  const parseAndSetAddress = async (feature: any) => { // allow: pragmatic any
-    const context = feature.context || [];
-    const neighborhood = context.find((c: any) => c.id.startsWith('neighborhood'))?.text || // allow: pragmatic any
-                        context.find((c: any) => c.id.startsWith('locality'))?.text || ''; // allow: pragmatic any
-    const city = context.find((c: any) => c.id.startsWith('place'))?.text || feature.place_name?.split(',')[1]?.trim() || ''; // allow: pragmatic any
-    const state = context.find((c: any) => c.id.startsWith('region'))?.short_code?.replace('BR-', '') || ''; // allow: pragmatic any
-    let postcode = context.find((c: any) => c.id.startsWith('postcode'))?.text || ''; // allow: pragmatic any
+  const parseAndSetAddress = async (feature: MapboxFeature) => {
+    const context: MapboxContext[] = feature.context || [];
+    const neighborhood = context.find((c) => c.id.startsWith('neighborhood'))?.text ||
+                        context.find((c) => c.id.startsWith('locality'))?.text || '';
+    const city = context.find((c) => c.id.startsWith('place'))?.text || feature.place_name?.split(',')[1]?.trim() || '';
+    const state = context.find((c) => c.id.startsWith('region'))?.short_code?.replace('BR-', '') || '';
+    let postcode = context.find((c) => c.id.startsWith('postcode'))?.text || '';
     
     const street = feature.text || feature.place_name?.split(',')[0] || '';
     
@@ -206,7 +210,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
     debouncedSearch(searchQuery);
   };
 
-  const handleSelectSearchResult = async (result: any) => { // allow: pragmatic any
+  const handleSelectSearchResult = async (result: MapboxFeature) => {
     await parseAndSetAddress(result);
     setSearchResults([]);
     setSearchQuery('');

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { X, Minus, Plus, ShoppingBag, Check, ImageOff } from 'lucide-react';
-import { Product, UserMode, LocalizedText, Coupon } from '../../types';
+import { Product, UserMode, LocalizedText, Coupon, CartItem } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 import { calculatePrice } from '../../utils/product';
@@ -11,7 +11,7 @@ interface QuickAddModalProps {
   product: Product;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (item: any) => void; // allow: pragmatic any
+  onAddToCart: (item: CartItem) => void;
   userMode: UserMode;
   locale: Locale;
   getLoc: (text: LocalizedText | undefined) => string;

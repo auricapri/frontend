@@ -398,10 +398,10 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
           });
           setIsManualAddress(false);
           shipping.calculateLogistics(cleaned);
-        } catch (err: any) { // allow: pragmatic any
+        } catch (err) {
           clearTimeout(timeoutId);
           // Check if it was a timeout
-          if (err?.name === 'AbortError') {
+          if (err instanceof Error && err.name === 'AbortError') {
             setCepError('Tempo esgotado. Preencha manualmente.');
             setIsManualAddress(true);
             setAddress({
@@ -434,10 +434,11 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
             });
             setIsManualAddress(false);
             shipping.calculateLogistics(cleaned);
-          } catch (err2: any) { // allow: pragmatic any
+          } catch (err2) {
             clearTimeout(timeoutId2);
             // Fallback to manual entry
-            setCepError(err2?.name === 'AbortError' ? 'Tempo esgotado. Preencha manualmente.' : 'CEP não encontrado. Preencha manualmente.');
+            const isAbort = err2 instanceof Error && err2.name === 'AbortError';
+            setCepError(isAbort ? 'Tempo esgotado. Preencha manualmente.' : 'CEP não encontrado. Preencha manualmente.');
             setIsManualAddress(true);
             setAddress({
               logradouro: '',

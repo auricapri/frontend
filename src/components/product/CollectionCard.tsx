@@ -13,7 +13,7 @@ const COMING_SOON_TEXT: Record<Locale, string> = {
 
 export interface CollectionCardProps {
   collection: Collection;
-  getLoc: (obj: unknown) => string; // allow: pragmatic any
+  getLoc: (obj: unknown) => string;
   onSelect: (collection: Collection) => void;
   locale: Locale;
 }

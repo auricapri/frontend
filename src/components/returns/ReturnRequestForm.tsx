@@ -74,7 +74,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
   });
 
   const submitMutation = useMutation({
-    mutationFn: (payload: { order_id: string; reason: string; metadata: object }) =>
+    mutationFn: (payload: { order_id: string; reason: string; metadata: Record<string, unknown> }) =>
       returnsApi.create(payload),
     onSuccess: (returnData) => {
       setResult(returnData);

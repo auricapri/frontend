@@ -70,7 +70,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
       const url = `${window.location.origin}/wishlist/${shareSlug}`;
       setShareUrl(url);
       return url;
-    } catch (error: any) { // allow: pragmatic any
+    } catch (error: unknown) {
       console.error('Error generating share link:', error);
       return null;
     } finally {
@@ -156,9 +156,10 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
           url: url
         });
         return;
-      } catch (error: any) { // allow: pragmatic any
+      } catch (error: unknown) {
         // User cancelled or share failed, fall through to WhatsApp web
-        if (error.name !== 'AbortError') {
+        const name = error instanceof Error ? error.name : '';
+        if (name !== 'AbortError') {
           console.error('Web Share API failed:', error);
         }
       }

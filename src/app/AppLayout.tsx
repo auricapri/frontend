@@ -18,9 +18,11 @@ import { AccessoryPromoModal, useAccessoryPromoModal } from '../components/commo
 import { trackingService } from '../services/tracking.service';
 import { ChatProduct } from '../api/ai-chat.api';
 import { Gender } from '../constants/enums';
-import { UserMode, type Category, type Collection, type Coupon, type Order, type Product, type SizeGuide, type StoreConfig, type UserProfile } from '../types';
+import { UserMode, type Banner, type CartItem, type Category, type Collection, type Coupon, type Order, type Product, type ProductVariant, type SizeGuide, type StoreConfig, type UserProfile } from '../types';
 import { SEOHead, organizationSchema, websiteSchema, createProductSchema, createCollectionSchema, createBreadcrumbSchema } from '../components/seo';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import type { AppView } from './hooks/useNavigation';
+import type { Locale } from '../i18n';
 
 // Lazy load páginas e componentes pesados para melhor performance
 const ProductGrid = React.lazy(() => import('../components/product/ProductGrid'));
@@ -39,23 +41,24 @@ const AuthDrawer = React.lazy(() => import('../components/auth/AuthDrawer'));
 const FAQModal = React.lazy(() => import('../components/layout/FAQModal'));
 const ComplaintModal = React.lazy(() => import('../components/support/ComplaintModal'));
 
-export function AppLayout(props: {
-  app: {
-    locale: any; // allow: pragmatic any
-    setLocale: (l: any) => void; // allow: pragmatic any
-    t: (key: string) => any;
+type OrderResult = { status: 'success' | 'error'; orderId?: string; message?: string } | null;
+
+export interface AppState {
+    locale: Locale;
+    setLocale: (l: Locale) => void;
+    t: (key: string) => string;
     userMode: UserMode;
     setUserMode: React.Dispatch<React.SetStateAction<UserMode>>;
 
-    currentView: 'home' | 'product' | 'collection' | 'checkout' | 'order-review' | 'new-arrivals' | 'search-results';
+    currentView: AppView;
     isScrolled: boolean;
-    mainRef: React.RefObject<HTMLElement>;
+    mainRef: React.RefObject<HTMLElement | null>;
     handleScroll: () => void;
 
     products: Product[];
     categories: Category[];
     collections: Collection[];
-    banners: any[]; // allow: pragmatic any
+    banners: Banner[];
     coupons: Coupon[];
     storeConfig: StoreConfig;
     isLoading: boolean;
@@ -64,14 +67,14 @@ export function AppLayout(props: {
     userOrders: Order[];
     sizeGuides: SizeGuide[];
 
-    cartItems: any[]; // allow: pragmatic any
-    setCartItems: React.Dispatch<React.SetStateAction<any[]>>;
-    addToCart: (cartItem: any) => void; // allow: pragmatic any
+    cartItems: CartItem[];
+    setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
+    addToCart: (cartItem: CartItem) => void;
     handleUpdateQuantity: (id: string, delta: number) => void;
 
     wishlistIds: string[];
     wishlistVariantIds: Record<string, string>;
-    toggleWishlist: (id: string) => Promise<void>;
+    toggleWishlist: (id: string) => Promise<unknown>;
     handleToggleWishlist: (id: string, variantId?: string | null) => Promise<void>;
     handleBuyAllWishlist: () => void;
 
@@ -106,20 +109,29 @@ export function AppLayout(props: {
     handleLoyaltyBannerClick: () => void;
 
     isProcessingOrder: boolean;
-    orderResult: any; // allow: pragmatic any
-    setOrderResult: (result: { status: 'success' | 'error'; orderId?: string; message?: string } | null) => void;
+    orderResult: OrderResult;
+    setOrderResult: (result: OrderResult) => void;
     handleCloseOrderResult: () => void;
-    handlePlaceOrder: (...args: any[]) => Promise<void>; // allow: pragmatic any
+    handlePlaceOrder: (
+      addressData: import('../types').AddressData,
+      logisticsInfo: import('../types').InternalLogisticsInfo,
+      paymentMethod: import('../constants/enums').PaymentMethod,
+      finalAmount: number,
+      saveCard: boolean,
+      cardToken?: string,
+      phone?: string
+    ) => Promise<void>;
     handleCheckoutIntent: () => void;
     onRefetchStoreData: () => void;
 
-    signOut: () => Promise<any>;
+    signOut: () => Promise<{ success: boolean; error?: string } | void>;
 
     searchSlug: string;
-    onNavigate: (view: any, targetSection?: string, product?: Product) => void; // allow: pragmatic any
+    onNavigate: (view: AppView, targetSection?: string, product?: Product) => void;
     handleBackFromProduct: () => void;
-  };
-}) {
+}
+
+export function AppLayout(props: { app: AppState }) {
   const { app } = props;
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isFAQOpen, setIsFAQOpen] = useState(false);
@@ -142,7 +154,7 @@ export function AppLayout(props: {
   const productSEO = useMemo(() => {
     if (app.currentView !== 'product' || !app.activeProduct) return null;
     const product = app.activeProduct;
-    const activeVariants = product.variants?.filter((v: any) => v.is_active) || []; // allow: pragmatic any
+    const activeVariants = product.variants?.filter((v: ProductVariant) => v.is_active) || [];
     const defaultVariant = activeVariants[0] || product.variants?.[0];
     const productName = getLoc(product.name);
     const productSlug = getLoc(product.slug);
@@ -245,7 +257,7 @@ export function AppLayout(props: {
       <TestBanner />
       <BenefitsBar banners={app.banners} locale={app.locale} />
       <Navbar
-        cartCount={app.cartItems.reduce((acc: number, item: any) => acc + item.quantity, 0)} // allow: pragmatic any
+        cartCount={app.cartItems.reduce((acc: number, item: CartItem) => acc + item.quantity, 0)}
         onOpenCart={() => app.setIsCartOpen(true)}
         wishlistCount={app.wishlistIds.length}
         onOpenWishlist={() => app.setIsWishlistOpen(true)}
@@ -294,7 +306,7 @@ export function AppLayout(props: {
               locale={app.locale}
               schema={[organizationSchema, websiteSchema]}
             />
-            <Hero onNavigate={app.onNavigate as any} t={app.t} banners={app.banners} locale={app.locale} isLoading={app.isLoading} />
+            <Hero onNavigate={(view, target) => app.onNavigate(view, target)} t={app.t} banners={app.banners} locale={app.locale} isLoading={app.isLoading} />
 
             {/* Abandoned Cart Toast - appears above collection section */}
             <AbandonedCartToast
@@ -626,8 +638,8 @@ export function AppLayout(props: {
           userMode={app.userMode}
           onUpdateQuantity={app.handleUpdateQuantity}
           onRemoveItem={(id) => {
-            const removed = app.cartItems.find((i: any) => i.variant_id === id); // allow: pragmatic any
-            app.setCartItems(app.cartItems.filter((i: any) => i.variant_id !== id)); // allow: pragmatic any
+            const removed = app.cartItems.find((i: CartItem) => i.variant_id === id);
+            app.setCartItems(app.cartItems.filter((i: CartItem) => i.variant_id !== id));
             if (removed) {
               trackingService.trackCartRemove(removed.product_id, removed.variant_id);
             }

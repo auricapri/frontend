@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Product, UserMode, Coupon } from '../../types';
+import { Product, UserMode, Coupon, CartItem } from '../../types';
 import { Heart, ShoppingBag, Truck } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
@@ -34,7 +34,7 @@ export interface ProductCardProps {
   onToggleWishlist?: (id: string) => void;
 
   // Quick add handler
-  onAddToCart?: (item: any) => void; // allow: pragmatic any
+  onAddToCart?: (item: CartItem) => void;
   onQuickAdd?: (product: Product, initialColorHex?: string) => void;
 
   // Click handler

@@ -72,8 +72,9 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user: _user, locale:
       const updated = await apiClient.post<InfluencerData>('/influencer/terms/accept', {});
       setInfluencer(updated);
       setShowTermsModal(false);
-    } catch (err: any) { // allow: pragmatic any
-      alert(err.message || 'Erro ao aceitar termos');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erro ao aceitar termos';
+      alert(message);
     } finally {
       setIsAccepting(false);
     }

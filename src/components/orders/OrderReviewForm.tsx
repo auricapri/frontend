@@ -104,7 +104,7 @@ export const OrderReviewForm: React.FC<OrderReviewFormProps> = ({
           remove_media_ids: mediaToRemove.length > 0 ? mediaToRemove : undefined
         });
       } else {
-        const createData: any = { // allow: pragmatic any
+        const createData: Parameters<typeof api.create>[0] = {
           order_id: orderId,
           rating,
           comment: comment || undefined,
@@ -130,8 +130,9 @@ export const OrderReviewForm: React.FC<OrderReviewFormProps> = ({
       });
 
       onSuccess(review);
-    } catch (error: any) { // allow: pragmatic any
-      alert(error.message || 'Erro ao salvar avaliação');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar avaliação';
+      alert(message);
     } finally {
       setIsSubmitting(false);
     }

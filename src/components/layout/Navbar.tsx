@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { UserMode, Collection, UserProfile, Product, Category } from '../../types';
+import type { AppView } from '../../app/hooks/useNavigation';
 import { Gender } from '../../constants/enums';
 import { Locale } from '../../i18n';
 import { NavbarSearch } from './NavbarSearch';
@@ -17,7 +18,7 @@ interface NavbarProps {
   onLogout?: () => void;
   userMode: UserMode;
   onToggleMode: () => void;
-  onNavigate: (view: 'home' | 'product' | 'admin' | 'checkout' | 'about' | 'new-arrivals' | 'gallery' | 'my-orders', target?: string) => void;
+  onNavigate: (view: AppView, target?: string) => void;
   isScrolled: boolean;
   isProductView?: boolean;
   onBack?: () => void;

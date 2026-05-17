@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createGetLoc } from '../utils/localization';
 import { ArrowLeft, Loader2, Star } from 'lucide-react';
-import { Order, OrderItemForReview, ProductReview } from '../types';
+import { Order, OrderItemForReview, ProductReview, StoreConfig } from '../types';
 import { Locale } from '../i18n';
 import { ProductReviewsApi } from '../api/product-reviews.api';
 import { OrdersApi } from '../api/orders.api';
@@ -14,9 +14,9 @@ import { getOptimizedImageUrl } from '../utils/image';
 interface OrderProductReviewPageProps {
   orderId: string;
   onBack?: () => void;
-  t: (key: string) => any;
+  t: (key: string) => string;
   locale: Locale;
-  storeConfig?: any; // allow: pragmatic any
+  storeConfig?: StoreConfig;
 }
 
 export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
@@ -31,7 +31,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
   const ordersApi = new OrdersApi();
   const reviewsApi = new ProductReviewsApi();
 
@@ -78,9 +78,9 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
 
         const items = await reviewsApi.getOrderItemsForReview(orderId, userId);
         setOrderItems(items);
-      } catch (err: any) { // allow: pragmatic any
+      } catch (err: unknown) {
         console.error('Error loading order review data:', err);
-        const msg = String(err?.message || '');
+        const msg = err instanceof Error ? err.message : '';
         if (/not delivered/i.test(msg)) {
           setError('Este pedido ainda não foi entregue. Você só pode avaliar pedidos entregues.');
         } else {

@@ -161,7 +161,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
       cvv: creditCard.cardCvc,
     } : null,
     cardToken: creditCard.selectedSavedCardId
-      ? currentUser?.saved_cards?.find((c: any) => c.id === creditCard.selectedSavedCardId)?.gateway_token ?? null // allow: pragmatic any
+      ? currentUser?.saved_cards?.find((c) => c.id === creditCard.selectedSavedCardId)?.gateway_token ?? null
       : null,
     selectedInstallments: installment.selectedInstallments,
     selectedInstallmentCode: installment.selectedInstallmentCode,

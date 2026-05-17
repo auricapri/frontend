@@ -6,7 +6,7 @@ import { X, Shield, AlertCircle } from 'lucide-react';
 interface AdminMfaSetupProps {
   onComplete: () => void;
   onCancel: () => void;
-  t: (key: string) => any;
+  t: (key: string) => string;
   locale: Locale;
   subtitle?: string;
   friendlyName?: string;
@@ -34,8 +34,9 @@ const AdminMfaSetup: React.FC<AdminMfaSetupProps> = ({ onComplete, onCancel, t: 
         setFactorId(data.id);
         setQrCode(data.totp.qr_code);
         setSecret(data.totp.secret);
-      } catch (err: any) { // allow: pragmatic any
-        setError(err.message || 'Erro ao configurar MFA');
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Erro ao configurar MFA';
+        setError(message);
       }
     };
 
@@ -67,8 +68,9 @@ const AdminMfaSetup: React.FC<AdminMfaSetupProps> = ({ onComplete, onCancel, t: 
       if (verifyError) throw verifyError;
 
       onComplete();
-    } catch (err: any) { // allow: pragmatic any
-      setError(err.message || 'Código inválido. Tente novamente.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Código inválido. Tente novamente.';
+      setError(message);
     } finally {
       setIsLoading(false);
     }

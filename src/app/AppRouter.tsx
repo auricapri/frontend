@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { type Order, type StoreConfig } from '../types';
-import { AppLayout } from './AppLayout';
+import { AppLayout, type AppState } from './AppLayout';
+import type { AppView } from './hooks/useNavigation';
 import { LoadingFallback } from '../components/ui';
 import Footer from '../components/layout/Footer';
 
@@ -26,11 +27,11 @@ const GalleryPage = React.lazy(() => import('../pages/GalleryPage').then(m => ({
 const ContactPage = React.lazy(() => import('../pages/ContactPage').then(m => ({ default: m.ContactPage })));
 
 export function AppRouter(props: {
-  app: any; // allow: pragmatic any
+  app: AppState;
   storeConfig: StoreConfig;
   lastSuccessOrder: Order | null;
-  onSignOut: () => Promise<any>;
-  onSetCurrentView: (v: any) => void; // allow: pragmatic any
+  onSignOut: () => Promise<{ success: boolean; error?: string }>;
+  onSetCurrentView: (v: AppView) => void;
 }) {
   const { app, storeConfig, lastSuccessOrder, onSignOut, onSetCurrentView } = props;
 

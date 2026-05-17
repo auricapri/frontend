@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { X, Loader2, Mail, ArrowLeft, Check } from 'lucide-react';
-import { UserProfile as UserType } from '../../types';
+import { UserProfile as UserType, StoreConfig } from '../../types';
 import { Locale } from '../../i18n';
 import { supabase } from '../../utils/supabase';
 import { LoadingFallback } from '../ui/LoadingFallback';
@@ -16,7 +16,7 @@ interface AuthDrawerProps {
   onLogout: () => void;
   t: (key: string) => any;
   locale: Locale;
-  storeConfig?: any; // allow: pragmatic any
+  storeConfig?: StoreConfig;
 }
 
 const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin, onLogout, t, locale, storeConfig }) => {

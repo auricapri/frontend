@@ -43,7 +43,7 @@ export interface PriceHistoryEntry {
   action: string;
   table_name: string | null;
   record_id: string | null;
-  metadata: any; // allow: pragmatic any
+  metadata: Record<string, unknown>;
   ip_address: string | null;
   created_at: string;
 }

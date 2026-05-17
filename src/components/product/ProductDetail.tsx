@@ -2,7 +2,7 @@
 /// Main orchestrator component using modular sub-components
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Product, UserMode, CartItem, UserProfile, Coupon, SizeGuide, Category, ProductReview } from '../../types';
+import { Product, UserMode, CartItem, UserProfile, Coupon, SizeGuide, Category, ProductReview, Order } from '../../types';
 import { Locale } from '../../i18n';
 import ProductReviews from './ProductReviews';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
@@ -41,10 +41,10 @@ interface ProductDetailProps {
   onBack: () => void;
   isWishlisted: boolean;
   onToggleWishlist: (variantId?: string | null) => void;
-  t: (key: string) => any;
+  t: (key: string) => string;
   locale: Locale;
   currentUser: UserProfile | null;
-  userOrders?: any[]; // allow: pragmatic any
+  userOrders?: Order[];
   onShowToast?: (message: string, type?: 'info' | 'error') => void;
   sizeGuides?: SizeGuide[];
   products?: Product[];

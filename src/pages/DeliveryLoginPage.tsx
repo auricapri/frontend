@@ -7,7 +7,7 @@ import AdminMfaChallenge from '../components/delivery/MfaChallenge';
 
 interface DeliveryLoginPageProps {
   onLoginSuccess: () => void;
-  t: (key: string) => any;
+  t: (key: string) => string;
   locale: Locale;
 }
 
@@ -44,9 +44,10 @@ export const DeliveryLoginPage: React.FC<DeliveryLoginPageProps> = ({ onLoginSuc
         throw new Error('Profile not found');
       }
 
-      const role = (profile as any).role;
-      const isDelivery = role === 'delivery' || (profile as any).is_delivery === true;
-      const isAdmin = role === 'admin' || (profile as any).is_admin === true;
+      const profileRecord = profile as unknown as Record<string, unknown>;
+      const role = profileRecord.role as string | undefined;
+      const isDelivery = role === 'delivery' || profileRecord.is_delivery === true;
+      const isAdmin = role === 'admin' || profileRecord.is_admin === true;
 
       if (!isDelivery && !isAdmin) {
         await supabase.auth.signOut();
@@ -59,8 +60,8 @@ export const DeliveryLoginPage: React.FC<DeliveryLoginPageProps> = ({ onLoginSuc
       const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
       if (factorsError) throw factorsError;
 
-      const hasVerifiedFactors = factorsData.totp.some((f: any) => f.status === 'verified') || // allow: pragmatic any
-        factorsData.phone.some((f: any) => f.status === 'verified'); // allow: pragmatic any
+      const hasVerifiedFactors = factorsData.totp.some((f) => f.status === 'verified') ||
+        factorsData.phone.some((f) => f.status === 'verified');
 
       if (!hasVerifiedFactors) {
         setStep('mfa-setup');
@@ -71,8 +72,9 @@ export const DeliveryLoginPage: React.FC<DeliveryLoginPageProps> = ({ onLoginSuc
       } else {
         setStep('mfa-setup');
       }
-    } catch (err: any) { // allow: pragmatic any
-      setError(err.message || 'Erro ao fazer login');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erro ao fazer login';
+      setError(message);
     } finally {
       setIsLoading(false);
     }

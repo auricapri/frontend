@@ -1,7 +1,8 @@
 import React from 'react';
 import { MapPin, Search, Navigation, AlertCircle, Loader2, ChevronRight } from 'lucide-react';
-import { type AddressData } from '../../types';
+import { type AddressData, type UserProfile } from '../../types';
 import { Locale } from '../../i18n';
+import type { InternalLogisticsInfo } from '../../types';
 
 interface AddressFormProps {
   cep: string;
@@ -12,8 +13,8 @@ interface AddressFormProps {
   loadingCep: boolean;
   calculatingShipping: boolean;
   shippingDisplay: { price: number; days: number } | null;
-  bestInternalShipping: any; // allow: pragmatic any
-  currentUser: any; // allow: pragmatic any
+  bestInternalShipping: InternalLogisticsInfo | null;
+  currentUser: UserProfile | null;
   locale: Locale;
   onCepChange: (value: string) => void;
   onNumChange: (value: string) => void;

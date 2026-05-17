@@ -70,8 +70,9 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ locale: _l
       // Sign out so user logs in fresh with new password
       await supabase.auth.signOut();
       setTimeout(() => onNavigate('home'), 3000);
-    } catch (err: any) { // allow: pragmatic any
-      if (err.message?.includes('expired') || err.message?.includes('invalid')) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : '';
+      if (message.includes('expired') || message.includes('invalid')) {
         setError('Link de recuperação expirado. Solicite um novo link.');
       } else {
         setError('Erro ao redefinir a senha. Tente novamente.');

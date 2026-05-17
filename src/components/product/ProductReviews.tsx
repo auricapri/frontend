@@ -1,15 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { Star, CheckCircle2, MessageSquare, Loader2, User, ThumbsUp, ChevronDown } from 'lucide-react';
-import { ProductReview, UserProfile } from '../../types';
+import { ProductReview, UserProfile, Order } from '../../types';
 import { ProductReviewsApi } from '../../api/product-reviews.api';
 
 interface ProductReviewsProps {
   productId: string;
   reviews: ProductReview[];
   user: UserProfile | null;
-  userOrders?: any[]; // allow: Order[] type — pragmatic any
-  t: (key: string) => any;
+  userOrders?: Order[];
+  t: (key: string) => string;
   onAddReview: (review: Partial<ProductReview>) => Promise<void>;
   isLoading?: boolean;
 }
@@ -35,18 +35,16 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
   const hasPaidAndDeliveredOrderWithProduct = (): boolean => {
     if (!user || !userOrders || userOrders.length === 0) return false;
     
-    // Filter orders that are delivered AND paid (have payment_method and status is delivered)
-    const paidAndDeliveredOrders = userOrders.filter((order: any) => // allow: pragmatic any
-      order.status === 'delivered' && 
-      order.payment_method && 
+    // Filter orders that are delivered AND paid (have payment_method)
+    const paidAndDeliveredOrders = userOrders.filter((order) =>
+      order.status === 'delivered' &&
       order.payment_method !== null &&
-      order.status !== 'pending' &&
-      order.status !== 'cancelled'
+      order.payment_method !== undefined
     );
-    
+
     // Check if any of these orders contain the product
-    return paidAndDeliveredOrders.some((order: any) => // allow: pragmatic any
-      order.items && order.items.some((item: any) => item.product_id === productId) // allow: pragmatic any
+    return paidAndDeliveredOrders.some((order) =>
+      order.items && order.items.some((item) => item.product_id === productId)
     );
   };
 

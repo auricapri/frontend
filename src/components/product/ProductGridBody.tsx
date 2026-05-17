@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Product, UserMode, Coupon } from '../../types';
+import { Product, UserMode, Coupon, CartItem } from '../../types';
 import { Locale } from '../../i18n';
 import { ProductCard } from './ProductCard';
 import { ProductGridSkeleton } from './ProductGridSkeleton';
@@ -18,7 +18,7 @@ export interface ProductGridBodyProps {
   selectedColorFamilies: string[];
   itemsPerPage: number;
   onToggleWishlist: (id: string) => void;
-  onAddToCart?: (item: any) => void; // allow: pragmatic any
+  onAddToCart?: (item: CartItem) => void;
   onQuickAdd: (product: Product, colorHex?: string | null) => void;
   onSelectProduct: (product: Product) => void;
   onClearFilters: () => void;

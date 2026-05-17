@@ -3,13 +3,14 @@ import React from 'react';
 import { ShieldCheck, Lock, MapPin, Mail, Phone, FileText, RefreshCw, Truck, Instagram } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { StoreConfig } from '../../types';
+import type { AppView } from '../../app/hooks/useNavigation';
 
 interface FooterProps {
   t: (key: string) => string;
   currentLocale: Locale;
   onChangeLocale: (locale: Locale) => void;
   storeConfig: StoreConfig;
-  onNavigate: (view: 'home' | 'collection' | 'about' | 'privacy' | 'terms' | 'shipping' | 'affiliates' | 'contact', target?: string) => void;
+  onNavigate: (view: AppView, target?: string) => void;
   onOpenFAQ?: () => void;
   onOpenAuth?: () => void;
   onOpenComplaint?: () => void;

@@ -5,6 +5,7 @@ import { maskCep, normalizeCepDigits, validateCPF } from '../../../utils/masks';
 import { UserMode } from '../../../types';
 import { ShippingSelectionModal } from './ShippingSelectionModal';
 import { trackingService } from '../../../services/tracking.service';
+import type { MapboxFeature } from '../../../types/common/mapbox';
 
 export function AddressStep({ checkout }: { checkout: CheckoutState }) {
   const {
@@ -89,7 +90,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
   };
 
   // Handler para quando seleciona um resultado da busca inline
-  const handleInlineSearchSelect = (result: any) => { // allow: pragmatic any
+  const handleInlineSearchSelect = (result: MapboxFeature) => {
     handleSelectSearchResult(result);
     // Após selecionar, a busca é fechada automaticamente e os campos são preenchidos
     setShowInlineSearch(false);

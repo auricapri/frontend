@@ -7,7 +7,7 @@ export interface Collection {
   slug: string;
   image_url?: string;
   is_active: boolean;
-  seo_metadata?: any; // allow: pragmatic any
+  seo_metadata?: Record<string, unknown>;
   _associatedProductIds?: string[];
   // Limited-time collection fields
   starts_at?: string | null;  // ISO date string

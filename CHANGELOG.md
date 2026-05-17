@@ -5,6 +5,21 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.64] - 2026-05-17
+
+### Corrigido
+- **Quality Gate: remocao de todos os `// allow:` por correcao real de tipos**
+  - 124 anotacoes `// allow: pragmatic any` removidas; cada `: any` substituido por tipo real ou `unknown` + type-guard
+  - `AppState` interface exportada de `AppLayout.tsx` para tipagem centralizada do estado global
+  - `AppView` propagado para `Navbar`, `Footer`, `GalleryPage`, `SharedWishlistPage`, `NewArrivalsPage`, `AppRouter`
+  - `CartItem`, `ProductVariant`, `SavedCard`, `UserProfile`, `StoreConfig`, `PaymentMethod` usados onde havia `: any`
+  - `MapboxGL`, `MapboxMap`, `MapboxMarker`, `MapboxFeature`, `MapboxContext` usados em `MapPicker.tsx` e `AddressStep.tsx`
+  - `useDebounce` e `useThrottle`: generics corrigidos de `any[]` para `Parameters<T>/ReturnType<T>`
+  - `image-utils.ts`: empty-catch `(.catch(() => ({})))` substituido por bloco try-catch estruturado com interface `UploadErrorBody`
+  - `global.d.ts`: `Window.mapboxgl` tipado com `MapboxGL` real em vez de tipo fraco
+  - 5 validacoes passando com saida vazia: grep eslint-disable, `: any`, @ts-ignore, `// allow:`, empty-catch
+  - `npx tsc --noEmit`: zero erros; `npx eslint --max-warnings 0`: zero warnings; 101 unit tests passando
+
 ## [1.4.63] - 2026-05-17
 
 ### Corrigido
