@@ -49,15 +49,6 @@ function writeSessionPrefill<T>(key: string, data: T): void {
   }
 }
 
-function readSessionPrefill<T>(key: string): T | null {
-  try {
-    const raw = sessionStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : null;
-  } catch {
-    return null;
-  }
-}
-
 export const useCart = (products: Product[], assets: Asset[]) => {
   // Inicializa com itens do localStorage para persistência
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
