@@ -32,10 +32,15 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
   const MAX_TOTAL_SIZE = 50 * 1024 * 1024;
 
-  const getLoc = (obj: any): string => {
+  const getLoc = (obj: unknown): string => {
     if (!obj) return "";
     if (typeof obj === 'string') return obj;
-    return obj.pt || obj.en || Object.values(obj)[0] || "";
+    if (typeof obj === 'object') {
+      const rec = obj as Record<string, unknown>;
+      const candidate = rec.pt ?? rec.en ?? Object.values(rec).find((v) => typeof v === 'string');
+      return typeof candidate === 'string' ? candidate : "";
+    }
+    return "";
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,7 +118,7 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
           remove_media_ids: mediaToRemove.length > 0 ? mediaToRemove : undefined
         });
       } else {
-        const createData: any = {
+        const createData: Parameters<typeof api.create>[0] = {
           order_id: orderId,
           order_item_id: orderItem.order_item_id,
           product_id: orderItem.product_id,
@@ -121,7 +126,7 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
           rating,
           comment: comment || undefined,
           variant_size: orderItem.variant_size,
-          variant_color: orderItem.variant_color,
+          variant_color: getLoc(orderItem.variant_color),
           media: mediaFiles.length > 0 ? mediaFiles : undefined
         };
 
@@ -144,8 +149,9 @@ export const ProductReviewForm: React.FC<ProductReviewFormProps> = ({
       });
 
       onSuccess(review);
-    } catch (error: any) {
-      alert(error.message || 'Erro ao salvar avaliação');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar avaliação';
+      alert(message);
     } finally {
       setIsSubmitting(false);
     }

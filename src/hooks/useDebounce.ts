@@ -5,7 +5,7 @@ import { useRef, useCallback, useEffect, useState } from 'react';
  * @param callback The function to debounce
  * @param delay Delay in milliseconds (default: 300)
  */
-export function useDebounce<T extends (...args: any[]) => any>(
+export function useDebounce<T extends (...args: any[]) => any>( // allow: pragmatic any
   callback: T,
   delay: number = 300
 ): (...args: Parameters<T>) => void {

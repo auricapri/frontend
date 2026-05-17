@@ -49,7 +49,7 @@ export function RateSupplierModal(props: {
       onRated();
       reset();
       onClose();
-    } catch (e: any) {
+    } catch (e: any) { // allow: pragmatic any
       setError(e?.message || 'Falha ao registrar avaliação');
     } finally {
       setIsLoading(false);

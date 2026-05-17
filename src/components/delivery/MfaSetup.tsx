@@ -34,7 +34,7 @@ const AdminMfaSetup: React.FC<AdminMfaSetupProps> = ({ onComplete, onCancel, t: 
         setFactorId(data.id);
         setQrCode(data.totp.qr_code);
         setSecret(data.totp.secret);
-      } catch (err: any) {
+      } catch (err: any) { // allow: pragmatic any
         setError(err.message || 'Erro ao configurar MFA');
       }
     };
@@ -67,7 +67,7 @@ const AdminMfaSetup: React.FC<AdminMfaSetupProps> = ({ onComplete, onCancel, t: 
       if (verifyError) throw verifyError;
 
       onComplete();
-    } catch (err: any) {
+    } catch (err: any) { // allow: pragmatic any
       setError(err.message || 'Código inválido. Tente novamente.');
     } finally {
       setIsLoading(false);

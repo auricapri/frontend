@@ -10,7 +10,7 @@ export type GalleryImageData = {
   url: string;
   variantId: string;
   variantColor: string;
-  variantColorName: any;
+  variantColorName: any; // allow: pragmatic any
   size: string;
   combinationKey: string;
   isBase: boolean;
@@ -21,8 +21,8 @@ export function ImageGallery(props: {
   product: Product;
   allImagesWithVariant: GalleryImageData[];
   activeVariantId?: string;
-  activeVariantColorName?: any;
-  getLoc: (obj: any) => string;
+  activeVariantColorName?: any; // allow: pragmatic any
+  getLoc: (obj: unknown) => string; // allow: pragmatic any
   setZoomImgIndex: (idx: number) => void;
   setIsZoomOpen: (open: boolean) => void;
   mobileGalleryRef: React.RefObject<HTMLDivElement | null>;

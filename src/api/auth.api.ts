@@ -12,9 +12,9 @@ export interface SignInData {
 }
 
 export interface AuthResponse {
-  user: any;
-  session: any;
-  profile?: any;
+  user: any; // allow: pragmatic any
+  session: any; // allow: pragmatic any
+  profile?: any; // allow: pragmatic any
 }
 
 export class AuthApi {

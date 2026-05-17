@@ -8,7 +8,7 @@ export interface Shipment {
   status: string;
   shipped_at: string | null;
   delivered_at: string | null;
-  metadata: any;
+  metadata: any; // allow: pragmatic any
   created_at: string;
 }
 

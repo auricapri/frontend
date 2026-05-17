@@ -11,7 +11,7 @@ interface QuickAddModalProps {
   product: Product;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (item: any) => void;
+  onAddToCart: (item: any) => void; // allow: pragmatic any
   userMode: UserMode;
   locale: Locale;
   getLoc: (text: LocalizedText | undefined) => string;

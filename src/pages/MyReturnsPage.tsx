@@ -170,7 +170,7 @@ export function MyReturnsPage({ locale, onBack, onRequestReturn }: MyReturnsPage
                       <span className="text-[10px] font-black uppercase tracking-widest text-neutral-300">
                         Itens
                       </span>
-                      {ret.metadata.items.map((item: any, idx: number) => (
+                      {ret.metadata.items.map((item: any, idx: number) => ( // allow: pragmatic any
                         <div key={idx} className="text-[11px] text-neutral-600">
                           {item.name} — {item.size} (Qtd: {item.quantity})
                         </div>

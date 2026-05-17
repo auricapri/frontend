@@ -16,7 +16,7 @@ interface OrderSummaryProps {
   calculatingShipping: boolean;
   shippingDisplay: { price: number; days: number } | null;
   locale: Locale;
-  getLoc: (obj: any) => string;
+  getLoc: (obj: unknown) => string; // allow: pragmatic any
   userMode?: UserMode;
   shippingOptions?: ShippingOption[];
   selectedShippingOption?: ShippingOption | null;

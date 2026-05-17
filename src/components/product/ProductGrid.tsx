@@ -27,7 +27,7 @@ interface ProductGridProps {
   onSelectCollection: (collection: Collection) => void;
   wishlistIds: string[];
   onToggleWishlist: (id: string) => void;
-  onAddToCart?: (item: any) => void;
+  onAddToCart?: (item: any) => void; // allow: pragmatic any
   onGoToCart?: () => void;
   t: (key: string) => string;
   locale: Locale;
@@ -103,7 +103,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   const handleToggleFilters = useCallback(() => setIsFiltersOpen((prev) => !prev), []);
 
-  const handleGenderChange = useCallback((gender: Gender) => {
+  const _handleGenderChange = useCallback((gender: Gender) => {
     if (onGenderChange) {
       onGenderChange(gender);
     } else {

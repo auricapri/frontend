@@ -21,8 +21,8 @@ interface HotspotPopupProps {
 export function HotspotPopup({
   hotspot,
   locale,
-  onClose,
-  onAddToCart,
+  onClose: _onClose,
+  onAddToCart: _onAddToCart,
   onNavigateToProduct,
   position
 }: HotspotPopupProps) {

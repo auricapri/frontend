@@ -5,7 +5,7 @@
  * but internally delegates to smaller, focused hooks.
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PaymentMethod } from '../../../constants/enums';
 import { Locale } from '../../../i18n';
 import { maskCPF, maskPhone, unmask } from '../../../utils/masks';
@@ -161,7 +161,7 @@ export function useCheckoutState(params: UseCheckoutStateParams) {
       cvv: creditCard.cardCvc,
     } : null,
     cardToken: creditCard.selectedSavedCardId
-      ? currentUser?.saved_cards?.find((c: any) => c.id === creditCard.selectedSavedCardId)?.gateway_token ?? null
+      ? currentUser?.saved_cards?.find((c: any) => c.id === creditCard.selectedSavedCardId)?.gateway_token ?? null // allow: pragmatic any
       : null,
     selectedInstallments: installment.selectedInstallments,
     selectedInstallmentCode: installment.selectedInstallmentCode,

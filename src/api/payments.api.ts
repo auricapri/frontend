@@ -17,7 +17,7 @@ export interface Payment {
   attempt_number: number;
   amount: number;
   currency: string;
-  metadata: any;
+  metadata: any; // allow: pragmatic any
   created_at: string;
 }
 

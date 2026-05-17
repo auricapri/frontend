@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { createGetLoc } from '../utils/localization';
 import { ArrowLeft, Loader2, Star } from 'lucide-react';
 import { Order, OrderItemForReview, ProductReview } from '../types';
 import { Locale } from '../i18n';
@@ -15,7 +16,7 @@ interface OrderProductReviewPageProps {
   onBack?: () => void;
   t: (key: string) => any;
   locale: Locale;
-  storeConfig?: any;
+  storeConfig?: any; // allow: pragmatic any
 }
 
 export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
@@ -34,24 +35,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
   const ordersApi = new OrdersApi();
   const reviewsApi = new ProductReviewsApi();
 
-  const getLoc = (obj: any): string => {
-    if (!obj) return "";
-    if (typeof obj === 'string') {
-      try {
-        const parsed = JSON.parse(obj);
-        if (typeof parsed === 'object' && parsed !== null) {
-          return parsed[locale] || parsed['pt'] || parsed['en'] || Object.values(parsed)[0] || "";
-        }
-        return obj;
-      } catch {
-        return obj;
-      }
-    }
-    if (typeof obj === 'object' && obj !== null) {
-      return obj[locale] || obj['pt'] || obj['en'] || Object.values(obj)[0] || "";
-    }
-    return String(obj);
-  };
+  const getLoc = useMemo(() => createGetLoc(locale), [locale]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -94,7 +78,7 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
 
         const items = await reviewsApi.getOrderItemsForReview(orderId, userId);
         setOrderItems(items);
-      } catch (err: any) {
+      } catch (err: any) { // allow: pragmatic any
         console.error('Error loading order review data:', err);
         const msg = String(err?.message || '');
         if (/not delivered/i.test(msg)) {

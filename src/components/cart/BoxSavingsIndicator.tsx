@@ -1,5 +1,5 @@
 import React from 'react';
-import { Package, Check, Sparkles, Gift } from 'lucide-react';
+import { Check, Sparkles, Gift } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
 

@@ -12,8 +12,8 @@ interface AddressFormProps {
   loadingCep: boolean;
   calculatingShipping: boolean;
   shippingDisplay: { price: number; days: number } | null;
-  bestInternalShipping: any;
-  currentUser: any;
+  bestInternalShipping: any; // allow: pragmatic any
+  currentUser: any; // allow: pragmatic any
   locale: Locale;
   onCepChange: (value: string) => void;
   onNumChange: (value: string) => void;

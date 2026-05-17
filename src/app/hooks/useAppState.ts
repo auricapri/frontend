@@ -7,7 +7,7 @@ import { UserMode } from '../../types';
 import { useToast } from './useToast';
 import { useDrawers } from './useDrawers';
 import { useLoyalty } from './useLoyalty';
-import { useNavigation, type AppView } from './useNavigation';
+import { useNavigation } from './useNavigation';
 
 // Re-export AppView for backward compatibility
 export type { AppView } from './useNavigation';

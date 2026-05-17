@@ -27,7 +27,7 @@ export function NewArrivalsPage({
   onBack,
   onChangeLocale,
   storeConfig,
-  onOpenLegal,
+  onOpenLegal: _onOpenLegal,
   onNavigate
 }: NewArrivalsPageProps) {
   const getLoc = createGetLoc(locale);

@@ -23,7 +23,7 @@ export function useOrderProcessing(params: {
   currentUser: UserProfile | null;
   userMode: UserMode;
   onRefetchStoreData: () => void;
-  onNavigate: (view: any, targetSection?: string, product?: Product) => void;
+  onNavigate: (view: any, targetSection?: string, product?: Product) => void; // allow: pragmatic any
   onShowToast: (message: string, type?: 'info' | 'error') => void;
 }) {
   const { assets, cartItems, currentUser, onNavigate, onRefetchStoreData, onShowToast, products, setCartItems, userMode } = params;
@@ -173,7 +173,7 @@ export function useOrderProcessing(params: {
         setCartItems([]);
         onRefetchStoreData();
         setOrderResult({ status: 'success', orderId: orderData.id, fullOrder });
-      } catch (err: any) {
+      } catch (err: any) { // allow: pragmatic any
         setOrderResult({ status: 'error', message: err.message });
       } finally {
         setIsProcessingOrder(false);

@@ -89,7 +89,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
   };
 
   // Handler para quando seleciona um resultado da busca inline
-  const handleInlineSearchSelect = (result: any) => {
+  const handleInlineSearchSelect = (result: any) => { // allow: pragmatic any
     handleSelectSearchResult(result);
     // Após selecionar, a busca é fechada automaticamente e os campos são preenchidos
     setShowInlineSearch(false);

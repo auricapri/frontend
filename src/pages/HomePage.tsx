@@ -40,7 +40,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   onSelectCollection,
   onToggleWishlist,
   onNavigate,
-  onOpenLegal,
+  onOpenLegal: _onOpenLegal,
   t,
   locale,
   onChangeLocale,

@@ -4,6 +4,7 @@ import { X, ChevronDown, HelpCircle, Loader2 } from 'lucide-react';
 import { FAQItem } from '../../types';
 import { faqApi } from '../../api/instances';
 import { Locale } from '../../i18n';
+import { createGetLoc } from '../../utils/localization';
 import { createFAQSchema } from '../seo/schemas';
 
 interface FAQModalProps {
@@ -13,17 +14,12 @@ interface FAQModalProps {
   t: (key: string) => string;
 }
 
-const FAQModal: React.FC<FAQModalProps> = ({ isOpen, onClose, locale, t }) => {
+const FAQModal: React.FC<FAQModalProps> = ({ isOpen, onClose, locale, t: _t }) => {
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Get localized text
-  const getLoc = (obj: any): string => {
-    if (!obj) return "";
-    if (typeof obj === 'string') return obj;
-    return obj[locale] || obj['pt'] || obj['en'] || Object.values(obj)[0] || "";
-  };
+  const getLoc = useMemo(() => createGetLoc(locale), [locale]);
 
   useEffect(() => {
     if (isOpen) {

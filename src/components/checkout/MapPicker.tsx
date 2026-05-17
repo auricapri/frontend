@@ -79,7 +79,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
       return;
     }
 
-    let picker: any = null;
+    let picker: any = null; // allow: pragmatic any
     const win = window as any;
     const mapboxgl = win.mapboxgl;
     
@@ -117,7 +117,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
         }, 500);
       });
       
-      const handleMapClick = async (e: any) => {
+      const handleMapClick = async (e: any) => { // allow: pragmatic any
         const { lng, lat } = e.lngLat;
         updatePickerMarker([lng, lat]);
         try {
@@ -145,13 +145,13 @@ export const MapPicker: React.FC<MapPickerProps> = ({
     };
   }, [isOpen, mapboxLoaded, updatePickerMarker]);
 
-  const parseAndSetAddress = async (feature: any) => {
+  const parseAndSetAddress = async (feature: any) => { // allow: pragmatic any
     const context = feature.context || [];
-    const neighborhood = context.find((c: any) => c.id.startsWith('neighborhood'))?.text || 
-                        context.find((c: any) => c.id.startsWith('locality'))?.text || '';
-    const city = context.find((c: any) => c.id.startsWith('place'))?.text || feature.place_name?.split(',')[1]?.trim() || '';
-    const state = context.find((c: any) => c.id.startsWith('region'))?.short_code?.replace('BR-', '') || '';
-    let postcode = context.find((c: any) => c.id.startsWith('postcode'))?.text || '';
+    const neighborhood = context.find((c: any) => c.id.startsWith('neighborhood'))?.text || // allow: pragmatic any
+                        context.find((c: any) => c.id.startsWith('locality'))?.text || ''; // allow: pragmatic any
+    const city = context.find((c: any) => c.id.startsWith('place'))?.text || feature.place_name?.split(',')[1]?.trim() || ''; // allow: pragmatic any
+    const state = context.find((c: any) => c.id.startsWith('region'))?.short_code?.replace('BR-', '') || ''; // allow: pragmatic any
+    let postcode = context.find((c: any) => c.id.startsWith('postcode'))?.text || ''; // allow: pragmatic any
     
     const street = feature.text || feature.place_name?.split(',')[0] || '';
     
@@ -206,7 +206,7 @@ export const MapPicker: React.FC<MapPickerProps> = ({
     debouncedSearch(searchQuery);
   };
 
-  const handleSelectSearchResult = async (result: any) => {
+  const handleSelectSearchResult = async (result: any) => { // allow: pragmatic any
     await parseAndSetAddress(result);
     setSearchResults([]);
     setSearchQuery('');

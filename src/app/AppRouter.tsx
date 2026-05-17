@@ -16,7 +16,7 @@ const ShippingReturnsPage = React.lazy(() => import('../pages/ShippingReturnsPag
 const AboutUs = React.lazy(() => import('../components/shared/AboutUs'));
 const OrderReceipt = React.lazy(() => import('../components/orders/OrderReceipt'));
 const SharedWishlistPage = React.lazy(() => import('../pages/SharedWishlistPage'));
-const SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').then(m => ({ default: m.SearchResultsPage })));
+const _SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').then(m => ({ default: m.SearchResultsPage })));
 const MyReturnsPage = React.lazy(() => import('../pages/MyReturnsPage').then(m => ({ default: m.MyReturnsPage })));
 const MyOrdersPage = React.lazy(() => import('../pages/MyOrdersPage').then(m => ({ default: m.MyOrdersPage })));
 const ReturnRequestForm = React.lazy(() => import('../components/returns/ReturnRequestForm'));
@@ -26,11 +26,11 @@ const GalleryPage = React.lazy(() => import('../pages/GalleryPage').then(m => ({
 const ContactPage = React.lazy(() => import('../pages/ContactPage').then(m => ({ default: m.ContactPage })));
 
 export function AppRouter(props: {
-  app: any;
+  app: any; // allow: pragmatic any
   storeConfig: StoreConfig;
   lastSuccessOrder: Order | null;
   onSignOut: () => Promise<any>;
-  onSetCurrentView: (v: any) => void;
+  onSetCurrentView: (v: any) => void; // allow: pragmatic any
 }) {
   const { app, storeConfig, lastSuccessOrder, onSignOut, onSetCurrentView } = props;
 

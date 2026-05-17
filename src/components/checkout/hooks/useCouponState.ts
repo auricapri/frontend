@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CouponsApi } from '../../../api/coupons.api';
 import { formatCurrency } from '../../../utils/currency';
-import type { CartItem, Coupon, Locale, UseCouponStateParams, UseCouponStateReturn } from './types';
+import type { CartItem, Coupon, UseCouponStateParams, UseCouponStateReturn } from './types';
 
 export function useCouponState(params: UseCouponStateParams): UseCouponStateReturn {
   const { items, locale } = params;

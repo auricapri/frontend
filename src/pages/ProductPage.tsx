@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import ProductDetail from '../components/product/ProductDetail';
-import { Product, Coupon, UserMode, UserProfile, SizeGuide } from '../types';
+import { Product, Coupon, UserMode, UserProfile, SizeGuide, CartItem } from '../types';
 import { Locale } from '../i18n';
 import { SEOHead, createProductSchema, createBreadcrumbSchema } from '../components/seo';
 
@@ -11,7 +11,7 @@ interface ProductPageProps {
   isWishlisted: boolean;
   currentUser: UserProfile | null;
   sizeGuides: SizeGuide[];
-  onAddToCart: (item: any) => void;
+  onAddToCart: (item: CartItem) => void;
   onBack: () => void;
   onToggleWishlist: (productId: string) => void;
   onShowToast: (message: string, type?: 'info' | 'error') => void;
@@ -34,11 +34,12 @@ export const ProductPage: React.FC<ProductPageProps> = ({
   locale
 }) => {
   // Helper to get localized text
-  const getLoc = (obj: any): string => {
+  const getLoc = (obj: unknown): string => {
     if (!obj) return '';
     if (typeof obj === 'string') return obj;
     if (typeof obj === 'object') {
-      return obj[locale] || obj['pt'] || obj['en'] || obj['es'] || obj['fr'] || '';
+      const o = obj as Record<string, unknown>;
+      return (o[locale] as string) || (o['pt'] as string) || (o['en'] as string) || (o['es'] as string) || (o['fr'] as string) || '';
     }
     return String(obj);
   };
@@ -51,7 +52,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({
 
   // Generate SEO metadata
   const productName = getLoc(product.name);
-  const productDescription = getLoc(product.description);
+  const _productDescription = getLoc(product.description);
   const productImage = defaultVariant?.variant_images?.[0] || product.base_images?.[0] || product.default_image_url;
 
   // Create product schema for rich snippets

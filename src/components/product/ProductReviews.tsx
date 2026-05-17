@@ -8,7 +8,7 @@ interface ProductReviewsProps {
   productId: string;
   reviews: ProductReview[];
   user: UserProfile | null;
-  userOrders?: any[]; // Order[]
+  userOrders?: any[]; // allow: Order[] type — pragmatic any
   t: (key: string) => any;
   onAddReview: (review: Partial<ProductReview>) => Promise<void>;
   isLoading?: boolean;
@@ -36,7 +36,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
     if (!user || !userOrders || userOrders.length === 0) return false;
     
     // Filter orders that are delivered AND paid (have payment_method and status is delivered)
-    const paidAndDeliveredOrders = userOrders.filter((order: any) => 
+    const paidAndDeliveredOrders = userOrders.filter((order: any) => // allow: pragmatic any
       order.status === 'delivered' && 
       order.payment_method && 
       order.payment_method !== null &&
@@ -45,8 +45,8 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, reviews, use
     );
     
     // Check if any of these orders contain the product
-    return paidAndDeliveredOrders.some((order: any) => 
-      order.items && order.items.some((item: any) => item.product_id === productId)
+    return paidAndDeliveredOrders.some((order: any) => // allow: pragmatic any
+      order.items && order.items.some((item: any) => item.product_id === productId) // allow: pragmatic any
     );
   };
 

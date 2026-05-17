@@ -190,7 +190,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
           }
         ]);
       }
-    } catch (err) {
+    } catch (_err) {
       // Remove loading message
       setMessages(prev => prev.filter(m => m.id !== loadingId));
 

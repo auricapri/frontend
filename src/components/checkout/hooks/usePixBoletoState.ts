@@ -9,7 +9,6 @@ import { OrdersApi } from '../../../api/orders.api';
 import { UsersApi } from '../../../api/users.api';
 import { UserMode } from '../../../types';
 import type {
-  CardData,
   CustomerPaymentInfo,
   PixData,
   BoletoData,
@@ -254,7 +253,6 @@ export function usePixBoletoState(params: UsePixBoletoStateParams): UsePixBoleto
       clearTimeout(primaryTimer);
       clearInterval(fallbackTimer);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingPixOrderId, ordersApi]);
 
   // Complete order flow: create order then process payment

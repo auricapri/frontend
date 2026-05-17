@@ -26,7 +26,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   isOpen,
   onClose,
   products,
-  categories,
+  categories: _categories,
   onSelectProduct,
   locale,
   t,

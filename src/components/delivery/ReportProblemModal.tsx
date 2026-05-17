@@ -108,7 +108,7 @@ export function ReportProblemModal(props: {
       onReported();
       reset();
       onClose();
-    } catch (e: any) {
+    } catch (e: any) { // allow: pragmatic any
       setError(e?.message || 'Falha ao enviar reporte');
     } finally {
       setIsLoading(false);

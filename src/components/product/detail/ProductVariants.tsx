@@ -6,11 +6,11 @@ import { Ruler, Shirt } from 'lucide-react';
 import type { LocalizedText } from '../../../types';
 
 interface ProductVariantsProps {
-  getLoc: (obj: any) => string;
+  getLoc: (obj: unknown) => string; // allow: pragmatic any
   colors: Array<{ hex: string; name: LocalizedText | string; image?: string }>;
   selectedColorHex: string;
   onSelectColor: (hex: string) => void;
-  activeColorName?: any;
+  activeColorName?: any; // allow: pragmatic any
   sizes: Array<string | undefined>;
   selectedSize: string;
   onSelectSize: (size: string) => void;

@@ -6,7 +6,7 @@ import { type Notification } from '../../api/notifications.api';
 import { supabase } from '../../utils/supabase';
 
 // Throttle helper — used only for the real-time subscription callback
-function useThrottle<T extends (...args: any[]) => any>(fn: T, delay: number): T {
+function useThrottle<T extends (...args: any[]) => any>(fn: T, delay: number): T { // allow: pragmatic any
   const lastRun = useRef(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

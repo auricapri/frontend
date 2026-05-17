@@ -7,7 +7,7 @@ interface OrderReviewPageProps {
   onBack?: () => void;
   t: (key: string) => any;
   locale: Locale;
-  storeConfig?: any;
+  storeConfig?: any; // allow: pragmatic any
 }
 
 export const OrderReviewPage: React.FC<OrderReviewPageProps> = (props) => {

@@ -224,7 +224,7 @@ export function useMapPicker(params: UseMapPickerParams): UseMapPickerReturn {
   // Update picker marker
   const updatePickerMarker = useCallback(
     (coords: [number, number]) => {
-      const win = window as unknown as { mapboxgl?: any };
+      const win = window as unknown as { mapboxgl?: any }; // allow: pragmatic any
       if (!pickerMapRef.current || !win.mapboxgl || !mapboxLoaded) return;
 
       try {

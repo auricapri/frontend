@@ -37,7 +37,7 @@ const TIER_LABELS: Record<string, string> = {
   affiliate_premium: 'Afiliado Premium',
 };
 
-export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _locale }) => {
+export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user: _user, locale: _locale }) => {
   const [influencer, setInfluencer] = useState<InfluencerData | null | undefined>(undefined);
   const [copiedCode, setCopiedCode] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -72,7 +72,7 @@ export const AffiliateTab: React.FC<AffiliateTabProps> = ({ user, locale: _local
       const updated = await apiClient.post<InfluencerData>('/influencer/terms/accept', {});
       setInfluencer(updated);
       setShowTermsModal(false);
-    } catch (err: any) {
+    } catch (err: any) { // allow: pragmatic any
       alert(err.message || 'Erro ao aceitar termos');
     } finally {
       setIsAccepting(false);

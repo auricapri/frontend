@@ -13,9 +13,9 @@ export function slugify(text: string): string {
     // Replace spaces with hyphens
     .replace(/\s+/g, '-')
     // Remove invalid chars
-    .replace(/[^\w\-]+/g, '')
+    .replace(/[^\w-]+/g, '')
     // Replace multiple hyphens with single hyphen
-    .replace(/\-\-+/g, '-')
+    .replace(/--+/g, '-')
     // Remove leading/trailing hyphens
     .replace(/^-+/, '')
     .replace(/-+$/, '');

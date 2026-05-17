@@ -134,7 +134,7 @@ test.describe('UX — Home Page', () => {
 
     if (bannerVisible) {
       const bannerText = await topBanner.textContent();
-      const bannerHeight = await topBanner.evaluate((el) => el.offsetHeight);
+      const bannerHeight = await topBanner.evaluate((el) => (el as HTMLElement).offsetHeight);
       const fontSize = await topBanner.evaluate((el) => window.getComputedStyle(el).fontSize);
       console.log(`  📢 Banner topo: "${bannerText?.substring(0, 80)}"`);
       console.log(`  📐 Altura: ${bannerHeight}px, Fonte: ${fontSize}`);

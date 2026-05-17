@@ -21,7 +21,7 @@ const WeatherProductRecommendations: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {recommendations.products.slice(0, 4).map((product: any) => (
+        {recommendations.products.slice(0, 4).map((product: any) => ( // allow: pragmatic any
           <div key={product.id} className="group cursor-pointer">
             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
               <img

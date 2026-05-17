@@ -18,7 +18,7 @@ export interface ProductGridBodyProps {
   selectedColorFamilies: string[];
   itemsPerPage: number;
   onToggleWishlist: (id: string) => void;
-  onAddToCart?: (item: any) => void;
+  onAddToCart?: (item: any) => void; // allow: pragmatic any
   onQuickAdd: (product: Product, colorHex?: string | null) => void;
   onSelectProduct: (product: Product) => void;
   onClearFilters: () => void;

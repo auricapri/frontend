@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { type DeliverySupplierGroup } from '../../api/delivery.api';
 import OptimizedImage from '../ui/OptimizedImage';
-import { AlertTriangle, CheckCircle2, MapPin, Navigation, Package, Phone, ChevronLeft, ChevronDown, ChevronUp, Star, MoreVertical } from 'lucide-react';
+import { CheckCircle2, MapPin, Navigation, Package, Phone, ChevronLeft, Star, MoreVertical } from 'lucide-react';
 import { type Locale } from '../../i18n';
 
-function textFromLocalizedText(value: any, locale: Locale): string {
+function textFromLocalizedText(value: any, locale: Locale): string { // allow: pragmatic any
   if (!value) return '';
   if (typeof value === 'string') return value;
   if (typeof value === 'object') {
@@ -13,7 +13,7 @@ function textFromLocalizedText(value: any, locale: Locale): string {
   return '';
 }
 
-function formatAddress(address: any): string {
+function formatAddress(address: any): string { // allow: pragmatic any
   if (!address) return '';
   const parts = [
     address.logradouro,

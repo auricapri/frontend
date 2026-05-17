@@ -90,13 +90,14 @@ export function useAiPersonal(options: UseAiPersonalOptions = {}): UseAiPersonal
         onComplete?.(accumulatedTextRef.current);
         break;
 
-      case 'error':
+      case 'error': {
         setIsGenerating(false);
         setCurrentStatus(null);
         const errorMsg = event.error || 'Unknown error';
         setError(errorMsg);
         onError?.(errorMsg);
         break;
+      }
 
       case 'status':
         if (event.status) {
@@ -277,7 +278,7 @@ export function useAiPersonal(options: UseAiPersonalOptions = {}): UseAiPersonal
     accumulatedTextRef.current = '';
   }, []);
 
-  const refine = useCallback(async (prompt: string, context?: string): Promise<string[]> => {
+  const refine = useCallback(async (prompt: string, _context?: string): Promise<string[]> => {
     try {
       const response = await aiPersonalApi.refine({
         prompt: prompt,

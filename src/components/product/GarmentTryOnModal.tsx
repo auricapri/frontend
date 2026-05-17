@@ -135,7 +135,7 @@ export const GarmentTryOnModal: React.FC<GarmentTryOnModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const getLoc = createGetLoc(locale);
+  const _getLoc = createGetLoc(locale);
 
   const { data: galleryItems = [], isLoading: isLoadingGallery } = useQuery<GalleryItem[]>({
     queryKey: ['garment-gallery'],

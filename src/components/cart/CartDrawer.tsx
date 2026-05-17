@@ -4,6 +4,7 @@ import { X, Minus, Plus, Trash2, ArrowRight, Ticket, ChevronDown, Sparkles, Chec
 import { CartItem, Product, UserMode } from '../../types';
 import { Locale } from '../../i18n';
 import { formatCurrency } from '../../utils/currency';
+import { createGetLoc } from '../../utils/localization';
 import BoxSavingsIndicator, { calculateQuantityDiscount } from './BoxSavingsIndicator';
 import { getOptimizedImageUrl, handleImageError } from '../../utils/image';
 import { computeAccessoryBundleDiscount, isAccessoryItem, ACCESSORY_BUNDLE_DISCOUNT_PCT } from '../../utils/product';
@@ -93,11 +94,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
     sessionStorage.removeItem('cart_coupon_value');
   }, []);
 
-  const getLoc = (obj: any) => {
-    if (!obj) return "";
-    if (typeof obj === 'string') return obj;
-    return obj[locale] || obj['pt'] || obj['en'] || Object.values(obj)[0] || "";
-  };
+  const getLoc = useMemo(() => createGetLoc(locale), [locale]);
 
   const bundleDiscount = useMemo(
     () => computeAccessoryBundleDiscount(items, products),

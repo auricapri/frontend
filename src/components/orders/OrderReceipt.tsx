@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { createGetLoc } from '../../utils/localization';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Download, MessageCircle, Check, Loader2, X, AlertTriangle } from 'lucide-react';
 import { Order, OrderItem, OrderReview } from '../../types';
@@ -44,7 +45,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
     setIsDownloadingPDF(true);
     try {
       await ordersApi.downloadReceiptPDF(order.id);
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       alert('Erro ao baixar PDF. Tente novamente.');
     } finally {
       setIsDownloadingPDF(false);
@@ -63,11 +64,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
-  const getLoc = (obj: any) => {
-    if (!obj) return "";
-    if (typeof obj === 'string') return obj;
-    return obj[locale] || obj['pt'] || obj['en'] || Object.values(obj)[0] || "";
-  };
+  const getLoc = useMemo(() => createGetLoc(locale), [locale]);
 
   const formattedDate = new Date(order.created_at).toLocaleDateString(locale, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -172,7 +169,7 @@ const OrderReceipt: React.FC<OrderReceiptProps> = ({ order, onBack, t, locale, t
                <span>{formattedDate}</span>
             </div>
             <div className="flex justify-between">
-               <span className="uppercase font-bold text-neutral-400 print:text-black">MÉTODO</span>
+               <span className="uppercase font-bold text-neutral-400 print:text-black">PAGAMENTO</span>
                <span className="bg-black text-white px-2 py-0.5 text-[10px] uppercase tracking-wider rounded-sm print:border print:border-black print:text-black print:bg-paper">
                   {order.payment_method === 'pix' ? 'PIX' : 'CARTÃO CRÉDITO'}
                </span>

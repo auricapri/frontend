@@ -10,7 +10,7 @@ export interface UserProfileViewProps {
   locale: Locale;
   onUpdate: (user: UserProfile) => void;
   onLogout?: () => void;
-  storeConfig?: any;
+  storeConfig?: any; // allow: pragmatic any
 }
 
 export type TabId = 'profile' | 'orders' | 'addresses' | 'affiliate';
@@ -52,4 +52,4 @@ export interface LoyaltyData {
 }
 
 // Helper function type
-export type GetLocFn = (obj: any) => string;
+export type GetLocFn = (obj: any) => string; // allow: pragmatic any

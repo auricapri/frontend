@@ -4,7 +4,7 @@
  * Used by ProductDetail, ProductGrid, and related components
  */
 
-import type { ProductVariant, Product, LocalizedText, UserMode } from '../types';
+import type { ProductVariant, LocalizedText, UserMode } from '../types';
 
 /**
  * Color option extracted from variants

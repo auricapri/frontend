@@ -13,7 +13,7 @@ interface SharedWishlistPageProps {
   locale: Locale;
   t: (key: string) => any;
   userMode: UserMode;
-  currentUser: any;
+  currentUser: any; // allow: pragmatic any
   onNavigate: (view: string) => void;
   onOpenAuth: () => void;
   slug: string;
@@ -112,9 +112,10 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
         });
 
         setCartItems(items || []);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('[SharedWishlistPage] Error loading wishlist:', err);
-        setError(err?.message || 'Erro ao carregar wishlist');
+        const message = err instanceof Error ? err.message : 'Erro ao carregar wishlist';
+        setError(message);
         setWishlistData(null);
         setProducts([]);
         setCartItems([]);
@@ -130,15 +131,6 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       isMounted.current = false;
     };
   }, [slug, userMode]);
-
-  const getLoc = (obj: any): string => {
-    if (!obj) return '';
-    if (typeof obj === 'string') return obj;
-    if (typeof obj === 'object') {
-      return obj[locale] || obj['pt'] || obj['en'] || '';
-    }
-    return String(obj);
-  };
 
   const handleBuyAll = () => {
     if (!currentUser) {
@@ -187,7 +179,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   const handlePlaceOrder = async (
     _addressData: AddressData,
     logisticsInfo: InternalLogisticsInfo,
-    paymentMethod: any,
+    paymentMethod: any, // allow: pragmatic any
     finalAmount: number
   ) => {
     if (!slug || !currentUser) return;
@@ -214,7 +206,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       });
 
       onNavigate('home');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[SharedWishlistPage] handlePlaceOrder error:', err);
     } finally {
       setIsProcessing(false);

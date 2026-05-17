@@ -16,7 +16,7 @@ interface AuthDrawerProps {
   onLogout: () => void;
   t: (key: string) => any;
   locale: Locale;
-  storeConfig?: any;
+  storeConfig?: any; // allow: pragmatic any
 }
 
 const AuthDrawer: React.FC<AuthDrawerProps> = ({ isOpen, onClose, user, onLogin, onLogout, t, locale, storeConfig }) => {

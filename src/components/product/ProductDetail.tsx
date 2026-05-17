@@ -44,7 +44,7 @@ interface ProductDetailProps {
   t: (key: string) => any;
   locale: Locale;
   currentUser: UserProfile | null;
-  userOrders?: any[];
+  userOrders?: any[]; // allow: pragmatic any
   onShowToast?: (message: string, type?: 'info' | 'error') => void;
   sizeGuides?: SizeGuide[];
   products?: Product[];

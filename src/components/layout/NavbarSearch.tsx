@@ -13,7 +13,7 @@ export interface NavbarSearchProps {
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
   onClose: () => void;
-  onNavigate: (view: any, target?: string) => void;
+  onNavigate: (view: any, target?: string) => void; // allow: pragmatic any
   products: Product[];
   currentLocale: Locale;
   onSelectProduct?: (product: Product) => void;

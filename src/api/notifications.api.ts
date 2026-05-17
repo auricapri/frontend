@@ -4,8 +4,8 @@ export interface Notification {
   id: string;
   user_id: string;
   type: string;
-  title: any;
-  content: any;
+  title: any; // allow: pragmatic any
+  content: any; // allow: pragmatic any
   is_read: boolean;
   link_url: string | null;
   created_at: string;

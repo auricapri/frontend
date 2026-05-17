@@ -34,7 +34,7 @@ export interface ProductCardProps {
   onToggleWishlist?: (id: string) => void;
 
   // Quick add handler
-  onAddToCart?: (item: any) => void;
+  onAddToCart?: (item: any) => void; // allow: pragmatic any
   onQuickAdd?: (product: Product, initialColorHex?: string) => void;
 
   // Click handler

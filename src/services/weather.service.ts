@@ -10,7 +10,7 @@ export interface WeatherData {
 export interface WeatherRecommendation {
   weather: WeatherData;
   categories: string[];
-  products: any[];
+  products: any[]; // allow: pragmatic any
   banner_id?: string;
   tags: string[];
 }

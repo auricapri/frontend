@@ -280,11 +280,12 @@ export function searchProducts(
   if (!normalizedQuery) return products;
 
   return products.filter(product => {
-    const getLoc = (obj: any): string => {
+    const getLoc = (obj: unknown): string => {
       if (!obj) return '';
       if (typeof obj === 'string') return norm(obj);
       if (typeof obj === 'object') {
-        return norm(obj[locale] || obj['pt'] || obj['en'] || '');
+        const o = obj as Record<string, unknown>;
+        return norm((o[locale] as string) || (o['pt'] as string) || (o['en'] as string) || '');
       }
       return norm(String(obj));
     };

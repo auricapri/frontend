@@ -5,7 +5,7 @@ import { type CheckoutState } from '../hooks/useCheckoutState';
 export function ReviewStep({ checkout }: { checkout: CheckoutState }) {
   const {
     setStep,
-    paymentMethod,
+    paymentMethod: _paymentMethod,
     paymentProcessing,
     completeOrderWithPayment,
     pixError,

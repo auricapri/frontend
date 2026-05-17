@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { X } from 'lucide-react';
 import { FilterAccordion } from './FilterAccordion';
 import { Locale } from '../../i18n';

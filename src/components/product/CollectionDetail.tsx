@@ -31,7 +31,7 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
   locale,
 }) => {
   // Check if collection is available (started and not expired)
-  const { isAvailable, isExpired } = useCollectionAvailability(
+  const { isAvailable: _isAvailable, isExpired } = useCollectionAvailability(
     collection.starts_at,
     collection.ends_at
   );
@@ -44,7 +44,7 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
   }, [isExpired, onBack]);
 
   // Helper robusto para extrair texto localizado
-  const getLoc = (obj: any): string => {
+  const getLoc = (obj: unknown): string => {
     if (obj === null || obj === undefined) return "";
 
     // Se for string, verifica se é um JSON encodado (comum em migrações de banco)
@@ -63,11 +63,12 @@ const CollectionDetail: React.FC<CollectionDetailProps> = ({
 
     // Se for objeto, tenta as chaves de idioma
     if (typeof obj === 'object') {
-      const val = obj[locale] || obj['pt'] || obj['en'] || obj['es'] || obj['fr'];
+      const o = obj as Record<string, unknown>;
+      const val = o[locale] || o['pt'] || o['en'] || o['es'] || o['fr'];
       if (typeof val === 'string') return val;
 
       // Fallback: pega o primeiro valor que seja string
-      const firstString = Object.values(obj).find(v => typeof v === 'string');
+      const firstString = Object.values(o).find(v => typeof v === 'string');
       return (firstString as string) || "";
     }
 

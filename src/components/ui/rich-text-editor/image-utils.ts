@@ -96,7 +96,7 @@ export const uploadImageToStorage = async (file: File): Promise<string> => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      const errorData = await response.json().catch(() => ({})); // allow: fallback empty object when error body is not JSON
       throw new Error(errorData?.error?.message || `Upload failed (${response.status})`);
     }
 

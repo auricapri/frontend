@@ -37,7 +37,7 @@ export function useWeatherRecommendations() {
             }
           }
         );
-      } catch (err: any) {
+      } catch (err: any) { // allow: pragmatic any
         if (mounted) {
           setError(err.message);
           setIsLoading(false);

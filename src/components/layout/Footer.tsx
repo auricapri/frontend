@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ShieldCheck, CreditCard, Lock, MapPin, Mail, Phone, FileText, RefreshCw, Truck, Instagram } from 'lucide-react';
+import { ShieldCheck, Lock, MapPin, Mail, Phone, FileText, RefreshCw, Truck, Instagram } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { StoreConfig } from '../../types';
 
@@ -27,10 +27,10 @@ const Footer: React.FC<FooterProps> = ({
   storeConfig,
   onNavigate,
   onOpenFAQ,
-  onOpenAuth,
+  onOpenAuth: _onOpenAuth,
   onOpenComplaint
 }) => {
-  const handleScrollToContact = () => {
+  const _handleScrollToContact = () => {
     const el = document.getElementById('footer-contact');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });

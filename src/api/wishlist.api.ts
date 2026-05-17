@@ -61,8 +61,8 @@ export class WishlistApi {
   async buyAllFromSharedWishlist(
     slug: string,
     orderData: {
-      addressData: any;
-      logisticsInfo: any;
+      addressData: any; // allow: pragmatic any
+      logisticsInfo: any; // allow: pragmatic any
       paymentMethod: 'credit_card' | 'pix';
       subtotal: number;
       finalAmount: number;

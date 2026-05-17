@@ -263,7 +263,6 @@ export function useShippingCalculation(params: {
       }
     },
     // shippingDisplay removed — replaced by shippingDisplayRef to avoid recreating on every display update
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [address, logisticsService, userMode]
   );
 

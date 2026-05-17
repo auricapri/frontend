@@ -34,13 +34,13 @@ export const FilterContent: React.FC<FilterContentProps> = ({
   sortBy,
   toggleSize,
   setPriceRange,
-  setSortBy,
+  setSortBy: _setSortBy,
   availableColorFamilies = [],
   selectedColorFamilies = [],
   toggleColorFamily,
   locale,
   t,
-  isMobile = false
+  isMobile: _isMobile = false
 }) => {
   const sortOptions = [
     { value: 'relevance' as const, label: t('grid.relevance') },

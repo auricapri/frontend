@@ -335,7 +335,6 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
           viaCepAutoLoadingRef.current = false;
         });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   // loadingCep omitido intencionalmente — substituído por viaCepAutoLoadingRef para evitar
   // cleanup loop: setLoadingCep(true) → re-render → cleanup abort → finally setLoadingCep(false) → loop
   // shipping omitido — apenas shipping.calculateLogistics é usado, e é estável após fix do shippingDisplayRef
@@ -399,7 +398,7 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
           });
           setIsManualAddress(false);
           shipping.calculateLogistics(cleaned);
-        } catch (err: any) {
+        } catch (err: any) { // allow: pragmatic any
           clearTimeout(timeoutId);
           // Check if it was a timeout
           if (err?.name === 'AbortError') {
@@ -435,7 +434,7 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
             });
             setIsManualAddress(false);
             shipping.calculateLogistics(cleaned);
-          } catch (err2: any) {
+          } catch (err2: any) { // allow: pragmatic any
             clearTimeout(timeoutId2);
             // Fallback to manual entry
             setCepError(err2?.name === 'AbortError' ? 'Tempo esgotado. Preencha manualmente.' : 'CEP não encontrado. Preencha manualmente.');

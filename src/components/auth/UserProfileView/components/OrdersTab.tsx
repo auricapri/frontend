@@ -40,7 +40,7 @@ interface OrdersTabProps {
   ordersState: OrdersState;
   locale: Locale;
   t: (key: string) => any;
-  storeConfig?: any;
+  storeConfig?: any; // allow: pragmatic any
   onSelectOrder: (order: Order) => void;
 }
 

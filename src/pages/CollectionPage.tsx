@@ -3,6 +3,7 @@ import CollectionDetail from '../components/product/CollectionDetail';
 import { Collection, Product, Category, UserMode } from '../types';
 import { Locale } from '../i18n';
 import { SEOHead, createCollectionSchema, createBreadcrumbSchema } from '../components/seo';
+import { createGetLoc } from '../utils/localization';
 
 interface CollectionPageProps {
   collection: Collection;
@@ -29,15 +30,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({
   locale,
   t
 }) => {
-  // Helper to get localized text
-  const getLoc = (obj: any): string => {
-    if (!obj) return '';
-    if (typeof obj === 'string') return obj;
-    if (typeof obj === 'object') {
-      return obj[locale] || obj['pt'] || obj['en'] || obj['es'] || obj['fr'] || '';
-    }
-    return String(obj);
-  };
+  const getLoc = useMemo(() => createGetLoc(locale), [locale]);
 
   // Extract collection metadata
   const collectionName = getLoc(collection.name);

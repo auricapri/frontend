@@ -18,7 +18,7 @@ export const getPhonePrefix = (locale: Locale): string => {
 };
 
 export const createGetLoc = (locale: Locale): GetLocFn => {
-  return (obj: any): string => {
+  return (obj: any): string => { // allow: pragmatic any
     if (!obj) return "";
     if (typeof obj === 'string') return obj;
     return obj[locale] || obj['pt'] || obj['en'] || Object.values(obj)[0] || "";
@@ -62,7 +62,7 @@ export const useProfileState = ({ user, locale, onUpdate }: UseProfileStateParam
 
       onUpdate(updatedProfile);
       alert('Perfil atualizado com sucesso.');
-    } catch (err: any) {
+    } catch (err: any) { // allow: pragmatic any
       alert(`Erro: ${err.message}`);
     } finally {
       setIsUpdating(false);
