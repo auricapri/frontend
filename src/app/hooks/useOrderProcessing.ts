@@ -14,6 +14,7 @@ import {
   UserMode,
   type UserProfile,
 } from '../../types';
+import type { AppView } from './useNavigation';
 
 export function useOrderProcessing(params: {
   cartItems: CartItem[];
@@ -23,7 +24,7 @@ export function useOrderProcessing(params: {
   currentUser: UserProfile | null;
   userMode: UserMode;
   onRefetchStoreData: () => void;
-  onNavigate: (view: any, targetSection?: string, product?: Product) => void;
+  onNavigate: (view: AppView, targetSection?: string, product?: Product) => void;
   onShowToast: (message: string, type?: 'info' | 'error') => void;
 }) {
   const { assets, cartItems, currentUser, onNavigate, onRefetchStoreData, onShowToast, products, setCartItems, userMode } = params;
@@ -173,8 +174,9 @@ export function useOrderProcessing(params: {
         setCartItems([]);
         onRefetchStoreData();
         setOrderResult({ status: 'success', orderId: orderData.id, fullOrder });
-      } catch (err: any) {
-        setOrderResult({ status: 'error', message: err.message });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erro desconhecido ao processar pedido';
+        setOrderResult({ status: 'error', message });
       } finally {
         setIsProcessingOrder(false);
       }

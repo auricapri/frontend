@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Product, UserMode, Category, Collection, Coupon } from '../../types';
+import { Product, UserMode, Category, Collection, Coupon, CartItem } from '../../types';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Locale } from '../../i18n';
 import { Gender } from '../../constants/enums';
@@ -27,7 +27,7 @@ interface ProductGridProps {
   onSelectCollection: (collection: Collection) => void;
   wishlistIds: string[];
   onToggleWishlist: (id: string) => void;
-  onAddToCart?: (item: any) => void;
+  onAddToCart?: (item: CartItem) => void;
   onGoToCart?: () => void;
   t: (key: string) => string;
   locale: Locale;
@@ -103,7 +103,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   const handleToggleFilters = useCallback(() => setIsFiltersOpen((prev) => !prev), []);
 
-  const handleGenderChange = useCallback((gender: Gender) => {
+  const _handleGenderChange = useCallback((gender: Gender) => {
     if (onGenderChange) {
       onGenderChange(gender);
     } else {

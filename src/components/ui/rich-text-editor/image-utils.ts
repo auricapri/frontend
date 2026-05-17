@@ -5,6 +5,12 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
+interface UploadErrorBody {
+  error?: {
+    message?: string;
+  };
+}
+
 /**
  * Compress image before upload
  */
@@ -96,7 +102,12 @@ export const uploadImageToStorage = async (file: File): Promise<string> => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      let errorData: UploadErrorBody = {};
+      try {
+        errorData = (await response.json()) as UploadErrorBody;
+      } catch {
+        // Response body is not valid JSON; proceed with status-based message.
+      }
       throw new Error(errorData?.error?.message || `Upload failed (${response.status})`);
     }
 

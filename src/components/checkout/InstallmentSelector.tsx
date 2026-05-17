@@ -18,7 +18,7 @@ export function InstallmentSelector({
   options,
   selectedInstallments,
   onSelect,
-  baseAmount,
+  baseAmount: _baseAmount,
   isLoading = false,
   locale = 'pt',
   compact = false

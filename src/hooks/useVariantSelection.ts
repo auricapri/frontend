@@ -5,8 +5,8 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import type { ProductVariant, UserMode, LocalizedText } from '../types';
-import { getProductColors, getProductSizes, findActiveVariant, filterVariantsForMode, type ColorOption } from '../utils/variant';
+import type { ProductVariant, UserMode } from '../types';
+import { getProductColors, getProductSizes, findActiveVariant, type ColorOption } from '../utils/variant';
 
 export interface UseVariantSelectionProps {
   /** Product variants array */

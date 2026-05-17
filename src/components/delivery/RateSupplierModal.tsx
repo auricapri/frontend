@@ -49,8 +49,9 @@ export function RateSupplierModal(props: {
       onRated();
       reset();
       onClose();
-    } catch (e: any) {
-      setError(e?.message || 'Falha ao registrar avaliação');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Falha ao registrar avaliação';
+      setError(message);
     } finally {
       setIsLoading(false);
     }

@@ -32,3 +32,6 @@ extends:
     srcDir: src
     installCmd: "npm ci --prefer-offline --loglevel=error"
     testCommand: "npx vitest run --reporter=verbose 2>&1"
+    deployBranch: producao
+    # Vercel project: frontend-female → www.auricapri.com.br
+    vercelProjectId: prj_uIjrZBNy0EZ1osWXfGVVhSxUoocb

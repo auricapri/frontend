@@ -20,10 +20,10 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, t, banners, locale, isLoading }
   };
 
   const getBannerContent = (banner: Banner) => {
-    const getVal = (obj: any) => {
+    const getVal = (obj: unknown) => {
       if (!obj) return '';
       if (typeof obj === 'string') return obj;
-      const val = obj[locale];
+      const val = (obj as Record<string, unknown>)[locale];
       return typeof val === 'string' ? val : '';
     };
     
@@ -34,9 +34,9 @@ const Hero: React.FC<HeroProps> = ({ onNavigate, t, banners, locale, isLoading }
   };
 
   const validBanners = (banners || []).filter(b => {
-    const title = (b.title as any)?.[locale];
-    const img = (b.image_url as any)?.[locale];
-    return title && title.trim() !== '' && img && img.trim() !== '';
+    const title = (b.title as Record<string, unknown> | undefined)?.[locale];
+    const img = (b.image_url as Record<string, unknown> | undefined)?.[locale];
+    return typeof title === 'string' && title.trim() !== '' && typeof img === 'string' && img.trim() !== '';
   });
 
   const activeBannerRaw = validBanners.length > 0 ? validBanners[0] : null;

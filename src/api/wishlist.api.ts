@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { AddressData, InternalLogisticsInfo } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
@@ -61,14 +62,14 @@ export class WishlistApi {
   async buyAllFromSharedWishlist(
     slug: string,
     orderData: {
-      addressData: any;
-      logisticsInfo: any;
+      addressData: Partial<AddressData> | Record<string, never>;
+      logisticsInfo: InternalLogisticsInfo;
       paymentMethod: 'credit_card' | 'pix';
       subtotal: number;
       finalAmount: number;
       productIds?: string[];
     }
-  ): Promise<any> {
+  ): Promise<unknown> {
     return apiClient.post(`/wishlist/shared/${slug}/buy-all`, orderData);
   }
 }

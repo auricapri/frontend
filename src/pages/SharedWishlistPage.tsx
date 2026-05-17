@@ -2,19 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { wishlistApi, productsApi } from '../api/instances';
 import { SEOHead } from '../components/seo/SEOHead';
-import { Product, CartItem, AddressData, InternalLogisticsInfo } from '../types';
+import { Product, CartItem, AddressData, InternalLogisticsInfo, UserProfile } from '../types';
 import { Locale } from '../i18n';
 import CheckoutView from '../components/checkout/CheckoutViewV2';
 import { UserMode } from '../types';
 import { calculatePrice } from '../utils/product';
 import { ProductCard } from '../components/product/ProductCard';
+import type { AppView } from '../app/hooks/useNavigation';
+import type { PaymentMethod } from '../constants/enums';
 
 interface SharedWishlistPageProps {
   locale: Locale;
-  t: (key: string) => any;
+  t: (key: string) => string;
   userMode: UserMode;
-  currentUser: any;
-  onNavigate: (view: string) => void;
+  currentUser: UserProfile | null;
+  onNavigate: (view: AppView) => void;
   onOpenAuth: () => void;
   slug: string;
 }
@@ -112,9 +114,10 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
         });
 
         setCartItems(items || []);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('[SharedWishlistPage] Error loading wishlist:', err);
-        setError(err?.message || 'Erro ao carregar wishlist');
+        const message = err instanceof Error ? err.message : 'Erro ao carregar wishlist';
+        setError(message);
         setWishlistData(null);
         setProducts([]);
         setCartItems([]);
@@ -130,15 +133,6 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
       isMounted.current = false;
     };
   }, [slug, userMode]);
-
-  const getLoc = (obj: any): string => {
-    if (!obj) return '';
-    if (typeof obj === 'string') return obj;
-    if (typeof obj === 'object') {
-      return obj[locale] || obj['pt'] || obj['en'] || '';
-    }
-    return String(obj);
-  };
 
   const handleBuyAll = () => {
     if (!currentUser) {
@@ -187,7 +181,7 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
   const handlePlaceOrder = async (
     _addressData: AddressData,
     logisticsInfo: InternalLogisticsInfo,
-    paymentMethod: any,
+    paymentMethod: PaymentMethod,
     finalAmount: number
   ) => {
     if (!slug || !currentUser) return;
@@ -204,17 +198,19 @@ const SharedWishlistPage: React.FC<SharedWishlistPageProps> = ({
         : undefined;
 
       // Backend fetches owner's address — addressData from buyer is intentionally ignored
+      // Wishlist API accepts only credit_card or pix; fallback to credit_card if boleto chosen
+      const wishlistPaymentMethod: 'credit_card' | 'pix' = paymentMethod === 'pix' ? 'pix' : 'credit_card';
       await wishlistApi.buyAllFromSharedWishlist(slug, {
         addressData: {},
         logisticsInfo,
-        paymentMethod,
+        paymentMethod: wishlistPaymentMethod,
         subtotal,
         finalAmount,
         productIds,
       });
 
       onNavigate('home');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[SharedWishlistPage] handlePlaceOrder error:', err);
     } finally {
       setIsProcessing(false);

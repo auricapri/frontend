@@ -7,7 +7,7 @@ export interface Return {
   reason: string | null;
   rma_code: string | null;
   refund_amount: number;
-  metadata: any;
+  metadata: Record<string, unknown>;
   created_at: string;
 }
 
@@ -23,7 +23,7 @@ export class ReturnsApi {
   async create(data: {
     order_id: string;
     reason?: string;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
   }): Promise<Return> {
     return apiClient.post<Return>('/returns', data);
   }

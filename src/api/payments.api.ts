@@ -17,7 +17,7 @@ export interface Payment {
   attempt_number: number;
   amount: number;
   currency: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
   created_at: string;
 }
 

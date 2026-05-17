@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Eye, Truck } from 'lucide-react';
+import { ShoppingBag, Eye } from 'lucide-react';
 import { ChatProduct } from '../../api/ai-chat.api';
 import { formatCurrency } from '../../utils/currency';
 import { Locale } from '../../i18n';

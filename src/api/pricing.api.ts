@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 import type { ProductVariant, Asset, GlobalFinancialSettings } from '../types';
-import type { PricingScenarioInput, PriceBreakdown } from '../types/pricing.types';
+import type { PricingScenarioInput } from '../types/pricing.types';
 
 export interface MatrixScenarioInput {
   channel: PricingScenarioInput['channel'];
@@ -43,7 +43,7 @@ export interface PriceHistoryEntry {
   action: string;
   table_name: string | null;
   record_id: string | null;
-  metadata: any;
+  metadata: Record<string, unknown>;
   ip_address: string | null;
   created_at: string;
 }

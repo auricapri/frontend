@@ -369,7 +369,7 @@ export class PricingService {
   calculateRetailPrice(
     variant: ProductVariant,
     userMode: UserMode,
-    product?: Product
+    _product?: Product
   ): number {
     if (userMode === UserMode.ATACADO) {
       return variant.wholesale_price ?? 0;

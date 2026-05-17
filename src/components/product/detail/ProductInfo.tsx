@@ -8,7 +8,7 @@ export function ProductInfo(props: {
   product: Product;
   locale: Locale;
   t: (key: string) => any;
-  getLoc: (obj: any) => string;
+  getLoc: (obj: unknown) => string;
   reviewsCount: number;
   rawPrice: number;
   finalPrice: number;

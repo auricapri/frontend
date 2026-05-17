@@ -100,7 +100,7 @@ export function CreditCardPreview({
   isFlipped = false
 }: CreditCardPreviewProps) {
   const [flipped, setFlipped] = useState(isFlipped);
-  const { brand, logo, color } = getCardBrand(cardNumber);
+  const { brand: _brand, logo, color } = getCardBrand(cardNumber);
 
   // Formata o número para exibição
   const displayNumber = cardNumber || '•••• •••• •••• ••••';

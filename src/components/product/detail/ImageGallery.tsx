@@ -2,7 +2,7 @@ import React from 'react';
 import { Maximize2, ScanFace } from 'lucide-react';
 import { OptimizedImage } from '../../ui';
 import { getOptimizedImageUrl } from '../../../utils/image';
-import { type Product, type ProductImageHotspot, type CartItem } from '../../../types';
+import { type Product, type ProductImageHotspot, type CartItem, type LocalizedText } from '../../../types';
 import { ImageHotspots } from '../ImageHotspots';
 import { Locale } from '../../../i18n';
 
@@ -10,7 +10,7 @@ export type GalleryImageData = {
   url: string;
   variantId: string;
   variantColor: string;
-  variantColorName: any;
+  variantColorName: LocalizedText | string | null;
   size: string;
   combinationKey: string;
   isBase: boolean;
@@ -21,8 +21,8 @@ export function ImageGallery(props: {
   product: Product;
   allImagesWithVariant: GalleryImageData[];
   activeVariantId?: string;
-  activeVariantColorName?: any;
-  getLoc: (obj: any) => string;
+  activeVariantColorName?: LocalizedText | string | null;
+  getLoc: (obj: unknown) => string;
   setZoomImgIndex: (idx: number) => void;
   setIsZoomOpen: (open: boolean) => void;
   mobileGalleryRef: React.RefObject<HTMLDivElement | null>;

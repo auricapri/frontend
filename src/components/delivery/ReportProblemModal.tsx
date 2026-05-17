@@ -108,8 +108,9 @@ export function ReportProblemModal(props: {
       onReported();
       reset();
       onClose();
-    } catch (e: any) {
-      setError(e?.message || 'Falha ao enviar reporte');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Falha ao enviar reporte';
+      setError(message);
     } finally {
       setIsLoading(false);
     }

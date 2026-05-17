@@ -165,7 +165,8 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
     if (currentUser?.default_address) return; // user's own address takes priority
 
     try {
-      const raw = localStorage.getItem('auricapri_checkout_prefill');
+      // LGPD: prefill stored in sessionStorage (see useCart.ts — writeSessionPrefill).
+      const raw = sessionStorage.getItem('auricapri_checkout_prefill');
       if (!raw) return;
       const entry = JSON.parse(raw);
       const prefill = entry?.data || entry; // handles both TTL-wrapped and plain
@@ -201,7 +202,7 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
       }
 
       // Clean up prefill after use
-      localStorage.removeItem('auricapri_checkout_prefill');
+      sessionStorage.removeItem('auricapri_checkout_prefill');
     } catch {
       // Ignore parse errors
     }
@@ -335,7 +336,6 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
           viaCepAutoLoadingRef.current = false;
         });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   // loadingCep omitido intencionalmente — substituído por viaCepAutoLoadingRef para evitar
   // cleanup loop: setLoadingCep(true) → re-render → cleanup abort → finally setLoadingCep(false) → loop
   // shipping omitido — apenas shipping.calculateLogistics é usado, e é estável após fix do shippingDisplayRef
@@ -399,10 +399,10 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
           });
           setIsManualAddress(false);
           shipping.calculateLogistics(cleaned);
-        } catch (err: any) {
+        } catch (err) {
           clearTimeout(timeoutId);
           // Check if it was a timeout
-          if (err?.name === 'AbortError') {
+          if (err instanceof Error && err.name === 'AbortError') {
             setCepError('Tempo esgotado. Preencha manualmente.');
             setIsManualAddress(true);
             setAddress({
@@ -435,10 +435,11 @@ export function useAddressState(params: UseAddressStateParams): UseAddressStateR
             });
             setIsManualAddress(false);
             shipping.calculateLogistics(cleaned);
-          } catch (err2: any) {
+          } catch (err2) {
             clearTimeout(timeoutId2);
             // Fallback to manual entry
-            setCepError(err2?.name === 'AbortError' ? 'Tempo esgotado. Preencha manualmente.' : 'CEP não encontrado. Preencha manualmente.');
+            const isAbort = err2 instanceof Error && err2.name === 'AbortError';
+            setCepError(isAbort ? 'Tempo esgotado. Preencha manualmente.' : 'CEP não encontrado. Preencha manualmente.');
             setIsManualAddress(true);
             setAddress({
               logradouro: '',

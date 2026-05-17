@@ -6,7 +6,7 @@ import { Shield, AlertCircle, X } from 'lucide-react';
 interface AdminMfaChallengeProps {
   onComplete: () => void;
   onCancel: () => void;
-  t: (key: string) => any;
+  t: (key: string) => string;
   locale: Locale;
   subtitle?: string;
 }
@@ -30,8 +30,8 @@ const AdminMfaChallenge: React.FC<AdminMfaChallengeProps> = ({ onComplete, onCan
 
       if (factorsError) throw factorsError;
 
-      const totpFactor = factorsData.totp.find((f: any) => f.status === 'verified');
-      const phoneFactor = factorsData.phone.find((f: any) => f.status === 'verified');
+      const totpFactor = factorsData.totp.find((f) => f.status === 'verified');
+      const phoneFactor = factorsData.phone.find((f) => f.status === 'verified');
 
       const factor = totpFactor || phoneFactor;
 
@@ -59,8 +59,9 @@ const AdminMfaChallenge: React.FC<AdminMfaChallengeProps> = ({ onComplete, onCan
       }
 
       onComplete();
-    } catch (err: any) {
-      setError(err.message || 'Código inválido. Tente novamente.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Código inválido. Tente novamente.';
+      setError(message);
     } finally {
       setIsLoading(false);
     }

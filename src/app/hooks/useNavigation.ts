@@ -45,7 +45,7 @@ interface UseNavigationParams {
 }
 
 export function useNavigation(params: UseNavigationParams) {
-  const { locale, currentUser, isAuthLoading, showToast, products, isStoreLoading } = params;
+  const { locale, currentUser: _currentUser, isAuthLoading: _isAuthLoading, showToast: _showToast, products, isStoreLoading } = params;
 
   const mainRef = useRef<HTMLElement>(null);
   const savedScrollTop = useRef<number>(0);
@@ -154,7 +154,7 @@ export function useNavigation(params: UseNavigationParams) {
             return;
           }
         } catch (err) {
-          logger.warn('Failed to fetch product by slug from API:', slug, err);
+          logger.warn(`Failed to fetch product by slug from API: ${slug}`, err);
         }
         // Product truly not found - show 404
         logger.warn('Product not found for slug:', slug);
@@ -226,7 +226,7 @@ export function useNavigation(params: UseNavigationParams) {
   }, [activeProduct?.id, currentView, locale]);
 
   const handleNavigate = useCallback(
-    (view: Exclude<AppView, 'admin-login' | 'delivery-login' | 'shared-wishlist' | 'order-review'>, targetSection?: string, product?: Product) => {
+    (view: AppView, targetSection?: string, product?: Product) => {
       const fromProduct = currentViewRef.current === 'product';
 
       // Save scroll before entering product; restore it when leaving

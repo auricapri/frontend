@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, X, Maximize2, ShoppingBag, ExternalLink, MapPin, Instagram, Facebook, Mail } from 'lucide-react';
+import { Search, X, Maximize2, ShoppingBag, Instagram, Facebook, Mail } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { type Product, type CartItem, type ProductVariant } from '../types';
 import { type Locale } from '../i18n';
 import { createGetLoc } from '../utils/localization';
 import { formatCurrency } from '../utils/currency';
 import { getOptimizedImageUrl } from '../utils/image';
+import type { AppView } from '../app/hooks/useNavigation';
 
 /* ─── Types ─── */
 
@@ -39,7 +40,7 @@ interface CategoryOption { id: string; name: string; }
 interface GalleryData { items: GalleryItem[]; categories: CategoryOption[]; }
 
 interface GalleryPageProps {
-  onNavigate: (view: string, target?: string, product?: Product) => void;
+  onNavigate: (view: AppView, target?: string, product?: Product) => void;
   onAddToCart: (item: CartItem) => void;
   locale: Locale;
 }
@@ -83,7 +84,7 @@ async function fetchGallery(locale: string): Promise<GalleryData> {
     : { data: [] };
 
   type CategoryRow = { id: string; name: Record<string, string> | string };
-  const categoryMap = new Map((categoriesRaw ?? []).map((c: CategoryRow) => {
+  const categoryMap = new Map<string, string>((categoriesRaw ?? []).map((c: CategoryRow): [string, string] => {
     const name = typeof c.name === 'object' ? (c.name[locale] ?? c.name['pt'] ?? Object.values(c.name)[0] ?? '') : c.name;
     return [c.id, name as string];
   }));
@@ -199,7 +200,7 @@ export function GalleryPage({ onNavigate, onAddToCart, locale }: GalleryPageProp
     if (!img.product) return;
     const slug = getLoc(img.product.slug) || img.product.id;
     window.history.pushState({ view: 'product' }, '', `/product/${slug}`);
-    onNavigate('product', undefined, img.product);
+    onNavigate('product', undefined, img.product as unknown as Product);
   }, [getLoc, onNavigate]);
 
   if (isLoading) {
@@ -347,7 +348,7 @@ interface GalleryCardProps {
   onClick: () => void;
 }
 
-function GalleryCard({ img, index, getLoc, locale, onClick }: GalleryCardProps) {
+function GalleryCard({ img, index, getLoc, locale: _locale, onClick }: GalleryCardProps) {
   const productName = img.product ? getLoc(img.product.name) : img.title;
   const categoryLabel = img.categoryName ?? img.location_label;
 

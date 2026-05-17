@@ -1,16 +1,16 @@
 /// UserProfileView Types
 /// Type definitions for user profile components
 
-import { UserProfile, Order, SavedAddress } from '../../../types';
+import { UserProfile, Order, SavedAddress, StoreConfig } from '../../../types';
 import { Locale } from '../../../i18n';
 
 export interface UserProfileViewProps {
   user: UserProfile;
-  t: (key: string) => any;
+  t: (key: string) => string;
   locale: Locale;
   onUpdate: (user: UserProfile) => void;
   onLogout?: () => void;
-  storeConfig?: any;
+  storeConfig?: StoreConfig;
 }
 
 export type TabId = 'profile' | 'orders' | 'addresses' | 'affiliate';
@@ -52,4 +52,4 @@ export interface LoyaltyData {
 }
 
 // Helper function type
-export type GetLocFn = (obj: any) => string;
+export type GetLocFn = (obj: unknown) => string;

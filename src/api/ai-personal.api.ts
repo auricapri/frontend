@@ -240,9 +240,13 @@ export class AiPersonalApi {
     let buffer = '';
 
     try {
-      while (true) {
+      let streamDone = false;
+      while (!streamDone) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          streamDone = true;
+          break;
+        }
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');

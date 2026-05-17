@@ -18,10 +18,17 @@ export const getPhonePrefix = (locale: Locale): string => {
 };
 
 export const createGetLoc = (locale: Locale): GetLocFn => {
-  return (obj: any): string => {
+  return (obj: unknown): string => {
     if (!obj) return "";
     if (typeof obj === 'string') return obj;
-    return obj[locale] || obj['pt'] || obj['en'] || Object.values(obj)[0] || "";
+    if (typeof obj === 'object') {
+      const o = obj as Record<string, unknown>;
+      const val = o[locale] || o['pt'] || o['en'];
+      if (typeof val === 'string') return val;
+      const first = Object.values(o).find((v) => typeof v === 'string');
+      return typeof first === 'string' ? first : "";
+    }
+    return "";
   };
 };
 
@@ -62,8 +69,9 @@ export const useProfileState = ({ user, locale, onUpdate }: UseProfileStateParam
 
       onUpdate(updatedProfile);
       alert('Perfil atualizado com sucesso.');
-    } catch (err: any) {
-      alert(`Erro: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Falha ao atualizar perfil';
+      alert(`Erro: ${message}`);
     } finally {
       setIsUpdating(false);
     }

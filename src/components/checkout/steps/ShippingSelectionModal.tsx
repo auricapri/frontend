@@ -33,7 +33,7 @@ interface ShippingSelectionModalProps {
 export function ShippingSelectionModal({
   freeOption,
   freeDisplayDays,
-  freeDisplayPrice,
+  freeDisplayPrice: _freeDisplayPrice,
   expressOption,
   carrierOptions,
   locale,

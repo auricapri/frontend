@@ -306,7 +306,7 @@ export const translations = {
       shareTitle: 'Compartilhar & Link de Presente'
     },
     benefits: {
-      freeShipping: 'FRETE GRÁTIS EM TODOS OS PEDIDOS',
+      freeShipping: 'FRETE GRÁTIS PARA O BRASIL INTEIRO',
       freeExchange: 'TROCA GRÁTIS EM ATÉ 30 DIAS',
       installments: 'PARCELE EM ATÉ 3X SEM JUROS'
     },
@@ -504,7 +504,7 @@ export const translations = {
       shareTitle: 'Compartir & Enlace de Regalo'
     },
     benefits: {
-      freeShipping: 'ENVÍO GRATIS EN TODOS LOS PEDIDOS',
+      freeShipping: 'ENVÍO GRATIS EN BRASIL',
       freeExchange: 'CAMBIO GRATIS HASTA 30 DÍAS',
       installments: 'HASTA 3X SIN INTERESES'
     },

@@ -3,7 +3,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { Loader2, ShoppingBag, ChevronRight, Star, DollarSign, RotateCcw, AlertTriangle, CreditCard, Clock } from 'lucide-react';
-import { Order } from '../../../../types';
+import { Order, StoreConfig } from '../../../../types';
 import { useAuthContext } from '../../../../context/AuthContext';
 import { Locale } from '../../../../i18n';
 import { formatCurrency } from '../../../../utils/currency';
@@ -39,8 +39,8 @@ function OrderCountdownBadge({ expiresAt }: OrderCountdownBadgeProps) {
 interface OrdersTabProps {
   ordersState: OrdersState;
   locale: Locale;
-  t: (key: string) => any;
-  storeConfig?: any;
+  t: (key: string) => string;
+  storeConfig?: StoreConfig;
   onSelectOrder: (order: Order) => void;
 }
 

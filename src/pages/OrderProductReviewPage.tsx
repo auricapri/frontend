@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { createGetLoc } from '../utils/localization';
 import { ArrowLeft, Loader2, Star } from 'lucide-react';
-import { Order, OrderItemForReview, ProductReview } from '../types';
+import { Order, OrderItemForReview, ProductReview, StoreConfig } from '../types';
 import { Locale } from '../i18n';
 import { ProductReviewsApi } from '../api/product-reviews.api';
 import { OrdersApi } from '../api/orders.api';
@@ -13,9 +14,9 @@ import { getOptimizedImageUrl } from '../utils/image';
 interface OrderProductReviewPageProps {
   orderId: string;
   onBack?: () => void;
-  t: (key: string) => any;
+  t: (key: string) => string;
   locale: Locale;
-  storeConfig?: any;
+  storeConfig?: StoreConfig;
 }
 
 export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
@@ -30,28 +31,11 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
   const ordersApi = new OrdersApi();
   const reviewsApi = new ProductReviewsApi();
 
-  const getLoc = (obj: any): string => {
-    if (!obj) return "";
-    if (typeof obj === 'string') {
-      try {
-        const parsed = JSON.parse(obj);
-        if (typeof parsed === 'object' && parsed !== null) {
-          return parsed[locale] || parsed['pt'] || parsed['en'] || Object.values(parsed)[0] || "";
-        }
-        return obj;
-      } catch {
-        return obj;
-      }
-    }
-    if (typeof obj === 'object' && obj !== null) {
-      return obj[locale] || obj['pt'] || obj['en'] || Object.values(obj)[0] || "";
-    }
-    return String(obj);
-  };
+  const getLoc = useMemo(() => createGetLoc(locale), [locale]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -94,9 +78,9 @@ export const OrderProductReviewPage: React.FC<OrderProductReviewPageProps> = ({
 
         const items = await reviewsApi.getOrderItemsForReview(orderId, userId);
         setOrderItems(items);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading order review data:', err);
-        const msg = String(err?.message || '');
+        const msg = err instanceof Error ? err.message : '';
         if (/not delivered/i.test(msg)) {
           setError('Este pedido ainda não foi entregue. Você só pode avaliar pedidos entregues.');
         } else {

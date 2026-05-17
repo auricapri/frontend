@@ -35,9 +35,9 @@ export const SearchResultsPage: React.FC<SearchResultsPageProps> = ({
   onSelectProduct,
   wishlistIds,
   onToggleWishlist,
-  onBack,
+  onBack: _onBack,
 }) => {
-  const getLoc = useMemo(() => createGetLoc(locale), [locale]);
+  const _getLoc = useMemo(() => createGetLoc(locale), [locale]);
 
   // Convert slug back to readable query
   const searchQuery = unslugify(searchSlug);

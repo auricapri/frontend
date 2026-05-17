@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { type Order, type StoreConfig } from '../types';
-import { AppLayout } from './AppLayout';
+import { AppLayout, type AppState } from './AppLayout';
+import type { AppView } from './hooks/useNavigation';
 import { LoadingFallback } from '../components/ui';
 import Footer from '../components/layout/Footer';
 
@@ -16,7 +17,7 @@ const ShippingReturnsPage = React.lazy(() => import('../pages/ShippingReturnsPag
 const AboutUs = React.lazy(() => import('../components/shared/AboutUs'));
 const OrderReceipt = React.lazy(() => import('../components/orders/OrderReceipt'));
 const SharedWishlistPage = React.lazy(() => import('../pages/SharedWishlistPage'));
-const SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').then(m => ({ default: m.SearchResultsPage })));
+const _SearchResultsPage = React.lazy(() => import('../pages/SearchResultsPage').then(m => ({ default: m.SearchResultsPage })));
 const MyReturnsPage = React.lazy(() => import('../pages/MyReturnsPage').then(m => ({ default: m.MyReturnsPage })));
 const MyOrdersPage = React.lazy(() => import('../pages/MyOrdersPage').then(m => ({ default: m.MyOrdersPage })));
 const ReturnRequestForm = React.lazy(() => import('../components/returns/ReturnRequestForm'));
@@ -26,11 +27,11 @@ const GalleryPage = React.lazy(() => import('../pages/GalleryPage').then(m => ({
 const ContactPage = React.lazy(() => import('../pages/ContactPage').then(m => ({ default: m.ContactPage })));
 
 export function AppRouter(props: {
-  app: any;
+  app: AppState;
   storeConfig: StoreConfig;
   lastSuccessOrder: Order | null;
-  onSignOut: () => Promise<any>;
-  onSetCurrentView: (v: any) => void;
+  onSignOut: () => Promise<{ success: boolean; error?: string }>;
+  onSetCurrentView: (v: AppView) => void;
 }) {
   const { app, storeConfig, lastSuccessOrder, onSignOut, onSetCurrentView } = props;
 

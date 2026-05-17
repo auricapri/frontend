@@ -1,7 +1,6 @@
 import React from 'react';
 import { ShieldCheck, ShoppingBag } from 'lucide-react';
 import { PaymentMethod } from '../../constants/enums';
-import { UserMode } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { OptimizedImage } from '../ui';
 import { ShippingStep } from './steps/ShippingStep';
@@ -20,7 +19,7 @@ export function CheckoutSidebar({ checkout }: { checkout: CheckoutState }) {
     preAppliedDiscount,
     quantityDiscount,
     subtotal,
-    userMode,
+    userMode: _userMode,
   } = checkout;
 
   return (

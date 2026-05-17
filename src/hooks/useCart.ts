@@ -39,6 +39,16 @@ function writeWithTTL<T>(key: string, data: T, ttlMs: number): void {
   }
 }
 
+// LGPD-safe session-scoped write (no TTL, clears on tab close).
+// Used for checkout prefill to avoid persisting customer PII to localStorage.
+function writeSessionPrefill<T>(key: string, data: T): void {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(data));
+  } catch (err) {
+    logger.warn('Failed to write to sessionStorage', err, { context: 'useCart' });
+  }
+}
+
 export const useCart = (products: Product[], assets: Asset[]) => {
   // Inicializa com itens do localStorage para persistência
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
@@ -105,12 +115,15 @@ export const useCart = (products: Product[], assets: Asset[]) => {
             setCartItems(session.items);
             writeWithTTL(CART_STORAGE_KEY, session.items, CART_TTL_MS);
 
-            // Store pre-fill data for checkout
+            // Store pre-fill data for checkout.
+            // LGPD: use sessionStorage (clears on tab close, no 7-day retention).
+            // Strip email/phone — only structural fields needed for form prefill.
             if (session.customer || session.address) {
-              writeWithTTL(CART_CHECKOUT_PREFILL_KEY, {
-                customer: session.customer,
+              const { email: _e, phone: _p, ...safeCustomer } = session.customer ?? {};
+              writeSessionPrefill(CART_CHECKOUT_PREFILL_KEY, {
+                customer: Object.keys(safeCustomer).length ? safeCustomer : undefined,
                 address: session.address,
-              }, CART_TTL_MS);
+              });
             }
 
             // Clean URL

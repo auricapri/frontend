@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { createGetLoc } from '../../utils/localization';
 import { X, ShoppingBag, Trash2, ArrowRight, Link2, MessageCircle, ShoppingCart, Facebook } from 'lucide-react';
 
 // Custom X (Twitter) icon component
@@ -45,11 +46,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
   currentUserId,
   wishlistVariantIds = {},
 }) => {
-  const getLoc = (obj: any) => {
-    if (!obj) return "";
-    if (typeof obj === 'string') return obj;
-    return obj[locale] || obj['pt'] || obj['en'] || Object.values(obj)[0] || "";
-  };
+  const getLoc = useMemo(() => createGetLoc(locale), [locale]);
 
   const [copiedLink, setCopiedLink] = useState(false);
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
@@ -73,7 +70,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
       const url = `${window.location.origin}/wishlist/${shareSlug}`;
       setShareUrl(url);
       return url;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generating share link:', error);
       return null;
     } finally {
@@ -159,9 +156,10 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
           url: url
         });
         return;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // User cancelled or share failed, fall through to WhatsApp web
-        if (error.name !== 'AbortError') {
+        const name = error instanceof Error ? error.name : '';
+        if (name !== 'AbortError') {
           console.error('Web Share API failed:', error);
         }
       }

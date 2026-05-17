@@ -1,11 +1,12 @@
 import { apiClient } from './client';
+import type { LocalizedText } from '../types';
 
 export interface Notification {
   id: string;
   user_id: string;
   type: string;
-  title: any;
-  content: any;
+  title: LocalizedText | string;
+  content: LocalizedText | string;
   is_read: boolean;
   link_url: string | null;
   created_at: string;

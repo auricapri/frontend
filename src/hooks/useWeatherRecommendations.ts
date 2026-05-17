@@ -37,9 +37,9 @@ export function useWeatherRecommendations() {
             }
           }
         );
-      } catch (err: any) {
+      } catch (err) {
         if (mounted) {
-          setError(err.message);
+          setError(err instanceof Error ? err.message : 'Geolocation error');
           setIsLoading(false);
         }
       }

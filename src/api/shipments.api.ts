@@ -8,7 +8,7 @@ export interface Shipment {
   status: string;
   shipped_at: string | null;
   delivered_at: string | null;
-  metadata: any;
+  metadata: Record<string, unknown>;
   created_at: string;
 }
 

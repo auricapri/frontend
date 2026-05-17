@@ -1,9 +1,10 @@
 import { apiClient } from './client';
+import type { UserProfile } from '../types';
 
 export interface SignUpData {
   email: string;
   password: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface SignInData {
@@ -11,10 +12,26 @@ export interface SignInData {
   password: string;
 }
 
+export interface SupabaseSessionUser {
+  id: string;
+  email?: string;
+  user_metadata?: Record<string, unknown>;
+  app_metadata?: Record<string, unknown>;
+}
+
+export interface SupabaseSession {
+  access_token: string;
+  refresh_token: string;
+  expires_at?: number;
+  expires_in?: number;
+  token_type?: string;
+  user?: SupabaseSessionUser;
+}
+
 export interface AuthResponse {
-  user: any;
-  session: any;
-  profile?: any;
+  user: SupabaseSessionUser;
+  session: SupabaseSession;
+  profile?: UserProfile;
 }
 
 export class AuthApi {

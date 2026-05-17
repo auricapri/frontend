@@ -4,7 +4,7 @@
 import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ArrowLeft, CheckCircle, Loader2, Package, AlertCircle } from 'lucide-react';
-import { Order, OrderItem } from '../../types';
+import { Order } from '../../types';
 import { Return } from '../../api/returns.api';
 import { ordersApi, returnsApi } from '../../api/instances';
 import type { Locale } from '../../i18n';
@@ -74,7 +74,7 @@ export const ReturnRequestForm: React.FC<ReturnRequestFormProps> = ({
   });
 
   const submitMutation = useMutation({
-    mutationFn: (payload: { order_id: string; reason: string; metadata: object }) =>
+    mutationFn: (payload: { order_id: string; reason: string; metadata: Record<string, unknown> }) =>
       returnsApi.create(payload),
     onSuccess: (returnData) => {
       setResult(returnData);

@@ -6,6 +6,7 @@ import { createGetLoc } from '../../utils/localization';
 import { slugify } from '../../utils/urlUtils';
 import { getOptimizedImageUrl } from '../../utils/image';
 import { formatCurrency } from '../../utils/currency';
+import type { AppView } from '../../app/hooks/useNavigation';
 
 export interface NavbarSearchProps {
   isOpen: boolean;
@@ -13,7 +14,7 @@ export interface NavbarSearchProps {
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
   onClose: () => void;
-  onNavigate: (view: any, target?: string) => void;
+  onNavigate: (view: AppView, target?: string) => void;
   products: Product[];
   currentLocale: Locale;
   onSelectProduct?: (product: Product) => void;

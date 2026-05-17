@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Store, Package, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Store, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { type DeliverySupplierGroup } from '../../api/delivery.api';
 
 export function DeliverySupplierList(props: {

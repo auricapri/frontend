@@ -1,3 +1,5 @@
+import type { Product } from '../types';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
 export interface WeatherData {
@@ -10,7 +12,7 @@ export interface WeatherData {
 export interface WeatherRecommendation {
   weather: WeatherData;
   categories: string[];
-  products: any[];
+  products: Product[];
   banner_id?: string;
   tags: string[];
 }

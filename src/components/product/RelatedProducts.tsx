@@ -24,7 +24,7 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
   wishlistIds,
   onSelectProduct,
   onToggleWishlist,
-  getLoc,
+  getLoc: _getLoc,
   t,
   title,
 }) => {

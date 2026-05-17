@@ -165,12 +165,12 @@ export function MyReturnsPage({ locale, onBack, onRequestReturn }: MyReturnsPage
                   </div>
 
                   {/* Show returned items if available in metadata */}
-                  {ret.metadata?.items && Array.isArray(ret.metadata.items) && (
+                  {ret.metadata && Array.isArray((ret.metadata as Record<string, unknown>).items) && (
                     <div className="pt-3 border-t border-neutral-200 space-y-2">
                       <span className="text-[10px] font-black uppercase tracking-widest text-neutral-300">
                         Itens
                       </span>
-                      {ret.metadata.items.map((item: any, idx: number) => (
+                      {((ret.metadata as { items: Array<{ name?: string; size?: string; quantity?: number }> }).items).map((item, idx: number) => (
                         <div key={idx} className="text-[11px] text-neutral-600">
                           {item.name} — {item.size} (Qtd: {item.quantity})
                         </div>

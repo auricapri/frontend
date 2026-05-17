@@ -16,7 +16,7 @@ export interface Product {
   has_free_shipping?: boolean;
   gender?: Gender; // Gênero do produto (feminino, masculino, unissex)
   pricing_scenarios?: PricingScenario[];
-  pricing_variables?: any[];
+  pricing_variables?: Record<string, unknown>[];
   base_images: string[];
   default_image_url?: string;
   created_at?: string;

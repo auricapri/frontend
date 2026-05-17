@@ -5,6 +5,7 @@ import { maskCep, normalizeCepDigits, validateCPF } from '../../../utils/masks';
 import { UserMode } from '../../../types';
 import { ShippingSelectionModal } from './ShippingSelectionModal';
 import { trackingService } from '../../../services/tracking.service';
+import type { MapboxFeature } from '../../../types/common/mapbox';
 
 export function AddressStep({ checkout }: { checkout: CheckoutState }) {
   const {
@@ -73,12 +74,10 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
       consent: { analytics: true, geolocation: false },
     });
 
-    // Backup local como auditoria
-    try {
-      const log = JSON.parse(localStorage.getItem('address_confirmation_log') || '[]') as unknown[];
-      log.push({ ...meta, session_id: localStorage.getItem('tracking_session_id') });
-      localStorage.setItem('address_confirmation_log', JSON.stringify(log.slice(-20)));
-    } catch { /* ignore */ }
+    // NOTE: address_confirmation_log REMOVED from localStorage (LGPD — confirmed addresses
+    // with session_id, user_id, CEP and full address must NOT be retained client-side).
+    // TODO(#40): implement a backend audit endpoint (POST /api/audit/address-confirmation)
+    // and call it here instead, so the log is stored server-side with proper retention controls.
   }, [address, num, complement, cep, currentUser?.id]);
 
   // Atualizar campo do endereço
@@ -89,7 +88,7 @@ export function AddressStep({ checkout }: { checkout: CheckoutState }) {
   };
 
   // Handler para quando seleciona um resultado da busca inline
-  const handleInlineSearchSelect = (result: any) => {
+  const handleInlineSearchSelect = (result: MapboxFeature) => {
     handleSelectSearchResult(result);
     // Após selecionar, a busca é fechada automaticamente e os campos são preenchidos
     setShowInlineSearch(false);

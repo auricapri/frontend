@@ -7,6 +7,7 @@ import { MAPBOX_TOKEN, getMapboxStyle } from '../../../utils/mapbox';
 import { loadMapbox } from '../../../utils/loadMapbox';
 import { maskCep, normalizeCepDigits } from '../../../utils/masks';
 import type { MapboxFeature, ManualAddressState, UseMapPickerParams, UseMapPickerReturn } from './types';
+import type { MapboxGL } from '../../../types/common/mapbox';
 
 // Brazilian state name → 2-letter abbreviation
 const BR_STATES: Record<string, string> = {
@@ -224,7 +225,7 @@ export function useMapPicker(params: UseMapPickerParams): UseMapPickerReturn {
   // Update picker marker
   const updatePickerMarker = useCallback(
     (coords: [number, number]) => {
-      const win = window as unknown as { mapboxgl?: any };
+      const win = window as unknown as { mapboxgl?: MapboxGL };
       if (!pickerMapRef.current || !win.mapboxgl || !mapboxLoaded) return;
 
       try {

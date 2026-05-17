@@ -1,7 +1,7 @@
 /// ChangePaymentModal — Trocar meio de pagamento de pedido pendente
 
 import { useState, useCallback, useMemo } from 'react';
-import { Loader2, QrCode, Copy, Check, CreditCard, X, MapPin } from 'lucide-react';
+import { QrCode, Copy, Check, CreditCard, X, MapPin } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';

@@ -6,17 +6,18 @@ import { Locale } from '../i18n';
 import { createGetLoc } from '../utils/localization';
 import { Footer } from '../components/layout';
 import type { StoreConfig } from '../types';
+import type { AppView } from '../app/hooks/useNavigation';
 
 interface NewArrivalsPageProps {
   collections: Collection[];
   onSelectCollection: (collection: Collection) => void;
   locale: Locale;
-  t: (key: string) => any;
+  t: (key: string) => string;
   onBack: () => void;
   onChangeLocale: (locale: Locale) => void;
   storeConfig: StoreConfig;
   onOpenLegal: (view: 'terms' | 'privacy' | null) => void;
-  onNavigate: (view: string, section?: string) => void;
+  onNavigate: (view: AppView, section?: string) => void;
 }
 
 export function NewArrivalsPage({
@@ -27,7 +28,7 @@ export function NewArrivalsPage({
   onBack,
   onChangeLocale,
   storeConfig,
-  onOpenLegal,
+  onOpenLegal: _onOpenLegal,
   onNavigate
 }: NewArrivalsPageProps) {
   const getLoc = createGetLoc(locale);

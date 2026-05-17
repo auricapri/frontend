@@ -2,7 +2,7 @@
 /// Main orchestrator component using modular sub-components
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Product, UserMode, CartItem, UserProfile, Coupon, SizeGuide, Category, ProductReview } from '../../types';
+import { Product, UserMode, CartItem, UserProfile, Coupon, SizeGuide, Category, ProductReview, Order } from '../../types';
 import { Locale } from '../../i18n';
 import ProductReviews from './ProductReviews';
 import { calculatePrice, filterProductsForMode } from '../../utils/product';
@@ -10,6 +10,7 @@ import { createGetLoc } from '../../utils/localization';
 import { getProductCoupon, applyCouponDiscount } from '../../utils/coupon';
 import { share, type SharePlatform } from '../../utils/share';
 import { createBreadcrumbSchema } from '../seo/schemas';
+import { jsonLdStringify } from '../../utils/jsonLd';
 import { productReviewsApi } from '../../api/instances';
 import { useImageHotspots } from '../../hooks/useImageHotspots';
 import { useVariantSelection } from '../../hooks/useVariantSelection';
@@ -41,10 +42,10 @@ interface ProductDetailProps {
   onBack: () => void;
   isWishlisted: boolean;
   onToggleWishlist: (variantId?: string | null) => void;
-  t: (key: string) => any;
+  t: (key: string) => string;
   locale: Locale;
   currentUser: UserProfile | null;
-  userOrders?: any[];
+  userOrders?: Order[];
   onShowToast?: (message: string, type?: 'info' | 'error') => void;
   sizeGuides?: SizeGuide[];
   products?: Product[];
@@ -264,7 +265,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       {/* Breadcrumb JSON-LD Schema */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdStringify(breadcrumbSchema) }}
       />
 
       {/* Visual Breadcrumb Navigation */}
