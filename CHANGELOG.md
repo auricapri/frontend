@@ -5,6 +5,12 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.65] - 2026-05-17
+
+### Corrigido (Seguranca)
+- **vercel.json CSP (Infra H2)** — removido `https://sandbox.asaas.com` de `connect-src`; producao nao deve autorizar conexao com o ambiente de sandbox do Asaas. A URL de producao `https://api.asaas.com` permanece. Chamadas ao Asaas no codigo sao controladas por env vars no backend, nao pelo frontend.
+- **vercel.json CSP (Infra H1 parcial)** — adicionado `report-uri https://server-api.auricapri.com.br/api/csp-report` para visibilidade de violacoes. `'unsafe-inline'` permanece pois o Vite SPA requer inline scripts sem plugin adicional (remocao completa fica para tarefa separada com `vite-plugin-csp-guard`).
+
 ## [1.4.64] - 2026-05-17
 
 ### Corrigido
