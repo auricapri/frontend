@@ -1,0 +1,34 @@
+# Quality Gate — auricapri/frontend
+# Triggers on every push; PR to producao/master is a hard gate (branch policy)
+trigger:
+  branches:
+    include: ['*']
+  paths:
+    exclude: ['*.md']
+
+pr:
+  branches:
+    include: [producao, master, main]
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - name: NODE_VERSION
+    value: '20'
+  - group: auricapri-pipeline-secrets   # contains AZURE_DEVOPS_PAT
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: Auricapri/docs
+      ref: refs/heads/producao
+
+extends:
+  template: .azuredevops/quality-gate-template.yml@templates
+  parameters:
+    language: typescript
+    srcDir: src
+    installCmd: "npm ci --prefer-offline --loglevel=error"
+    testCommand: "npx vitest run --reporter=verbose 2>&1"
