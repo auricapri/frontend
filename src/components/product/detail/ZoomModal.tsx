@@ -94,28 +94,33 @@ export function ZoomModal({
         </button>
       </div>
 
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-paper/50 backdrop-blur-xl rounded-[2rem] border border-white/20">
-        {images.map((imgData, i) => (
-          <button
-            key={i}
-            onClick={() => onNavigate(i)}
-            aria-label={`Ver imagem ${i + 1} de ${images.length} do produto ${productName}`}
-            aria-pressed={currentIndex === i}
-            className={`w-12 h-16 rounded-xl overflow-hidden border-2 transition-all ${
-              currentIndex === i
-                ? 'border-black scale-110 shadow-lg'
-                : 'border-transparent opacity-40 hover:opacity-100'
-            }`}
-          >
-            <img
-              src={getOptimizedImageUrl(imgData.url, 'thumbnail')}
-              className="w-full h-full object-contain"
-              alt={`Miniatura ${i + 1}`}
-              loading="lazy"
-              decoding="async"
-            />
-          </button>
-        ))}
+      <div className="absolute bottom-12 inset-x-0 flex justify-center pointer-events-none">
+        <div
+          className="flex gap-3 p-3 bg-paper/50 backdrop-blur-xl rounded-[2rem] border border-white/20 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth snap-x snap-mandatory max-w-full pointer-events-auto"
+          style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+        >
+          {images.map((imgData, i) => (
+            <button
+              key={i}
+              onClick={() => onNavigate(i)}
+              aria-label={`Ver imagem ${i + 1} de ${images.length} do produto ${productName}`}
+              aria-pressed={currentIndex === i}
+              className={`flex-none shrink-0 snap-center w-12 h-16 rounded-xl overflow-hidden border-2 transition-all ${
+                currentIndex === i
+                  ? 'border-black scale-110 shadow-lg'
+                  : 'border-transparent opacity-40 hover:opacity-100'
+              }`}
+            >
+              <img
+                src={getOptimizedImageUrl(imgData.url, 'thumbnail')}
+                className="w-full h-full object-contain"
+                alt={`Miniatura ${i + 1}`}
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
