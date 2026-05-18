@@ -35,3 +35,5 @@ extends:
     deployBranch: producao
     # Vercel project: frontend-female → www.auricapri.com.br
     vercelProjectId: prj_uIjrZBNy0EZ1osWXfGVVhSxUoocb
+    # GitHub mirror — Vercel auto-deploys from here on push to producao
+    githubRepo: auricapri/frontend
