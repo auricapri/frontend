@@ -8,6 +8,23 @@ import { Locale } from '../../../../i18n';
 import { formatCurrency } from '../../../../utils/currency';
 import { OrdersState } from '../types';
 
+const STATUS_LABEL_PT: Record<string, string> = {
+  pending: 'Aguardando pagamento',
+  confirmed: 'Pagamento confirmado',
+  paid: 'Pagamento confirmado',
+  awaiting_pickup: 'Aguardando coleta',
+  collected: 'Em trânsito',
+  processing: 'Em preparação',
+  shipped: 'A caminho',
+  delivered: 'Entregue',
+  cancelled: 'Cancelado',
+};
+
+function statusLabel(status: string | undefined | null): string {
+  if (!status) return 'Status indisponível';
+  return STATUS_LABEL_PT[status.toLowerCase()] ?? status;
+}
+
 interface OrdersTabProps {
   ordersState: OrdersState;
   locale: Locale;
@@ -50,12 +67,13 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
       {orders.map(order => {
         const orderStatus = order.status?.toLowerCase();
         const isDelivered = orderStatus === 'delivered' || orderStatus === 'entregue';
+        const isCancelled = orderStatus === 'cancelled';
         const hasReview = orderReviews[order.id] || false;
 
         return (
           <div
             key={order.id}
-            className="p-8 bg-neutral-50 rounded-[2.5rem] border border-neutral-100 group hover:border-black transition-all"
+            className="p-6 sm:p-8 bg-paper-50 rounded-[2.5rem] border border-neutral-100 group hover:border-black transition-all"
           >
             <div
               onClick={() => onSelectOrder(order)}
@@ -83,16 +101,24 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                 <div className="flex items-center gap-2">
                   <div
                     className={`w-2 h-2 rounded-full ${
-                      isDelivered ? 'bg-green-500' : 'bg-orange-400'
+                      isCancelled
+                        ? 'bg-neutral-400'
+                        : isDelivered
+                        ? 'bg-green-500'
+                        : 'bg-orange-400'
                     }`}
                   />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-600">
-                    {order.status}
+                  <span
+                    className={`text-[10px] font-black uppercase tracking-widest ${
+                      isCancelled ? 'text-neutral-500' : 'text-neutral-600'
+                    }`}
+                  >
+                    {statusLabel(order.status)}
                   </span>
                 </div>
               </div>
-              <div className="text-right flex items-center gap-6">
-                <span className="text-xl font-light tracking-tighter">
+              <div className="text-right flex items-center gap-3 sm:gap-6 flex-shrink-0">
+                <span className="text-lg sm:text-xl font-light tracking-tighter whitespace-nowrap">
                   {formatCurrency(order.total || 0, locale)}
                 </span>
                 <ChevronRight className="w-5 h-5 text-neutral-300 group-hover:translate-x-1 transition-transform" />
@@ -119,13 +145,15 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                       e.stopPropagation();
                       window.location.href = `/order-review/${order.id}`;
                     }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-neutral-800 transition-colors text-sm font-medium relative"
+                    className="w-full flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-neutral-800 transition-colors text-sm font-medium"
                   >
-                    <Star className="w-4 h-4" />
-                    <span>Avaliar Pedido</span>
+                    <span className="flex items-center gap-2">
+                      <Star className="w-4 h-4 flex-shrink-0" />
+                      Avaliar Pedido
+                    </span>
                     {storeConfig?.loyalty_program?.review_cashback_amount &&
                       storeConfig.loyalty_program.review_cashback_amount > 0 && (
-                        <span className="ml-auto flex items-center gap-1 text-xs bg-paper/20 px-2 py-0.5 rounded">
+                        <span className="inline-flex items-center gap-0.5 text-xs bg-paper/20 px-2 py-0.5 rounded whitespace-nowrap">
                           <DollarSign className="w-3 h-3" />+
                           {formatCurrency(storeConfig.loyalty_program.review_cashback_amount, locale)}
                         </span>
@@ -148,7 +176,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
           className="w-full flex items-center justify-center gap-3 py-4 border border-neutral-200 rounded-[2rem] hover:bg-neutral-50 transition-all text-[10px] font-black uppercase tracking-widest group"
         >
           <RotateCcw className="w-4 h-4 group-hover:rotate-[-45deg] transition-transform" />
-          Minhas Devolucoes
+          Minhas Devoluções
         </button>
       </div>
     </div>
