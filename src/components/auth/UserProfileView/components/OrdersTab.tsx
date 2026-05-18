@@ -45,10 +45,10 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
 
   if (loading) {
     return (
-      <div className="py-20 flex flex-col items-center justify-center text-neutral-300 space-y-4">
+      <div className="py-20 flex flex-col items-center justify-center text-neutral-500 space-y-4">
         <Loader2 className="w-8 h-8 animate-spin" strokeWidth={1} />
-        <span className="text-[10px] font-black uppercase tracking-widest">
-          Carregando Histórico...
+        <span className="text-[10px] font-black uppercase tracking-[0.4em]">
+          Carregando histórico
         </span>
       </div>
     );
@@ -57,8 +57,14 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
   if (orders.length === 0) {
     return (
       <div className="py-20 text-center space-y-6">
-        <ShoppingBag className="w-12 h-12 text-neutral-100 mx-auto" />
-        <p className="text-sm text-neutral-400 font-medium">{t('auth.noOrders')}</p>
+        <ShoppingBag className="w-12 h-12 text-neutral-300 mx-auto" strokeWidth={1} />
+        <p className="text-sm text-neutral-500 font-medium">{t('auth.noOrders')}</p>
+        <button
+          onClick={() => { window.location.href = '/'; }}
+          className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-black text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-neutral-800 transition-all active:scale-95"
+        >
+          Explorar coleção
+        </button>
       </div>
     );
   }
@@ -66,10 +72,10 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between pb-2">
-        <span className="text-[10px] font-black uppercase tracking-[0.35em] text-neutral-300">
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-500">
           Meus Pedidos
         </span>
-        <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">
           {orders.length} {orders.length === 1 ? 'pedido' : 'pedidos'}
         </span>
       </div>
@@ -82,7 +88,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
         return (
           <div
             key={order.id}
-            className="p-4 sm:p-6 bg-paper-50 rounded-[2.5rem] border border-neutral-100 group hover:border-black transition-all"
+            className="p-4 sm:p-6 bg-paper rounded-[2rem] border border-neutral-100 group hover:border-black transition-all"
           >
             <div
               onClick={() => onSelectOrder(order)}
@@ -104,22 +110,26 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
 
               <div className="space-y-2 flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                    ID: {order.id.slice(0, 8)}
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">
+                    Nº {order.id.slice(0, 8).toUpperCase()}
                   </span>
                   {order.wishlist_slug && (
-                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full border border-purple-100">
                       Wishlist
                     </span>
                   )}
                   {order.gift_from_user_id && (
-                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
                       Presente
                     </span>
                   )}
                 </div>
-                <h4 className="text-sm font-black font-serif uppercase tracking-tight italic">
-                  {new Date(order.created_at).toLocaleDateString(locale)}
+                <h4 className="text-sm sm:text-base font-serif text-neutral-800 leading-tight">
+                  {new Date(order.created_at).toLocaleDateString(locale, {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
                 </h4>
                 <div className="flex items-center gap-2">
                   <div
@@ -127,13 +137,13 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                       isCancelled
                         ? 'bg-neutral-400'
                         : isDelivered
-                        ? 'bg-green-500'
-                        : 'bg-orange-400'
+                        ? 'bg-emerald-500'
+                        : 'bg-amber-500'
                     }`}
                   />
                   <span
-                    className={`text-[10px] font-black uppercase tracking-widest leading-snug ${
-                      isCancelled ? 'text-neutral-500' : 'text-neutral-600'
+                    className={`text-[10px] font-black uppercase tracking-[0.3em] leading-snug ${
+                      isCancelled ? 'text-neutral-500' : 'text-neutral-700'
                     }`}
                   >
                     {statusLabel(order.status)}
@@ -141,10 +151,10 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                 </div>
               </div>
               <div className="text-right flex flex-col items-end gap-2 flex-shrink-0">
-                <span className="text-lg sm:text-xl font-light tracking-tighter whitespace-nowrap">
+                <span className="text-lg sm:text-xl font-serif text-neutral-900 whitespace-nowrap">
                   {formatCurrency(order.total || 0, locale)}
                 </span>
-                <ChevronRight className="w-5 h-5 text-neutral-300 group-hover:translate-x-1 transition-transform" />
+                <ChevronRight className="w-5 h-5 text-neutral-300 group-hover:text-black group-hover:translate-x-1 transition-all" />
               </div>
             </div>
 
@@ -195,7 +205,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
           onClick={() => {
             window.location.href = '/my-returns';
           }}
-          className="w-full flex items-center justify-center gap-3 py-4 border border-neutral-200 rounded-[2rem] hover:bg-neutral-50 transition-all text-[10px] font-black uppercase tracking-widest group"
+          className="w-full flex items-center justify-center gap-3 py-4 border border-neutral-200 rounded-[2rem] hover:bg-neutral-50 hover:border-black transition-all text-[10px] font-black uppercase tracking-[0.4em] text-neutral-600 group"
         >
           <RotateCcw className="w-4 h-4 group-hover:rotate-[-45deg] transition-transform" />
           Minhas Devoluções
