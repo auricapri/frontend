@@ -7,7 +7,7 @@ import { calculatePrice } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
 import { getDisplayPrice as getProductDisplayPrice } from '../../utils/coupon';
 import { getProductColors } from '../../utils/variant';
-import { getOptimizedImageUrl, generateSrcSet, getImageVariantUrl, CARD_SIZES, PLACEHOLDER_IMAGE } from '../../utils/image';
+import { generateSrcSet, getImageVariantUrl, CARD_SIZES, PLACEHOLDER_IMAGE } from '../../utils/image';
 import { getColorFamilyId } from '../../utils/colorFamilies';
 
 export interface ProductCardProps {
