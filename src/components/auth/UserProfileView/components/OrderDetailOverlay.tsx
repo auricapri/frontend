@@ -107,6 +107,7 @@ export const OrderDetailOverlay: React.FC<OrderDetailOverlayProps> = ({
                 alt=""
                 loading="lazy"
                 decoding="async"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0'; }}
               />
               <div className="flex-1">
                 <h6 className="text-[11px] font-black uppercase tracking-tight">

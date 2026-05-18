@@ -130,7 +130,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           {showDeleteConfirm ? (
             <div className="p-6 bg-red-50 border border-red-200 rounded-2xl space-y-4 animate-in fade-in duration-300">
               <p className="text-sm text-red-700 font-medium text-center">
-                Tem certeza? Todos os seus dados serao excluidos permanentemente.
+                Tem certeza? Todos os seus dados serão excluídos permanentemente.
               </p>
               <div className="flex gap-3">
                 <button

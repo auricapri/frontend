@@ -65,6 +65,14 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center justify-between pb-2">
+        <span className="text-[10px] font-black uppercase tracking-[0.35em] text-neutral-300">
+          Meus Pedidos
+        </span>
+        <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+          {orders.length} {orders.length === 1 ? 'pedido' : 'pedidos'}
+        </span>
+      </div>
       {orders.map(order => {
         const orderStatus = order.status?.toLowerCase();
         const isDelivered = orderStatus === 'delivered' || orderStatus === 'entregue';
@@ -89,6 +97,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                     alt=""
                     loading="lazy"
                     decoding="async"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0'; }}
                   />
                 </div>
               )}
@@ -123,7 +132,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                     }`}
                   />
                   <span
-                    className={`text-[10px] font-black uppercase tracking-widest truncate ${
+                    className={`text-[10px] font-black uppercase tracking-widest leading-snug ${
                       isCancelled ? 'text-neutral-500' : 'text-neutral-600'
                     }`}
                   >
@@ -148,7 +157,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                       e.stopPropagation();
                       window.location.href = `/order-review/${order.id}`;
                     }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 sm:py-3 bg-neutral-100 text-neutral-600 rounded-lg hover:bg-neutral-200 transition-colors text-xs sm:text-sm font-medium"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 sm:py-3 bg-neutral-100 text-neutral-600 rounded-2xl hover:bg-neutral-200 transition-colors text-xs sm:text-sm font-medium"
                   >
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 flex-shrink-0" />
                     Editar Avaliação
@@ -159,7 +168,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                       e.stopPropagation();
                       window.location.href = `/order-review/${order.id}`;
                     }}
-                    className="w-full flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-x-2 sm:gap-y-1 px-3 sm:px-4 py-3 sm:py-4 bg-black text-white rounded-lg hover:bg-neutral-800 transition-colors text-xs sm:text-sm font-medium"
+                    className="w-full flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-x-2 sm:gap-y-1 px-3 sm:px-4 py-3 sm:py-4 bg-black text-white rounded-2xl hover:bg-neutral-800 transition-colors text-xs sm:text-sm font-medium"
                   >
                     <span className="flex items-center gap-2 whitespace-nowrap">
                       <Star className="w-4 h-4 flex-shrink-0" />
@@ -184,7 +193,6 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
       <div className="pt-6 border-t border-neutral-100">
         <button
           onClick={() => {
-            window.history.pushState({ view: 'my-returns' }, '', '/my-returns');
             window.location.href = '/my-returns';
           }}
           className="w-full flex items-center justify-center gap-3 py-4 border border-neutral-200 rounded-[2rem] hover:bg-neutral-50 transition-all text-[10px] font-black uppercase tracking-widest group"
