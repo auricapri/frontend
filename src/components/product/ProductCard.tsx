@@ -7,7 +7,7 @@ import { calculatePrice } from '../../utils/product';
 import { createGetLoc } from '../../utils/localization';
 import { getDisplayPrice as getProductDisplayPrice } from '../../utils/coupon';
 import { getProductColors } from '../../utils/variant';
-import { getOptimizedImageUrl, generateSrcSet, CARD_SIZES, PLACEHOLDER_IMAGE } from '../../utils/image';
+import { getOptimizedImageUrl, generateSrcSet, getImageVariantUrl, CARD_SIZES, PLACEHOLDER_IMAGE } from '../../utils/image';
 import { getColorFamilyId } from '../../utils/colorFamilies';
 
 export interface ProductCardProps {
@@ -123,8 +123,18 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
   const hasFreeShipping = true;
 
   const textSize = TEXT_SIZES[variant] ?? TEXT_SIZES.grid;
+  // For R2 URLs: use the pre-generated 'card' WebP variant as primary src (600w/80q)
+  const displaySrc = getImageVariantUrl(displayImg, 'card');
   const imgSrcSet = generateSrcSet(displayImg, ['thumbnail', 'small', 'medium']);
   const [imgLoaded, setImgLoaded] = useState(false);
+
+  // Prefetch the original on hover so ProductDetail navigation feels instant
+  const handleMouseEnter = useCallback(() => {
+    if (displayImg && !displayImg.startsWith('data:')) {
+      const preload = new Image();
+      preload.src = displayImg;
+    }
+  }, [displayImg]);
 
   // Stable handlers — won't break React.memo on children
   const handleQuickAdd = useCallback((e: React.MouseEvent) => {
@@ -156,6 +166,7 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
   return (
     <div
       onClick={onClick}
+      onMouseEnter={handleMouseEnter}
       className={`cursor-pointer group flex flex-col relative transition-colors ${getCardStyles(variant)} ${className}`}
     >
       {/* Image Container */}
@@ -164,30 +175,32 @@ const ProductCardInner: React.FC<ProductCardProps> = ({
         {!imgLoaded && (
           <div className="absolute inset-0 bg-neutral-100 animate-pulse" />
         )}
-        <img
-          src={getOptimizedImageUrl(displayImg, aspectRatio === 'portrait' ? 'small' : 'thumbnail')}
-          srcSet={imgSrcSet || undefined}
-          sizes={imgSrcSet ? CARD_SIZES : undefined}
-          alt={getLoc(product.name)}
-          className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
-          loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
-          decoding={priority ? 'sync' : 'auto'}
-          width={400}
-          height={aspectRatio === 'portrait' ? 533 : 400}
-          onLoad={() => setImgLoaded(true)}
-          onError={(e) => {
-            const img = e.currentTarget;
-            img.onerror = null;
-            img.srcset = '';
-            // Tenta a URL original sem transformação (resolve falha na URL otimizada no mobile)
-            if (displayImg && !img.src.includes(displayImg)) {
-              img.src = displayImg;
-            } else {
-              setImgLoaded(true);
-            }
-          }}
-        />
+        <picture className="contents">
+          {imgSrcSet && (
+            <source srcSet={imgSrcSet} sizes={CARD_SIZES} type="image/webp" />
+          )}
+          <img
+            src={displaySrc}
+            alt={getLoc(product.name)}
+            className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding={priority ? 'sync' : 'auto'}
+            width={400}
+            height={aspectRatio === 'portrait' ? 533 : 400}
+            onLoad={() => setImgLoaded(true)}
+            onError={(e) => {
+              const img = e.currentTarget;
+              img.onerror = null;
+              img.srcset = '';
+              if (displayImg && !img.src.includes(displayImg)) {
+                img.src = displayImg;
+              } else {
+                setImgLoaded(true);
+              }
+            }}
+          />
+        </picture>
 
         {/* Discount Badge - Domino Style */}
         {showDiscountBadge && hasDiscount && (

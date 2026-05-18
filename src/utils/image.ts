@@ -1,3 +1,36 @@
+/**
+ * R2 WebP variant sizes generated at upload time by the backend pipeline.
+ * thumb: 300w/q75, grid: 450w/q80, card: 600w/q80.
+ * 'original' returns the URL unchanged.
+ */
+export type ImageVariantSize = 'thumb' | 'grid' | 'card' | 'original';
+
+const R2_URL_PATTERN = /^https:\/\/pub-[a-f0-9]+\.r2\.dev\//;
+
+/**
+ * Maps an original R2 image URL to the pre-generated WebP variant URL.
+ *
+ * Example:
+ *   getImageVariantUrl('https://pub-xxx.r2.dev/products/principal.jpg', 'card')
+ *   → 'https://pub-xxx.r2.dev/products/principal-card.webp'
+ *
+ * Falls back to originalUrl for:
+ * - size === 'original'
+ * - non-R2 URLs (Supabase, CDN, etc.)
+ * - URLs without a file extension
+ */
+export function getImageVariantUrl(originalUrl: string, size: ImageVariantSize): string {
+  if (!originalUrl || size === 'original') return originalUrl;
+  if (!R2_URL_PATTERN.test(originalUrl)) return originalUrl;
+
+  const lastDotIdx = originalUrl.lastIndexOf('.');
+  const lastSlashIdx = originalUrl.lastIndexOf('/');
+  if (lastDotIdx <= lastSlashIdx) return originalUrl;
+
+  const base = originalUrl.substring(0, lastDotIdx);
+  return `${base}-${size}.webp`;
+}
+
 interface ImageTransformOptions {
   width?: number;
   height?: number;
@@ -152,6 +185,15 @@ export function generateSrcSet(
   // Don't generate srcSet for placeholder images
   if (url === PLACEHOLDER_IMAGE || url.startsWith('data:')) {
     return '';
+  }
+
+  // For R2 URLs use pre-generated WebP variants (thumb/grid/card)
+  if (R2_URL_PATTERN.test(url)) {
+    return [
+      `${getImageVariantUrl(url, 'thumb')} 300w`,
+      `${getImageVariantUrl(url, 'grid')} 450w`,
+      `${getImageVariantUrl(url, 'card')} 600w`,
+    ].join(', ');
   }
 
   if (!isSupabaseStorageUrl(url)) {
