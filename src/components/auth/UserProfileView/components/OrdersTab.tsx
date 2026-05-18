@@ -6,6 +6,7 @@ import { Loader2, ShoppingBag, ChevronRight, Star, DollarSign, RotateCcw } from 
 import { Order } from '../../../../types';
 import { Locale } from '../../../../i18n';
 import { formatCurrency } from '../../../../utils/currency';
+import { getOptimizedImageUrl } from '../../../../utils/image';
 import { OrdersState } from '../types';
 
 const STATUS_LABEL_PT: Record<string, string> = {
@@ -73,14 +74,27 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
         return (
           <div
             key={order.id}
-            className="p-6 sm:p-8 bg-paper-50 rounded-[2.5rem] border border-neutral-100 group hover:border-black transition-all"
+            className="p-4 sm:p-6 bg-paper-50 rounded-[2.5rem] border border-neutral-100 group hover:border-black transition-all"
           >
             <div
               onClick={() => onSelectOrder(order)}
-              className="flex justify-between items-center cursor-pointer"
+              className="flex justify-between items-start gap-4 cursor-pointer"
             >
-              <div className="space-y-2 flex-1">
-                <div className="flex items-center gap-2">
+              {/* Product Image Preview */}
+              {order.items?.[0] && (
+                <div className="flex-none">
+                  <img
+                    src={getOptimizedImageUrl(order.items[0].image, 'thumbnail')}
+                    className="w-20 h-24 sm:w-24 sm:h-32 object-cover rounded-2xl bg-neutral-100"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2 flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
                     ID: {order.id.slice(0, 8)}
                   </span>
@@ -100,7 +114,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                 </h4>
                 <div className="flex items-center gap-2">
                   <div
-                    className={`w-2 h-2 rounded-full ${
+                    className={`w-2 h-2 rounded-full flex-none ${
                       isCancelled
                         ? 'bg-neutral-400'
                         : isDelivered
@@ -109,7 +123,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                     }`}
                   />
                   <span
-                    className={`text-[10px] font-black uppercase tracking-widest ${
+                    className={`text-[10px] font-black uppercase tracking-widest truncate ${
                       isCancelled ? 'text-neutral-500' : 'text-neutral-600'
                     }`}
                   >
@@ -117,7 +131,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                   </span>
                 </div>
               </div>
-              <div className="text-right flex items-center gap-3 sm:gap-6 flex-shrink-0">
+              <div className="text-right flex flex-col items-end gap-2 flex-shrink-0">
                 <span className="text-lg sm:text-xl font-light tracking-tighter whitespace-nowrap">
                   {formatCurrency(order.total || 0, locale)}
                 </span>
@@ -127,16 +141,16 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
 
             {/* Review Section for Delivered Orders */}
             {isDelivered && (
-              <div className="mt-4 pt-4 border-t border-neutral-200">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-neutral-200">
                 {hasReview ? (
                   <button
                     onClick={e => {
                       e.stopPropagation();
                       window.location.href = `/order-review/${order.id}`;
                     }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-600 rounded-lg hover:bg-neutral-200 transition-colors text-sm font-medium"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 sm:py-3 bg-neutral-100 text-neutral-600 rounded-lg hover:bg-neutral-200 transition-colors text-xs sm:text-sm font-medium"
                   >
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 flex-shrink-0" />
                     Editar Avaliação
                   </button>
                 ) : (
@@ -145,15 +159,15 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                       e.stopPropagation();
                       window.location.href = `/order-review/${order.id}`;
                     }}
-                    className="w-full flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-neutral-800 transition-colors text-sm font-medium"
+                    className="w-full flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-x-2 sm:gap-y-1 px-3 sm:px-4 py-3 sm:py-4 bg-black text-white rounded-lg hover:bg-neutral-800 transition-colors text-xs sm:text-sm font-medium"
                   >
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 whitespace-nowrap">
                       <Star className="w-4 h-4 flex-shrink-0" />
                       Avaliar Pedido
                     </span>
                     {storeConfig?.loyalty_program?.review_cashback_amount &&
                       storeConfig.loyalty_program.review_cashback_amount > 0 && (
-                        <span className="inline-flex items-center gap-0.5 text-xs bg-paper/20 px-2 py-0.5 rounded whitespace-nowrap">
+                        <span className="inline-flex items-center gap-0.5 text-xs bg-paper/20 px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0">
                           <DollarSign className="w-3 h-3" />+
                           {formatCurrency(storeConfig.loyalty_program.review_cashback_amount, locale)}
                         </span>
