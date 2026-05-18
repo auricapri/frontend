@@ -5,6 +5,12 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.4.66] - 2026-05-18
+
+### Corrigido
+- **Splash screen** — duracao maxima reduzida de 5s para 3s; gate de `sessionStorage` (`auricapri_splash_seen`) garante exibicao apenas na primeira navegacao de cada sessao do navegador. Ao fechar a aba/janela o flag expira automaticamente.
+- **Produtos relacionados** — limite reduzido de 5 para 4 itens em `ProductDetail` (`relatedProducts.slice(0, 4)`), alinhando mobile carousel e grid desktop ao design de 4 colunas.
+
 ## [1.4.65] - 2026-05-17
 
 ### Corrigido (Seguranca)

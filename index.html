@@ -210,8 +210,9 @@
       setTimeout(function() {
         if (window.location.pathname === '/' && !document.body.classList.contains('loaded')) {
           document.body.classList.add('loaded');
+          try { sessionStorage.setItem('auricapri_splash_seen', '1'); } catch(_) {}
         }
-      }, 5000);
+      }, 3000);
     </script>
     <!-- Initial Splash Screen -->
     <div id="splash-screen" style="background-color:#FAF8F0">
