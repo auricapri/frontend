@@ -6,6 +6,23 @@
 export type ImageVariantSize = 'thumb' | 'grid' | 'card' | 'original';
 
 const R2_URL_PATTERN = /^https:\/\/pub-[a-f0-9]+\.r2\.dev\//;
+const R2_PUBLIC_BASE = 'https://pub-efa0957776f14deea3bc267eb4ca9156.r2.dev';
+const LEGACY_SUPABASE_HOST_PATTERN = /^https:\/\/zbrunudbdyuebtpxfnkd\.supabase\.co\/storage\/v1\/(?:object|render\/image)\/public\//;
+
+/**
+ * Rewrites URLs pointing at the deleted legacy Supabase Storage project to
+ * their R2 equivalent. Order items / cart snapshots saved before the R2
+ * migration store absolute Supabase URLs that no longer resolve (the legacy
+ * project was deleted, so DNS returns NXDOMAIN). The files themselves were
+ * copied to R2 under the same bucket/path, so the host swap is enough.
+ */
+export function normalizeR2Url(url: string): string {
+  if (!url) return url;
+  if (!LEGACY_SUPABASE_HOST_PATTERN.test(url)) return url;
+  const withoutQuery = url.split('?')[0];
+  const path = withoutQuery.replace(LEGACY_SUPABASE_HOST_PATTERN, '');
+  return `${R2_PUBLIC_BASE}/${path}`;
+}
 
 /**
  * Maps an original R2 image URL to the pre-generated WebP variant URL.
@@ -14,20 +31,23 @@ const R2_URL_PATTERN = /^https:\/\/pub-[a-f0-9]+\.r2\.dev\//;
  *   getImageVariantUrl('https://pub-xxx.r2.dev/products/principal.jpg', 'card')
  *   → 'https://pub-xxx.r2.dev/products/principal-card.webp'
  *
+ * Accepts legacy Supabase URLs and rewrites them to R2 first.
  * Falls back to originalUrl for:
  * - size === 'original'
- * - non-R2 URLs (Supabase, CDN, etc.)
+ * - non-R2 URLs after normalization
  * - URLs without a file extension
  */
 export function getImageVariantUrl(originalUrl: string, size: ImageVariantSize): string {
-  if (!originalUrl || size === 'original') return originalUrl;
-  if (!R2_URL_PATTERN.test(originalUrl)) return originalUrl;
+  if (!originalUrl) return originalUrl;
+  const normalized = normalizeR2Url(originalUrl);
+  if (size === 'original') return normalized;
+  if (!R2_URL_PATTERN.test(normalized)) return normalized;
 
-  const lastDotIdx = originalUrl.lastIndexOf('.');
-  const lastSlashIdx = originalUrl.lastIndexOf('/');
-  if (lastDotIdx <= lastSlashIdx) return originalUrl;
+  const lastDotIdx = normalized.lastIndexOf('.');
+  const lastSlashIdx = normalized.lastIndexOf('/');
+  if (lastDotIdx <= lastSlashIdx) return normalized;
 
-  const base = originalUrl.substring(0, lastDotIdx);
+  const base = normalized.substring(0, lastDotIdx);
   return `${base}-${size}.webp`;
 }
 
