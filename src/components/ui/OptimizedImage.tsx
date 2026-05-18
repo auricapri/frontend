@@ -4,11 +4,21 @@ import {
   generateSrcSet,
   generateSizes,
   getPlaceholderUrl,
-  getR2FallbackUrl,
+  getImageVariantUrl,
   IMAGE_SIZES,
 } from '../../utils/image';
 
 type ImageSize = keyof typeof IMAGE_SIZES;
+
+/**
+ * priority prop:
+ *   'high' — eager loading, fetchpriority=high, preload link injected (use for first ProductDetail slide)
+ *   'low'  — lazy loading, decoding=async (default — use for vitrine/cards)
+ *   'auto' — browser default
+ *
+ * Legacy boolean priority=true is mapped to 'high' for backward compatibility.
+ */
+type ImagePriority = 'high' | 'low' | 'auto';
 
 interface OptimizedImageProps {
   src: string | undefined | null;
@@ -16,7 +26,8 @@ interface OptimizedImageProps {
   className?: string;
   size?: ImageSize;
   sizes?: string;
-  priority?: boolean;
+  /** 'high' | 'low' | 'auto' — or boolean true/false for legacy compat */
+  priority?: ImagePriority | boolean;
   aspectRatio?: string;
   objectFit?: 'cover' | 'contain' | 'fill' | 'none';
   onLoad?: () => void;
@@ -27,13 +38,19 @@ interface OptimizedImageProps {
   srcSetSizes?: ImageSize[];
 }
 
+function resolvePriority(p: ImagePriority | boolean | undefined): ImagePriority {
+  if (p === true) return 'high';
+  if (p === false) return 'low';
+  return (p as ImagePriority) || 'low';
+}
+
 const OptimizedImage: React.FC<OptimizedImageProps> = ({
   src,
   alt,
   className = '',
   size = 'medium',
   sizes,
-  priority = false,
+  priority = 'low',
   aspectRatio,
   objectFit = 'cover',
   onLoad,
@@ -43,15 +60,17 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   useSrcSet = true,
   srcSetSizes = ['thumbnail', 'small', 'medium', 'large'],
 }) => {
+  const resolvedPriority = resolvePriority(priority);
+  const isHigh = resolvedPriority === 'high';
+
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(priority);
+  const [isInView, setIsInView] = useState(isHigh);
   const [hasError, setHasError] = useState(false);
-  const [triedR2, setTriedR2] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const optimizedSrc = getOptimizedImageUrl(src, size, { quality });
-  const srcSet = useSrcSet ? generateSrcSet(src, srcSetSizes, quality) : undefined;
+  const optimizedSrc = src ? getOptimizedImageUrl(src, size, { quality }) : '';
+  const webpSrcSet = src && useSrcSet ? generateSrcSet(src, srcSetSizes, quality) : '';
   const defaultSizes = sizes || generateSizes();
   const placeholderSrc = getPlaceholderUrl(
     IMAGE_SIZES[size].width,
@@ -59,13 +78,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   );
 
   useEffect(() => {
-    if (priority) {
+    if (isHigh) {
       setIsInView(true);
       if (src) {
         const link = document.createElement('link');
         link.rel = 'preload';
         link.as = 'image';
-        link.href = optimizedSrc;
+        // Preload the card variant (600w) as a sensible default for high-priority images
+        link.href = getImageVariantUrl(src, 'card') || optimizedSrc;
         link.setAttribute('fetchpriority', 'high');
         document.head.appendChild(link);
       }
@@ -94,7 +114,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return () => {
       observer.disconnect();
     };
-  }, [priority, src, optimizedSrc]);
+  }, [isHigh, src, optimizedSrc]);
 
   const handleLoad = useCallback(() => {
     setIsLoaded(true);
@@ -102,19 +122,17 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   }, [onLoad]);
 
   const handleError = useCallback(() => {
-    // Try R2 fallback before giving up
-    if (!triedR2 && src) {
-      const r2Url = getR2FallbackUrl(src);
-      if (r2Url && imgRef.current) {
-        setTriedR2(true);
-        imgRef.current.srcset = '';
-        imgRef.current.src = r2Url;
+    if (imgRef.current && src && !hasError) {
+      // Clear srcset and try the plain original URL as fallback
+      imgRef.current.srcset = '';
+      if (!imgRef.current.src.includes(src)) {
+        imgRef.current.src = src;
         return;
       }
     }
     setHasError(true);
     onError?.();
-  }, [onError, triedR2, src]);
+  }, [onError, hasError, src]);
 
   const objectFitClass = {
     cover: 'object-cover',
@@ -157,25 +175,33 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       )}
 
       {isInView && (
-        <img
-          ref={imgRef}
-          src={optimizedSrc}
-          srcSet={srcSet || undefined}
-          sizes={srcSet ? defaultSizes : undefined}
-          alt={alt}
-          width={IMAGE_SIZES[size].width}
-          height={IMAGE_SIZES[size].height}
-          loading={priority ? 'eager' : 'lazy'}
-          decoding={priority ? 'sync' : 'async'}
-          fetchPriority={priority ? 'high' : 'auto'}
-          onLoad={handleLoad}
-          onError={handleError}
-          className={`
-            w-full h-full ${objectFitClass}
-            transition-opacity duration-700 ease-out
-            ${isLoaded ? 'opacity-100' : 'opacity-0'}
-          `}
-        />
+        <picture className="contents">
+          {webpSrcSet && (
+            <source
+              srcSet={webpSrcSet}
+              sizes={defaultSizes}
+              type="image/webp"
+            />
+          )}
+          <img
+            ref={imgRef}
+            src={optimizedSrc}
+            sizes={defaultSizes}
+            alt={alt}
+            width={IMAGE_SIZES[size].width}
+            height={IMAGE_SIZES[size].height}
+            loading={isHigh ? 'eager' : 'lazy'}
+            decoding={isHigh ? 'sync' : 'async'}
+            fetchPriority={isHigh ? 'high' : (resolvedPriority === 'auto' ? 'auto' : 'low')}
+            onLoad={handleLoad}
+            onError={handleError}
+            className={`
+              w-full h-full ${objectFitClass}
+              transition-opacity duration-700 ease-out
+              ${isLoaded ? 'opacity-100' : 'opacity-0'}
+            `}
+          />
+        </picture>
       )}
 
       {hasError && (
@@ -189,4 +215,3 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
 export default OptimizedImage;
 export type { OptimizedImageProps };
-

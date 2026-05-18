@@ -4,7 +4,7 @@ import { Product } from '../../types';
 import { Locale } from '../../i18n';
 import { createGetLoc } from '../../utils/localization';
 import { slugify } from '../../utils/urlUtils';
-import { getOptimizedImageUrl } from '../../utils/image';
+import { getImageVariantUrl } from '../../utils/image';
 import { formatCurrency } from '../../utils/currency';
 import type { AppView } from '../../app/hooks/useNavigation';
 
@@ -134,9 +134,11 @@ export const NavbarSearch: React.FC<NavbarSearchProps> = ({
                   >
                     {img && (
                       <img
-                        src={getOptimizedImageUrl(img, 'thumbnail')}
+                        src={getImageVariantUrl(img, 'thumb')}
                         alt={getLoc(product.name)}
                         className="w-10 h-12 object-cover rounded-md flex-shrink-0"
+                        loading="lazy"
+                        decoding="async"
                       />
                     )}
                     <div className="flex-1 min-w-0">

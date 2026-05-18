@@ -1,7 +1,6 @@
 import React from 'react';
 import { Maximize2, ScanFace } from 'lucide-react';
 import { OptimizedImage } from '../../ui';
-import { getOptimizedImageUrl } from '../../../utils/image';
 import { type Product, type ProductImageHotspot, type CartItem, type LocalizedText } from '../../../types';
 import { ImageHotspots } from '../ImageHotspots';
 import { Locale } from '../../../i18n';
@@ -92,11 +91,12 @@ export function ImageGallery(props: {
                 onNavigateToProduct={onNavigateToProduct}
               >
                 <img
-                  src={getOptimizedImageUrl(imgData.url, 'xlarge', { quality: 90 })}
+                  src={imgData.url}
                   alt={`${getLoc(product.name)} view ${idx + 1}`}
                   className="w-full h-auto max-h-[88vh] object-contain transition-transform duration-[1.5s] ease-out group-hover:scale-105"
-                  loading={idx < 2 ? 'eager' : 'lazy'}
-                  decoding="async"
+                  loading={idx === 0 ? 'eager' : 'lazy'}
+                  decoding={idx === 0 ? 'sync' : 'async'}
+                  fetchPriority={idx === 0 ? 'high' : 'low'}
                 />
               </ImageHotspots>
               <div className="absolute bottom-10 right-10 p-5 bg-paper/90 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">
