@@ -95,7 +95,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
           >
             <div
               onClick={() => onSelectOrder(order)}
-              className="flex justify-between items-center cursor-pointer"
+              className="flex justify-between items-start cursor-pointer"
             >
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-2">
@@ -123,7 +123,11 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                     }`}
                   />
                   <span className={`text-xs font-medium ${isCancelled ? 'text-red-600' : 'text-neutral-600'}`}>
-                    {isCancelled ? 'Cancelado' : order.status}
+                    {isCancelled
+                      ? 'Cancelado'
+                      : isDelivered
+                      ? 'Entregue'
+                      : order.status}
                   </span>
                 </div>
 
@@ -181,10 +185,10 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                       e.stopPropagation();
                       window.location.href = `/order-review/${order.id}`;
                     }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-neutral-800 transition-colors text-sm font-medium relative"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-black text-white rounded-lg hover:bg-neutral-800 transition-colors text-xs font-medium relative"
                   >
-                    <Star className="w-4 h-4" />
-                    <span>Avaliar Pedido</span>
+                    <Star className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="whitespace-nowrap">Avaliar Pedido</span>
                     {storeConfig?.loyalty_program?.review_cashback_amount &&
                       storeConfig.loyalty_program.review_cashback_amount > 0 && (
                         <span className="ml-auto flex items-center gap-1 text-xs bg-paper/20 px-2 py-0.5 rounded">
