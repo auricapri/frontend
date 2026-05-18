@@ -69,16 +69,35 @@ export function useAppState(params: UseAppStateParams) {
   // Pending checkout state
   const [pendingCheckout, setPendingCheckout] = useState(false);
 
-  // Splash screen state
-  const [splashShown, setSplashShown] = useState(false);
+  // Splash screen state — show only once per browser session
+  const [splashShown, setSplashShown] = useState(() => {
+    return sessionStorage.getItem('auricapri_splash_seen') === '1';
+  });
   useEffect(() => {
-    if (navigation.currentView === 'home' && !isStoreLoading && products.length > 0 && !splashShown) {
+    if (splashShown) {
+      // Already shown this session: ensure body is in loaded state immediately
+      document.body.classList.add('loaded');
+      return;
+    }
+    if (navigation.currentView === 'home' && !isStoreLoading && products.length > 0) {
       const timer = setTimeout(() => {
         document.body.classList.add('loaded');
+        sessionStorage.setItem('auricapri_splash_seen', '1');
         setSplashShown(true);
       }, 300);
-      return () => clearTimeout(timer);
-    } else if (navigation.currentView !== 'home' && !splashShown) {
+      // Hard cap: dismiss after 3000ms regardless of load state
+      const cap = setTimeout(() => {
+        document.body.classList.add('loaded');
+        sessionStorage.setItem('auricapri_splash_seen', '1');
+        setSplashShown(true);
+      }, 3000);
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(cap);
+      };
+    } else if (navigation.currentView !== 'home') {
+      document.body.classList.add('loaded');
+      sessionStorage.setItem('auricapri_splash_seen', '1');
       setSplashShown(true);
     }
   }, [navigation.currentView, isStoreLoading, products.length, splashShown]);

@@ -245,9 +245,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     if (!products.length) return [];
     const modeFiltered = filterProductsForMode(products, userMode);
     const sameCategory = modeFiltered.filter(p => p.id !== product.id && p.category_id === product.category_id && p.is_active);
-    if (sameCategory.length >= 5) return sameCategory.slice(0, 5);
+    if (sameCategory.length >= 4) return sameCategory.slice(0, 4);
     const otherProducts = modeFiltered.filter(p => p.id !== product.id && p.category_id !== product.category_id && p.is_active);
-    return [...sameCategory, ...otherProducts].slice(0, 5);
+    return [...sameCategory, ...otherProducts].slice(0, 4);
   }, [products, product.id, product.category_id, userMode]);
 
   // Recently viewed products
