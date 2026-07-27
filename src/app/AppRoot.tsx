@@ -11,6 +11,7 @@ import { useOrderProcessing } from './hooks/useOrderProcessing';
 import { AppProviders } from './AppProviders';
 import { AppRouter } from './AppRouter';
 import { useFamiliaCoupon } from '../hooks/useFamiliaCoupon';
+import { STORE_CLOSING_TOAST_MESSAGE, STORE_CLOSING_TOAST_SEEN_KEY } from '../constants/storeClosing';
 
 interface StoreDataProps {
   products: Product[];
@@ -90,6 +91,17 @@ function AppRootContent({ storeData }: { storeData: StoreDataProps }) {
     }
     prevUserRef.current = currentUser;
   }, [currentUser, appState]);
+
+  // Store closing notice — once per browser session, after the splash screen clears
+  const { showToast } = appState;
+  useEffect(() => {
+    if (sessionStorage.getItem(STORE_CLOSING_TOAST_SEEN_KEY) === '1') return;
+    const timer = setTimeout(() => {
+      sessionStorage.setItem(STORE_CLOSING_TOAST_SEEN_KEY, '1');
+      showToast(STORE_CLOSING_TOAST_MESSAGE);
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, [showToast]);
 
   const orderProcessing = useOrderProcessing({
     cartItems,

@@ -5,6 +5,17 @@ Todas as mudancas notaveis neste projeto serao documentadas neste arquivo.
 O formato e baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [1.5.0] - 2026-07-27
+
+### Removido
+- **Login social (Google e Apple)** — botoes de OAuth removidos do `AuthDrawer`, junto com `handleSocialLogin` e o estado `socialLoading`. Qualquer OAuth cria conta nova automaticamente no Supabase, o que furaria o bloqueio de novos cadastros.
+- **Cadastro de novos clientes** — modo `register` removido do `AuthDrawer`: campos Nome Completo e Codigo de Indicacao, checkbox de termos/LGPD, chamada `supabase.auth.signUp` e o link de alternancia login/cadastro. O drawer agora e login-only (email + senha + recuperacao de senha).
+
+### Adicionado
+- **Aviso de encerramento no login** — bloco abaixo do botao Entrar informando que a loja esta encerrando e que o acesso segue apenas para clientes ja cadastrados.
+- **Toast de entrada** — aviso de encerramento de novos cadastros exibido uma vez por sessao do navegador (`sessionStorage: auricapri_store_closing_notice_seen`), 3.5s apos o carregamento para nao colidir com a splash screen.
+- **`src/constants/storeClosing.ts`** — fonte unica dos textos de encerramento usados pelo drawer e pelo toast.
+
 ## [1.4.66] - 2026-05-18
 
 ### Corrigido
